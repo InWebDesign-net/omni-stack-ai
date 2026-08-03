@@ -38,6 +38,7 @@ import {
   Smile,
   DollarSign,
   Coffee,
+  Sparkle,
 } from 'lucide-react';
 
 interface FeedItem {
@@ -69,14 +70,14 @@ interface InterestProfile {
 
 const DEFAULT_PROFILE: InterestProfile = {
   interests: {
-    'PostgreSQL': { score: 0.95, last_interacted: new Date().toISOString() },
+    'Wissenschaft': { score: 0.95, last_interacted: new Date().toISOString() },
+    'Natur': { score: 0.88, last_interacted: new Date().toISOString() },
+    'Kochen': { score: 0.75, last_interacted: new Date().toISOString() },
+    'Finanzen': { score: 0.80, last_interacted: new Date().toISOString() },
+    'PostgreSQL': { score: 0.90, last_interacted: new Date().toISOString() },
     'Strapi': { score: 0.82, last_interacted: new Date().toISOString() },
-    'NextJS': { score: 0.90, last_interacted: new Date().toISOString() },
-    'Ollama': { score: 0.75, last_interacted: new Date().toISOString() },
-    'Wissenschaft': { score: 0.85, last_interacted: new Date().toISOString() },
-    'Natur': { score: 0.80, last_interacted: new Date().toISOString() },
-    'Kochen': { score: 0.70, last_interacted: new Date().toISOString() },
-    'Finanzen': { score: 0.75, last_interacted: new Date().toISOString() },
+    'NextJS': { score: 0.85, last_interacted: new Date().toISOString() },
+    'Ollama': { score: 0.78, last_interacted: new Date().toISOString() },
     'Funny Cat Videos': { score: 0.20, last_interacted: '2025-12-10T08:00:00Z' },
   },
   contentTypes: {
@@ -88,7 +89,7 @@ const DEFAULT_PROFILE: InterestProfile = {
   activePattern: 'discovery',
 };
 
-export default function YouTubeStyleFeed() {
+export default function OmniApp() {
   const [lang, setLang] = useState<'de' | 'en'>('de');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
@@ -100,7 +101,6 @@ export default function YouTubeStyleFeed() {
 
   // User Auth Modal State
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [currentUser, setCurrentUser] = useState<{ username: string; email: string } | null>(null);
   const [regForm, setRegForm] = useState({ username: '', email: '', password: '', bio: '' });
 
@@ -156,8 +156,8 @@ export default function YouTubeStyleFeed() {
     setIsAiProcessing(true);
     setAiLog(
       lang === 'de'
-        ? '🤖 Ollama AI Agent analysiert Prompt & berechnet Vektor-Mutationen...'
-        : '🤖 Ollama AI Agent analyzing prompt & computing vector mutations...'
+        ? '🤖 Ollama Agent analysiert Intent & berechnet Vektoren...'
+        : '🤖 Ollama Agent analyzing intent & computing vectors...'
     );
 
     setTimeout(() => {
@@ -172,8 +172,8 @@ export default function YouTubeStyleFeed() {
         updated.activePattern = 'deep_dive';
         setAiLog(
           lang === 'de'
-            ? '⚡ KI-Entscheidung: "Wissenschaft & PDF Deep Dive" aktiviert. PDF Weight = 1.0.'
-            : '⚡ AI Decision: "Science & PDF Deep Dive" activated. PDF Weight = 1.0.'
+            ? '✨ KI-Entscheidung: "Wissenschaft & PDF Deep Dive" aktiviert.'
+            : '✨ AI Decision: "Science & PDF Deep Dive" activated.'
         );
       } else if (lower.includes('kochen') || lower.includes('essen') || lower.includes('pasta')) {
         updated.interests['Kochen'].score = 0.99;
@@ -181,8 +181,8 @@ export default function YouTubeStyleFeed() {
         updated.activePattern = 'discovery';
         setAiLog(
           lang === 'de'
-            ? '🍳 KI-Entscheidung: Culinary Focus! Kochen & Rezepte Vektor auf 0.99 angehoben.'
-            : '🍳 AI Decision: Culinary Focus! Cooking & Recipes vector set to 0.99.'
+            ? '🍳 KI-Entscheidung: Kulinarik-Fokus! Kochen & Rezepte Score = 0.99.'
+            : '🍳 AI Decision: Culinary Focus! Cooking & Recipes score = 0.99.'
         );
       } else if (lower.includes('cat') || lower.includes('katz') || lower.includes('humor') || lower.includes('tiere')) {
         updated.interests['Funny Cat Videos'].score = 0.99;
@@ -191,8 +191,8 @@ export default function YouTubeStyleFeed() {
         updated.activePattern = 'discovery';
         setAiLog(
           lang === 'de'
-            ? '🐱 KI-Entscheidung: Entertainment Mode! Cat Videos & Natur auf 0.99 maximiert.'
-            : '🐱 AI Decision: Entertainment Mode! Cat Videos & Nature boosted to 0.99.'
+            ? '🐱 KI-Entscheidung: Entertainment Mode! Cat Videos & Natur maximiert.'
+            : '🐱 AI Decision: Entertainment Mode! Cat Videos & Nature maximized.'
         );
       } else {
         updated.interests['NextJS'].score = 0.98;
@@ -200,8 +200,8 @@ export default function YouTubeStyleFeed() {
         updated.activePattern = 'deep_dive';
         setAiLog(
           lang === 'de'
-            ? '🚀 KI-Entscheidung: Developer & Tech Stack Pattern aktiviert.'
-            : '🚀 AI Decision: Developer & Tech Stack Pattern activated.'
+            ? '🚀 KI-Entscheidung: Tech Stack & Dev Pattern aktiviert.'
+            : '🚀 AI Decision: Tech Stack & Dev Pattern activated.'
         );
       }
 
@@ -209,7 +209,7 @@ export default function YouTubeStyleFeed() {
       fetchFeed(updated);
       setIsAiProcessing(false);
       setPromptInput('');
-    }, 600);
+    }, 500);
   };
 
   const handleRegister = (e: React.FormEvent) => {
@@ -255,8 +255,8 @@ export default function YouTubeStyleFeed() {
     const matchesTag =
       selectedTag === 'Alle' ||
       item.tags.includes(selectedTag) ||
-      (selectedTag === 'Wissenschaft' && item.tags.includes('Astronomie')) ||
-      (selectedTag === 'Tech' && (item.tags.includes('PostgreSQL') || item.tags.includes('NextJS')));
+      (selectedTag === 'Wissenschaft' && (item.tags.includes('Astronomie') || item.tags.includes('Wissenschaft'))) ||
+      (selectedTag === 'Tech' && (item.tags.includes('PostgreSQL') || item.tags.includes('NextJS') || item.tags.includes('Strapi')));
 
     return matchesSearch && matchesTag;
   });
@@ -264,102 +264,98 @@ export default function YouTubeStyleFeed() {
   const categoryPills = [
     'Alle',
     'Wissenschaft',
-    'Programmierung',
-    'Kochen',
     'Natur',
-    'Finanzen',
+    'Kochen',
     'Tech',
+    'Finanzen',
     'Funny Cat Videos',
     'Dokumentation',
   ];
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-gray-100 flex flex-col font-sans selection:bg-red-600 selection:text-white">
-      {/* YouTube Style Top Header */}
-      <header className="sticky top-0 z-40 bg-[#0f0f0f]/95 backdrop-blur-md border-b border-[#272727] px-4 py-2.5 flex items-center justify-between gap-4">
-        {/* Left: Menu & Brand */}
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 bg-[#0b1326]/90 backdrop-blur-xl border-b border-[#2d3449]/60 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        {/* Brand & Menu Toggle */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-[#272727] rounded-full text-gray-300 transition"
-            title="Toggle Menu"
+            className="p-2 hover:bg-[#1f283d] rounded-xl text-[#c7c4d7] transition"
+            title="Menu"
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          <a href="#" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center shadow-md shadow-red-600/30">
-              <Play className="h-4 w-4 text-white fill-current ml-0.5" />
+          <a href="#" className="flex items-center gap-2.5 group">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] p-0.5 shadow-lg shadow-[#8083ff]/20">
+              <div className="h-full w-full bg-[#0b1326] rounded-[10px] flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-[#c0c1ff] group-hover:rotate-12 transition duration-300" />
+              </div>
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight text-white flex items-center gap-1.5">
-                Omni<span className="text-red-500">Tube</span>
-                <span className="text-[10px] bg-red-950 text-red-400 border border-red-800/60 px-1.5 py-0.2 rounded font-mono">
-                  KI-Feed
+              <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+                Omni
+                <span className="text-[10px] bg-[#8083ff]/20 text-[#c0c1ff] border border-[#8083ff]/40 px-2 py-0.5 rounded-full font-mono font-medium">
+                  KI-Network
                 </span>
               </span>
             </div>
           </a>
         </div>
 
-        {/* Center: Search Bar */}
+        {/* Search Bar */}
         <div className="flex-1 max-w-2xl hidden md:flex items-center">
-          <div className="flex w-full items-center bg-[#121212] border border-[#303030] focus-within:border-blue-500 rounded-full overflow-hidden shadow-inner">
+          <div className="flex w-full items-center bg-[#131b2e] border border-[#2d3449] focus-within:border-[#8083ff] rounded-full overflow-hidden transition shadow-sm">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={lang === 'de' ? 'Suchen nach Videos, PDFs, Themen...' : 'Search videos, PDFs, topics...'}
-              className="w-full bg-transparent px-4 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
+              placeholder={lang === 'de' ? 'Suchen auf Omni...' : 'Search on Omni...'}
+              className="w-full bg-transparent px-5 py-2 text-sm text-[#dae2fd] placeholder-[#908fa0] focus:outline-none"
             />
-            <button className="bg-[#222222] hover:bg-[#272727] px-5 py-2 text-gray-400 hover:text-white border-l border-[#303030] transition">
+            <button className="bg-[#171f33] hover:bg-[#222a3d] px-5 py-2 text-[#908fa0] hover:text-white border-l border-[#2d3449] transition">
               <Search className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Right: AI Drawer Toggle, Reset Timer & User Profile */}
+        {/* Controls: AI Drawer Toggle, Reset Timer & User Profile */}
         <div className="flex items-center gap-3">
-          {/* AI Drawer Toggle */}
           <button
             onClick={() => setAlgoDrawerOpen(!algoDrawerOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
               algoDrawerOpen
-                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-[#212121] border-[#383838] text-purple-300 hover:bg-[#2a2a2a]'
+                ? 'bg-[#8083ff] border-[#8083ff] text-white shadow-lg shadow-[#8083ff]/30'
+                : 'bg-[#171f33] border-[#2d3449] text-[#c0c1ff] hover:bg-[#222a3d]'
             }`}
           >
-            <Sliders className="h-3.5 w-3.5" />
+            <Sliders className="h-3.5 w-3.5 text-[#44e2cd]" />
             <span className="hidden sm:inline">
-              {lang === 'de' ? 'Algorithmus & KI Steuerung' : 'Algorithm & AI Control'}
+              {lang === 'de' ? 'Algorithmus Steuerung' : 'Algorithm Control'}
             </span>
           </button>
 
-          {/* Reset Countdown Pill */}
-          <div className="hidden lg:flex items-center gap-1.5 bg-[#1f1f1f] border border-[#333333] px-2.5 py-1.5 rounded-full text-xs text-amber-300">
-            <RotateCcw className="h-3 w-3 animate-spin-slow text-amber-400" />
+          <div className="hidden lg:flex items-center gap-1.5 bg-[#131b2e] border border-[#2d3449] px-3 py-1.5 rounded-full text-xs text-[#ffb783]">
+            <RotateCcw className="h-3 w-3 animate-spin-slow text-[#ffb783]" />
             <span className="font-mono text-[11px]">
               {Math.floor(resetCountdown / 60)}:{(resetCountdown % 60).toString().padStart(2, '0')}
             </span>
           </div>
 
-          {/* Language Switcher */}
           <button
             onClick={() => setLang(lang === 'de' ? 'en' : 'de')}
-            className="p-2 hover:bg-[#272727] rounded-full text-gray-300 transition text-xs font-bold"
-            title="Switch Language"
+            className="p-2 hover:bg-[#171f33] rounded-full text-xs font-bold transition text-[#dae2fd]"
           >
             {lang === 'de' ? 'DE 🇩🇪' : 'EN 🇬🇧'}
           </button>
 
-          {/* User Account / Login */}
           {currentUser ? (
-            <div className="flex items-center gap-2 bg-[#222222] border border-[#333] px-3 py-1 rounded-full text-xs text-gray-200">
-              <User className="h-4 w-4 text-emerald-400" />
+            <div className="flex items-center gap-2 bg-[#171f33] border border-[#2d3449] px-3.5 py-1.5 rounded-full text-xs text-white">
+              <User className="h-4 w-4 text-[#44e2cd]" />
               <span className="font-medium">{currentUser.username}</span>
               <button
                 onClick={() => setCurrentUser(null)}
-                className="text-gray-400 hover:text-red-400 ml-1"
+                className="text-[#908fa0] hover:text-red-400 ml-1"
                 title="Abmelden"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -368,27 +364,27 @@ export default function YouTubeStyleFeed() {
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition shadow-md shadow-red-600/30"
+              className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] text-white px-4 py-1.5 rounded-full text-xs font-semibold transition shadow-md shadow-[#8083ff]/20"
             >
               <User className="h-3.5 w-3.5" />
-              <span>{lang === 'de' ? 'Registrieren' : 'Sign Up'}</span>
+              <span>{lang === 'de' ? 'Anmelden' : 'Sign In'}</span>
             </button>
           )}
         </div>
       </header>
 
-      {/* Collapsible Algorithmus Drawer (YouTube-style Floating Panel) */}
+      {/* Floating AI Algorithm Control Panel */}
       {algoDrawerOpen && (
-        <aside className="bg-[#181818] border-b border-[#2d2d2d] px-6 py-4 animate-slideDown shadow-2xl">
+        <aside className="bg-[#171f33]/95 backdrop-blur-2xl border-b border-[#2d3449] px-6 py-5 shadow-2xl animate-slideDown">
           <div className="max-w-[1920px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            {/* AI Prompt Input */}
-            <div className="md:col-span-5 flex flex-col gap-3 bg-[#212121] p-4 rounded-2xl border border-[#333]">
+            {/* AI Natural Language Prompt */}
+            <div className="md:col-span-5 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
-                  <Bot className="h-4 w-4 text-purple-400" />
-                  {lang === 'de' ? 'Lokale Ollama KI-Steuerung (CPU Inference)' : 'Local Ollama AI Control (CPU Inference)'}
+                <span className="text-xs font-bold text-[#c0c1ff] flex items-center gap-1.5">
+                  <Bot className="h-4 w-4 text-[#44e2cd]" />
+                  {lang === 'de' ? 'Lokaler Ollama KI-Agent' : 'Local Ollama AI Agent'}
                 </span>
-                <span className="text-[10px] bg-purple-900/50 text-purple-200 px-2 py-0.5 rounded font-mono">
+                <span className="text-[10px] bg-[#8083ff]/20 text-[#c0c1ff] px-2 py-0.5 rounded font-mono">
                   Strapi v5 API
                 </span>
               </div>
@@ -399,40 +395,40 @@ export default function YouTubeStyleFeed() {
                   onChange={(e) => setPromptInput(e.target.value)}
                   placeholder={
                     lang === 'de'
-                      ? 'z.B. "Ich will jetzt nur noch Kochen & Pasta Videos sehen"...'
-                      : 'e.g. "I want to see cooking & pasta videos only"...'
+                      ? 'z.B. "Zeige mir Wissens-PDFs & Astronomie"...'
+                      : 'e.g. "Show me science PDFs & astronomy"...'
                   }
-                  className="flex-1 bg-[#121212] border border-[#383838] rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-400"
+                  className="flex-1 bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2 text-xs text-white placeholder-[#908fa0] focus:outline-none focus:border-[#8083ff]"
                 />
                 <button
                   type="submit"
                   disabled={isAiProcessing}
-                  className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1"
+                  className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1 shadow-md"
                 >
                   {isAiProcessing ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
-                  <span>{lang === 'de' ? 'Anwenden' : 'Apply'}</span>
+                  <span>{lang === 'de' ? 'Steuern' : 'Apply'}</span>
                 </button>
               </form>
 
               {aiLog && (
-                <p className="text-[11px] text-purple-300 font-mono bg-black/40 p-2.5 rounded-lg border border-purple-900/50">
+                <p className="text-[11px] text-[#c0c1ff] font-mono bg-[#0b1326]/60 p-2.5 rounded-xl border border-[#8083ff]/30">
                   {aiLog}
                 </p>
               )}
             </div>
 
-            {/* Interest Vector Sliders */}
-            <div className="md:col-span-4 flex flex-col gap-2.5 bg-[#212121] p-4 rounded-2xl border border-[#333]">
+            {/* Interest Vector Matrix */}
+            <div className="md:col-span-4 flex flex-col gap-2.5 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <span className="text-xs font-bold text-gray-200 flex items-center justify-between">
-                <span>{lang === 'de' ? 'Strapi User Interest Vector' : 'Strapi User Interest Vector'}</span>
-                <span className="text-[10px] text-gray-400 font-mono">JSON Profile</span>
+                <span>{lang === 'de' ? 'User Interest Vector' : 'User Interest Vector'}</span>
+                <span className="text-[10px] text-[#908fa0] font-mono">JSON Profile</span>
               </span>
-              <div className="grid grid-cols-2 gap-3 max-h-32 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-3 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
                 {Object.entries(profile.interests).map(([topic, data]) => (
                   <div key={topic} className="flex flex-col gap-0.5 text-[11px]">
                     <div className="flex justify-between text-gray-300">
                       <span>{topic}</span>
-                      <span className="font-mono text-purple-300 font-bold">{data.score.toFixed(2)}</span>
+                      <span className="font-mono text-[#44e2cd] font-bold">{data.score.toFixed(2)}</span>
                     </div>
                     <input
                       type="range"
@@ -441,15 +437,15 @@ export default function YouTubeStyleFeed() {
                       step="0.05"
                       value={data.score}
                       onChange={(e) => updateInterestScore(topic, parseFloat(e.target.value))}
-                      className="w-full h-1 bg-[#333] rounded appearance-none cursor-pointer accent-purple-500"
+                      className="w-full h-1 bg-[#2d3449] rounded appearance-none cursor-pointer accent-[#8083ff]"
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Pattern Switcher & Weights */}
-            <div className="md:col-span-3 flex flex-col gap-3 bg-[#212121] p-4 rounded-2xl border border-[#333]">
+            {/* Pattern Switcher */}
+            <div className="md:col-span-3 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <span className="text-xs font-bold text-gray-200">
                 {lang === 'de' ? 'Slot Interleaving Pattern' : 'Slot Interleaving Pattern'}
               </span>
@@ -462,8 +458,8 @@ export default function YouTubeStyleFeed() {
                   }}
                   className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition ${
                     profile.activePattern === 'discovery'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-[#2d2d2d] text-gray-400 hover:text-white'
+                      ? 'bg-[#8083ff] text-white'
+                      : 'bg-[#171f33] text-[#908fa0] hover:text-white'
                   }`}
                 >
                   Discovery
@@ -476,8 +472,8 @@ export default function YouTubeStyleFeed() {
                   }}
                   className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition ${
                     profile.activePattern === 'deep_dive'
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-[#2d2d2d] text-gray-400 hover:text-white'
+                      ? 'bg-[#44e2cd] text-[#003731]'
+                      : 'bg-[#171f33] text-[#908fa0] hover:text-white'
                   }`}
                 >
                   Deep Dive
@@ -486,24 +482,23 @@ export default function YouTubeStyleFeed() {
 
               <button
                 onClick={() => setAlgoDrawerOpen(false)}
-                className="mt-1 text-[11px] text-gray-400 hover:text-white underline text-center"
+                className="mt-1 text-[11px] text-[#908fa0] hover:text-white underline text-center"
               >
-                {lang === 'de' ? 'Einstellungen schließen ✕' : 'Close Panel ✕'}
+                {lang === 'de' ? 'Panel schließen ✕' : 'Close Panel ✕'}
               </button>
             </div>
           </div>
         </aside>
       )}
 
-      {/* Main Full-Width Body Container */}
+      {/* Main Container */}
       <div className="flex flex-1 max-w-[1920px] w-full mx-auto">
-        {/* Left YouTube Navigation Sidebar */}
+        {/* Navigation Sidebar */}
         <aside
           className={`${
             sidebarOpen ? 'w-64' : 'w-16'
-          } shrink-0 bg-[#0f0f0f] border-r border-[#272727] p-2 flex flex-col gap-6 transition-all duration-300 hidden sm:flex`}
+          } shrink-0 bg-[#0b1326] border-r border-[#2d3449]/60 p-3 flex flex-col gap-6 transition-all duration-300 hidden sm:flex`}
         >
-          {/* Main Navigation Links */}
           <nav className="flex flex-col gap-1 text-sm font-medium">
             {[
               { icon: Home, label: lang === 'de' ? 'Startseite' : 'Home', active: true },
@@ -513,39 +508,38 @@ export default function YouTubeStyleFeed() {
             ].map((item, i) => (
               <button
                 key={i}
-                className={`flex items-center gap-4 px-3 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl transition ${
                   item.active
-                    ? 'bg-[#272727] text-white font-bold'
-                    : 'text-gray-300 hover:bg-[#212121] hover:text-white'
+                    ? 'bg-[#171f33] text-white font-bold border border-[#2d3449]'
+                    : 'text-[#c7c4d7] hover:bg-[#131b2e] hover:text-white'
                 }`}
               >
-                <item.icon className="h-5 w-5 shrink-0 text-red-500" />
+                <item.icon className="h-5 w-5 shrink-0 text-[#8083ff]" />
                 {sidebarOpen && <span>{item.label}</span>}
               </button>
             ))}
           </nav>
 
-          <hr className="border-[#272727]" />
+          <hr className="border-[#2d3449]/60" />
 
-          {/* Topics Category Navigation */}
           {sidebarOpen && (
-            <div className="flex flex-col gap-1 text-xs text-gray-400 font-semibold px-3 uppercase tracking-wider">
-              <span>{lang === 'de' ? 'Entdecken' : 'Explore'}</span>
-              <div className="mt-2 flex flex-col gap-1 text-sm font-normal text-gray-300 capitalize">
+            <div className="flex flex-col gap-1.5 text-xs text-[#908fa0] font-semibold px-3 uppercase tracking-wider">
+              <span>{lang === 'de' ? 'Themenbereiche' : 'Topics'}</span>
+              <div className="mt-2 flex flex-col gap-1 text-sm font-normal text-[#dae2fd]">
                 {[
                   { label: 'Wissenschaft', icon: Sparkles },
-                  { label: 'Programmierung', icon: Cpu },
-                  { label: 'Kochen & Rezepte', icon: Coffee },
-                  { label: 'Natur & Umwelt', icon: Compass },
+                  { label: 'Natur', icon: Compass },
+                  { label: 'Kochen', icon: Coffee },
                   { label: 'Finanzen', icon: DollarSign },
+                  { label: 'Tech', icon: Cpu },
                   { label: 'Entertainment', icon: Smile },
                 ].map((cat, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedTag(cat.label.split(' ')[0])}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#212121] hover:text-white text-left transition"
+                    onClick={() => setSelectedTag(cat.label)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#171f33] hover:text-white text-left transition"
                   >
-                    <cat.icon className="h-4 w-4 text-purple-400" />
+                    <cat.icon className="h-4 w-4 text-[#44e2cd]" />
                     <span>{cat.label}</span>
                   </button>
                 ))}
@@ -554,9 +548,9 @@ export default function YouTubeStyleFeed() {
           )}
         </aside>
 
-        {/* Center Main Content Area */}
+        {/* Center Feed */}
         <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6 overflow-x-hidden">
-          {/* Category Filter Pills Bar */}
+          {/* Category Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
             {categoryPills.map((pill) => (
               <button
@@ -564,8 +558,8 @@ export default function YouTubeStyleFeed() {
                 onClick={() => setSelectedTag(pill)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
                   selectedTag === pill
-                    ? 'bg-white text-black font-bold shadow'
-                    : 'bg-[#272727] text-gray-200 hover:bg-[#383838]'
+                    ? 'bg-[#c0c1ff] text-[#1000a9] font-bold shadow-md shadow-[#8083ff]/20'
+                    : 'bg-[#131b2e] text-[#dae2fd] hover:bg-[#171f33] border border-[#2d3449]/60'
                 }`}
               >
                 {pill}
@@ -573,7 +567,7 @@ export default function YouTubeStyleFeed() {
             ))}
           </div>
 
-          {/* Feed Assembly Grid (YouTube Cards) */}
+          {/* Feed Cards Grid */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {filteredFeed.map((item, idx) => (
               <article
@@ -581,53 +575,53 @@ export default function YouTubeStyleFeed() {
                 onClick={() => setSelectedMedia(item)}
                 className="flex flex-col gap-3 group cursor-pointer"
               >
-                {/* Thumbnail Container */}
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#1f1f1f] border border-[#2b2b2b] group-hover:border-red-500/50 transition duration-300">
+                {/* Thumbnail */}
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#131b2e] border border-[#2d3449] group-hover:border-[#8083ff]/60 group-hover:scale-[1.02] transition duration-300 shadow-md">
                   <img
                     src={item.thumbnailUrl}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b1326]/80 via-transparent to-transparent opacity-80" />
 
-                  {/* Media Format Badge */}
-                  <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] font-bold text-white uppercase flex items-center gap-1 border border-white/10">
-                    {item.mediaType === 'video' && <Video className="h-3 w-3 text-red-400" />}
-                    {item.mediaType === 'pdf' && <FileText className="h-3 w-3 text-red-500" />}
-                    {item.mediaType === 'article' && <BookOpen className="h-3 w-3 text-blue-400" />}
-                    {item.mediaType === 'short' && <Play className="h-3 w-3 text-emerald-400" />}
+                  {/* Format Badge */}
+                  <div className="absolute bottom-2.5 right-2.5 bg-[#0b1326]/85 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold text-white uppercase flex items-center gap-1 border border-white/10">
+                    {item.mediaType === 'video' && <Video className="h-3 w-3 text-[#ffb783]" />}
+                    {item.mediaType === 'pdf' && <FileText className="h-3 w-3 text-red-400" />}
+                    {item.mediaType === 'article' && <BookOpen className="h-3 w-3 text-[#44e2cd]" />}
+                    {item.mediaType === 'short' && <Play className="h-3 w-3 text-[#c0c1ff]" />}
                     {item.mediaType}
                   </div>
 
                   {/* Bucket Slot Badge */}
-                  <div className="absolute top-2 left-2 bg-purple-950/80 backdrop-blur-md border border-purple-500/40 text-purple-300 px-2 py-0.5 rounded font-mono text-[10px]">
+                  <div className="absolute top-2.5 left-2.5 bg-[#171f33]/90 backdrop-blur-md border border-[#8083ff]/40 text-[#c0c1ff] px-2.5 py-0.5 rounded-full font-mono text-[10px]">
                     Slot #{item.slotIndex || idx + 1}: {item.bucketSource}
                   </div>
                 </div>
 
-                {/* Info Container */}
-                <div className="flex gap-3 items-start">
+                {/* Info Metadata */}
+                <div className="flex gap-3 items-start px-0.5">
                   <img
                     src={item.authorAvatar}
                     alt={item.authorName}
-                    className="h-9 w-9 rounded-full object-cover border border-[#333] shrink-0 mt-0.5"
+                    className="h-9 w-9 rounded-full object-cover border border-[#2d3449] shrink-0 mt-0.5"
                   />
                   <div className="flex flex-col gap-1 flex-1">
-                    <h3 className="font-semibold text-sm text-gray-100 group-hover:text-red-400 transition line-clamp-2 leading-snug">
+                    <h3 className="font-semibold text-sm text-[#dae2fd] group-hover:text-[#c0c1ff] transition line-clamp-2 leading-snug">
                       {item.title}
                     </h3>
 
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5">
+                    <div className="flex items-center gap-1.5 text-xs text-[#908fa0] mt-0.5">
                       <span>{item.authorName}</span>
                       {item.isSubscribedAuthor && (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400/20" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[#44e2cd]" />
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-gray-400 font-mono">
+                    <div className="flex items-center gap-2 text-xs text-[#908fa0] font-mono">
                       <span>{(item.viewsCount / 1000).toFixed(1)}k Aufrufe</span>
                       <span>•</span>
-                      <span className="text-purple-300">
+                      <span className="text-[#44e2cd]">
                         Score: {(item.relevanceScore * 100).toFixed(0)}%
                       </span>
                     </div>
@@ -639,25 +633,25 @@ export default function YouTubeStyleFeed() {
         </main>
       </div>
 
-      {/* User Registration & Login Modal */}
+      {/* User Sign In Modal */}
       {authModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#1f1f1f] border border-[#333] max-w-md w-full rounded-3xl p-6 relative flex flex-col gap-5 shadow-2xl">
+          <div className="bg-[#171f33] border border-[#2d3449] max-w-md w-full rounded-3xl p-6 relative flex flex-col gap-5 shadow-2xl">
             <button
               onClick={() => setAuthModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full bg-[#272727]"
+              className="absolute top-4 right-4 text-[#908fa0] hover:text-white p-1 rounded-full bg-[#131b2e]"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-2 text-red-500 font-bold text-lg">
-              <User className="h-5 w-5" />
-              <span>{lang === 'de' ? 'Benutzerkonto erstellen' : 'Create User Account'}</span>
+            <div className="flex items-center gap-2 text-[#c0c1ff] font-bold text-lg">
+              <User className="h-5 w-5 text-[#44e2cd]" />
+              <span>{lang === 'de' ? 'Bei Omni anmelden' : 'Sign in to Omni'}</span>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-[#908fa0]">
               {lang === 'de'
-                ? 'Registriere dich im Frontend, um deinen eigenen Interest-Vector im Strapi CMS zu verwalten!'
-                : 'Sign up in the frontend to manage your personalized Interest Vector in Strapi CMS!'}
+                ? 'Erstelle dein Profil, um deine persönliche KI-Vektor-Konfiguration zu speichern!'
+                : 'Create your profile to save your personalized AI Interest Vector!'}
             </p>
 
             <form onSubmit={handleRegister} className="flex flex-col gap-4">
@@ -669,7 +663,7 @@ export default function YouTubeStyleFeed() {
                   value={regForm.username}
                   onChange={(e) => setRegForm({ ...regForm, username: e.target.value })}
                   placeholder="z.B. MaxMustermann"
-                  className="bg-[#121212] border border-[#383838] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500"
+                  className="bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8083ff]"
                 />
               </div>
 
@@ -681,7 +675,7 @@ export default function YouTubeStyleFeed() {
                   value={regForm.email}
                   onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
                   placeholder="max@example.com"
-                  className="bg-[#121212] border border-[#383838] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500"
+                  className="bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8083ff]"
                 />
               </div>
 
@@ -693,13 +687,13 @@ export default function YouTubeStyleFeed() {
                   value={regForm.password}
                   onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
                   placeholder="••••••••"
-                  className="bg-[#121212] border border-[#383838] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500"
+                  className="bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8083ff]"
                 />
               </div>
 
               <button
                 type="submit"
-                className="mt-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-red-600/30"
+                className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-[#8083ff]/30"
               >
                 Konto erstellen & Anmelden
               </button>
@@ -708,20 +702,20 @@ export default function YouTubeStyleFeed() {
         </div>
       )}
 
-      {/* Media Player / Reader Preview Modal */}
+      {/* Media Modal */}
       {selectedMedia && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#181818] border border-[#333] max-w-4xl w-full rounded-3xl p-6 relative flex flex-col gap-4 shadow-2xl">
+          <div className="bg-[#171f33] border border-[#2d3449] max-w-4xl w-full rounded-3xl p-6 relative flex flex-col gap-4 shadow-2xl">
             <button
               onClick={() => setSelectedMedia(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white p-1.5 rounded-full bg-[#272727]"
+              className="absolute top-4 right-4 text-[#908fa0] hover:text-white p-1.5 rounded-full bg-[#131b2e]"
             >
               <X className="h-5 w-5" />
             </button>
 
             <h2 className="text-xl font-bold text-white pr-8">{selectedMedia.title}</h2>
 
-            <div className="flex items-center gap-3 text-xs text-gray-400 border-b border-[#2a2a2a] pb-3">
+            <div className="flex items-center gap-3 text-xs text-[#908fa0] border-b border-[#2d3449] pb-3">
               <img
                 src={selectedMedia.authorAvatar}
                 alt={selectedMedia.authorName}
@@ -729,7 +723,7 @@ export default function YouTubeStyleFeed() {
               />
               <span className="font-semibold text-gray-200">{selectedMedia.authorName}</span>
               <span>•</span>
-              <span className="text-purple-400 font-mono">Bucket: {selectedMedia.bucketSource}</span>
+              <span className="text-[#44e2cd] font-mono">Bucket: {selectedMedia.bucketSource}</span>
             </div>
 
             {selectedMedia.mediaType === 'video' || selectedMedia.mediaType === 'short' ? (
@@ -737,22 +731,22 @@ export default function YouTubeStyleFeed() {
                 <video controls autoPlay src={selectedMedia.mediaUrl} className="w-full h-full" />
               </div>
             ) : selectedMedia.mediaType === 'pdf' ? (
-              <div className="bg-[#121212] border border-[#2a2a2a] rounded-2xl p-8 text-center flex flex-col items-center gap-4">
-                <FileText className="h-16 w-16 text-red-500" />
-                <h3 className="font-bold text-base text-gray-200">Interaktiver PDF Reader Simulation</h3>
-                <p className="text-xs text-gray-400 max-w-md">{selectedMedia.summary}</p>
+              <div className="bg-[#0b1326] border border-[#2d3449] rounded-2xl p-8 text-center flex flex-col items-center gap-4">
+                <FileText className="h-16 w-16 text-[#ffb783]" />
+                <h3 className="font-bold text-base text-gray-200">PDF Reader Preview</h3>
+                <p className="text-xs text-[#908fa0] max-w-md">{selectedMedia.summary}</p>
                 <a
                   href={selectedMedia.mediaUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-red-600 hover:bg-red-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold"
+                  className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-5 py-2.5 rounded-xl text-xs font-semibold"
                 >
                   PDF in neuem Tab öffnen
                 </a>
               </div>
             ) : (
-              <div className="bg-[#121212] p-6 rounded-2xl border border-[#2a2a2a] text-xs text-gray-300 leading-relaxed max-h-96 overflow-y-auto">
-                <p className="text-sm font-semibold mb-2">{selectedMedia.summary}</p>
+              <div className="bg-[#0b1326] p-6 rounded-2xl border border-[#2d3449] text-xs text-gray-300 leading-relaxed max-h-96 overflow-y-auto">
+                <p className="text-sm font-semibold mb-2 text-[#c0c1ff]">{selectedMedia.summary}</p>
                 <p>{selectedMedia.content}</p>
               </div>
             )}

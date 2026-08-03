@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'OmniStack AI - Hyper-Personalized Feed Assembly',
-  description: 'Next-Gen Social Network architecture with Strapi, Next.js, Turborepo, PM2 & Ollama AI',
+  title: 'Omni - Hyper-Personalized Video Network',
+  description: 'Next-Gen Video Social Platform powered by Strapi, Next.js & Ollama AI',
 };
 
 export default function RootLayout({
@@ -13,7 +13,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" className="dark">
-      <body className="antialiased bg-[#090a0f] text-gray-100 min-h-screen">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="antialiased bg-[#0b1326] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white">
         {children}
       </body>
     </html>
