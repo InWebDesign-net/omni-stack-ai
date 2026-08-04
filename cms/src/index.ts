@@ -20,29 +20,27 @@ export default {
         subscribersCount: number;
       }) => {
         try {
-          const existing = await strapi.documents('plugin::users-permissions.user').findMany({
-            filters: { handle: { $eq: creator.handle } },
+          let existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+            where: { handle: creator.handle },
           });
-          if (existing && existing.length > 0) {
-            return existing[0];
+
+          if (!existingUser) {
+            existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+              where: { email: creator.email },
+            });
           }
 
-          // Check by email
-          const existingEmail = await strapi.documents('plugin::users-permissions.user').findMany({
-            filters: { email: { $eq: creator.email } },
-          });
-          if (existingEmail && existingEmail.length > 0) {
-            const userDoc = existingEmail[0];
-            await strapi.documents('plugin::users-permissions.user').update({
-              documentId: userDoc.documentId,
+          if (existingUser) {
+            await strapi.db.query('plugin::users-permissions.user').update({
+              where: { id: existingUser.id },
               data: {
                 handle: creator.handle,
                 avatarUrl: creator.avatarUrl,
                 bio: creator.bio,
                 subscribersCount: creator.subscribersCount,
-              } as any,
+              },
             });
-            return userDoc;
+            return existingUser;
           }
 
           const created = await strapi.service('plugin::users-permissions.user').add({
@@ -54,14 +52,14 @@ export default {
             role: roleId,
           });
 
-          await strapi.documents('plugin::users-permissions.user').update({
-            documentId: created.documentId,
+          await strapi.db.query('plugin::users-permissions.user').update({
+            where: { id: created.id },
             data: {
               handle: creator.handle,
               avatarUrl: creator.avatarUrl,
               bio: creator.bio,
               subscribersCount: creator.subscribersCount,
-            } as any,
+            },
           });
           return created;
         } catch (e) {
@@ -300,7 +298,7 @@ export default {
         ];
 
         for (const item of seedItems) {
-          const authorId = item.creator?.id;
+          const authorId = item.creator?.documentId || item.creator?.id;
 
           const createdDe = await strapi.documents('api::feed-item.feed-item').create({
             data: {
