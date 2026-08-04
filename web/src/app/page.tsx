@@ -851,7 +851,7 @@ export default function OmniApp() {
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
                   >
                     <Sliders className="h-4 w-4 text-[#44e2cd]" />
-                    <span>Kanal-Profil bearbeiten</span>
+                    <span>{lang === 'de' ? 'Einstellungen' : 'Settings'}</span>
                   </button>
 
                   <button
@@ -1690,14 +1690,22 @@ export default function OmniApp() {
                 <Sliders className="h-5 w-5 text-[#44e2cd]" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white leading-tight">Kanal-Profil bearbeiten</h2>
-                <p className="text-xs text-[#5c657d]">Passe deine öffentlichen Kanal-Informationen an</p>
+                <h2 className="text-lg font-bold text-white leading-tight">
+                  {lang === 'de' ? 'Einstellungen' : 'Settings'}
+                </h2>
+                <p className="text-xs text-[#5c657d]">
+                  {lang === 'de'
+                    ? 'Verwalte deinen Benutzernamen, Kanal-Slug (@handle), Beschreibung (Bio) & Profilbild.'
+                    : 'Manage your username, channel slug (@handle), description (bio) & avatar.'}
+                </p>
               </div>
             </div>
 
             <form noValidate onSubmit={handleSaveProfile} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Anzeigename</label>
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+                  {lang === 'de' ? 'Benutzername / Anzeigename' : 'Username / Display Name'}
+                </label>
                 <input
                   type="text"
                   value={editProfileForm.username}
@@ -1708,7 +1716,9 @@ export default function OmniApp() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Kanal-Handle / Slug (@-Name)</label>
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+                  {lang === 'de' ? 'Kanal-Handle / Slug (@-Kürzel für Chat)' : 'Channel Handle / Slug (@-mention)'}
+                </label>
                 <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white">
                   <span className="text-[#8083ff] font-mono font-bold mr-1">@</span>
                   <input
@@ -1722,7 +1732,9 @@ export default function OmniApp() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Profilbild (Avatar URL)</label>
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+                  {lang === 'de' ? 'Profilbild (Avatar URL)' : 'Avatar Image URL'}
+                </label>
                 <input
                   type="text"
                   value={editProfileForm.avatarUrl}
@@ -1733,12 +1745,14 @@ export default function OmniApp() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Kanal-Beschreibung (Bio)</label>
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+                  {lang === 'de' ? 'Kanal-Beschreibung (Description / Bio)' : 'Channel Description (Bio)'}
+                </label>
                 <textarea
                   rows={3}
                   value={editProfileForm.bio}
                   onChange={(e) => setEditProfileForm({ ...editProfileForm, bio: e.target.value })}
-                  placeholder="Beschreibe deinen Kanal und deine Inhalte..."
+                  placeholder={lang === 'de' ? 'Beschreibe deinen Kanal und deine Inhalte...' : 'Describe your channel and content...'}
                   className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none resize-none"
                 />
               </div>
@@ -1748,7 +1762,7 @@ export default function OmniApp() {
                 className="mt-2 bg-[#44e2cd] hover:bg-[#34c4b2] text-[#080e1e] font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#44e2cd]/20 flex items-center justify-center gap-2"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Kanal-Profil speichern</span>
+                <span>{lang === 'de' ? 'Einstellungen speichern' : 'Save Settings'}</span>
               </button>
             </form>
           </div>
