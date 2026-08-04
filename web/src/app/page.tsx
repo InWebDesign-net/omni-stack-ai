@@ -36,9 +36,21 @@ import {
   LogIn,
   TrendingUp,
   ChevronRight,
+  ChevronDown,
   ExternalLink,
   Users,
 } from 'lucide-react';
+
+interface UserProfileSession {
+  id: number;
+  username: string;
+  email: string;
+  handle: string;
+  avatarUrl: string;
+  bio: string;
+  subscribersCount: number;
+  jwt?: string;
+}
 
 interface ChannelAuthor {
   id?: number;
@@ -242,9 +254,25 @@ export default function OmniApp() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; email: string; jwt?: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfileSession | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [regForm, setRegForm] = useState({ username: '', email: '', password: '', bio: '' });
   const [loginForm, setLoginForm] = useState({ identifier: '', password: '' });
+
+  // User Channel Management Modals State
+  const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({ username: '', handle: '', avatarUrl: '', bio: '' });
+
+  const [createItemModalOpen, setCreateItemModalOpen] = useState(false);
+  const [createItemForm, setCreateItemForm] = useState({
+    title: '',
+    summary: '',
+    content: '',
+    mediaType: 'video' as 'video' | 'pdf' | 'article' | 'short',
+    mediaUrl: '',
+    thumbnailUrl: '',
+    tags: '',
+  });
 
   // AI Prompt / Chat Mask State
   const [chatInput, setChatInput] = useState('');
@@ -401,10 +429,15 @@ export default function OmniApp() {
         return;
       }
 
-      const userData = {
+      const rawHandle = data.user.handle || `@${data.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      const userData: UserProfileSession = {
         id: data.user.id,
         username: data.user.username,
         email: data.user.email,
+        handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
+        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        bio: data.user.bio || (regForm.bio.trim() || 'Creator & Content Publisher im Omni Network.'),
+        subscribersCount: data.user.subscribersCount || 0,
         jwt: data.jwt,
       };
 
@@ -453,10 +486,15 @@ export default function OmniApp() {
         return;
       }
 
-      const userData = {
+      const rawHandle = data.user.handle || `@${data.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      const userData: UserProfileSession = {
         id: data.user.id,
         username: data.user.username,
         email: data.user.email,
+        handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
+        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        bio: data.user.bio || 'Creator & Content Publisher im Omni Network.',
+        subscribersCount: data.user.subscribersCount || 12500,
         jwt: data.jwt,
       };
 
@@ -473,6 +511,78 @@ export default function OmniApp() {
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('omni_user');
+  };
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    const formattedHandle = editProfileForm.handle.trim().startsWith('@')
+      ? editProfileForm.handle.trim()
+      : `@${editProfileForm.handle.trim().toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+
+    const updatedUser: UserProfileSession = {
+      ...currentUser,
+      username: editProfileForm.username.trim() || currentUser.username,
+      handle: formattedHandle || currentUser.handle,
+      avatarUrl: editProfileForm.avatarUrl.trim() || currentUser.avatarUrl,
+      bio: editProfileForm.bio.trim() || currentUser.bio,
+    };
+
+    setCurrentUser(updatedUser);
+    localStorage.setItem('omni_user', JSON.stringify(updatedUser));
+    setEditProfileModalOpen(false);
+  };
+
+  const handleCreateFeedItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    if (!createItemForm.title.trim()) return;
+
+    const parsedTags = createItemForm.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
+    const defaultTags = parsedTags.length > 0 ? parsedTags : ['Tech', 'Community'];
+
+    const newItem: FeedItem = {
+      id: Date.now(),
+      title: createItemForm.title.trim(),
+      slug: createItemForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      summary: createItemForm.summary.trim() || 'Neuer Inhalt im Omni Network.',
+      content: createItemForm.content.trim() || createItemForm.summary.trim(),
+      mediaType: createItemForm.mediaType,
+      mediaUrl: createItemForm.mediaUrl.trim() || (createItemForm.mediaType === 'pdf' ? 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' : 'https://www.w3schools.com/html/mov_bbb.mp4'),
+      thumbnailUrl: createItemForm.thumbnailUrl.trim() || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80',
+      tags: defaultTags,
+      viewsCount: 1,
+      likesCount: 1,
+      publishedAt: new Date().toISOString(),
+      relevanceScore: 0.99,
+      bucketSource: 'Creator Upload',
+      slotIndex: 1,
+      author: {
+        id: currentUser.id,
+        username: currentUser.username,
+        handle: currentUser.handle,
+        avatarUrl: currentUser.avatarUrl,
+        bio: currentUser.bio,
+        subscribersCount: currentUser.subscribersCount,
+      },
+    };
+
+    setFeedItems((prev) => [newItem, ...prev]);
+    setCreateItemModalOpen(false);
+    setCreateItemForm({
+      title: '',
+      summary: '',
+      content: '',
+      mediaType: 'video',
+      mediaUrl: '',
+      thumbnailUrl: '',
+      tags: '',
+    });
   };
 
   // Handle Real AI Chat Prompt submission via Strapi & Ollama
@@ -663,20 +773,114 @@ export default function OmniApp() {
             </span>
           </button>
 
-          {/* Auth */}
+          {/* Auth User Profile Dropdown */}
           {currentUser ? (
-            <div className="flex items-center gap-2.5 bg-[#121a30] border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white">
-              <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-[#8083ff] to-[#44e2cd] flex items-center justify-center text-[10px] font-bold text-white">
-                {currentUser.username[0]?.toUpperCase()}
-              </div>
-              <span className="font-semibold">{currentUser.username}</span>
+            <div className="relative z-50">
               <button
-                onClick={handleLogout}
-                className="text-[#5c657d] hover:text-red-400 ml-0.5 transition-colors"
-                title="Abmelden"
+                type="button"
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-2.5 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-1.5 rounded-xl text-xs text-white transition-all group"
               >
-                <LogOut className="h-3.5 w-3.5" />
+                <img
+                  src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+                  alt={currentUser.username}
+                  className="h-6 w-6 rounded-full object-cover border border-white/15 shrink-0"
+                />
+                <div className="flex flex-col text-left hidden sm:flex">
+                  <span className="font-semibold text-[#dae2fd] text-[11px] leading-tight group-hover:text-white">
+                    {currentUser.username}
+                  </span>
+                  <span className="text-[9px] text-[#8083ff] font-mono font-bold leading-none">
+                    {currentUser.handle}
+                  </span>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 text-[#5c657d] group-hover:text-white transition-transform" />
               </button>
+
+              {/* Popover Menu */}
+              {userDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-[#0d1528] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      openChannelModal({
+                        id: 0,
+                        title: '',
+                        slug: '',
+                        summary: '',
+                        content: '',
+                        mediaType: 'article',
+                        mediaUrl: '',
+                        thumbnailUrl: '',
+                        tags: [],
+                        viewsCount: 0,
+                        likesCount: 0,
+                        publishedAt: '',
+                        relevanceScore: 1,
+                        bucketSource: '',
+                        slotIndex: 0,
+                        author: {
+                          id: currentUser.id,
+                          username: currentUser.username,
+                          handle: currentUser.handle,
+                          avatarUrl: currentUser.avatarUrl,
+                          bio: currentUser.bio,
+                          subscribersCount: currentUser.subscribersCount,
+                        },
+                      });
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                  >
+                    <Tv className="h-4 w-4 text-[#8083ff]" />
+                    <span>Mein Kanal ({currentUser.handle})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      setEditProfileForm({
+                        username: currentUser.username,
+                        handle: currentUser.handle.replace(/^@/, ''),
+                        avatarUrl: currentUser.avatarUrl,
+                        bio: currentUser.bio,
+                      });
+                      setEditProfileModalOpen(true);
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                  >
+                    <Sliders className="h-4 w-4 text-[#44e2cd]" />
+                    <span>Kanal-Profil bearbeiten</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      setCreateItemModalOpen(true);
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                  >
+                    <Sparkles className="h-4 w-4 text-[#ffb783]" />
+                    <span>Neuen Beitrag erstellen</span>
+                  </button>
+
+                  <div className="my-1 border-t border-white/5" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all text-left"
+                  >
+                    <LogOut className="h-4 w-4 text-red-400" />
+                    <span>Abmelden</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <button
@@ -1466,6 +1670,182 @@ export default function OmniApp() {
                   ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Profile Modal ────────────────────────────────────────────────── */}
+      {editProfileModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[#0d1528] border border-white/10 max-w-lg w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp">
+            <button
+              onClick={() => setEditProfileModalOpen(false)}
+              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-[#44e2cd]/10 border border-[#44e2cd]/20 flex items-center justify-center">
+                <Sliders className="h-5 w-5 text-[#44e2cd]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white leading-tight">Kanal-Profil bearbeiten</h2>
+                <p className="text-xs text-[#5c657d]">Passe deine öffentlichen Kanal-Informationen an</p>
+              </div>
+            </div>
+
+            <form noValidate onSubmit={handleSaveProfile} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Anzeigename</label>
+                <input
+                  type="text"
+                  value={editProfileForm.username}
+                  onChange={(e) => setEditProfileForm({ ...editProfileForm, username: e.target.value })}
+                  placeholder="z.B. Max Mustermann"
+                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Kanal-Handle / Slug (@-Name)</label>
+                <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white">
+                  <span className="text-[#8083ff] font-mono font-bold mr-1">@</span>
+                  <input
+                    type="text"
+                    value={editProfileForm.handle}
+                    onChange={(e) => setEditProfileForm({ ...editProfileForm, handle: e.target.value })}
+                    placeholder="maxtech"
+                    className="bg-transparent w-full focus:outline-none text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Profilbild (Avatar URL)</label>
+                <input
+                  type="text"
+                  value={editProfileForm.avatarUrl}
+                  onChange={(e) => setEditProfileForm({ ...editProfileForm, avatarUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Kanal-Beschreibung (Bio)</label>
+                <textarea
+                  rows={3}
+                  value={editProfileForm.bio}
+                  onChange={(e) => setEditProfileForm({ ...editProfileForm, bio: e.target.value })}
+                  placeholder="Beschreibe deinen Kanal und deine Inhalte..."
+                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="mt-2 bg-[#44e2cd] hover:bg-[#34c4b2] text-[#080e1e] font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#44e2cd]/20 flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Kanal-Profil speichern</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Create New Feed Item Modal ───────────────────────────────────────── */}
+      {createItemModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[#0d1528] border border-white/10 max-w-xl w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp">
+            <button
+              onClick={() => setCreateItemModalOpen(false)}
+              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-[#ffb783]/10 border border-[#ffb783]/20 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-[#ffb783]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white leading-tight">Neuen Beitrag veröffentlichen</h2>
+                <p className="text-xs text-[#5c657d]">Erstelle neuen Content für deinen Kanal ({currentUser?.handle})</p>
+              </div>
+            </div>
+
+            <form noValidate onSubmit={handleCreateFeedItem} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Titel des Beitrags</label>
+                <input
+                  type="text"
+                  required
+                  value={createItemForm.title}
+                  onChange={(e) => setCreateItemForm({ ...createItemForm, title: e.target.value })}
+                  placeholder="z.B. PostgreSQL Vektor-Suche in Next.js 15"
+                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Medienform</label>
+                  <select
+                    value={createItemForm.mediaType}
+                    onChange={(e) => setCreateItemForm({ ...createItemForm, mediaType: e.target.value as any })}
+                    className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none cursor-pointer"
+                  >
+                    <option value="video">📹 Video</option>
+                    <option value="pdf">📄 PDF Dokument</option>
+                    <option value="article">✍️ Artikel</option>
+                    <option value="short">⚡ Short</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Themen / Tags</label>
+                  <input
+                    type="text"
+                    value={createItemForm.tags}
+                    onChange={(e) => setCreateItemForm({ ...createItemForm, tags: e.target.value })}
+                    placeholder="PostgreSQL, Tech, NextJS"
+                    className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Kurzzusammenfassung (Summary)</label>
+                <input
+                  type="text"
+                  value={createItemForm.summary}
+                  onChange={(e) => setCreateItemForm({ ...createItemForm, summary: e.target.value })}
+                  placeholder="Kompakter Überblick über das Thema..."
+                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Vorschaubild (Thumbnail URL)</label>
+                <input
+                  type="text"
+                  value={createItemForm.thumbnailUrl}
+                  onChange={(e) => setCreateItemForm({ ...createItemForm, thumbnailUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Beitrag auf Kanal veröffentlichen</span>
+              </button>
+            </form>
           </div>
         </div>
       )}
