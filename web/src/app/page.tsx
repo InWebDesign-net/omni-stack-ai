@@ -167,6 +167,32 @@ function MediaTypeBadge({ type }: { type: FeedItem['mediaType'] }) {
   );
 }
 
+// ─── Vector Flag Icons ────────────────────────────────────────────────────────
+function GermanFlag({ className = "w-4 h-3" }: { className?: string }) {
+  return (
+    <svg className={`${className} rounded-[2px] overflow-hidden shrink-0 shadow-sm`} viewBox="0 0 640 480" aria-hidden="true">
+      <rect width="640" height="160" fill="#000000" />
+      <rect y="160" width="640" height="160" fill="#DD0000" />
+      <rect y="320" width="640" height="160" fill="#FFCE00" />
+    </svg>
+  );
+}
+
+function UKFlag({ className = "w-4 h-3" }: { className?: string }) {
+  return (
+    <svg className={`${className} rounded-[2px] overflow-hidden shrink-0 shadow-sm`} viewBox="0 0 60 30" aria-hidden="true">
+      <clipPath id="gb-s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+      <clipPath id="gb-t"><path d="M30,15 H0 V0 z M30,15 V0 h30 z M30,15 h30 v15 z M30,15 v15 H0 z"/></clipPath>
+      <g clipPath="url(#gb-s)">
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="4" clipPath="url(#gb-t)"/>
+        <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10"/>
+        <path d="M30,0 v30 M0,15 h60" stroke="#cf142b" strokeWidth="6"/>
+      </g>
+    </svg>
+  );
+}
+
 export default function OmniApp() {
   const [lang, setLang] = useState<'de' | 'en'>('de');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -557,9 +583,9 @@ export default function OmniApp() {
             title={lang === 'de' ? 'Sprache auf Englisch wechseln' : 'Switch language to German'}
             className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all duration-200 shadow-sm active:scale-95 group"
           >
-            <span className="text-base leading-none group-hover:scale-110 transition-transform">
-              {lang === 'de' ? '🇩🇪' : '🇬🇧'}
-            </span>
+            <div className="group-hover:scale-110 transition-transform">
+              {lang === 'de' ? <GermanFlag className="w-4 h-3" /> : <UKFlag className="w-4 h-3" />}
+            </div>
             <span className="text-xs font-extrabold tracking-wide text-[#dae2fd]">
               {lang === 'de' ? 'DE' : 'EN'}
             </span>
