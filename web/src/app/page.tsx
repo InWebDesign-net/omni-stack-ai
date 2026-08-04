@@ -241,68 +241,48 @@ export default function OmniApp() {
     localStorage.removeItem('omni_user');
   };
 
-  // Handle AI Chat Prompt submission
+  // Handle Real AI Chat Prompt submission via Strapi & Ollama
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
+    const promptText = chatInput.trim();
+    if (!promptText) return;
 
     setIsAiProcessing(true);
     setAiReasoning(
       lang === 'de'
-        ? '🤖 Omni KI analysiert deine Anfrage & richtet den Feed neu aus...'
-        : '🤖 Omni AI analyzing prompt & adjusting feed assembly...'
+        ? '🤖 Ollama LLM (10.0.0.6:11434) analysiert Intent & berechnet Vektoren...'
+        : '🤖 Ollama LLM (10.0.0.6:11434) analyzing intent & computing vectors...'
     );
 
-    setTimeout(() => {
-      const lower = chatInput.toLowerCase();
-      const updated = { ...profile };
+    try {
+      const res = await fetch('/api/ai-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: promptText,
+          currentProfile: profile,
+        }),
+      });
 
-      if (lower.includes('pdf') || lower.includes('doku') || lower.includes('wissen') || lower.includes('astro')) {
-        updated.contentTypes.pdf = 1.0;
-        updated.contentTypes.video = 0.4;
-        updated.interests['Wissenschaft'].score = 0.99;
-        updated.interests['PostgreSQL'].score = 0.95;
-        updated.activePattern = 'deep_dive';
-        setAiReasoning(
-          lang === 'de'
-            ? '✨ KI-Fokus: "Wissenschaft & PDF Deep Dive" aktiviert. PDF-Gewichtung maximiert.'
-            : '✨ AI Focus: "Science & PDF Deep Dive" activated. PDF weight maximized.'
-        );
-      } else if (lower.includes('kochen') || lower.includes('essen') || lower.includes('pasta') || lower.includes('rezept')) {
-        updated.interests['Kochen'].score = 0.99;
-        updated.contentTypes.video = 1.0;
-        updated.activePattern = 'discovery';
-        setAiReasoning(
-          lang === 'de'
-            ? '🍳 KI-Fokus: Kulinarik & Rezepte! Kochen Vektor auf 0.99 angehoben.'
-            : '🍳 AI Focus: Culinary & Recipes! Cooking vector set to 0.99.'
-        );
-      } else if (lower.includes('cat') || lower.includes('katz') || lower.includes('humor') || lower.includes('tiere') || lower.includes('fun')) {
-        updated.interests['Funny Cat Videos'].score = 0.99;
-        updated.interests['Natur'].score = 0.90;
-        updated.contentTypes.short = 1.0;
-        updated.activePattern = 'discovery';
-        setAiReasoning(
-          lang === 'de'
-            ? '🐱 KI-Fokus: Entertainment & Tiere! Cat Videos auf 0.99 maximiert.'
-            : '🐱 AI Focus: Entertainment & Animals! Cat Videos maximized.'
-        );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.updatedProfile) {
+          setProfile(data.updatedProfile);
+          fetchFeed(data.updatedProfile);
+        }
+        if (data.aiExplanation) {
+          setAiReasoning(data.aiExplanation);
+        }
       } else {
-        updated.interests['NextJS'].score = 0.98;
-        updated.interests['Strapi'].score = 0.92;
-        updated.activePattern = 'deep_dive';
-        setAiReasoning(
-          lang === 'de'
-            ? '🚀 KI-Fokus: Web Architecture & Dev Tutorials aktiviert.'
-            : '🚀 AI Focus: Web Architecture & Dev Tutorials activated.'
-        );
+        setAiReasoning(lang === 'de' ? '⚠️ KI-Verbindungsfehler.' : '⚠️ AI connection error.');
       }
-
-      setProfile(updated);
-      fetchFeed(updated);
+    } catch (err: any) {
+      console.error('AI Intent submit error:', err);
+      setAiReasoning(lang === 'de' ? '⚠️ Fehler bei KI-Verarbeitung.' : '⚠️ Error in AI processing.');
+    } finally {
       setIsAiProcessing(false);
       setChatInput('');
-    }, 500);
+    }
   };
 
   const updateInterestScore = (topic: string, newScore: number) => {
