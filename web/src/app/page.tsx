@@ -424,18 +424,18 @@ export default function OmniApp() {
     <div className="min-h-screen bg-mesh text-[#dae2fd] flex flex-col font-sans">
 
       {/* ── Top Header ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-5 sm:px-6 h-14 flex items-center justify-between gap-4"
+      <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-3 sm:px-4 h-14 flex items-center justify-between gap-4"
         style={{ boxShadow: '0 1px 0 rgba(128,131,255,0.10), 0 4px 16px -4px rgba(8,14,30,0.80)' }}>
 
         {/* Brand & Menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
+            className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
             title="Menu"
             aria-label="Toggle sidebar"
           >
-            <Menu className="h-4.5 w-4.5" />
+            <Menu className="h-5 w-5" />
           </button>
 
           <a href="#" className="flex items-center gap-3 group select-none">
@@ -610,15 +610,20 @@ export default function OmniApp() {
         {/* ── Left Sidebar ──────────────────────────────────────────────────── */}
         <aside
           className={`${
-            sidebarOpen ? 'w-60' : 'w-[60px]'
-          } shrink-0 bg-[#080e1e] border-r border-white/5 flex flex-col gap-1 transition-all duration-300 hidden sm:flex sticky top-14 h-[calc(100vh-56px)] overflow-y-auto custom-scrollbar z-20 pt-4 pb-6`}
+            sidebarOpen ? 'w-60' : 'w-16'
+          } shrink-0 bg-[#080e1e] border-r border-white/5 flex flex-col gap-1 transition-all duration-300 hidden sm:flex sticky top-14 h-[calc(100vh-56px)] overflow-y-auto custom-scrollbar z-20 pt-3 pb-4`}
         >
           {/* Navigation */}
-          <nav className="flex flex-col gap-0.5 px-2.5">
+          <nav className="flex flex-col gap-1 px-2">
             {sideNavItems.map((item, i) => (
               <button
                 key={i}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm ${
+                title={!sidebarOpen ? item.label : undefined}
+                className={`flex items-center transition-all duration-200 text-sm rounded-xl ${
+                  sidebarOpen
+                    ? 'gap-3 px-3.5 py-2.5 w-full text-left'
+                    : 'w-10 h-10 justify-center mx-auto'
+                } ${
                   item.active
                     ? 'nav-item-active font-semibold'
                     : 'text-[#5c657d] hover:bg-white/4 hover:text-[#9ba4bf]'
@@ -630,11 +635,11 @@ export default function OmniApp() {
             ))}
           </nav>
 
-          <div className="mx-3 my-3 border-t border-white/5" />
+          <div className="mx-3 my-2 border-t border-white/5" />
 
           {/* Topics */}
-          {sidebarOpen && (
-            <div className="flex flex-col gap-1 px-2.5">
+          {sidebarOpen ? (
+            <div className="flex flex-col gap-1 px-2">
               <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5c657d] mb-1">
                 {lang === 'de' ? 'Themen' : 'Topics'}
               </p>
@@ -642,9 +647,9 @@ export default function OmniApp() {
                 <button
                   key={idx}
                   onClick={() => setSelectedTag(cat.tag)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm text-left ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm text-left ${
                     selectedTag === cat.tag
-                      ? 'text-white bg-white/6 border border-white/8'
+                      ? 'text-white bg-white/6 border border-white/8 font-semibold'
                       : 'text-[#5c657d] hover:bg-white/4 hover:text-[#9ba4bf]'
                   }`}
                 >
@@ -653,17 +658,14 @@ export default function OmniApp() {
                 </button>
               ))}
             </div>
-          )}
-
-          {/* Collapsed icons */}
-          {!sidebarOpen && (
-            <div className="flex flex-col gap-0.5 px-2.5">
+          ) : (
+            <div className="flex flex-col gap-1 px-2">
               {sideTopics.map((cat, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedTag(cat.tag)}
                   title={cat.label}
-                  className={`flex items-center justify-center py-2.5 rounded-xl transition-all duration-200 ${
+                  className={`w-10 h-10 mx-auto flex items-center justify-center rounded-xl transition-all duration-200 ${
                     selectedTag === cat.tag ? 'bg-white/6 text-[#44e2cd]' : 'text-[#5c657d] hover:bg-white/4 hover:text-[#9ba4bf]'
                   }`}
                 >
@@ -674,7 +676,7 @@ export default function OmniApp() {
           )}
 
           {/* Sidebar Footer */}
-          <div className="mt-auto px-3 pt-3 border-t border-white/5 flex flex-col gap-1 text-[11px]">
+          <div className="mt-auto px-2 pt-2 border-t border-white/5 flex flex-col gap-1 text-[11px]">
             {sidebarOpen ? (
               <div className="bg-[#0d1528] border border-white/6 p-3 rounded-2xl flex flex-col gap-1">
                 <div className="flex items-center justify-between">
@@ -696,7 +698,7 @@ export default function OmniApp() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="InWebDesign.net"
-                className="flex items-center justify-center p-2 rounded-xl text-[#8083ff] hover:bg-white/5 transition-colors"
+                className="w-10 h-10 mx-auto flex items-center justify-center rounded-xl text-[#8083ff] hover:bg-white/5 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
               </a>
