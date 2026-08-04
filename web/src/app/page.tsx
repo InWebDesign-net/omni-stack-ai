@@ -303,6 +303,13 @@ export default function OmniApp() {
     }
   }, []);
 
+  // Synchronize html lang attribute for SEO crawlers
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
   const toggleLanguage = () => {
     const nextLang = lang === 'de' ? 'en' : 'de';
     setLang(nextLang);
@@ -874,6 +881,12 @@ export default function OmniApp() {
 
         {/* ── Center Content ────────────────────────────────────────────────── */}
         <main className="flex-1 p-5 sm:p-7 lg:p-8 flex flex-col gap-7 min-w-0">
+
+          <h1 className="sr-only">
+            {lang === 'de'
+              ? 'Omni - Hyper-Personalisiertes KI Mediennetzwerk BY INWEBDESIGN'
+              : 'Omni - Hyper-Personalized AI Media Network BY INWEBDESIGN'}
+          </h1>
 
           {/* ─ AI Chat Hero ──────────────────────────────────────────────── */}
           <section className="w-full max-w-3xl mx-auto animate-fadeInUp">

@@ -2,8 +2,105 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Omni - Hyper-Personalized Video Network',
-  description: 'Next-Gen Video Social Platform powered by Strapi, Next.js & Ollama AI',
+  metadataBase: new URL('https://omni.inwebdesign.net'),
+  title: {
+    default: 'Omni - Hyper-Personalized AI Media Network | BY INWEBDESIGN',
+    template: '%s | Omni Network',
+  },
+  description:
+    'Omni ist das KI-gestützte, hyper-personalisierte Mediennetzwerk von InWebDesign. Entdecke maßgeschneiderte Videos, Dokumentationen, wissenschaftliche PDFs und Artikel in Echtzeit mit Ollama LLM Vektor-Personalisierung.',
+  keywords: [
+    'Omni',
+    'InWebDesign',
+    'KI Mediennetzwerk',
+    'Hyper-Personalized Feed',
+    'Ollama AI',
+    'Wissenschaft PDFs',
+    'Dokumentationen',
+    'Tech Tutorials',
+    'NextJS 15',
+    'Strapi v5',
+    'PostgreSQL Vector Search',
+    'BY INWEBDESIGN',
+  ],
+  authors: [{ name: 'InWebDesign', url: 'https://inwebdesign.net' }],
+  creator: 'InWebDesign',
+  publisher: 'InWebDesign',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: 'https://omni.inwebdesign.net',
+    languages: {
+      'de-DE': 'https://omni.inwebdesign.net?lang=de',
+      'en-US': 'https://omni.inwebdesign.net?lang=en',
+    },
+  },
+  openGraph: {
+    title: 'Omni - Hyper-Personalized AI Media Network | BY INWEBDESIGN',
+    description:
+      'Next-Gen KI-gestützte Content-Plattform mit Echtzeit-Vektor-Personalisierung, Kanal-Profilen und lokaler LLM-Intents-Steuerung.',
+    url: 'https://omni.inwebdesign.net',
+    siteName: 'Omni BY INWEBDESIGN',
+    locale: 'de_DE',
+    type: 'website',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&h=630&q=80',
+        width: 1200,
+        height: 630,
+        alt: 'Omni Media Network Preview',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Omni - Hyper-Personalized AI Media Network | BY INWEBDESIGN',
+    description:
+      'Entdecke KI-personalisierte Videos, Artikel & PDFs in Echtzeit. Powered by InWebDesign.',
+    creator: '@InWebDesign',
+    images: ['https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&h=630&q=80'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+
+const jsonLdWebsite = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Omni BY INWEBDESIGN',
+  url: 'https://omni.inwebdesign.net',
+  description: 'Hyper-Personalized AI Media Network powered by Strapi, Next.js & Ollama AI',
+  publisher: {
+    '@type': 'Organization',
+    name: 'InWebDesign',
+    url: 'https://inwebdesign.net',
+  },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://omni.inwebdesign.net/?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const jsonLdOrganization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'InWebDesign',
+  url: 'https://inwebdesign.net',
+  logo: 'https://omni.inwebdesign.net/icon.png',
+  sameAs: ['https://inwebdesign.net'],
 };
 
 export default function RootLayout({
@@ -19,6 +116,14 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
         />
       </head>
       <body className="antialiased bg-[#0b1326] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white">
