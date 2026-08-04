@@ -272,66 +272,119 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     let aiExplanation = '';
     let ollamaConnected = false;
 
-    try {
-      // Attempt connection to local Ollama API
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const ollamaUrl = process.env.OLLAMA_URL || 'http://10.0.0.6:11434/v1/chat/completions';
+    const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.1:latest';
 
-      const res = await fetch('http://127.0.0.1:11434/api/generate', {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+      const systemPrompt = `You are the Omni AI Algorithm Optimizer. Your job is to parse natural language user intent and return a JSON object with vector score updates.
+Existing Topics: Wissenschaft, Natur, Kochen, Finanzen, PostgreSQL, Strapi, NextJS, Ollama, Funny Cat Videos.
+Existing Formats: pdf, video, article, short.
+Patterns: discovery, deep_dive.
+
+CRITICAL: Return JSON ONLY in this format:
+{
+  "response": "Brief German explanation (1 sentence)",
+  "vector": {
+    "interests": { "Wissenschaft": { "score": 0.99 } },
+    "contentTypes": { "pdf": 1.0, "video": 0.4 },
+    "activePattern": "deep_dive"
+  }
+}`;
+
+      const res = await fetch(ollamaUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'llama3',
-          prompt: `You are an AI algorithm optimizer. Update interest scores (0.0 to 1.0) and content type weights based on user prompt: "${prompt}". Respond with JSON only.`,
-          stream: false,
+          model: ollamaModel,
+          temperature: 0.2,
+          max_tokens: 300,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt },
+          ],
         }),
       });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data: any = await res.json();
-        aiExplanation = `Ollama Local Inference: ${data.response?.slice(0, 150)}...`;
+        const rawContent = data.choices?.[0]?.message?.content || '{}';
+        const parsed = JSON.parse(rawContent);
+
+        if (parsed.response) {
+          aiExplanation = `🤖 Ollama (${ollamaModel}): ${parsed.response}`;
+        }
+
+        if (parsed.vector) {
+          if (parsed.vector.interests) {
+            Object.keys(parsed.vector.interests).forEach((t) => {
+              const item = parsed.vector.interests[t];
+              const scoreVal = typeof item === 'number' ? item : item.score;
+              if (updatedProfile.interests[t]) {
+                updatedProfile.interests[t].score = Math.min(1.0, Math.max(0.0, scoreVal));
+                updatedProfile.interests[t].last_interacted = new Date().toISOString();
+              } else {
+                updatedProfile.interests[t] = { score: scoreVal, last_interacted: new Date().toISOString() };
+              }
+            });
+          }
+
+          if (parsed.vector.contentTypes) {
+            Object.keys(parsed.vector.contentTypes).forEach((ct) => {
+              updatedProfile.contentTypes[ct] = Math.min(1.0, Math.max(0.0, parsed.vector.contentTypes[ct]));
+            });
+          }
+
+          if (parsed.vector.activePattern) {
+            updatedProfile.activePattern = parsed.vector.activePattern;
+          }
+        }
         ollamaConnected = true;
       }
     } catch (e) {
-      // Ollama offline / fallback
+      // Ollama offline / public open-source fallback
     }
 
-    // Smart Intent Processor fallback
-    const lowerPrompt = prompt.toLowerCase();
+    // Open-Source Smart Intent Processor fallback if Ollama offline
+    if (!ollamaConnected) {
+      const lowerPrompt = prompt.toLowerCase();
 
-    if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('tech')) {
-      updatedProfile.contentTypes.pdf = 1.0;
-      updatedProfile.contentTypes.video = 0.2;
-      updatedProfile.interests['PostgreSQL'].score = 0.98;
-      updatedProfile.interests['Ollama'].score = 0.95;
-      updatedProfile.activePattern = 'deep_dive';
-      if (!ollamaConnected) {
-        aiExplanation = 'KI-Agent hat "Tech-PDF Focus & Deep Dive" erkannt: PDF-Gewichtung auf 1.0 gesetzt, PostgreSQL & Ollama fokussiert, Feed-Muster auf Deep Dive umgestellt.';
-      }
-    } else if (lowerPrompt.includes('video') || lowerPrompt.includes('tutorial') || lowerPrompt.includes('nextjs')) {
-      updatedProfile.contentTypes.video = 1.0;
-      updatedProfile.interests['NextJS'].score = 0.99;
-      updatedProfile.interests['Strapi'].score = 0.90;
-      updatedProfile.activePattern = 'deep_dive';
-      if (!ollamaConnected) {
-        aiExplanation = 'KI-Agent hat "NextJS Video Focus" erkannt: Video-Gewichtung auf 1.0 angehoben, NextJS Score auf 0.99 maximiert.';
-      }
-    } else if (lowerPrompt.includes('cat') || lowerPrompt.includes('katze') || lowerPrompt.includes('humor') || lowerPrompt.includes('fun')) {
-      updatedProfile.interests['Funny Cat Videos'].score = 0.95;
-      updatedProfile.contentTypes.short = 1.0;
-      updatedProfile.activePattern = 'discovery';
-      if (!ollamaConnected) {
-        aiExplanation = 'KI-Agent hat "Entertainment / Cat Videos" erkannt: Funny Cat Videos Score von 0.15 auf 0.95 angehoben.';
-      }
-    } else {
-      // Generic adjustment
-      updatedProfile.interests['PostgreSQL'].score = 0.90;
-      updatedProfile.interests['Strapi'].score = 0.88;
-      updatedProfile.interests['NextJS'].score = 0.92;
-      if (!ollamaConnected) {
-        aiExplanation = `KI-Agent hat Benutzerwunsch verarbeitet ("${prompt}"): Interessenvektoren harmonisiert.`;
+      const setScore = (topic: string, scoreVal: number) => {
+        if (updatedProfile.interests[topic]) {
+          updatedProfile.interests[topic].score = scoreVal;
+          updatedProfile.interests[topic].last_interacted = new Date().toISOString();
+        } else {
+          updatedProfile.interests[topic] = { score: scoreVal, last_interacted: new Date().toISOString() };
+        }
+      };
+
+      if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('wissen') || lowerPrompt.includes('astro')) {
+        updatedProfile.contentTypes.pdf = 1.0;
+        updatedProfile.contentTypes.video = 0.4;
+        setScore('Wissenschaft', 0.99);
+        setScore('PostgreSQL', 0.95);
+        updatedProfile.activePattern = 'deep_dive';
+        aiExplanation = '⚡ Open-Source Intent Engine: "Wissenschaft & PDF Deep Dive" erkannt.';
+      } else if (lowerPrompt.includes('kochen') || lowerPrompt.includes('essen') || lowerPrompt.includes('pasta') || lowerPrompt.includes('rezept')) {
+        setScore('Kochen', 0.99);
+        updatedProfile.contentTypes.video = 1.0;
+        updatedProfile.activePattern = 'discovery';
+        aiExplanation = '🍳 Open-Source Intent Engine: "Kulinarik & Rezepte" erkannt.';
+      } else if (lowerPrompt.includes('cat') || lowerPrompt.includes('katz') || lowerPrompt.includes('humor') || lowerPrompt.includes('tiere') || lowerPrompt.includes('fun')) {
+        setScore('Funny Cat Videos', 0.99);
+        setScore('Natur', 0.90);
+        updatedProfile.contentTypes.short = 1.0;
+        updatedProfile.activePattern = 'discovery';
+        aiExplanation = '🐱 Open-Source Intent Engine: "Entertainment Mode" erkannt.';
+      } else {
+        setScore('NextJS', 0.98);
+        setScore('Strapi', 0.92);
+        updatedProfile.activePattern = 'deep_dive';
+        aiExplanation = `⚡ Open-Source Intent Engine: Vektoren für "${prompt}" angepasst.`;
       }
     }
 
