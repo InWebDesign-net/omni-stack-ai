@@ -193,7 +193,7 @@ export default function OmniApp() {
   // Media Player Modal
   const [selectedMedia, setSelectedMedia] = useState<FeedItem | null>(null);
 
-  // Check stored auth session on mount
+  // Check stored auth session & language preference on mount
   useEffect(() => {
     try {
       const savedUser = localStorage.getItem('omni_user');
@@ -201,10 +201,29 @@ export default function OmniApp() {
         const parsed = JSON.parse(savedUser);
         setCurrentUser(parsed);
       }
+
+      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en' | null;
+      if (savedLang && (savedLang === 'de' || savedLang === 'en')) {
+        setLang(savedLang);
+      } else if (typeof navigator !== 'undefined' && navigator.language) {
+        if (navigator.language.toLowerCase().startsWith('en')) {
+          setLang('en');
+        }
+      }
     } catch (e) {
       // localStorage fallback
     }
   }, []);
+
+  const toggleLanguage = () => {
+    const nextLang = lang === 'de' ? 'en' : 'de';
+    setLang(nextLang);
+    try {
+      localStorage.setItem('omni_lang', nextLang);
+    } catch (e) {
+      // localStorage fallback
+    }
+  };
 
   // Fetch Feed from Strapi API Proxy
   const fetchFeed = async (currentProfile: InterestProfile) => {
@@ -512,7 +531,7 @@ export default function OmniApp() {
 
           {/* Language Toggle */}
           <button
-            onClick={() => setLang(lang === 'de' ? 'en' : 'de')}
+            onClick={toggleLanguage}
             className="px-3 py-2 hover:bg-white/5 rounded-xl text-xs font-bold transition-all text-[#9ba4bf] hover:text-white border border-transparent hover:border-white/8"
           >
             {lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
