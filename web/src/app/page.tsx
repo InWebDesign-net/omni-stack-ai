@@ -237,6 +237,38 @@ export default function OmniApp() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
+
+    // Custom Frontend Validation
+    const username = regForm.username.trim();
+    const email = regForm.email.trim();
+    const password = regForm.password;
+
+    if (!username) {
+      setAuthError(lang === 'de' ? 'Bitte gib einen Benutzernamen ein.' : 'Please enter a username.');
+      return;
+    }
+    if (username.length < 3) {
+      setAuthError(lang === 'de' ? 'Der Benutzername muss mindestens 3 Zeichen lang sein.' : 'Username must be at least 3 characters.');
+      return;
+    }
+    if (!email) {
+      setAuthError(lang === 'de' ? 'Bitte gib eine E-Mail-Adresse ein.' : 'Please enter an email address.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setAuthError(lang === 'de' ? 'Bitte gib eine gültige E-Mail-Adresse ein (z.B. max@example.com).' : 'Please enter a valid email address.');
+      return;
+    }
+    if (!password) {
+      setAuthError(lang === 'de' ? 'Bitte gib ein Passwort ein.' : 'Please enter a password.');
+      return;
+    }
+    if (password.length < 6) {
+      setAuthError(lang === 'de' ? 'Das Passwort muss mindestens 6 Zeichen lang sein.' : 'Password must be at least 6 characters.');
+      return;
+    }
+
     setIsAuthLoading(true);
 
     try {
@@ -275,6 +307,20 @@ export default function OmniApp() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
+
+    // Custom Frontend Validation
+    const identifier = loginForm.identifier.trim();
+    const password = loginForm.password;
+
+    if (!identifier) {
+      setAuthError(lang === 'de' ? 'Bitte gib deinen Benutzernamen oder deine E-Mail-Adresse ein.' : 'Please enter your username or email.');
+      return;
+    }
+    if (!password) {
+      setAuthError(lang === 'de' ? 'Bitte gib dein Passwort ein.' : 'Please enter your password.');
+      return;
+    }
+
     setIsAuthLoading(true);
 
     try {
@@ -718,7 +764,7 @@ export default function OmniApp() {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleChatSubmit} className="relative flex flex-col gap-3.5">
+              <form noValidate onSubmit={handleChatSubmit} className="relative flex flex-col gap-3.5">
                 <div className="relative flex items-center bg-[#080e1e]/80 border border-white/8 focus-within:border-[#8083ff]/60 focus-within:shadow-[0_0_0_3px_rgba(128,131,255,0.10)] rounded-2xl overflow-hidden transition-all duration-200">
                   <input
                     type="text"
@@ -943,7 +989,7 @@ export default function OmniApp() {
 
             {/* Register Form */}
             {authMode === 'register' ? (
-              <form onSubmit={handleRegister} className="flex flex-col gap-4">
+              <form noValidate onSubmit={handleRegister} className="flex flex-col gap-4">
                 {[
                   { key: 'username', label: 'Benutzername', type: 'text', placeholder: 'z.B. MaxMustermann', icon: User },
                   { key: 'email', label: 'E-Mail', type: 'email', placeholder: 'max@example.com', icon: Mail },
@@ -955,7 +1001,6 @@ export default function OmniApp() {
                       <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
                       <input
                         type={type}
-                        required
                         value={(regForm as any)[key]}
                         onChange={(e) => setRegForm({ ...regForm, [key]: e.target.value })}
                         placeholder={placeholder}
@@ -975,7 +1020,7 @@ export default function OmniApp() {
               </form>
             ) : (
               /* Login Form */
-              <form onSubmit={handleLogin} className="flex flex-col gap-4">
+              <form noValidate onSubmit={handleLogin} className="flex flex-col gap-4">
                 {/* Demo Quick-Login Presets */}
                 <div className="bg-[#080e1e] border border-[#8083ff]/20 p-4 rounded-2xl flex flex-col gap-3">
                   <span className="text-[11px] font-bold text-[#c0c1ff] flex items-center gap-1.5">
@@ -1017,7 +1062,6 @@ export default function OmniApp() {
                       <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
                       <input
                         type={type}
-                        required
                         value={(loginForm as any)[key]}
                         onChange={(e) => setLoginForm({ ...loginForm, [key]: e.target.value })}
                         placeholder={placeholder}
