@@ -726,7 +726,7 @@ export default function OmniApp() {
                     <p className="text-sm font-bold text-white leading-tight">
                       {lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}
                     </p>
-                    <p className="text-[10px] text-[#5c657d] leading-tight">Powered by Ollama LLM</p>
+                    <p className="text-[10px] text-[#5c657d] leading-tight">Powered by InWebDesign</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#8083ff]/12 border border-[#8083ff]/25 text-[#c0c1ff] px-2.5 py-1 rounded-full">
