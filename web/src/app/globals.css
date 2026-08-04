@@ -48,6 +48,15 @@
   * {
     box-sizing: border-box;
   }
+
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="button"] {
+    cursor: pointer;
+  }
 }
 
 /* ─── Glassmorphism Surfaces ──────────────────────────────────────────────── */
