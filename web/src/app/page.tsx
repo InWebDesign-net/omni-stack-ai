@@ -223,16 +223,17 @@ export default function OmniApp() {
     } catch (e) {
       // localStorage fallback
     }
+    fetchFeed(profile, nextLang);
   };
 
-  // Fetch Feed from Strapi API Proxy
-  const fetchFeed = async (currentProfile: InterestProfile) => {
+  // Fetch Feed from Strapi API Proxy with target locale
+  const fetchFeed = async (currentProfile: InterestProfile, currentLang = lang) => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/strapi-feed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentProfile),
+        body: JSON.stringify({ ...currentProfile, locale: currentLang }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -249,8 +250,8 @@ export default function OmniApp() {
   };
 
   useEffect(() => {
-    fetchFeed(profile);
-  }, []);
+    fetchFeed(profile, lang);
+  }, [lang]);
 
   // Handle Real Registration with Strapi API
   const handleRegister = async (e: React.FormEvent) => {
@@ -438,25 +439,49 @@ export default function OmniApp() {
     fetchFeed(updated);
   };
 
-  const filteredFeed = feedItems.filter((item) => {
-    const matchesTag =
-      selectedTag === 'Alle' ||
-      item.tags.includes(selectedTag) ||
-      (selectedTag === 'Wissenschaft' && (item.tags.includes('Astronomie') || item.tags.includes('Wissenschaft'))) ||
-      (selectedTag === 'Tech' && (item.tags.includes('PostgreSQL') || item.tags.includes('NextJS') || item.tags.includes('Strapi')));
+  // Dynamically extract unique topic tags from currently loaded feed items and profile vector
+  const dynamicTopics = Array.from(
+    new Set([
+      ...feedItems.flatMap((item) => item.tags || []),
+      ...Object.keys(profile.interests),
+    ])
+  );
 
-    return matchesTag;
+  const filteredFeed = feedItems.filter((item) => {
+    if (selectedTag === 'Alle' || selectedTag === 'All') return true;
+    return item.tags.includes(selectedTag);
   });
 
+  const getTopicEmoji = (tag: string) => {
+    const l = tag.toLowerCase();
+    if (l.includes('wissen') || l.includes('scien') || l.includes('astro')) return '🔬';
+    if (l.includes('natur') || l.includes('nature') || l.includes('umwelt')) return '🌿';
+    if (l.includes('koch') || l.includes('cook') || l.includes('rezept') || l.includes('culinar')) return '🍳';
+    if (l.includes('tech') || l.includes('postgre') || l.includes('next') || l.includes('strapi') || l.includes('program')) return '💻';
+    if (l.includes('finan') || l.includes('wirtsch') || l.includes('econ')) return '📈';
+    if (l.includes('cat') || l.includes('katz') || l.includes('humor') || l.includes('tier') || l.includes('anim')) return '🐱';
+    if (l.includes('doku') || l.includes('pdf')) return '📄';
+    return '💡';
+  };
+
+  const getTopicIcon = (tag: string) => {
+    const l = tag.toLowerCase();
+    if (l.includes('wissen') || l.includes('scien') || l.includes('astro')) return Sparkles;
+    if (l.includes('natur') || l.includes('nature') || l.includes('umwelt')) return Compass;
+    if (l.includes('koch') || l.includes('cook') || l.includes('rezept') || l.includes('culinar')) return Coffee;
+    if (l.includes('tech') || l.includes('postgre') || l.includes('next') || l.includes('strapi') || l.includes('program')) return Cpu;
+    if (l.includes('finan') || l.includes('wirtsch') || l.includes('econ')) return DollarSign;
+    if (l.includes('cat') || l.includes('katz') || l.includes('humor') || l.includes('tier') || l.includes('anim')) return Smile;
+    if (l.includes('doku') || l.includes('pdf')) return FileText;
+    return Sparkles;
+  };
+
   const categoryPills = [
-    { label: 'Alle', emoji: '✦' },
-    { label: 'Wissenschaft', emoji: '🔬' },
-    { label: 'Natur', emoji: '🌿' },
-    { label: 'Kochen', emoji: '🍳' },
-    { label: 'Tech', emoji: '💻' },
-    { label: 'Finanzen', emoji: '📈' },
-    { label: 'Funny Cat Videos', emoji: '🐱' },
-    { label: 'Dokumentation', emoji: '🎬' },
+    { label: lang === 'de' ? 'Alle' : 'All', emoji: '✦' },
+    ...dynamicTopics.map((tag) => ({
+      label: tag,
+      emoji: getTopicEmoji(tag),
+    })),
   ];
 
   const sideNavItems = [
@@ -466,14 +491,11 @@ export default function OmniApp() {
     { icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library',        active: false },
   ];
 
-  const sideTopics = [
-    { label: 'Wissenschaft', icon: Sparkles, tag: 'Wissenschaft' },
-    { label: 'Natur',        icon: Compass,  tag: 'Natur' },
-    { label: 'Kochen',       icon: Coffee,   tag: 'Kochen' },
-    { label: 'Finanzen',     icon: DollarSign, tag: 'Finanzen' },
-    { label: 'Tech',         icon: Cpu,      tag: 'Tech' },
-    { label: 'Entertainment',icon: Smile,    tag: 'Entertainment' },
-  ];
+  const sideTopics = dynamicTopics.slice(0, 8).map((tag) => ({
+    label: tag,
+    icon: getTopicIcon(tag),
+    tag: tag,
+  }));
 
   return (
     <div className="min-h-screen bg-mesh text-[#dae2fd] flex flex-col font-sans">

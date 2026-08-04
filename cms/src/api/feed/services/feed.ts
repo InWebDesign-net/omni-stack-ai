@@ -156,7 +156,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Bucketing and Interleaving Engine
    */
-  async assembleFeed(userProfileInput?: Partial<InterestProfile>) {
+  async assembleFeed(userProfileInput?: Partial<InterestProfile> & { locale?: string }) {
+    const targetLocale = userProfileInput?.locale || 'de';
     const profile: InterestProfile = {
       interests: { ...DEFAULT_USER_PROFILE.interests, ...(userProfileInput?.interests || {}) },
       contentTypes: { ...DEFAULT_USER_PROFILE.contentTypes, ...(userProfileInput?.contentTypes || {}) },
@@ -166,7 +167,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // 1. Fetch all items (from database or fall back to sample seed items if database empty)
     let items = SAMPLE_SEED_ITEMS;
     try {
-      const dbItems = await strapi.documents('api::feed-item.feed-item').findMany({});
+      const dbItems = await strapi.documents('api::feed-item.feed-item').findMany({
+        locale: targetLocale,
+      });
       if (dbItems && dbItems.length > 0) {
         items = dbItems as any;
       }
