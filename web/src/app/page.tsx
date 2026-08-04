@@ -449,7 +449,7 @@ export default function OmniApp() {
                 Omni
               </span>
               <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
-                KI-Network
+                BY INWEBDESIGN
               </span>
             </div>
           </a>
@@ -896,7 +896,7 @@ export default function OmniApp() {
                     ? (lang === 'de' ? 'Konto erstellen' : 'Create Account')
                     : (lang === 'de' ? 'Willkommen zurück' : 'Welcome Back')}
                 </h2>
-                <p className="text-xs text-[#5c657d] mt-0.5">Omni KI-Network</p>
+                <p className="text-xs text-[#5c657d] mt-0.5">Omni by InWebDesign</p>
               </div>
             </div>
 
