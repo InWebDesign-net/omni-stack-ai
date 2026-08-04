@@ -193,9 +193,6 @@ export default function OmniApp() {
   // Media Player Modal
   const [selectedMedia, setSelectedMedia] = useState<FeedItem | null>(null);
 
-  // Demo auto-reset countdown
-  const [resetCountdown, setResetCountdown] = useState(300);
-
   // Check stored auth session on mount
   useEffect(() => {
     try {
@@ -207,13 +204,6 @@ export default function OmniApp() {
     } catch (e) {
       // localStorage fallback
     }
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setResetCountdown((prev) => (prev > 1 ? prev - 1 : 300));
-    }, 1000);
-    return () => clearInterval(timer);
   }, []);
 
   // Fetch Feed from Strapi API Proxy
@@ -473,14 +463,6 @@ export default function OmniApp() {
               {lang === 'de' ? 'Algo-Steuerung' : 'Algorithm'}
             </span>
           </button>
-
-          {/* Reset Timer */}
-          <div className="hidden md:flex items-center gap-1.5 bg-[#121a30] border border-white/8 px-3 py-2 rounded-xl text-xs text-[#ffb783] font-mono">
-            <RotateCcw className="h-3 w-3 animate-spin-slow text-[#ffb783]" />
-            <span className="text-[11px] tabular-nums">
-              {Math.floor(resetCountdown / 60)}:{(resetCountdown % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
 
           {/* Language Toggle */}
           <button
