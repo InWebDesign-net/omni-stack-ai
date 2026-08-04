@@ -554,9 +554,18 @@ export default function OmniApp() {
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className="px-3 py-2 hover:bg-white/5 rounded-xl text-xs font-bold transition-all text-[#9ba4bf] hover:text-white border border-transparent hover:border-white/8"
+            title={lang === 'de' ? 'Sprache auf Englisch wechseln' : 'Switch language to German'}
+            className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all duration-200 shadow-sm active:scale-95 group"
           >
-            {lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
+            <span className="text-base leading-none group-hover:scale-110 transition-transform">
+              {lang === 'de' ? '🇩🇪' : '🇬🇧'}
+            </span>
+            <span className="text-xs font-extrabold tracking-wide text-[#dae2fd]">
+              {lang === 'de' ? 'DE' : 'EN'}
+            </span>
+            <span className="text-[9px] text-[#5c657d] group-hover:text-[#44e2cd] font-mono transition-colors">
+              ⇄
+            </span>
           </button>
 
           {/* Auth */}
