@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Menu,
-  Search,
   Zap,
   RotateCcw,
   Sliders,
   Play,
   FileText,
   Video,
-  Globe,
   Flame,
   UserCheck,
   Compass,
@@ -19,7 +17,6 @@ import {
   Eye,
   Heart,
   Cpu,
-  Server,
   Home,
   Tv,
   BookOpen,
@@ -28,17 +25,13 @@ import {
   LogOut,
   X,
   CheckCircle2,
-  Share2,
-  ThumbsUp,
-  Bookmark,
-  TrendingUp,
-  Award,
-  Film,
-  Music,
-  Smile,
   DollarSign,
   Coffee,
+  Smile,
+  Send,
   Sparkle,
+  Layers,
+  ArrowRight,
 } from 'lucide-react';
 
 interface FeedItem {
@@ -93,7 +86,6 @@ export default function OmniApp() {
   const [lang, setLang] = useState<'de' | 'en'>('de');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('Alle');
   const [profile, setProfile] = useState<InterestProfile>(DEFAULT_PROFILE);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -104,9 +96,9 @@ export default function OmniApp() {
   const [currentUser, setCurrentUser] = useState<{ username: string; email: string } | null>(null);
   const [regForm, setRegForm] = useState({ username: '', email: '', password: '', bio: '' });
 
-  // AI Prompt State
-  const [promptInput, setPromptInput] = useState('');
-  const [aiLog, setAiLog] = useState<string | null>(null);
+  // AI Prompt / Chat Mask State
+  const [chatInput, setChatInput] = useState('');
+  const [aiReasoning, setAiReasoning] = useState<string | null>(null);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
 
   // Media Player Modal
@@ -149,19 +141,20 @@ export default function OmniApp() {
     fetchFeed(profile);
   }, []);
 
-  const handleAiPromptSubmit = async (e: React.FormEvent) => {
+  // Handle AI Chat Mask Prompt submission
+  const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!promptInput.trim()) return;
+    if (!chatInput.trim()) return;
 
     setIsAiProcessing(true);
-    setAiLog(
+    setAiReasoning(
       lang === 'de'
-        ? '🤖 Ollama Agent analysiert Intent & berechnet Vektoren...'
-        : '🤖 Ollama Agent analyzing intent & computing vectors...'
+        ? '🤖 Omni KI analysiert deine Anfrage & richtet den Feed neu aus...'
+        : '🤖 Omni AI analyzing prompt & adjusting feed assembly...'
     );
 
     setTimeout(() => {
-      const lower = promptInput.toLowerCase();
+      const lower = chatInput.toLowerCase();
       const updated = { ...profile };
 
       if (lower.includes('pdf') || lower.includes('doku') || lower.includes('wissen') || lower.includes('astro')) {
@@ -170,45 +163,45 @@ export default function OmniApp() {
         updated.interests['Wissenschaft'].score = 0.99;
         updated.interests['PostgreSQL'].score = 0.95;
         updated.activePattern = 'deep_dive';
-        setAiLog(
+        setAiReasoning(
           lang === 'de'
-            ? '✨ KI-Entscheidung: "Wissenschaft & PDF Deep Dive" aktiviert.'
-            : '✨ AI Decision: "Science & PDF Deep Dive" activated.'
+            ? '✨ KI-Fokus: "Wissenschaft & PDF Deep Dive" aktiviert. PDF-Gewichtung maximiert.'
+            : '✨ AI Focus: "Science & PDF Deep Dive" activated. PDF weight maximized.'
         );
-      } else if (lower.includes('kochen') || lower.includes('essen') || lower.includes('pasta')) {
+      } else if (lower.includes('kochen') || lower.includes('essen') || lower.includes('pasta') || lower.includes('rezept')) {
         updated.interests['Kochen'].score = 0.99;
         updated.contentTypes.video = 1.0;
         updated.activePattern = 'discovery';
-        setAiLog(
+        setAiReasoning(
           lang === 'de'
-            ? '🍳 KI-Entscheidung: Kulinarik-Fokus! Kochen & Rezepte Score = 0.99.'
-            : '🍳 AI Decision: Culinary Focus! Cooking & Recipes score = 0.99.'
+            ? '🍳 KI-Fokus: Kulinarik & Rezepte! Kochen Vektor auf 0.99 angehoben.'
+            : '🍳 AI Focus: Culinary & Recipes! Cooking vector set to 0.99.'
         );
-      } else if (lower.includes('cat') || lower.includes('katz') || lower.includes('humor') || lower.includes('tiere')) {
+      } else if (lower.includes('cat') || lower.includes('katz') || lower.includes('humor') || lower.includes('tiere') || lower.includes('fun')) {
         updated.interests['Funny Cat Videos'].score = 0.99;
         updated.interests['Natur'].score = 0.90;
         updated.contentTypes.short = 1.0;
         updated.activePattern = 'discovery';
-        setAiLog(
+        setAiReasoning(
           lang === 'de'
-            ? '🐱 KI-Entscheidung: Entertainment Mode! Cat Videos & Natur maximiert.'
-            : '🐱 AI Decision: Entertainment Mode! Cat Videos & Nature maximized.'
+            ? '🐱 KI-Fokus: Entertainment & Tiere! Cat Videos auf 0.99 maximiert.'
+            : '🐱 AI Focus: Entertainment & Animals! Cat Videos maximized.'
         );
       } else {
         updated.interests['NextJS'].score = 0.98;
         updated.interests['Strapi'].score = 0.92;
         updated.activePattern = 'deep_dive';
-        setAiLog(
+        setAiReasoning(
           lang === 'de'
-            ? '🚀 KI-Entscheidung: Tech Stack & Dev Pattern aktiviert.'
-            : '🚀 AI Decision: Tech Stack & Dev Pattern activated.'
+            ? '🚀 KI-Fokus: Web Architecture & Dev Tutorials aktiviert.'
+            : '🚀 AI Focus: Web Architecture & Dev Tutorials activated.'
         );
       }
 
       setProfile(updated);
       fetchFeed(updated);
       setIsAiProcessing(false);
-      setPromptInput('');
+      setChatInput('');
     }, 500);
   };
 
@@ -234,31 +227,14 @@ export default function OmniApp() {
     fetchFeed(updated);
   };
 
-  const updateMediaTypeWeight = (type: string, newWeight: number) => {
-    const updated = {
-      ...profile,
-      contentTypes: {
-        ...profile.contentTypes,
-        [type]: newWeight,
-      },
-    };
-    setProfile(updated);
-    fetchFeed(updated);
-  };
-
   const filteredFeed = feedItems.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
-
     const matchesTag =
       selectedTag === 'Alle' ||
       item.tags.includes(selectedTag) ||
       (selectedTag === 'Wissenschaft' && (item.tags.includes('Astronomie') || item.tags.includes('Wissenschaft'))) ||
       (selectedTag === 'Tech' && (item.tags.includes('PostgreSQL') || item.tags.includes('NextJS') || item.tags.includes('Strapi')));
 
-    return matchesSearch && matchesTag;
+    return matchesTag;
   });
 
   const categoryPills = [
@@ -274,13 +250,13 @@ export default function OmniApp() {
 
   return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-[#0b1326]/90 backdrop-blur-xl border-b border-[#2d3449]/60 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-        {/* Brand & Menu Toggle */}
+      {/* Top Header - Sticky across entire viewport */}
+      <header className="sticky top-0 z-40 bg-[#0b1326]/95 backdrop-blur-xl border-b border-[#2d3449]/60 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        {/* Far-left Brand & Sidebar Toggle */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-[#1f283d] rounded-xl text-[#c7c4d7] transition"
+            className="p-2 hover:bg-[#171f33] rounded-xl text-[#c7c4d7] transition"
             title="Menu"
           >
             <Menu className="h-5 w-5" />
@@ -303,23 +279,7 @@ export default function OmniApp() {
           </a>
         </div>
 
-        {/* Search Bar */}
-        <div className="flex-1 max-w-2xl hidden md:flex items-center">
-          <div className="flex w-full items-center bg-[#131b2e] border border-[#2d3449] focus-within:border-[#8083ff] rounded-full overflow-hidden transition shadow-sm">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={lang === 'de' ? 'Suchen auf Omni...' : 'Search on Omni...'}
-              className="w-full bg-transparent px-5 py-2 text-sm text-[#dae2fd] placeholder-[#908fa0] focus:outline-none"
-            />
-            <button className="bg-[#171f33] hover:bg-[#222a3d] px-5 py-2 text-[#908fa0] hover:text-white border-l border-[#2d3449] transition">
-              <Search className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Controls: AI Drawer Toggle, Reset Timer & User Profile */}
+        {/* Right Header Controls */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setAlgoDrawerOpen(!algoDrawerOpen)}
@@ -373,57 +333,17 @@ export default function OmniApp() {
         </div>
       </header>
 
-      {/* Floating AI Algorithm Control Panel */}
+      {/* Floating Algorithm Controls Drawer (Interest Vectors & Patterns only) */}
       {algoDrawerOpen && (
-        <aside className="bg-[#171f33]/95 backdrop-blur-2xl border-b border-[#2d3449] px-6 py-5 shadow-2xl animate-slideDown">
-          <div className="max-w-[1920px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            {/* AI Natural Language Prompt */}
-            <div className="md:col-span-5 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#c0c1ff] flex items-center gap-1.5">
-                  <Bot className="h-4 w-4 text-[#44e2cd]" />
-                  {lang === 'de' ? 'Lokaler Ollama KI-Agent' : 'Local Ollama AI Agent'}
-                </span>
-                <span className="text-[10px] bg-[#8083ff]/20 text-[#c0c1ff] px-2 py-0.5 rounded font-mono">
-                  Strapi v5 API
-                </span>
-              </div>
-              <form onSubmit={handleAiPromptSubmit} className="flex gap-2">
-                <input
-                  type="text"
-                  value={promptInput}
-                  onChange={(e) => setPromptInput(e.target.value)}
-                  placeholder={
-                    lang === 'de'
-                      ? 'z.B. "Zeige mir Wissens-PDFs & Astronomie"...'
-                      : 'e.g. "Show me science PDFs & astronomy"...'
-                  }
-                  className="flex-1 bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2 text-xs text-white placeholder-[#908fa0] focus:outline-none focus:border-[#8083ff]"
-                />
-                <button
-                  type="submit"
-                  disabled={isAiProcessing}
-                  className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1 shadow-md"
-                >
-                  {isAiProcessing ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
-                  <span>{lang === 'de' ? 'Steuern' : 'Apply'}</span>
-                </button>
-              </form>
-
-              {aiLog && (
-                <p className="text-[11px] text-[#c0c1ff] font-mono bg-[#0b1326]/60 p-2.5 rounded-xl border border-[#8083ff]/30">
-                  {aiLog}
-                </p>
-              )}
-            </div>
-
+        <aside className="bg-[#171f33]/95 backdrop-blur-2xl border-b border-[#2d3449] px-6 py-5 shadow-2xl animate-slideDown z-30">
+          <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             {/* Interest Vector Matrix */}
-            <div className="md:col-span-4 flex flex-col gap-2.5 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
+            <div className="md:col-span-7 flex flex-col gap-2.5 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <span className="text-xs font-bold text-gray-200 flex items-center justify-between">
-                <span>{lang === 'de' ? 'User Interest Vector' : 'User Interest Vector'}</span>
+                <span>{lang === 'de' ? 'Strapi User Interest Vector' : 'Strapi User Interest Vector'}</span>
                 <span className="text-[10px] text-[#908fa0] font-mono">JSON Profile</span>
               </span>
-              <div className="grid grid-cols-2 gap-3 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
                 {Object.entries(profile.interests).map(([topic, data]) => (
                   <div key={topic} className="flex flex-col gap-0.5 text-[11px]">
                     <div className="flex justify-between text-gray-300">
@@ -445,7 +365,7 @@ export default function OmniApp() {
             </div>
 
             {/* Pattern Switcher */}
-            <div className="md:col-span-3 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
+            <div className="md:col-span-5 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <span className="text-xs font-bold text-gray-200">
                 {lang === 'de' ? 'Slot Interleaving Pattern' : 'Slot Interleaving Pattern'}
               </span>
@@ -456,13 +376,13 @@ export default function OmniApp() {
                     setProfile(u);
                     fetchFeed(u);
                   }}
-                  className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition ${
                     profile.activePattern === 'discovery'
-                      ? 'bg-[#8083ff] text-white'
+                      ? 'bg-[#8083ff] text-white shadow-md'
                       : 'bg-[#171f33] text-[#908fa0] hover:text-white'
                   }`}
                 >
-                  Discovery
+                  Discovery Pattern
                 </button>
                 <button
                   onClick={() => {
@@ -470,13 +390,13 @@ export default function OmniApp() {
                     setProfile(u);
                     fetchFeed(u);
                   }}
-                  className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition ${
                     profile.activePattern === 'deep_dive'
-                      ? 'bg-[#44e2cd] text-[#003731]'
+                      ? 'bg-[#44e2cd] text-[#003731] shadow-md'
                       : 'bg-[#171f33] text-[#908fa0] hover:text-white'
                   }`}
                 >
-                  Deep Dive
+                  Deep Dive Pattern
                 </button>
               </div>
 
@@ -491,13 +411,13 @@ export default function OmniApp() {
         </aside>
       )}
 
-      {/* Main Container */}
-      <div className="flex flex-1 max-w-[1920px] w-full mx-auto">
-        {/* Navigation Sidebar */}
+      {/* Main Full-Height Layout Wrapper */}
+      <div className="flex flex-1 w-full min-h-[calc(100vh-57px)]">
+        {/* Far-Left Sidebar (Aligned 100% to desktop window left margin) */}
         <aside
           className={`${
             sidebarOpen ? 'w-64' : 'w-16'
-          } shrink-0 bg-[#0b1326] border-r border-[#2d3449]/60 p-3 flex flex-col gap-6 transition-all duration-300 hidden sm:flex`}
+          } shrink-0 bg-[#0b1326] border-r border-[#2d3449]/60 p-3 flex flex-col gap-6 transition-all duration-300 hidden sm:flex sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto custom-scrollbar z-20`}
         >
           <nav className="flex flex-col gap-1 text-sm font-medium">
             {[
@@ -548,10 +468,81 @@ export default function OmniApp() {
           )}
         </aside>
 
-        {/* Center Feed */}
-        <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6 overflow-x-hidden">
+        {/* Center Content Workspace */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col gap-8 min-w-0">
+          {/* Prominent Hero AI Chat Mask (Modern ChatGPT / Conversational Input) */}
+          <section className="w-full max-w-4xl mx-auto flex flex-col gap-3">
+            <div className="glass-surface-glow p-5 sm:p-6 rounded-3xl border border-[#8083ff]/40 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#8083ff]/15 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#c0c1ff]">
+                  <Bot className="h-4 w-4 text-[#44e2cd]" />
+                  <span>{lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}</span>
+                </div>
+                <span className="text-[10px] bg-[#8083ff]/20 text-[#c0c1ff] border border-[#8083ff]/40 px-2 py-0.5 rounded-full font-mono">
+                  Natural Language Feed Control
+                </span>
+              </div>
+
+              <form onSubmit={handleChatSubmit} className="flex flex-col gap-3">
+                <div className="relative flex items-center bg-[#0b1326]/90 border border-[#2d3449] focus-within:border-[#8083ff] rounded-2xl overflow-hidden shadow-inner p-1.5 transition">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder={
+                      lang === 'de'
+                        ? 'Worauf hast du heute Lust? (z.B. "Zeige mir Wissenschafts-PDFs", "Kochen & Pasta", "Funny Cats")...'
+                        : 'What would you like to explore today? (e.g. "Show science PDFs", "Cooking & Pasta", "Funny Cats")...'
+                    }
+                    className="w-full bg-transparent px-4 py-3 text-sm text-[#dae2fd] placeholder-[#908fa0] focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isAiProcessing}
+                    className="bg-[#8083ff] hover:bg-[#6b6eff] text-white p-3 rounded-xl transition flex items-center justify-center shrink-0 shadow-lg shadow-[#8083ff]/30"
+                  >
+                    {isAiProcessing ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Quick Action Suggestion Pills */}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {[
+                    { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs und Dokus' },
+                    { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte' },
+                    { label: lang === 'de' ? '🐱 Funny Cats & Tiere' : '🐱 Funny Cats', prompt: 'Funny Cat Videos und Tiere' },
+                    { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS Strapi Tech Tutorials' },
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setChatInput(item.prompt);
+                      }}
+                      className="text-xs bg-[#171f33] hover:bg-[#222a3d] text-[#c0c1ff] border border-[#2d3449] px-3 py-1.5 rounded-full transition"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </form>
+
+              {aiReasoning && (
+                <div className="mt-3 bg-[#0b1326]/80 p-3 rounded-xl border border-[#8083ff]/30 text-xs font-mono text-[#c0c1ff] animate-fadeIn">
+                  {aiReasoning}
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
             {categoryPills.map((pill) => (
               <button
                 key={pill}
@@ -599,7 +590,7 @@ export default function OmniApp() {
                   </div>
                 </div>
 
-                {/* Info Metadata */}
+                {/* Metadata */}
                 <div className="flex gap-3 items-start px-0.5">
                   <img
                     src={item.authorAvatar}
