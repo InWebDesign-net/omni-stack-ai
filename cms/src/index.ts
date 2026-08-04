@@ -5,38 +5,162 @@ export default {
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     try {
+      const authRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+        where: { type: 'authenticated' },
+      });
+      const roleId = authRole?.id || 1;
+
+      // Helper function to seed or get creator users with channel handles
+      const getOrCreateCreator = async (creator: {
+        username: string;
+        handle: string;
+        email: string;
+        avatarUrl: string;
+        bio: string;
+        subscribersCount: number;
+      }) => {
+        try {
+          const existing = await strapi.documents('plugin::users-permissions.user').findMany({
+            filters: { handle: { $eq: creator.handle } },
+          });
+          if (existing && existing.length > 0) {
+            return existing[0];
+          }
+
+          // Check by email
+          const existingEmail = await strapi.documents('plugin::users-permissions.user').findMany({
+            filters: { email: { $eq: creator.email } },
+          });
+          if (existingEmail && existingEmail.length > 0) {
+            const userDoc = existingEmail[0];
+            await strapi.documents('plugin::users-permissions.user').update({
+              documentId: userDoc.documentId,
+              data: {
+                handle: creator.handle,
+                avatarUrl: creator.avatarUrl,
+                bio: creator.bio,
+                subscribersCount: creator.subscribersCount,
+              } as any,
+            });
+            return userDoc;
+          }
+
+          const created = await strapi.service('plugin::users-permissions.user').add({
+            username: creator.username,
+            email: creator.email,
+            password: 'DemoUser2026!',
+            confirmed: true,
+            provider: 'local',
+            role: roleId,
+          });
+
+          await strapi.documents('plugin::users-permissions.user').update({
+            documentId: created.documentId,
+            data: {
+              handle: creator.handle,
+              avatarUrl: creator.avatarUrl,
+              bio: creator.bio,
+              subscribersCount: creator.subscribersCount,
+            } as any,
+          });
+          return created;
+        } catch (e) {
+          console.error(`Error creating creator ${creator.handle}:`, e);
+          return null;
+        }
+      };
+
+      // Define Creators
+      const creators = {
+        astro: await getOrCreateCreator({
+          username: 'Astro-Wissen Magazin',
+          handle: 'astro',
+          email: 'astro@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+          bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.',
+          subscribersCount: 14800,
+        }),
+        demotech: await getOrCreateCreator({
+          username: 'Database Guru',
+          handle: 'demotech',
+          email: 'demotech@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+          bio: 'High-Performance Databases, PostgreSQL Indizes, Vector Search & Code Architecture.',
+          subscribersCount: 28900,
+        }),
+        demogourmet: await getOrCreateCreator({
+          username: 'Culinary Masterclass',
+          handle: 'demogourmet',
+          email: 'demogourmet@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
+          bio: 'Italienische Küche, feine Rezepte & Kulinarik-Tutorials aus Leidenschaft.',
+          subscribersCount: 54100,
+        }),
+        greenplanet: await getOrCreateCreator({
+          username: 'Green Planet Doku',
+          handle: 'greenplanet',
+          email: 'greenplanet@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
+          bio: 'Naturdokumentationen, Artenvielfalt, Artenschutz & Ökosysteme.',
+          subscribersCount: 31200,
+        }),
+        omniarchitect: await getOrCreateCreator({
+          username: 'Omni Architect',
+          handle: 'omniarchitect',
+          email: 'omniarchitect@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+          bio: 'NextJS 15, Strapi v5, Monorepo Turborepo Architecture & Microservices.',
+          subscribersCount: 42000,
+        }),
+        catmania: await getOrCreateCreator({
+          username: 'Familie & Tiere',
+          handle: 'catmania',
+          email: 'catmania@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
+          bio: 'Lustige Tier-Shorts, Katzenwelpen & Unterhaltung für die ganze Familie.',
+          subscribersCount: 189000,
+        }),
+        finanzkompass: await getOrCreateCreator({
+          username: 'FinanzKompass',
+          handle: 'finanzkompass',
+          email: 'finanzkompass@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+          bio: 'Finanzwissen, ETF-Sparpläne, Vermögensaufbau & Zinseszins für Einsteiger.',
+          subscribersCount: 27500,
+        }),
+      };
+
       // 1. Seed initial Feed Items if database is empty
       const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({});
       if (!existingItems || existingItems.length === 0) {
-        console.log('🌱 Seeding initial published Feed Items in Strapi...');
+        console.log('🌱 Seeding initial published Feed Items in Strapi linked to Creator channels...');
 
         const seedItems = [
           {
+            creator: creators.astro,
             de: {
               title: 'Faszination Weltall: Die Geheimnisse des James-Webb-Teleskops (PDF)',
               slug: 'faszination-weltall-james-webb-pdf',
               summary: 'Atemberaubende Aufnahmen und wissenschaftliche Analysen der ältesten Galaxien unseres Universums.',
-              content: 'Das James-Webb-Weltraumteleskop revolutioniert unser Verständnis der Astrophysik. Dieser PDF-Report analysiert die spektralen Daten der ersten Galaxien...',
+              content: 'Das James-Webb-Weltraumteleskop revolutioniert unser Verständnis der Astrophysik...',
               tags: ['Wissenschaft', 'Astronomie', 'PDF Doku', 'Weltall'],
             },
             en: {
               title: 'Fascinating Universe: Secrets of the James Webb Telescope (PDF)',
               slug: 'fascinating-universe-james-webb-pdf',
               summary: 'Breathtaking imagery and scientific analysis of the oldest galaxies in our universe.',
-              content: 'The James Webb Space Telescope is revolutionizing our understanding of astrophysics. This PDF report analyzes spectral data...',
+              content: 'The James Webb Space Telescope is revolutionizing our understanding of astrophysics...',
               tags: ['Science', 'Astronomy', 'PDF Doc', 'Space'],
             },
             mediaType: 'pdf',
             mediaUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
             thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80',
-            authorName: 'Astro-Wissen Magazin',
-            authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-            isSubscribedAuthor: true,
             viewsCount: 48200,
             likesCount: 5900,
             publishedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
           },
           {
+            creator: creators.demotech,
             de: {
               title: 'PostgreSQL 15 & GIN-Indizes für Hyper-Personalized Feeds',
               slug: 'postgres-15-gin-indizes-hyper-personalized-feeds',
@@ -54,14 +178,12 @@ export default {
             mediaType: 'article',
             mediaUrl: '',
             thumbnailUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&q=80',
-            authorName: 'Database Guru',
-            authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-            isSubscribedAuthor: true,
             viewsCount: 18900,
             likesCount: 2300,
             publishedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
           },
           {
+            creator: creators.demogourmet,
             de: {
               title: 'Kochen wie der Chefkoch: Italienische Pastasoßen von Grund auf',
               slug: 'kochen-wie-der-chefkoch-italienische-pasta',
@@ -73,70 +195,64 @@ export default {
               title: 'Cook Like a Chef: Italian Pasta Sauces From Scratch',
               slug: 'cook-like-a-chef-italian-pasta-sauces',
               summary: 'The secret behind the perfect Carbonara and Cacio e Pepe in 15 minutes.',
-              content: 'In this video tutorial, master chef Marco shows how to craft unforgettable pasta with just 4 ingredients...',
+              content: 'In this video tutorial, master chef Marco shows how to craft unforgettable pasta...',
               tags: ['Cooking', 'Recipes', 'Culinary', 'Video Tutorial'],
             },
             mediaType: 'video',
             mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
             thumbnailUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
-            authorName: 'Culinary Masterclass',
-            authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
-            isSubscribedAuthor: false,
             viewsCount: 92400,
             likesCount: 14200,
             publishedAt: new Date(Date.now() - 3600000 * 10).toISOString(),
           },
           {
+            creator: creators.greenplanet,
             de: {
               title: 'Natur & Artenvielfalt: Die faszinierende Welt der Wildbienen',
               slug: 'natur-artenvielfalt-wildbienen-doku',
               summary: 'Ein Dokumentarfilm über den Schutz unserer heimischen Insekten und Ökosysteme.',
-              content: 'Entdecke die überraschenden Fähigkeiten von Wildbienen und wie jeder von uns auf dem Balkon helfen kann...',
+              content: 'Entdecke die überraschenden Fähigkeiten von Wildbienen...',
               tags: ['Natur', 'Umwelt', 'Dokumentation', 'Tiere'],
             },
             en: {
               title: 'Nature & Biodiversity: The Fascinating World of Wild Bees',
               slug: 'nature-biodiversity-wild-bees-doc',
               summary: 'A documentary on protecting native insects and local ecosystems.',
-              content: 'Discover the surprising capabilities of wild bees and how everyone can help right on their balcony...',
+              content: 'Discover the surprising capabilities of wild bees...',
               tags: ['Nature', 'Environment', 'Documentary', 'Animals'],
             },
             mediaType: 'video',
             mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
             thumbnailUrl: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?w=800&q=80',
-            authorName: 'Green Planet Doku',
-            authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
-            isSubscribedAuthor: true,
             viewsCount: 65100,
             likesCount: 8900,
             publishedAt: new Date(Date.now() - 3600000 * 18).toISOString(),
           },
           {
+            creator: creators.omniarchitect,
             de: {
               title: 'NextJS 15 & Strapi v5 Monorepo Architektur im Detail',
               slug: 'nextjs-15-strapi-v5-monorepo-architektur',
               summary: 'Best Practices für skalierbare Webprojekte mit Turborepo und PM2 Prozessmanagement.',
-              content: 'Vollständiger Leitfaden zum Aufbau von modernen Webanwendungen mit modularer Architektur...',
+              content: 'Vollständiger Leitfaden zum Aufbau von modernen Webanwendungen...',
               tags: ['NextJS', 'Strapi', 'Programmierung', 'Monorepo'],
             },
             en: {
               title: 'NextJS 15 & Strapi v5 Monorepo Architecture in Detail',
               slug: 'nextjs-15-strapi-v5-monorepo-architecture',
               summary: 'Best practices for scalable web applications with Turborepo and PM2 process management.',
-              content: 'Complete guide to constructing modern web applications with modular architecture...',
+              content: 'Complete guide to constructing modern web applications...',
               tags: ['NextJS', 'Strapi', 'Programming', 'Monorepo'],
             },
             mediaType: 'pdf',
             mediaUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
             thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
-            authorName: 'Omni Architect',
-            authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-            isSubscribedAuthor: true,
             viewsCount: 34100,
             likesCount: 4200,
             publishedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
           },
           {
+            creator: creators.catmania,
             de: {
               title: 'Süße Katzenwelpen & Ihre Lustigsten Momente 2026',
               slug: 'suesse-katzenwelpen-lustige-momente',
@@ -154,34 +270,29 @@ export default {
             mediaType: 'short',
             mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
             thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80',
-            authorName: 'Familie & Tiere',
-            authorAvatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
-            isSubscribedAuthor: false,
             viewsCount: 230000,
             likesCount: 35000,
             publishedAt: new Date(Date.now() - 3600000 * 30).toISOString(),
           },
           {
+            creator: creators.finanzkompass,
             de: {
               title: 'Finanzwissen kompakt: ETF-Sparpläne für Einsteiger erklärt',
               slug: 'finanzwissen-kompakt-etf-sparplaene-einsteiger',
               summary: 'Verständliche Einführung in den Vermögensaufbau, Zinseszins und Risikostreuung.',
-              content: 'Erfahre, wie ETFs funktionieren und wie du deinen eigenen Sparplan in wenigen Schritten aufsetzt...',
+              content: 'Erfahre, wie ETFs funktionieren und wie du deinen eigenen Sparplan aufsetzt...',
               tags: ['Finanzen', 'Wirtschaft', 'Ratgeber', 'Einsteiger'],
             },
             en: {
               title: 'Compact Finance: ETF Savings Plans for Beginners Explained',
               slug: 'compact-finance-etf-savings-plans-beginners',
               summary: 'Understandable introduction to wealth building, compound interest, and risk diversification.',
-              content: 'Learn how ETFs work and how to set up your personal savings plan in just a few steps...',
+              content: 'Learn how ETFs work and how to set up your personal savings plan...',
               tags: ['Finance', 'Economy', 'Guide', 'Beginner'],
             },
             mediaType: 'article',
             mediaUrl: '',
             thumbnailUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80',
-            authorName: 'FinanzKompass',
-            authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-            isSubscribedAuthor: true,
             viewsCount: 52000,
             likesCount: 6800,
             publishedAt: new Date(Date.now() - 3600000 * 36).toISOString(),
@@ -189,18 +300,18 @@ export default {
         ];
 
         for (const item of seedItems) {
+          const authorId = item.creator?.id;
+
           const createdDe = await strapi.documents('api::feed-item.feed-item').create({
             data: {
               ...item.de,
               mediaType: item.mediaType,
               mediaUrl: item.mediaUrl,
               thumbnailUrl: item.thumbnailUrl,
-              authorName: item.authorName,
-              authorAvatar: item.authorAvatar,
-              isSubscribedAuthor: item.isSubscribedAuthor,
               viewsCount: item.viewsCount,
               likesCount: item.likesCount,
               publishedAt: item.publishedAt,
+              author: authorId,
             },
             locale: 'de',
             status: 'published',
@@ -213,33 +324,29 @@ export default {
               mediaType: item.mediaType,
               mediaUrl: item.mediaUrl,
               thumbnailUrl: item.thumbnailUrl,
-              authorName: item.authorName,
-              authorAvatar: item.authorAvatar,
-              isSubscribedAuthor: item.isSubscribedAuthor,
               viewsCount: item.viewsCount,
               likesCount: item.likesCount,
               publishedAt: item.publishedAt,
+              author: authorId,
             },
             locale: 'en',
             status: 'published',
           });
         }
-        console.log(`✅ ${seedItems.length * 2} bilingual Feed Items (DE + EN) seeded in Strapi!`);
+        console.log(`✅ ${seedItems.length * 2} bilingual Feed Items linked to creator channels seeded!`);
       }
 
-      // 2. Demo Preview Accounts Seeding (Enabled when DEMO_MODE !== 'false')
+      // 2. Demo Admin Editors Seeding
       const isDemoMode = process.env.DEMO_MODE !== 'false';
       if (isDemoMode) {
-        console.log('🎭 Seeding Demo Accounts for Preview Environment...');
-
-        // 2a. Admin Editors
+        console.log('🎭 Seeding Demo Admin Editors for Preview Environment...');
         const adminEditors = [
           {
             email: 'demo-editor1@inwebdesign.net',
             firstname: 'Demo',
             lastname: 'Editor 1',
             password: 'DemoEditor2026!',
-            roles: [2], // Editor role
+            roles: [2],
             isActive: true,
           },
           {
@@ -247,7 +354,7 @@ export default {
             firstname: 'Demo',
             lastname: 'Editor 2',
             password: 'DemoEditor2026!',
-            roles: [2], // Editor role
+            roles: [2],
             isActive: true,
           },
         ];
@@ -260,87 +367,12 @@ export default {
               console.log(`✅ Strapi Admin Editor account created: ${editor.email}`);
             }
           } catch (e) {
-            // Already exists or error ignored
-          }
-        }
-
-        // 2b. Frontend Demo End-Users
-        const demoUsers = [
-          {
-            username: 'DemoTechUser',
-            email: 'demotech@inwebdesign.net',
-            password: 'DemoUser2026!',
-            confirmed: true,
-            vector: {
-              interests: {
-                'Wissenschaft': { score: 0.98, last_interacted: new Date().toISOString() },
-                'PostgreSQL': { score: 0.95, last_interacted: new Date().toISOString() },
-                'NextJS': { score: 0.92, last_interacted: new Date().toISOString() },
-                'Tech': { score: 0.90, last_interacted: new Date().toISOString() },
-                'Funny Cat Videos': { score: 0.10, last_interacted: new Date().toISOString() },
-              },
-              contentTypes: { pdf: 1.0, video: 0.8, article: 0.7, short: 0.2 },
-              activePattern: 'deep_dive',
-            },
-          },
-          {
-            username: 'DemoGourmetUser',
-            email: 'demogourmet@inwebdesign.net',
-            password: 'DemoUser2026!',
-            confirmed: true,
-            vector: {
-              interests: {
-                'Kochen': { score: 0.99, last_interacted: new Date().toISOString() },
-                'Natur': { score: 0.90, last_interacted: new Date().toISOString() },
-                'Finanzen': { score: 0.70, last_interacted: new Date().toISOString() },
-                'Funny Cat Videos': { score: 0.80, last_interacted: new Date().toISOString() },
-                'PostgreSQL': { score: 0.15, last_interacted: new Date().toISOString() },
-              },
-              contentTypes: { video: 1.0, short: 0.8, article: 0.6, pdf: 0.2 },
-              activePattern: 'discovery',
-            },
-          },
-        ];
-
-        const authRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-          where: { type: 'authenticated' },
-        });
-
-        for (const user of demoUsers) {
-          try {
-            const existingUsers = await strapi.documents('plugin::users-permissions.user').findMany({
-              filters: { email: { $eq: user.email } },
-            });
-            if (!existingUsers || existingUsers.length === 0) {
-              const createdUser = await strapi.service('plugin::users-permissions.user').add({
-                username: user.username,
-                email: user.email,
-                password: user.password,
-                confirmed: true,
-                provider: 'local',
-                role: authRole?.id || 1,
-              });
-
-              // Create linked user-profile
-              await strapi.documents('api::user-profile.user-profile').create({
-                data: {
-                  username: user.username,
-                  bio: 'Demo Vorschau Account für InWebDesign Omni Network',
-                  avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80`,
-                  affinityGraph: user.vector,
-                  interestVector: user.vector,
-                  user: createdUser.id,
-                },
-              });
-              console.log(`✅ Frontend Demo user created: ${user.username}`);
-            }
-          } catch (e) {
-            // Already exists or error ignored
+            // Ignored
           }
         }
       }
     } catch (err) {
-      console.error('Error during Strapi bootstrap seed:', err);
+      console.error('❌ Strapi Bootstrap Error:', err);
     }
   },
 };

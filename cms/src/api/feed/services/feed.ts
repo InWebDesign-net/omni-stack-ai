@@ -169,6 +169,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     try {
       const dbItems = await strapi.documents('api::feed-item.feed-item').findMany({
         locale: targetLocale,
+        populate: ['author'],
       });
       if (dbItems && dbItems.length > 0) {
         items = dbItems as any;

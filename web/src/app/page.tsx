@@ -37,7 +37,17 @@ import {
   TrendingUp,
   ChevronRight,
   ExternalLink,
+  Users,
 } from 'lucide-react';
+
+interface ChannelAuthor {
+  id?: number;
+  username: string;
+  handle: string;
+  avatarUrl?: string;
+  bio?: string;
+  subscribersCount?: number;
+}
 
 interface FeedItem {
   id: number;
@@ -48,9 +58,10 @@ interface FeedItem {
   mediaType: 'video' | 'pdf' | 'article' | 'short';
   mediaUrl: string;
   thumbnailUrl: string;
-  authorName: string;
-  authorAvatar: string;
-  isSubscribedAuthor: boolean;
+  author?: ChannelAuthor;
+  authorName?: string;
+  authorAvatar?: string;
+  isSubscribedAuthor?: boolean;
   tags: string[];
   viewsCount: number;
   likesCount: number;
@@ -58,6 +69,30 @@ interface FeedItem {
   relevanceScore: number;
   bucketSource: string;
   slotIndex: number;
+}
+
+function getAuthorName(item: FeedItem) {
+  return item.author?.username || item.authorName || 'Omni Creator';
+}
+
+function getAuthorAvatar(item: FeedItem) {
+  return item.author?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+}
+
+function getAuthorHandle(item: FeedItem) {
+  if (item.author?.handle) {
+    return item.author.handle.startsWith('@') ? item.author.handle : `@${item.author.handle}`;
+  }
+  const fallback = (item.authorName || item.author?.username || 'creator').toLowerCase().replace(/[^a-z0-9]/g, '');
+  return `@${fallback || 'creator'}`;
+}
+
+function getAuthorBio(item: FeedItem) {
+  return item.author?.bio || 'Creator & Content Publisher im Omni Network.';
+}
+
+function getAuthorSubscribers(item: FeedItem) {
+  return item.author?.subscribersCount || 12500;
 }
 
 interface InterestProfile {
@@ -218,6 +253,33 @@ export default function OmniApp() {
 
   // Media Player Modal
   const [selectedMedia, setSelectedMedia] = useState<FeedItem | null>(null);
+
+  // Channel Profile Modal State
+  const [selectedChannel, setSelectedChannel] = useState<{
+    username: string;
+    handle: string;
+    avatarUrl: string;
+    bio: string;
+    subscribersCount: number;
+  } | null>(null);
+
+  const [subscribedChannels, setSubscribedChannels] = useState<string[]>(['@demotech', '@astro']);
+
+  const toggleSubscribeChannel = (handle: string) => {
+    setSubscribedChannels((prev) =>
+      prev.includes(handle) ? prev.filter((h) => h !== handle) : [...prev, handle]
+    );
+  };
+
+  const openChannelModal = (item: FeedItem) => {
+    setSelectedChannel({
+      username: getAuthorName(item),
+      handle: getAuthorHandle(item),
+      avatarUrl: getAuthorAvatar(item),
+      bio: getAuthorBio(item),
+      subscribersCount: getAuthorSubscribers(item),
+    });
+  };
 
   // Check stored auth session & language preference on mount
   useEffect(() => {
@@ -866,23 +928,55 @@ export default function OmniApp() {
                   </button>
                 </div>
 
-                {/* Quick prompts */}
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs und Dokus' },
-                    { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte' },
-                    { label: lang === 'de' ? '🐱 Funny Cats' : '🐱 Funny Cats', prompt: 'Funny Cat Videos und Tiere' },
-                    { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS Strapi Tech Tutorials' },
-                  ].map((item, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setChatInput(item.prompt)}
-                      className="text-[11px] bg-[#121a30] hover:bg-[#192038] text-[#9ba4bf] hover:text-white border border-white/6 hover:border-white/15 px-3.5 py-1.5 rounded-full transition-all duration-200"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                {/* Channel Mentions & Quick prompts */}
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
+                    <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>@Kanal:</span>
+                    </span>
+                    {[
+                      { handle: '@astro', label: 'Astro-Wissen' },
+                      { handle: '@demotech', label: 'Database Guru' },
+                      { handle: '@demogourmet', label: 'Culinary' },
+                      { handle: '@greenplanet', label: 'Green Planet' },
+                      { handle: '@omniarchitect', label: 'Omni Architect' },
+                      { handle: '@catmania', label: 'Familie & Tiere' },
+                      { handle: '@finanzkompass', label: 'FinanzKompass' },
+                    ].map((creator) => (
+                      <button
+                        key={creator.handle}
+                        type="button"
+                        onClick={() =>
+                          setChatInput((prev) =>
+                            prev.includes(creator.handle) ? prev : `${prev} ${creator.handle}`.trim()
+                          )
+                        }
+                        className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-2.5 py-1 rounded-lg shrink-0 transition-all flex items-center gap-1 group/m"
+                        title={`${creator.label} im Chat erwähnen`}
+                      >
+                        <span className="group-hover/m:underline">{creator.handle}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs von @astro' },
+                      { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte von @demogourmet' },
+                      { label: lang === 'de' ? '🐱 Funny Cats' : '🐱 Funny Cats', prompt: 'Funny Cat Videos von @catmania' },
+                      { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS & PostgreSQL von @demotech' },
+                    ].map((item, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setChatInput(item.prompt)}
+                        className="text-[11px] bg-[#121a30] hover:bg-[#192038] text-[#9ba4bf] hover:text-white border border-white/6 hover:border-white/15 px-3.5 py-1.5 rounded-full transition-all duration-200"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </form>
 
@@ -975,18 +1069,40 @@ export default function OmniApp() {
 
                   {/* Meta info */}
                   <div className="flex gap-2.5 items-start px-0.5">
-                    <img
-                      src={item.authorAvatar}
-                      alt={item.authorName}
-                      className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0 mt-0.5"
-                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openChannelModal(item);
+                      }}
+                      className="shrink-0 group/author"
+                      title={`Kanal ${getAuthorHandle(item)} ansehen`}
+                    >
+                      <img
+                        src={getAuthorAvatar(item)}
+                        alt={getAuthorName(item)}
+                        className="h-8 w-8 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all shrink-0 mt-0.5"
+                      />
+                    </button>
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <h3 className="font-semibold text-[13px] text-[#dae2fd] group-hover:text-white transition-colors line-clamp-2 leading-snug tracking-[-0.01em]">
                         {item.title}
                       </h3>
                       <div className="flex items-center gap-1.5 text-xs text-[#5c657d]">
-                        <span className="truncate">{item.authorName}</span>
-                        {item.isSubscribedAuthor && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openChannelModal(item);
+                          }}
+                          className="hover:text-[#44e2cd] transition-colors truncate font-semibold text-left flex items-center gap-1 group/handle"
+                        >
+                          <span>{getAuthorName(item)}</span>
+                          <span className="text-[10px] text-[#8083ff] font-mono font-bold group-hover/handle:underline">
+                            {getAuthorHandle(item)}
+                          </span>
+                        </button>
+                        {subscribedChannels.includes(getAuthorHandle(item)) && (
                           <CheckCircle2 className="h-3 w-3 text-[#44e2cd] shrink-0" />
                         )}
                       </div>
@@ -1223,6 +1339,119 @@ export default function OmniApp() {
                   <p className="text-sm text-[#9ba4bf] leading-relaxed">{selectedMedia.content}</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Channel Profile Modal ─────────────────────────────────────────────── */}
+      {selectedChannel && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[#0d1528] border border-white/10 max-w-4xl w-full rounded-3xl overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col animate-fadeInUp">
+            {/* Banner & Header */}
+            <div className="relative h-44 bg-gradient-to-r from-[#121a30] via-[#1a2544] to-[#080e1e] p-6 flex items-end justify-between border-b border-white/8">
+              <div className="absolute inset-0 bg-mesh opacity-40 pointer-events-none" />
+              <button
+                onClick={() => setSelectedChannel(null)}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-white/70 hover:text-white transition-all"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {/* Creator Identity */}
+              <div className="relative flex items-end gap-4 z-10 translate-y-6">
+                <img
+                  src={selectedChannel.avatarUrl}
+                  alt={selectedChannel.username}
+                  className="w-20 h-20 rounded-2xl object-cover border-4 border-[#080e1e] shadow-xl"
+                />
+                <div className="mb-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-white tracking-tight">{selectedChannel.username}</h2>
+                    <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
+                  </div>
+                  <p className="text-xs font-mono text-[#8083ff] font-bold">{selectedChannel.handle}</p>
+                </div>
+              </div>
+
+              {/* Subscribe Action */}
+              <div className="relative z-10">
+                <button
+                  onClick={() => toggleSubscribeChannel(selectedChannel.handle)}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 ${
+                    subscribedChannels.includes(selectedChannel.handle)
+                      ? 'bg-white/10 text-white border border-white/15 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30'
+                      : 'bg-[#8083ff] hover:bg-[#6b6eff] text-white shadow-[#8083ff]/30'
+                  }`}
+                >
+                  {subscribedChannels.includes(selectedChannel.handle) ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
+                      <span>Abonniert</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      <span>Kanal abonnieren</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Bio & Stats bar */}
+            <div className="pt-8 px-6 pb-4 bg-[#080e1e] border-b border-white/5 flex flex-col gap-3">
+              <p className="text-xs text-[#dae2fd]/90 leading-relaxed max-w-2xl">{selectedChannel.bio}</p>
+              <div className="flex items-center gap-4 text-xs font-mono text-[#5c657d]">
+                <div className="flex items-center gap-1.5 text-white font-bold">
+                  <Users className="h-3.5 w-3.5 text-[#44e2cd]" />
+                  <span>{(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten</span>
+                </div>
+                <span>·</span>
+                <span>
+                  {
+                    feedItems.filter((i) => getAuthorHandle(i) === selectedChannel.handle).length
+                  }{' '}
+                  Beiträge im Feed
+                </span>
+              </div>
+            </div>
+
+            {/* Published Feed items Grid */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#0d1528]">
+              <h3 className="text-xs font-bold text-[#8083ff] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Tv className="h-3.5 w-3.5" />
+                <span>Kanal-Inhalte von {selectedChannel.username}</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {feedItems
+                  .filter((item) => getAuthorHandle(item) === selectedChannel.handle)
+                  .map((item) => (
+                    <article
+                      key={item.id}
+                      onClick={() => {
+                        setSelectedChannel(null);
+                        setSelectedMedia(item);
+                      }}
+                      className="bg-[#121a30] hover:bg-[#192038] border border-white/8 hover:border-[#8083ff]/40 p-3 rounded-2xl cursor-pointer transition-all flex flex-col gap-2 group"
+                    >
+                      <div className="relative aspect-video rounded-xl overflow-hidden bg-[#080e1e]">
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute bottom-2 right-2">
+                          <MediaTypeBadge type={item.mediaType} />
+                        </div>
+                      </div>
+                      <h4 className="text-xs font-bold text-[#dae2fd] group-hover:text-white line-clamp-2">
+                        {item.title}
+                      </h4>
+                      <p className="text-[11px] text-[#5c657d] line-clamp-1">{item.summary}</p>
+                    </article>
+                  ))}
+              </div>
             </div>
           </div>
         </div>

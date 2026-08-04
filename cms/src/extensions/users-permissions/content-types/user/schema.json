@@ -1,0 +1,24 @@
+{
+  "attributes": {
+    "handle": {
+      "type": "string",
+      "unique": true
+    },
+    "avatarUrl": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "text"
+    },
+    "subscribersCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "feedItems": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::feed-item.feed-item",
+      "mappedBy": "author"
+    }
+  }
+}
