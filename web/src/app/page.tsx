@@ -29,9 +29,10 @@ import {
   Coffee,
   Smile,
   Send,
-  Sparkle,
-  Layers,
-  ArrowRight,
+  Lock,
+  Mail,
+  UserPlus,
+  LogIn,
 } from 'lucide-react';
 
 interface FeedItem {
@@ -91,10 +92,14 @@ export default function OmniApp() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // User Auth Modal State
+  // User Auth & Session State
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ username: string; email: string } | null>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; email: string; jwt?: string } | null>(null);
   const [regForm, setRegForm] = useState({ username: '', email: '', password: '', bio: '' });
+  const [loginForm, setLoginForm] = useState({ identifier: '', password: '' });
 
   // AI Prompt / Chat Mask State
   const [chatInput, setChatInput] = useState('');
@@ -106,6 +111,19 @@ export default function OmniApp() {
 
   // Demo auto-reset countdown
   const [resetCountdown, setResetCountdown] = useState(300);
+
+  // Check stored auth session on mount
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('omni_user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        setCurrentUser(parsed);
+      }
+    } catch (e) {
+      // localStorage fallback
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -141,7 +159,88 @@ export default function OmniApp() {
     fetchFeed(profile);
   }, []);
 
-  // Handle AI Chat Mask Prompt submission
+  // Handle Real Registration with Strapi API
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setIsAuthLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(regForm),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setAuthError(data.error || 'Registrierung fehlgeschlagen.');
+        setIsAuthLoading(false);
+        return;
+      }
+
+      const userData = {
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
+        jwt: data.jwt,
+      };
+
+      setCurrentUser(userData);
+      localStorage.setItem('omni_user', JSON.stringify(userData));
+      setAuthModalOpen(false);
+      setRegForm({ username: '', email: '', password: '', bio: '' });
+    } catch (err: any) {
+      setAuthError(err.message || 'Verbindungsfehler bei Registrierung.');
+    }
+    setIsAuthLoading(false);
+  };
+
+  // Handle Real Login with Strapi API
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setIsAuthLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setAuthError(data.error || 'Anmeldung fehlgeschlagen.');
+        setIsAuthLoading(false);
+        return;
+      }
+
+      const userData = {
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
+        jwt: data.jwt,
+      };
+
+      setCurrentUser(userData);
+      localStorage.setItem('omni_user', JSON.stringify(userData));
+      setAuthModalOpen(false);
+      setLoginForm({ identifier: '', password: '' });
+    } catch (err: any) {
+      setAuthError(err.message || 'Verbindungsfehler bei Anmeldung.');
+    }
+    setIsAuthLoading(false);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('omni_user');
+  };
+
+  // Handle AI Chat Prompt submission
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -205,13 +304,6 @@ export default function OmniApp() {
     }, 500);
   };
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regForm.username || !regForm.email) return;
-    setCurrentUser({ username: regForm.username, email: regForm.email });
-    setAuthModalOpen(false);
-  };
-
   const updateInterestScore = (topic: string, newScore: number) => {
     const updated = {
       ...profile,
@@ -250,9 +342,9 @@ export default function OmniApp() {
 
   return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
-      {/* Top Header - Sticky across entire viewport */}
+      {/* Top Header */}
       <header className="sticky top-0 z-40 bg-[#0b1326]/95 backdrop-blur-xl border-b border-[#2d3449]/60 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-        {/* Far-left Brand & Sidebar Toggle */}
+        {/* Brand & Menu */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -312,10 +404,10 @@ export default function OmniApp() {
           {currentUser ? (
             <div className="flex items-center gap-2 bg-[#171f33] border border-[#2d3449] px-3.5 py-1.5 rounded-full text-xs text-white">
               <User className="h-4 w-4 text-[#44e2cd]" />
-              <span className="font-medium">{currentUser.username}</span>
+              <span className="font-semibold">{currentUser.username}</span>
               <button
-                onClick={() => setCurrentUser(null)}
-                className="text-[#908fa0] hover:text-red-400 ml-1"
+                onClick={handleLogout}
+                className="text-[#908fa0] hover:text-red-400 ml-1.5 transition"
                 title="Abmelden"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -323,21 +415,24 @@ export default function OmniApp() {
             </div>
           ) : (
             <button
-              onClick={() => setAuthModalOpen(true)}
+              onClick={() => {
+                setAuthMode('register');
+                setAuthError(null);
+                setAuthModalOpen(true);
+              }}
               className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] text-white px-4 py-1.5 rounded-full text-xs font-semibold transition shadow-md shadow-[#8083ff]/20"
             >
               <User className="h-3.5 w-3.5" />
-              <span>{lang === 'de' ? 'Anmelden' : 'Sign In'}</span>
+              <span>{lang === 'de' ? 'Anmelden / Registrieren' : 'Sign In / Register'}</span>
             </button>
           )}
         </div>
       </header>
 
-      {/* Floating Algorithm Controls Drawer (Interest Vectors & Patterns only) */}
+      {/* Floating Algorithm Controls Drawer */}
       {algoDrawerOpen && (
         <aside className="bg-[#171f33]/95 backdrop-blur-2xl border-b border-[#2d3449] px-6 py-5 shadow-2xl animate-slideDown z-30">
           <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            {/* Interest Vector Matrix */}
             <div className="md:col-span-7 flex flex-col gap-2.5 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <span className="text-xs font-bold text-gray-200 flex items-center justify-between">
                 <span>{lang === 'de' ? 'Strapi User Interest Vector' : 'Strapi User Interest Vector'}</span>
@@ -364,7 +459,6 @@ export default function OmniApp() {
               </div>
             </div>
 
-            {/* Pattern Switcher */}
             <div className="md:col-span-5 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
               <span className="text-xs font-bold text-gray-200">
                 {lang === 'de' ? 'Slot Interleaving Pattern' : 'Slot Interleaving Pattern'}
@@ -413,7 +507,7 @@ export default function OmniApp() {
 
       {/* Main Full-Height Layout Wrapper */}
       <div className="flex flex-1 w-full min-h-[calc(100vh-57px)]">
-        {/* Far-Left Sidebar (Aligned 100% to desktop window left margin) */}
+        {/* Far-Left Sidebar */}
         <aside
           className={`${
             sidebarOpen ? 'w-64' : 'w-16'
@@ -468,9 +562,9 @@ export default function OmniApp() {
           )}
         </aside>
 
-        {/* Center Content Workspace */}
+        {/* Center Workspace */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col gap-8 min-w-0">
-          {/* Prominent Hero AI Chat Mask (Modern ChatGPT / Conversational Input) */}
+          {/* Prominent Hero AI Chat Mask */}
           <section className="w-full max-w-4xl mx-auto flex flex-col gap-3">
             <div className="glass-surface-glow p-5 sm:p-6 rounded-3xl border border-[#8083ff]/40 shadow-2xl relative overflow-hidden group">
               <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#8083ff]/15 rounded-full blur-3xl pointer-events-none" />
@@ -511,7 +605,6 @@ export default function OmniApp() {
                   </button>
                 </div>
 
-                {/* Quick Action Suggestion Pills */}
                 <div className="flex flex-wrap gap-2 pt-1">
                   {[
                     { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs und Dokus' },
@@ -522,9 +615,7 @@ export default function OmniApp() {
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => {
-                        setChatInput(item.prompt);
-                      }}
+                      onClick={() => setChatInput(item.prompt)}
                       className="text-xs bg-[#171f33] hover:bg-[#222a3d] text-[#c0c1ff] border border-[#2d3449] px-3 py-1.5 rounded-full transition"
                     >
                       {item.label}
@@ -558,7 +649,7 @@ export default function OmniApp() {
             ))}
           </div>
 
-          {/* Feed Cards Grid */}
+          {/* Feed Grid */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {filteredFeed.map((item, idx) => (
               <article
@@ -566,7 +657,6 @@ export default function OmniApp() {
                 onClick={() => setSelectedMedia(item)}
                 className="flex flex-col gap-3 group cursor-pointer"
               >
-                {/* Thumbnail */}
                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#131b2e] border border-[#2d3449] group-hover:border-[#8083ff]/60 group-hover:scale-[1.02] transition duration-300 shadow-md">
                   <img
                     src={item.thumbnailUrl}
@@ -575,7 +665,6 @@ export default function OmniApp() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0b1326]/80 via-transparent to-transparent opacity-80" />
 
-                  {/* Format Badge */}
                   <div className="absolute bottom-2.5 right-2.5 bg-[#0b1326]/85 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold text-white uppercase flex items-center gap-1 border border-white/10">
                     {item.mediaType === 'video' && <Video className="h-3 w-3 text-[#ffb783]" />}
                     {item.mediaType === 'pdf' && <FileText className="h-3 w-3 text-red-400" />}
@@ -584,13 +673,11 @@ export default function OmniApp() {
                     {item.mediaType}
                   </div>
 
-                  {/* Bucket Slot Badge */}
                   <div className="absolute top-2.5 left-2.5 bg-[#171f33]/90 backdrop-blur-md border border-[#8083ff]/40 text-[#c0c1ff] px-2.5 py-0.5 rounded-full font-mono text-[10px]">
                     Slot #{item.slotIndex || idx + 1}: {item.bucketSource}
                   </div>
                 </div>
 
-                {/* Metadata */}
                 <div className="flex gap-3 items-start px-0.5">
                   <img
                     src={item.authorAvatar}
@@ -624,9 +711,9 @@ export default function OmniApp() {
         </main>
       </div>
 
-      {/* User Sign In Modal */}
+      {/* User Authentication Modal (Register / Login Tabs) */}
       {authModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-[#171f33] border border-[#2d3449] max-w-md w-full rounded-3xl p-6 relative flex flex-col gap-5 shadow-2xl">
             <button
               onClick={() => setAuthModalOpen(false)}
@@ -635,60 +722,144 @@ export default function OmniApp() {
               <X className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-2 text-[#c0c1ff] font-bold text-lg">
-              <User className="h-5 w-5 text-[#44e2cd]" />
-              <span>{lang === 'de' ? 'Bei Omni anmelden' : 'Sign in to Omni'}</span>
-            </div>
-            <p className="text-xs text-[#908fa0]">
-              {lang === 'de'
-                ? 'Erstelle dein Profil, um deine persönliche KI-Vektor-Konfiguration zu speichern!'
-                : 'Create your profile to save your personalized AI Interest Vector!'}
-            </p>
-
-            <form onSubmit={handleRegister} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-300">Benutzername</label>
-                <input
-                  type="text"
-                  required
-                  value={regForm.username}
-                  onChange={(e) => setRegForm({ ...regForm, username: e.target.value })}
-                  placeholder="z.B. MaxMustermann"
-                  className="bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8083ff]"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-300">E-Mail Adresse</label>
-                <input
-                  type="email"
-                  required
-                  value={regForm.email}
-                  onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                  placeholder="max@example.com"
-                  className="bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8083ff]"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-300">Passwort</label>
-                <input
-                  type="password"
-                  required
-                  value={regForm.password}
-                  onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="bg-[#0b1326] border border-[#2d3449] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8083ff]"
-                />
-              </div>
-
+            {/* Auth Mode Tabs */}
+            <div className="flex items-center gap-2 bg-[#131b2e] p-1 rounded-2xl border border-[#2d3449]">
               <button
-                type="submit"
-                className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-[#8083ff]/30"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthError(null);
+                }}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                  authMode === 'register'
+                    ? 'bg-[#8083ff] text-white shadow'
+                    : 'text-[#908fa0] hover:text-white'
+                }`}
               >
-                Konto erstellen & Anmelden
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Registrieren</span>
               </button>
-            </form>
+              <button
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthError(null);
+                }}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                  authMode === 'login'
+                    ? 'bg-[#8083ff] text-white shadow'
+                    : 'text-[#908fa0] hover:text-white'
+                }`}
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span>Anmelden</span>
+              </button>
+            </div>
+
+            {authError && (
+              <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-xs text-red-300">
+                {authError}
+              </div>
+            )}
+
+            {/* Register Form */}
+            {authMode === 'register' ? (
+              <form onSubmit={handleRegister} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#dae2fd]">Benutzername</label>
+                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
+                    <User className="h-4 w-4 text-[#908fa0] mr-2" />
+                    <input
+                      type="text"
+                      required
+                      value={regForm.username}
+                      onChange={(e) => setRegForm({ ...regForm, username: e.target.value })}
+                      placeholder="z.B. MaxMustermann"
+                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#dae2fd]">E-Mail Adresse</label>
+                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
+                    <Mail className="h-4 w-4 text-[#908fa0] mr-2" />
+                    <input
+                      type="email"
+                      required
+                      value={regForm.email}
+                      onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
+                      placeholder="max@example.com"
+                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#dae2fd]">Passwort</label>
+                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
+                    <Lock className="h-4 w-4 text-[#908fa0] mr-2" />
+                    <input
+                      type="password"
+                      required
+                      value={regForm.password}
+                      onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
+                      placeholder="••••••••"
+                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAuthLoading}
+                  className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+                >
+                  {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                  <span>Konto in Strapi erstellen</span>
+                </button>
+              </form>
+            ) : (
+              /* Login Form */
+              <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#dae2fd]">E-Mail oder Benutzername</label>
+                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
+                    <User className="h-4 w-4 text-[#908fa0] mr-2" />
+                    <input
+                      type="text"
+                      required
+                      value={loginForm.identifier}
+                      onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })}
+                      placeholder="max@example.com"
+                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#dae2fd]">Passwort</label>
+                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
+                    <Lock className="h-4 w-4 text-[#908fa0] mr-2" />
+                    <input
+                      type="password"
+                      required
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                      placeholder="••••••••"
+                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAuthLoading}
+                  className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+                >
+                  {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+                  <span>Bei Strapi anmelden</span>
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
