@@ -34,6 +34,8 @@ import {
   Mail,
   UserPlus,
   LogIn,
+  TrendingUp,
+  ChevronRight,
 } from 'lucide-react';
 
 interface FeedItem {
@@ -83,6 +85,86 @@ const DEFAULT_PROFILE: InterestProfile = {
   },
   activePattern: 'discovery',
 };
+
+// ─── OmniLogo SVG Component ───────────────────────────────────────────────────
+function OmniLogo({ size = 36 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logo-outer" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8083ff" />
+          <stop offset="50%" stopColor="#44e2cd" />
+          <stop offset="100%" stopColor="#ffb783" />
+        </linearGradient>
+        <linearGradient id="logo-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#c0c1ff" />
+          <stop offset="100%" stopColor="#44e2cd" />
+        </linearGradient>
+        <filter id="logo-glow">
+          <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      {/* Outer ring */}
+      <circle cx="20" cy="20" r="18" stroke="url(#logo-outer)" strokeWidth="1.5" fill="none" opacity="0.6" />
+      {/* Middle ring */}
+      <circle cx="20" cy="20" r="13" stroke="url(#logo-inner)" strokeWidth="1" fill="none" opacity="0.4" strokeDasharray="2 3" />
+      {/* Core shape – O with inner spark */}
+      <circle cx="20" cy="20" r="8" fill="url(#logo-outer)" opacity="0.15" />
+      <circle cx="20" cy="20" r="5.5" fill="url(#logo-outer)" opacity="0.25" />
+      {/* Central dot */}
+      <circle cx="20" cy="20" r="2.5" fill="url(#logo-inner)" filter="url(#logo-glow)" />
+      {/* Spark lines */}
+      <line x1="20" y1="4" x2="20" y2="8" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="20" y1="32" x2="20" y2="36" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="4" y1="20" x2="8" y2="20" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="32" y1="20" x2="36" y2="20" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
+      {/* Diagonal sparks */}
+      <line x1="8.4" y1="8.4" x2="11.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+      <line x1="29.0" y1="29.0" x2="31.6" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+      <line x1="31.6" y1="8.4" x2="29.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+      <line x1="11.0" y1="29.0" x2="8.4" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+    </svg>
+  );
+}
+
+// ─── Skeleton Card ────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="aspect-video rounded-2xl skeleton" />
+      <div className="flex gap-3 px-0.5">
+        <div className="h-9 w-9 rounded-full skeleton shrink-0" />
+        <div className="flex flex-col gap-2 flex-1">
+          <div className="h-3 rounded-full skeleton w-full" />
+          <div className="h-3 rounded-full skeleton w-3/4" />
+          <div className="h-2.5 rounded-full skeleton w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MediaTypeBadge ───────────────────────────────────────────────────────────
+function MediaTypeBadge({ type }: { type: FeedItem['mediaType'] }) {
+  const map = {
+    video:   { icon: Video,    label: 'Video',   color: 'text-[#ffb783]', bg: 'bg-[#ffb783]/15 border-[#ffb783]/25' },
+    pdf:     { icon: FileText, label: 'PDF',     color: 'text-red-400',   bg: 'bg-red-400/15 border-red-400/25' },
+    article: { icon: BookOpen, label: 'Artikel', color: 'text-[#44e2cd]', bg: 'bg-[#44e2cd]/15 border-[#44e2cd]/25' },
+    short:   { icon: Play,     label: 'Short',   color: 'text-[#c0c1ff]', bg: 'bg-[#c0c1ff]/15 border-[#c0c1ff]/25' },
+  } as const;
+  const m = map[type];
+  const Icon = m.icon;
+  return (
+    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide border backdrop-blur-md ${m.bg}`}>
+      <Icon className={`h-3 w-3 ${m.color}`} />
+      <span className={m.color}>{m.label}</span>
+    </div>
+  );
+}
 
 export default function OmniApp() {
   const [lang, setLang] = useState<'de' | 'en'>('de');
@@ -250,8 +332,8 @@ export default function OmniApp() {
     setIsAiProcessing(true);
     setAiReasoning(
       lang === 'de'
-        ? '🤖 Ollama LLM (10.0.0.6:11434) analysiert Intent & berechnet Vektoren...'
-        : '🤖 Ollama LLM (10.0.0.6:11434) analyzing intent & computing vectors...'
+        ? '🤖 Ollama LLM analysiert Intent & berechnet Vektoren...'
+        : '🤖 Ollama LLM analyzing intent & computing vectors...'
     );
 
     try {
@@ -311,84 +393,112 @@ export default function OmniApp() {
   });
 
   const categoryPills = [
-    'Alle',
-    'Wissenschaft',
-    'Natur',
-    'Kochen',
-    'Tech',
-    'Finanzen',
-    'Funny Cat Videos',
-    'Dokumentation',
+    { label: 'Alle', emoji: '✦' },
+    { label: 'Wissenschaft', emoji: '🔬' },
+    { label: 'Natur', emoji: '🌿' },
+    { label: 'Kochen', emoji: '🍳' },
+    { label: 'Tech', emoji: '💻' },
+    { label: 'Finanzen', emoji: '📈' },
+    { label: 'Funny Cat Videos', emoji: '🐱' },
+    { label: 'Dokumentation', emoji: '🎬' },
+  ];
+
+  const sideNavItems = [
+    { icon: Home,     label: lang === 'de' ? 'Startseite' : 'Home',          active: true },
+    { icon: Flame,    label: lang === 'de' ? 'Trending' : 'Trending',         active: false },
+    { icon: Tv,       label: lang === 'de' ? 'Abonnements' : 'Subscriptions', active: false },
+    { icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library',        active: false },
+  ];
+
+  const sideTopics = [
+    { label: 'Wissenschaft', icon: Sparkles, tag: 'Wissenschaft' },
+    { label: 'Natur',        icon: Compass,  tag: 'Natur' },
+    { label: 'Kochen',       icon: Coffee,   tag: 'Kochen' },
+    { label: 'Finanzen',     icon: DollarSign, tag: 'Finanzen' },
+    { label: 'Tech',         icon: Cpu,      tag: 'Tech' },
+    { label: 'Entertainment',icon: Smile,    tag: 'Entertainment' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-[#0b1326]/95 backdrop-blur-xl border-b border-[#2d3449]/60 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-mesh text-[#dae2fd] flex flex-col font-sans">
+
+      {/* ── Top Header ──────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-5 sm:px-6 h-14 flex items-center justify-between gap-4"
+        style={{ boxShadow: '0 1px 0 rgba(128,131,255,0.10), 0 4px 16px -4px rgba(8,14,30,0.80)' }}>
+
         {/* Brand & Menu */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-[#171f33] rounded-xl text-[#c7c4d7] transition"
+            className="p-2 hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
             title="Menu"
+            aria-label="Toggle sidebar"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4.5 w-4.5" />
           </button>
 
-          <a href="#" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] p-0.5 shadow-lg shadow-[#8083ff]/20">
-              <div className="h-full w-full bg-[#0b1326] rounded-[10px] flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-[#c0c1ff] group-hover:rotate-12 transition duration-300" />
+          <a href="#" className="flex items-center gap-3 group select-none">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] opacity-30 blur-md group-hover:opacity-60 transition-opacity duration-300" />
+              <div className="relative rounded-xl bg-[#0d1528] border border-white/10 p-1.5 group-hover:border-white/20 transition-colors duration-200">
+                <OmniLogo size={22} />
               </div>
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+            <div className="flex flex-col leading-none">
+              <span className="font-extrabold text-[17px] tracking-[-0.04em] text-white leading-tight">
                 Omni
-                <span className="text-[10px] bg-[#8083ff]/20 text-[#c0c1ff] border border-[#8083ff]/40 px-2 py-0.5 rounded-full font-mono font-medium">
-                  KI-Network
-                </span>
+              </span>
+              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
+                KI-Network
               </span>
             </div>
           </a>
         </div>
 
         {/* Right Header Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+
+          {/* Algorithm Control */}
           <button
             onClick={() => setAlgoDrawerOpen(!algoDrawerOpen)}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
               algoDrawerOpen
-                ? 'bg-[#8083ff] border-[#8083ff] text-white shadow-lg shadow-[#8083ff]/30'
-                : 'bg-[#171f33] border-[#2d3449] text-[#c0c1ff] hover:bg-[#222a3d]'
+                ? 'bg-[#8083ff] border-[#8083ff] text-white glow-primary'
+                : 'bg-[#121a30] border-white/8 text-[#9ba4bf] hover:bg-[#192038] hover:text-white hover:border-white/15'
             }`}
           >
-            <Sliders className="h-3.5 w-3.5 text-[#44e2cd]" />
+            <Sliders className={`h-3.5 w-3.5 ${algoDrawerOpen ? 'text-white' : 'text-[#44e2cd]'}`} />
             <span className="hidden sm:inline">
-              {lang === 'de' ? 'Algorithmus Steuerung' : 'Algorithm Control'}
+              {lang === 'de' ? 'Algo-Steuerung' : 'Algorithm'}
             </span>
           </button>
 
-          <div className="hidden lg:flex items-center gap-1.5 bg-[#131b2e] border border-[#2d3449] px-3 py-1.5 rounded-full text-xs text-[#ffb783]">
+          {/* Reset Timer */}
+          <div className="hidden md:flex items-center gap-1.5 bg-[#121a30] border border-white/8 px-3 py-2 rounded-xl text-xs text-[#ffb783] font-mono">
             <RotateCcw className="h-3 w-3 animate-spin-slow text-[#ffb783]" />
-            <span className="font-mono text-[11px]">
+            <span className="text-[11px] tabular-nums">
               {Math.floor(resetCountdown / 60)}:{(resetCountdown % 60).toString().padStart(2, '0')}
             </span>
           </div>
 
+          {/* Language Toggle */}
           <button
             onClick={() => setLang(lang === 'de' ? 'en' : 'de')}
-            className="p-2 hover:bg-[#171f33] rounded-full text-xs font-bold transition text-[#dae2fd]"
+            className="px-3 py-2 hover:bg-white/5 rounded-xl text-xs font-bold transition-all text-[#9ba4bf] hover:text-white border border-transparent hover:border-white/8"
           >
-            {lang === 'de' ? 'DE 🇩🇪' : 'EN 🇬🇧'}
+            {lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
           </button>
 
+          {/* Auth */}
           {currentUser ? (
-            <div className="flex items-center gap-2 bg-[#171f33] border border-[#2d3449] px-3.5 py-1.5 rounded-full text-xs text-white">
-              <User className="h-4 w-4 text-[#44e2cd]" />
+            <div className="flex items-center gap-2.5 bg-[#121a30] border border-white/10 px-3.5 py-2 rounded-xl text-xs text-white">
+              <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-[#8083ff] to-[#44e2cd] flex items-center justify-center text-[10px] font-bold text-white">
+                {currentUser.username[0]?.toUpperCase()}
+              </div>
               <span className="font-semibold">{currentUser.username}</span>
               <button
                 onClick={handleLogout}
-                className="text-[#908fa0] hover:text-red-400 ml-1.5 transition"
+                className="text-[#5c657d] hover:text-red-400 ml-0.5 transition-colors"
                 title="Abmelden"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -401,30 +511,36 @@ export default function OmniApp() {
                 setAuthError(null);
                 setAuthModalOpen(true);
               }}
-              className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] text-white px-4 py-1.5 rounded-full text-xs font-semibold transition shadow-md shadow-[#8083ff]/20"
+              className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-[#8083ff]/25"
             >
               <User className="h-3.5 w-3.5" />
-              <span>{lang === 'de' ? 'Anmelden / Registrieren' : 'Sign In / Register'}</span>
+              <span className="hidden sm:inline">{lang === 'de' ? 'Anmelden' : 'Sign In'}</span>
             </button>
           )}
         </div>
       </header>
 
-      {/* Floating Algorithm Controls Drawer */}
+      {/* ── Algorithm Drawer ─────────────────────────────────────────────────── */}
       {algoDrawerOpen && (
-        <aside className="bg-[#171f33]/95 backdrop-blur-2xl border-b border-[#2d3449] px-6 py-5 shadow-2xl animate-slideDown z-30">
-          <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            <div className="md:col-span-7 flex flex-col gap-2.5 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
-              <span className="text-xs font-bold text-gray-200 flex items-center justify-between">
-                <span>{lang === 'de' ? 'Strapi User Interest Vector' : 'Strapi User Interest Vector'}</span>
-                <span className="text-[10px] text-[#908fa0] font-mono">JSON Profile</span>
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
+        <aside className="glass-surface border-b border-white/6 px-6 py-5 shadow-2xl animate-slideDown z-30"
+          style={{ boxShadow: '0 8px 32px -8px rgba(8,14,30,0.90), 0 1px 0 rgba(128,131,255,0.12)' }}>
+          <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+
+            {/* Interest Sliders */}
+            <div className="md:col-span-7 flex flex-col gap-3 bg-[#0d1528] p-5 rounded-2xl border border-white/6">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-white flex items-center gap-2">
+                  <Zap className="h-3.5 w-3.5 text-[#8083ff]" />
+                  {lang === 'de' ? 'Interesse-Vektoren' : 'Interest Vectors'}
+                </span>
+                <span className="text-[10px] text-[#5c657d] font-mono bg-[#192038] px-2 py-0.5 rounded-full">JSON Profile</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                 {Object.entries(profile.interests).map(([topic, data]) => (
-                  <div key={topic} className="flex flex-col gap-0.5 text-[11px]">
-                    <div className="flex justify-between text-gray-300">
-                      <span>{topic}</span>
-                      <span className="font-mono text-[#44e2cd] font-bold">{data.score.toFixed(2)}</span>
+                  <div key={topic} className="flex flex-col gap-1.5 text-[11px]">
+                    <div className="flex justify-between text-[#9ba4bf]">
+                      <span className="font-medium truncate mr-1">{topic}</span>
+                      <span className="font-mono text-[#44e2cd] font-bold shrink-0">{data.score.toFixed(2)}</span>
                     </div>
                     <input
                       type="range"
@@ -433,31 +549,33 @@ export default function OmniApp() {
                       step="0.05"
                       value={data.score}
                       onChange={(e) => updateInterestScore(topic, parseFloat(e.target.value))}
-                      className="w-full h-1 bg-[#2d3449] rounded appearance-none cursor-pointer accent-[#8083ff]"
+                      className="w-full"
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="md:col-span-5 flex flex-col gap-3 bg-[#131b2e] p-4 rounded-2xl border border-[#2d3449]">
-              <span className="text-xs font-bold text-gray-200">
-                {lang === 'de' ? 'Slot Interleaving Pattern' : 'Slot Interleaving Pattern'}
+            {/* Pattern Selector */}
+            <div className="md:col-span-5 flex flex-col gap-4 bg-[#0d1528] p-5 rounded-2xl border border-white/6">
+              <span className="text-xs font-bold text-white flex items-center gap-2">
+                <TrendingUp className="h-3.5 w-3.5 text-[#44e2cd]" />
+                {lang === 'de' ? 'Slot Interleaving' : 'Slot Interleaving'}
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2.5">
                 <button
                   onClick={() => {
                     const u = { ...profile, activePattern: 'discovery' as const };
                     setProfile(u);
                     fetchFeed(u);
                   }}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition ${
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
                     profile.activePattern === 'discovery'
-                      ? 'bg-[#8083ff] text-white shadow-md'
-                      : 'bg-[#171f33] text-[#908fa0] hover:text-white'
+                      ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/30'
+                      : 'bg-[#192038] text-[#9ba4bf] hover:text-white hover:bg-[#1e2740]'
                   }`}
                 >
-                  Discovery Pattern
+                  🔍 Discovery
                 </button>
                 <button
                   onClick={() => {
@@ -465,118 +583,143 @@ export default function OmniApp() {
                     setProfile(u);
                     fetchFeed(u);
                   }}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition ${
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
                     profile.activePattern === 'deep_dive'
-                      ? 'bg-[#44e2cd] text-[#003731] shadow-md'
-                      : 'bg-[#171f33] text-[#908fa0] hover:text-white'
+                      ? 'bg-[#44e2cd] text-[#003731] shadow-lg shadow-[#44e2cd]/25'
+                      : 'bg-[#192038] text-[#9ba4bf] hover:text-white hover:bg-[#1e2740]'
                   }`}
                 >
-                  Deep Dive Pattern
+                  🎯 Deep Dive
                 </button>
               </div>
-
               <button
                 onClick={() => setAlgoDrawerOpen(false)}
-                className="mt-1 text-[11px] text-[#908fa0] hover:text-white underline text-center"
+                className="text-[11px] text-[#5c657d] hover:text-[#9ba4bf] transition-colors text-center py-1"
               >
-                {lang === 'de' ? 'Panel schließen ✕' : 'Close Panel ✕'}
+                {lang === 'de' ? '✕ Panel schließen' : '✕ Close Panel'}
               </button>
             </div>
           </div>
         </aside>
       )}
 
-      {/* Main Full-Height Layout Wrapper */}
-      <div className="flex flex-1 w-full min-h-[calc(100vh-57px)]">
-        {/* Far-Left Sidebar */}
+      {/* ── Main Layout ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-1 w-full min-h-[calc(100vh-56px)]">
+
+        {/* ── Left Sidebar ──────────────────────────────────────────────────── */}
         <aside
           className={`${
-            sidebarOpen ? 'w-64' : 'w-16'
-          } shrink-0 bg-[#0b1326] border-r border-[#2d3449]/60 p-3 flex flex-col gap-6 transition-all duration-300 hidden sm:flex sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto custom-scrollbar z-20`}
+            sidebarOpen ? 'w-60' : 'w-[60px]'
+          } shrink-0 bg-[#080e1e] border-r border-white/5 flex flex-col gap-1 transition-all duration-300 hidden sm:flex sticky top-14 h-[calc(100vh-56px)] overflow-y-auto custom-scrollbar z-20 pt-4 pb-6`}
         >
-          <nav className="flex flex-col gap-1 text-sm font-medium">
-            {[
-              { icon: Home, label: lang === 'de' ? 'Startseite' : 'Home', active: true },
-              { icon: Flame, label: lang === 'de' ? 'Trending' : 'Trending' },
-              { icon: Tv, label: lang === 'de' ? 'Abonnements' : 'Subscriptions' },
-              { icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library' },
-            ].map((item, i) => (
+          {/* Navigation */}
+          <nav className="flex flex-col gap-0.5 px-2.5">
+            {sideNavItems.map((item, i) => (
               <button
                 key={i}
-                className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm ${
                   item.active
-                    ? 'bg-[#171f33] text-white font-bold border border-[#2d3449]'
-                    : 'text-[#c7c4d7] hover:bg-[#131b2e] hover:text-white'
+                    ? 'nav-item-active font-semibold'
+                    : 'text-[#5c657d] hover:bg-white/4 hover:text-[#9ba4bf]'
                 }`}
               >
-                <item.icon className="h-5 w-5 shrink-0 text-[#8083ff]" />
+                <item.icon className={`h-4.5 w-4.5 shrink-0 nav-icon ${item.active ? 'text-[#8083ff]' : 'text-current'}`} />
                 {sidebarOpen && <span>{item.label}</span>}
               </button>
             ))}
           </nav>
 
-          <hr className="border-[#2d3449]/60" />
+          <div className="mx-3 my-3 border-t border-white/5" />
 
+          {/* Topics */}
           {sidebarOpen && (
-            <div className="flex flex-col gap-1.5 text-xs text-[#908fa0] font-semibold px-3 uppercase tracking-wider">
-              <span>{lang === 'de' ? 'Themenbereiche' : 'Topics'}</span>
-              <div className="mt-2 flex flex-col gap-1 text-sm font-normal text-[#dae2fd]">
-                {[
-                  { label: 'Wissenschaft', icon: Sparkles },
-                  { label: 'Natur', icon: Compass },
-                  { label: 'Kochen', icon: Coffee },
-                  { label: 'Finanzen', icon: DollarSign },
-                  { label: 'Tech', icon: Cpu },
-                  { label: 'Entertainment', icon: Smile },
-                ].map((cat, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedTag(cat.label)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#171f33] hover:text-white text-left transition"
-                  >
-                    <cat.icon className="h-4 w-4 text-[#44e2cd]" />
-                    <span>{cat.label}</span>
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-col gap-1 px-2.5">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5c657d] mb-1">
+                {lang === 'de' ? 'Themen' : 'Topics'}
+              </p>
+              {sideTopics.map((cat, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedTag(cat.tag)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm text-left ${
+                    selectedTag === cat.tag
+                      ? 'text-white bg-white/6 border border-white/8'
+                      : 'text-[#5c657d] hover:bg-white/4 hover:text-[#9ba4bf]'
+                  }`}
+                >
+                  <cat.icon className={`h-4 w-4 shrink-0 ${selectedTag === cat.tag ? 'text-[#44e2cd]' : 'text-[#5c657d]'}`} />
+                  <span>{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Collapsed icons */}
+          {!sidebarOpen && (
+            <div className="flex flex-col gap-0.5 px-2.5">
+              {sideTopics.map((cat, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedTag(cat.tag)}
+                  title={cat.label}
+                  className={`flex items-center justify-center py-2.5 rounded-xl transition-all duration-200 ${
+                    selectedTag === cat.tag ? 'bg-white/6 text-[#44e2cd]' : 'text-[#5c657d] hover:bg-white/4 hover:text-[#9ba4bf]'
+                  }`}
+                >
+                  <cat.icon className="h-4 w-4" />
+                </button>
+              ))}
             </div>
           )}
         </aside>
 
-        {/* Center Workspace */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col gap-8 min-w-0">
-          {/* Prominent Hero AI Chat Mask */}
-          <section className="w-full max-w-4xl mx-auto flex flex-col gap-3">
-            <div className="glass-surface-glow p-5 sm:p-6 rounded-3xl border border-[#8083ff]/40 shadow-2xl relative overflow-hidden group">
-              <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#8083ff]/15 rounded-full blur-3xl pointer-events-none" />
+        {/* ── Center Content ────────────────────────────────────────────────── */}
+        <main className="flex-1 p-5 sm:p-7 lg:p-8 flex flex-col gap-7 min-w-0">
 
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-[#c0c1ff]">
-                  <Bot className="h-4 w-4 text-[#44e2cd]" />
-                  <span>{lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}</span>
+          {/* ─ AI Chat Hero ──────────────────────────────────────────────── */}
+          <section className="w-full max-w-3xl mx-auto animate-fadeInUp">
+            <div className="glass-surface-glow p-6 sm:p-7 rounded-3xl relative overflow-hidden group animate-border-glow">
+              {/* Background orbs */}
+              <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#8083ff]/10 rounded-full blur-3xl pointer-events-none animate-orb-float" />
+              <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-[#44e2cd]/08 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Header row */}
+              <div className="relative flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-[#8083ff]/20 to-[#44e2cd]/10 border border-[#8083ff]/30 flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-[#44e2cd]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white leading-tight">
+                      {lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}
+                    </p>
+                    <p className="text-[10px] text-[#5c657d] leading-tight">Powered by Ollama LLM</p>
+                  </div>
                 </div>
-                <span className="text-[10px] bg-[#8083ff]/20 text-[#c0c1ff] border border-[#8083ff]/40 px-2 py-0.5 rounded-full font-mono">
-                  Natural Language Feed Control
-                </span>
+                <div className="flex items-center gap-1.5 bg-[#8083ff]/12 border border-[#8083ff]/25 text-[#c0c1ff] px-2.5 py-1 rounded-full">
+                  <div className="h-1.5 w-1.5 rounded-full bg-[#44e2cd] animate-pulse-soft" />
+                  <span className="text-[10px] font-semibold font-mono">Natural Language Control</span>
+                </div>
               </div>
 
-              <form onSubmit={handleChatSubmit} className="flex flex-col gap-3">
-                <div className="relative flex items-center bg-[#0b1326]/90 border border-[#2d3449] focus-within:border-[#8083ff] rounded-2xl overflow-hidden shadow-inner p-1.5 transition">
+              {/* Form */}
+              <form onSubmit={handleChatSubmit} className="relative flex flex-col gap-3.5">
+                <div className="relative flex items-center bg-[#080e1e]/80 border border-white/8 focus-within:border-[#8083ff]/60 focus-within:shadow-[0_0_0_3px_rgba(128,131,255,0.10)] rounded-2xl overflow-hidden transition-all duration-200">
                   <input
                     type="text"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder={
                       lang === 'de'
-                        ? 'Worauf hast du heute Lust? (z.B. "Zeige mir Wissenschafts-PDFs", "Kochen & Pasta", "Funny Cats")...'
-                        : 'What would you like to explore today? (e.g. "Show science PDFs", "Cooking & Pasta", "Funny Cats")...'
+                        ? 'Worauf hast du heute Lust? z.B. "Wissenschafts-PDFs", "Kochen & Pasta"...'
+                        : 'What would you like to explore? e.g. "Science PDFs", "Cooking & Pasta"...'
                     }
-                    className="w-full bg-transparent px-4 py-3 text-sm text-[#dae2fd] placeholder-[#908fa0] focus:outline-none"
+                    className="w-full bg-transparent px-5 py-4 text-sm text-[#dae2fd] placeholder-[#5c657d] focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={isAiProcessing}
-                    className="bg-[#8083ff] hover:bg-[#6b6eff] text-white p-3 rounded-xl transition flex items-center justify-center shrink-0 shadow-lg shadow-[#8083ff]/30"
+                    className="m-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 disabled:opacity-50 text-white p-3 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0 shadow-lg shadow-[#8083ff]/30"
                   >
                     {isAiProcessing ? (
                       <RefreshCw className="h-4 w-4 animate-spin" />
@@ -586,18 +729,19 @@ export default function OmniApp() {
                   </button>
                 </div>
 
-                <div className="flex flex-wrap gap-2 pt-1">
+                {/* Quick prompts */}
+                <div className="flex flex-wrap gap-2">
                   {[
                     { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs und Dokus' },
                     { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte' },
-                    { label: lang === 'de' ? '🐱 Funny Cats & Tiere' : '🐱 Funny Cats', prompt: 'Funny Cat Videos und Tiere' },
+                    { label: lang === 'de' ? '🐱 Funny Cats' : '🐱 Funny Cats', prompt: 'Funny Cat Videos und Tiere' },
                     { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS Strapi Tech Tutorials' },
                   ].map((item, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setChatInput(item.prompt)}
-                      className="text-xs bg-[#171f33] hover:bg-[#222a3d] text-[#c0c1ff] border border-[#2d3449] px-3 py-1.5 rounded-full transition"
+                      className="text-[11px] bg-[#121a30] hover:bg-[#192038] text-[#9ba4bf] hover:text-white border border-white/6 hover:border-white/15 px-3.5 py-1.5 rounded-full transition-all duration-200"
                     >
                       {item.label}
                     </button>
@@ -605,141 +749,179 @@ export default function OmniApp() {
                 </div>
               </form>
 
+              {/* AI Reasoning Output */}
               {aiReasoning && (
-                <div className="mt-3 bg-[#0b1326]/80 p-3 rounded-xl border border-[#8083ff]/30 text-xs font-mono text-[#c0c1ff] animate-fadeIn">
-                  {aiReasoning}
+                <div className="relative mt-4 bg-[#080e1e]/70 border border-[#8083ff]/20 p-4 rounded-2xl animate-fadeIn">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-[#8083ff] animate-pulse-soft" />
+                    <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider">KI-Ausgabe</span>
+                  </div>
+                  <p className="text-xs font-mono text-[#c0c1ff] leading-relaxed">{aiReasoning}</p>
                 </div>
               )}
             </div>
           </section>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+          {/* ─ Category Pills ────────────────────────────────────────────── */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar -mx-1 px-1">
             {categoryPills.map((pill) => (
               <button
-                key={pill}
-                onClick={() => setSelectedTag(pill)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
-                  selectedTag === pill
-                    ? 'bg-[#c0c1ff] text-[#1000a9] font-bold shadow-md shadow-[#8083ff]/20'
-                    : 'bg-[#131b2e] text-[#dae2fd] hover:bg-[#171f33] border border-[#2d3449]/60'
+                key={pill.label}
+                onClick={() => setSelectedTag(pill.label)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                  selectedTag === pill.label
+                    ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
+                    : 'bg-[#0d1528] text-[#9ba4bf] hover:bg-[#192038] hover:text-white border border-white/6 hover:border-white/15'
                 }`}
               >
-                {pill}
+                <span className="text-[11px]">{pill.emoji}</span>
+                <span>{pill.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Feed Grid */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-            {filteredFeed.map((item, idx) => (
-              <article
-                key={item.id}
-                onClick={() => {
-                  tracker.track('click', item.tags, item.mediaType);
-                  setSelectedMedia(item);
-                }}
-                className="flex flex-col gap-3 group cursor-pointer"
-              >
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#131b2e] border border-[#2d3449] group-hover:border-[#8083ff]/60 group-hover:scale-[1.02] transition duration-300 shadow-md">
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b1326]/80 via-transparent to-transparent opacity-80" />
-
-                  <div className="absolute bottom-2.5 right-2.5 bg-[#0b1326]/85 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold text-white uppercase flex items-center gap-1 border border-white/10">
-                    {item.mediaType === 'video' && <Video className="h-3 w-3 text-[#ffb783]" />}
-                    {item.mediaType === 'pdf' && <FileText className="h-3 w-3 text-red-400" />}
-                    {item.mediaType === 'article' && <BookOpen className="h-3 w-3 text-[#44e2cd]" />}
-                    {item.mediaType === 'short' && <Play className="h-3 w-3 text-[#c0c1ff]" />}
-                    {item.mediaType}
-                  </div>
-
-                  <div className="absolute top-2.5 left-2.5 bg-[#171f33]/90 backdrop-blur-md border border-[#8083ff]/40 text-[#c0c1ff] px-2.5 py-0.5 rounded-full font-mono text-[10px]">
-                    Slot #{item.slotIndex || idx + 1}: {item.bucketSource}
-                  </div>
+          {/* ─ Feed Grid ─────────────────────────────────────────────────── */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+            {isLoading ? (
+              Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
+            ) : filteredFeed.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center justify-center gap-4 py-20 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-[#0d1528] border border-white/6 flex items-center justify-center">
+                  <Sparkles className="h-7 w-7 text-[#5c657d]" />
                 </div>
+                <div>
+                  <p className="text-base font-bold text-white mb-1">
+                    {lang === 'de' ? 'Keine Inhalte gefunden' : 'No content found'}
+                  </p>
+                  <p className="text-sm text-[#5c657d]">
+                    {lang === 'de' ? 'Passe dein Interessenprofil an.' : 'Adjust your interest profile.'}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filteredFeed.map((item, idx) => (
+                <article
+                  key={item.id}
+                  onClick={() => {
+                    tracker.track('click', item.tags, item.mediaType);
+                    setSelectedMedia(item);
+                  }}
+                  className="flex flex-col gap-3 group cursor-pointer feed-card-enter"
+                >
+                  {/* Thumbnail */}
+                  <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0d1528] border border-white/6 group-hover:border-[#8083ff]/40 transition-all duration-300 shadow-md group-hover:shadow-xl group-hover:shadow-[#8083ff]/10 group-hover:scale-[1.015]">
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#080e1e]/75 via-transparent to-transparent" />
 
-                <div className="flex gap-3 items-start px-0.5">
-                  <img
-                    src={item.authorAvatar}
-                    alt={item.authorName}
-                    className="h-9 w-9 rounded-full object-cover border border-[#2d3449] shrink-0 mt-0.5"
-                  />
-                  <div className="flex flex-col gap-1 flex-1">
-                    <h3 className="font-semibold text-sm text-[#dae2fd] group-hover:text-[#c0c1ff] transition line-clamp-2 leading-snug">
-                      {item.title}
-                    </h3>
-
-                    <div className="flex items-center gap-1.5 text-xs text-[#908fa0] mt-0.5">
-                      <span>{item.authorName}</span>
-                      {item.isSubscribedAuthor && (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-[#44e2cd]" />
-                      )}
+                    {/* Play button on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center">
+                        <Play className="h-4 w-4 text-white ml-0.5" />
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-[#908fa0] font-mono">
-                      <span>{(item.viewsCount / 1000).toFixed(1)}k Aufrufe</span>
-                      <span>•</span>
-                      <span className="text-[#44e2cd]">
-                        Score: {(item.relevanceScore * 100).toFixed(0)}%
-                      </span>
+                    {/* Media type badge */}
+                    <div className="absolute bottom-2.5 right-2.5">
+                      <MediaTypeBadge type={item.mediaType} />
+                    </div>
+
+                    {/* Slot badge */}
+                    <div className="absolute top-2.5 left-2.5 bg-[#0d1528]/85 backdrop-blur-md border border-white/8 text-[#9ba4bf] px-2 py-0.5 rounded-lg font-mono text-[9px] font-semibold tracking-wide">
+                      #{item.slotIndex || idx + 1} · {item.bucketSource}
                     </div>
                   </div>
-                </div>
-              </article>
-            ))}
+
+                  {/* Meta info */}
+                  <div className="flex gap-2.5 items-start px-0.5">
+                    <img
+                      src={item.authorAvatar}
+                      alt={item.authorName}
+                      className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0 mt-0.5"
+                    />
+                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                      <h3 className="font-semibold text-[13px] text-[#dae2fd] group-hover:text-white transition-colors line-clamp-2 leading-snug tracking-[-0.01em]">
+                        {item.title}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs text-[#5c657d]">
+                        <span className="truncate">{item.authorName}</span>
+                        {item.isSubscribedAuthor && (
+                          <CheckCircle2 className="h-3 w-3 text-[#44e2cd] shrink-0" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-[#5c657d] font-mono">
+                        <span>{(item.viewsCount / 1000).toFixed(1)}k</span>
+                        <span className="text-white/15">·</span>
+                        <span className="text-[#44e2cd] font-semibold">{(item.relevanceScore * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))
+            )}
           </section>
         </main>
       </div>
 
-      {/* User Authentication Modal (Register / Login Tabs) */}
+      {/* ── Auth Modal ───────────────────────────────────────────────────────── */}
       {authModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-[#171f33] border border-[#2d3449] max-w-md w-full rounded-3xl p-6 relative flex flex-col gap-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-lg flex items-center justify-center p-4 animate-fadeIn">
+          <div
+            className="bg-[#0d1528] border border-white/10 max-w-md w-full rounded-3xl p-7 relative flex flex-col gap-6 shadow-2xl animate-fadeInUp"
+            style={{ boxShadow: '0 24px 80px -12px rgba(8,14,30,0.90), 0 0 0 1px rgba(255,255,255,0.05) inset' }}
+          >
+            {/* Close button */}
             <button
               onClick={() => setAuthModalOpen(false)}
-              className="absolute top-4 right-4 text-[#908fa0] hover:text-white p-1 rounded-full bg-[#131b2e]"
+              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-all"
             >
               <X className="h-4 w-4" />
             </button>
 
-            {/* Auth Mode Tabs */}
-            <div className="flex items-center gap-2 bg-[#131b2e] p-1 rounded-2xl border border-[#2d3449]">
-              <button
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthError(null);
-                }}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
-                  authMode === 'register'
-                    ? 'bg-[#8083ff] text-white shadow'
-                    : 'text-[#908fa0] hover:text-white'
-                }`}
-              >
-                <UserPlus className="h-3.5 w-3.5" />
-                <span>Registrieren</span>
-              </button>
-              <button
-                onClick={() => {
-                  setAuthMode('login');
-                  setAuthError(null);
-                }}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
-                  authMode === 'login'
-                    ? 'bg-[#8083ff] text-white shadow'
-                    : 'text-[#908fa0] hover:text-white'
-                }`}
-              >
-                <LogIn className="h-3.5 w-3.5" />
-                <span>Anmelden</span>
-              </button>
+            {/* Logo + Title */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-[#8083ff]/30 to-[#44e2cd]/15 blur-lg" />
+                <div className="relative rounded-2xl bg-[#080e1e] border border-white/10 p-3">
+                  <OmniLogo size={32} />
+                </div>
+              </div>
+              <div className="text-center">
+                <h2 className="text-lg font-extrabold text-white tracking-tight">
+                  {authMode === 'register'
+                    ? (lang === 'de' ? 'Konto erstellen' : 'Create Account')
+                    : (lang === 'de' ? 'Willkommen zurück' : 'Welcome Back')}
+                </h2>
+                <p className="text-xs text-[#5c657d] mt-0.5">Omni KI-Network</p>
+              </div>
             </div>
 
+            {/* Auth Mode Tabs */}
+            <div className="flex items-center gap-1.5 bg-[#080e1e] p-1 rounded-2xl border border-white/6">
+              {(['register', 'login'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => { setAuthMode(mode); setAuthError(null); }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                    authMode === mode
+                      ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
+                      : 'text-[#5c657d] hover:text-[#9ba4bf]'
+                  }`}
+                >
+                  {mode === 'register' ? <UserPlus className="h-3.5 w-3.5" /> : <LogIn className="h-3.5 w-3.5" />}
+                  <span>{mode === 'register' ? 'Registrieren' : 'Anmelden'}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Error */}
             {authError && (
-              <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-xs text-red-300">
+              <div className="bg-red-500/10 border border-red-500/25 p-3.5 rounded-xl text-xs text-red-300 flex items-start gap-2">
+                <span className="text-red-400 mt-0.5">⚠</span>
                 {authError}
               </div>
             )}
@@ -747,55 +929,30 @@ export default function OmniApp() {
             {/* Register Form */}
             {authMode === 'register' ? (
               <form onSubmit={handleRegister} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-[#dae2fd]">Benutzername</label>
-                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
-                    <User className="h-4 w-4 text-[#908fa0] mr-2" />
-                    <input
-                      type="text"
-                      required
-                      value={regForm.username}
-                      onChange={(e) => setRegForm({ ...regForm, username: e.target.value })}
-                      placeholder="z.B. MaxMustermann"
-                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
-                    />
+                {[
+                  { key: 'username', label: 'Benutzername', type: 'text', placeholder: 'z.B. MaxMustermann', icon: User },
+                  { key: 'email', label: 'E-Mail', type: 'email', placeholder: 'max@example.com', icon: Mail },
+                  { key: 'password', label: 'Passwort', type: 'password', placeholder: '••••••••', icon: Lock },
+                ].map(({ key, label, type, placeholder, icon: Icon }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
+                    <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm transition-all">
+                      <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
+                      <input
+                        type={type}
+                        required
+                        value={(regForm as any)[key]}
+                        onChange={(e) => setRegForm({ ...regForm, [key]: e.target.value })}
+                        placeholder={placeholder}
+                        className="w-full bg-transparent text-white focus:outline-none placeholder-[#5c657d] text-sm"
+                      />
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-[#dae2fd]">E-Mail Adresse</label>
-                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
-                    <Mail className="h-4 w-4 text-[#908fa0] mr-2" />
-                    <input
-                      type="email"
-                      required
-                      value={regForm.email}
-                      onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                      placeholder="max@example.com"
-                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-[#dae2fd]">Passwort</label>
-                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
-                    <Lock className="h-4 w-4 text-[#908fa0] mr-2" />
-                    <input
-                      type="password"
-                      required
-                      value={regForm.password}
-                      onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                      placeholder="••••••••"
-                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
-                    />
-                  </div>
-                </div>
-
+                ))}
                 <button
                   type="submit"
                   disabled={isAuthLoading}
-                  className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+                  className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
                 >
                   {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                   <span>Konto in Strapi erstellen</span>
@@ -805,74 +962,59 @@ export default function OmniApp() {
               /* Login Form */
               <form onSubmit={handleLogin} className="flex flex-col gap-4">
                 {/* Demo Quick-Login Presets */}
-                <div className="bg-[#131b2e] border border-[#8083ff]/30 p-3 rounded-2xl flex flex-col gap-2">
+                <div className="bg-[#080e1e] border border-[#8083ff]/20 p-4 rounded-2xl flex flex-col gap-3">
                   <span className="text-[11px] font-bold text-[#c0c1ff] flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
-                    <span>Demo Vorschau Schnell-Login:</span>
+                    Demo Schnell-Login
                   </span>
-                  <div className="flex flex-col gap-1.5 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLoginForm({ identifier: 'demotech@inwebdesign.net', password: 'DemoUser2026!' });
-                      }}
-                      className="bg-[#0b1326] hover:bg-[#171f33] border border-[#2d3449] hover:border-[#8083ff] text-left p-2 rounded-xl text-[11px] transition flex justify-between items-center"
-                    >
-                      <span>👨‍💻 DemoTechUser (Tech & Science Fokus)</span>
-                      <span className="text-[#44e2cd] font-mono font-semibold">Auswählen →</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLoginForm({ identifier: 'demogourmet@inwebdesign.net', password: 'DemoUser2026!' });
-                      }}
-                      className="bg-[#0b1326] hover:bg-[#171f33] border border-[#2d3449] hover:border-[#8083ff] text-left p-2 rounded-xl text-[11px] transition flex justify-between items-center"
-                    >
-                      <span>🍳 DemoGourmetUser (Kochen & Natur Fokus)</span>
-                      <span className="text-[#44e2cd] font-mono font-semibold">Auswählen →</span>
-                    </button>
+                  <div className="flex flex-col gap-1.5">
+                    {[
+                      { label: '👨‍💻 DemoTechUser', sub: 'Tech & Science Fokus', creds: { identifier: 'demotech@inwebdesign.net', password: 'DemoUser2026!' } },
+                      { label: '🍳 DemoGourmetUser', sub: 'Kochen & Natur Fokus', creds: { identifier: 'demogourmet@inwebdesign.net', password: 'DemoUser2026!' } },
+                    ].map((preset, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setLoginForm(preset.creds)}
+                        className="bg-[#121a30] hover:bg-[#192038] border border-white/6 hover:border-[#8083ff]/30 text-left px-3 py-2.5 rounded-xl text-xs transition-all flex justify-between items-center group"
+                      >
+                        <div>
+                          <p className="font-semibold text-[#dae2fd]">{preset.label}</p>
+                          <p className="text-[#5c657d] text-[10px]">{preset.sub}</p>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 text-[#5c657d] group-hover:text-[#44e2cd] transition-colors" />
+                      </button>
+                    ))}
                   </div>
-                  <div className="mt-1 pt-2 border-t border-[#2d3449]/60 text-[10px] text-[#908fa0]">
-                    💡 <strong>Strapi Admin Panel Editor:</strong><br />
-                    E-Mail: <code className="text-[#c0c1ff]">demo-editor1@inwebdesign.net</code> | Passwort: <code className="text-[#c0c1ff]">DemoEditor2026!</code>
+                  <div className="pt-2 border-t border-white/5 text-[10px] text-[#5c657d]">
+                    💡 <strong className="text-[#9ba4bf]">Strapi Editor:</strong>{' '}
+                    <code className="text-[#c0c1ff] bg-[#121a30] px-1 py-0.5 rounded">demo-editor1@inwebdesign.net</code>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-[#dae2fd]">E-Mail oder Benutzername</label>
-                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
-                    <User className="h-4 w-4 text-[#908fa0] mr-2" />
-                    <input
-                      type="text"
-                      required
-                      value={loginForm.identifier}
-                      onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })}
-                      placeholder="max@example.com"
-                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
-                    />
+                {[
+                  { key: 'identifier', label: 'E-Mail oder Benutzername', type: 'text', placeholder: 'max@example.com', icon: User },
+                  { key: 'password', label: 'Passwort', type: 'password', placeholder: '••••••••', icon: Lock },
+                ].map(({ key, label, type, placeholder, icon: Icon }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
+                    <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 transition-all">
+                      <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
+                      <input
+                        type={type}
+                        required
+                        value={(loginForm as any)[key]}
+                        onChange={(e) => setLoginForm({ ...loginForm, [key]: e.target.value })}
+                        placeholder={placeholder}
+                        className="w-full bg-transparent text-white focus:outline-none placeholder-[#5c657d] text-sm"
+                      />
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-[#dae2fd]">Passwort</label>
-                  <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
-                    <Lock className="h-4 w-4 text-[#908fa0] mr-2" />
-                    <input
-                      type="password"
-                      required
-                      value={loginForm.password}
-                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                      placeholder="••••••••"
-                      className="w-full bg-transparent text-white focus:outline-none placeholder-[#908fa0]"
-                    />
-                  </div>
-                </div>
-
+                ))}
                 <button
                   type="submit"
                   disabled={isAuthLoading}
-                  className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+                  className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
                 >
                   {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
                   <span>Bei Strapi anmelden</span>
@@ -883,54 +1025,70 @@ export default function OmniApp() {
         </div>
       )}
 
-      {/* Media Modal */}
+      {/* ── Media Modal ──────────────────────────────────────────────────────── */}
       {selectedMedia && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#171f33] border border-[#2d3449] max-w-4xl w-full rounded-3xl p-6 relative flex flex-col gap-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
+          <div
+            className="bg-[#0d1528] border border-white/10 max-w-4xl w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp"
+            style={{ boxShadow: '0 32px 80px -12px rgba(8,14,30,0.95)' }}
+          >
             <button
               onClick={() => setSelectedMedia(null)}
-              className="absolute top-4 right-4 text-[#908fa0] hover:text-white p-1.5 rounded-full bg-[#131b2e]"
+              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <h2 className="text-xl font-bold text-white pr-8">{selectedMedia.title}</h2>
-
-            <div className="flex items-center gap-3 text-xs text-[#908fa0] border-b border-[#2d3449] pb-3">
-              <img
-                src={selectedMedia.authorAvatar}
-                alt={selectedMedia.authorName}
-                className="h-7 w-7 rounded-full object-cover"
-              />
-              <span className="font-semibold text-gray-200">{selectedMedia.authorName}</span>
-              <span>•</span>
-              <span className="text-[#44e2cd] font-mono">Bucket: {selectedMedia.bucketSource}</span>
+            <div>
+              <h2 className="text-xl font-extrabold text-white pr-10 tracking-tight leading-snug">
+                {selectedMedia.title}
+              </h2>
+              <div className="flex items-center gap-3 text-xs text-[#5c657d] mt-3">
+                <img
+                  src={selectedMedia.authorAvatar}
+                  alt={selectedMedia.authorName}
+                  className="h-7 w-7 rounded-full object-cover border border-white/10"
+                />
+                <span className="font-semibold text-[#9ba4bf]">{selectedMedia.authorName}</span>
+                <span className="text-white/15">·</span>
+                <span className="text-[#44e2cd] font-mono font-semibold">{selectedMedia.bucketSource}</span>
+                <div className="ml-auto">
+                  <MediaTypeBadge type={selectedMedia.mediaType} />
+                </div>
+              </div>
             </div>
 
-            {selectedMedia.mediaType === 'video' || selectedMedia.mediaType === 'short' ? (
-              <div className="aspect-video bg-black rounded-2xl overflow-hidden">
-                <video controls autoPlay src={selectedMedia.mediaUrl} className="w-full h-full" />
-              </div>
-            ) : selectedMedia.mediaType === 'pdf' ? (
-              <div className="bg-[#0b1326] border border-[#2d3449] rounded-2xl p-8 text-center flex flex-col items-center gap-4">
-                <FileText className="h-16 w-16 text-[#ffb783]" />
-                <h3 className="font-bold text-base text-gray-200">PDF Reader Preview</h3>
-                <p className="text-xs text-[#908fa0] max-w-md">{selectedMedia.summary}</p>
-                <a
-                  href={selectedMedia.mediaUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-5 py-2.5 rounded-xl text-xs font-semibold"
-                >
-                  PDF in neuem Tab öffnen
-                </a>
-              </div>
-            ) : (
-              <div className="bg-[#0b1326] p-6 rounded-2xl border border-[#2d3449] text-xs text-gray-300 leading-relaxed max-h-96 overflow-y-auto">
-                <p className="text-sm font-semibold mb-2 text-[#c0c1ff]">{selectedMedia.summary}</p>
-                <p>{selectedMedia.content}</p>
-              </div>
-            )}
+            <div className="border-t border-white/5 pt-5">
+              {selectedMedia.mediaType === 'video' || selectedMedia.mediaType === 'short' ? (
+                <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/8">
+                  <video controls autoPlay src={selectedMedia.mediaUrl} className="w-full h-full" />
+                </div>
+              ) : selectedMedia.mediaType === 'pdf' ? (
+                <div className="bg-[#080e1e] border border-white/6 rounded-2xl p-10 flex flex-col items-center gap-5 text-center">
+                  <div className="h-16 w-16 rounded-2xl bg-[#ffb783]/10 border border-[#ffb783]/20 flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-[#ffb783]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-white mb-2">PDF Dokument</h3>
+                    <p className="text-sm text-[#5c657d] max-w-md leading-relaxed">{selectedMedia.summary}</p>
+                  </div>
+                  <a
+                    href={selectedMedia.mediaUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-[#8083ff]/25 flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    PDF öffnen
+                  </a>
+                </div>
+              ) : (
+                <div className="bg-[#080e1e] p-6 rounded-2xl border border-white/6 max-h-96 overflow-y-auto custom-scrollbar">
+                  <p className="text-sm font-semibold mb-3 text-[#c0c1ff]">{selectedMedia.summary}</p>
+                  <p className="text-sm text-[#9ba4bf] leading-relaxed">{selectedMedia.content}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
