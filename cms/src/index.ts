@@ -223,6 +223,10 @@ export default {
           },
         ];
 
+        const authRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+          where: { type: 'authenticated' },
+        });
+
         for (const user of demoUsers) {
           try {
             const existingUsers = await strapi.documents('plugin::users-permissions.user').findMany({
@@ -234,6 +238,8 @@ export default {
                 email: user.email,
                 password: user.password,
                 confirmed: true,
+                provider: 'local',
+                role: authRole?.id || 1,
               });
 
               // Create linked user-profile
