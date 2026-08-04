@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { tracker } from '../lib/tracking';
 import {
   Menu,
   Zap,
@@ -654,7 +655,10 @@ export default function OmniApp() {
             {filteredFeed.map((item, idx) => (
               <article
                 key={item.id}
-                onClick={() => setSelectedMedia(item)}
+                onClick={() => {
+                  tracker.track('click', item.tags, item.mediaType);
+                  setSelectedMedia(item);
+                }}
                 className="flex flex-col gap-3 group cursor-pointer"
               >
                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#131b2e] border border-[#2d3449] group-hover:border-[#8083ff]/60 group-hover:scale-[1.02] transition duration-300 shadow-md">
