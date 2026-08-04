@@ -5,7 +5,7 @@ export default {
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     try {
-      // Check if feed items already exist in database
+      // 1. Seed initial Feed Items if database is empty
       const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({});
       if (!existingItems || existingItems.length === 0) {
         console.log('🌱 Seeding initial published Feed Items in Strapi...');
@@ -146,6 +146,113 @@ export default {
           });
         }
         console.log(`✅ ${seedItems.length} published Feed Items created in Strapi!`);
+      }
+
+      // 2. Demo Preview Accounts Seeding (Enabled when DEMO_MODE !== 'false')
+      const isDemoMode = process.env.DEMO_MODE !== 'false';
+      if (isDemoMode) {
+        console.log('🎭 Seeding Demo Accounts for Preview Environment...');
+
+        // 2a. Admin Editors
+        const adminEditors = [
+          {
+            email: 'demo-editor1@inwebdesign.net',
+            firstname: 'Demo',
+            lastname: 'Editor 1',
+            password: 'DemoEditor2026!',
+            roles: [2], // Editor role
+            isActive: true,
+          },
+          {
+            email: 'demo-editor2@inwebdesign.net',
+            firstname: 'Demo',
+            lastname: 'Editor 2',
+            password: 'DemoEditor2026!',
+            roles: [2], // Editor role
+            isActive: true,
+          },
+        ];
+
+        for (const editor of adminEditors) {
+          try {
+            const existingAdmin = await strapi.service('admin::user').findOneByEmail(editor.email);
+            if (!existingAdmin) {
+              await strapi.service('admin::user').create(editor);
+              console.log(`✅ Strapi Admin Editor account created: ${editor.email}`);
+            }
+          } catch (e) {
+            // Already exists or error ignored
+          }
+        }
+
+        // 2b. Frontend Demo End-Users
+        const demoUsers = [
+          {
+            username: 'DemoTechUser',
+            email: 'demotech@inwebdesign.net',
+            password: 'DemoUser2026!',
+            confirmed: true,
+            vector: {
+              interests: {
+                'Wissenschaft': { score: 0.98, last_interacted: new Date().toISOString() },
+                'PostgreSQL': { score: 0.95, last_interacted: new Date().toISOString() },
+                'NextJS': { score: 0.92, last_interacted: new Date().toISOString() },
+                'Tech': { score: 0.90, last_interacted: new Date().toISOString() },
+                'Funny Cat Videos': { score: 0.10, last_interacted: new Date().toISOString() },
+              },
+              contentTypes: { pdf: 1.0, video: 0.8, article: 0.7, short: 0.2 },
+              activePattern: 'deep_dive',
+            },
+          },
+          {
+            username: 'DemoGourmetUser',
+            email: 'demogourmet@inwebdesign.net',
+            password: 'DemoUser2026!',
+            confirmed: true,
+            vector: {
+              interests: {
+                'Kochen': { score: 0.99, last_interacted: new Date().toISOString() },
+                'Natur': { score: 0.90, last_interacted: new Date().toISOString() },
+                'Finanzen': { score: 0.70, last_interacted: new Date().toISOString() },
+                'Funny Cat Videos': { score: 0.80, last_interacted: new Date().toISOString() },
+                'PostgreSQL': { score: 0.15, last_interacted: new Date().toISOString() },
+              },
+              contentTypes: { video: 1.0, short: 0.8, article: 0.6, pdf: 0.2 },
+              activePattern: 'discovery',
+            },
+          },
+        ];
+
+        for (const user of demoUsers) {
+          try {
+            const existingUsers = await strapi.documents('plugin::users-permissions.user').findMany({
+              filters: { email: { $eq: user.email } },
+            });
+            if (!existingUsers || existingUsers.length === 0) {
+              const createdUser = await strapi.service('plugin::users-permissions.user').add({
+                username: user.username,
+                email: user.email,
+                password: user.password,
+                confirmed: true,
+              });
+
+              // Create linked user-profile
+              await strapi.documents('api::user-profile.user-profile').create({
+                data: {
+                  username: user.username,
+                  bio: 'Demo Vorschau Account für InWebDesign Omni Network',
+                  avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80`,
+                  affinityGraph: user.vector,
+                  interestVector: user.vector,
+                  user: createdUser.id,
+                },
+              });
+              console.log(`✅ Frontend Demo user created: ${user.username}`);
+            }
+          } catch (e) {
+            // Already exists or error ignored
+          }
+        }
       }
     } catch (err) {
       console.error('Error during Strapi bootstrap seed:', err);

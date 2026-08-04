@@ -824,6 +824,41 @@ export default function OmniApp() {
             ) : (
               /* Login Form */
               <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                {/* Demo Quick-Login Presets */}
+                <div className="bg-[#131b2e] border border-[#8083ff]/30 p-3 rounded-2xl flex flex-col gap-2">
+                  <span className="text-[11px] font-bold text-[#c0c1ff] flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
+                    <span>Demo Vorschau Schnell-Login:</span>
+                  </span>
+                  <div className="flex flex-col gap-1.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLoginForm({ identifier: 'demotech@inwebdesign.net', password: 'DemoUser2026!' });
+                      }}
+                      className="bg-[#0b1326] hover:bg-[#171f33] border border-[#2d3449] hover:border-[#8083ff] text-left p-2 rounded-xl text-[11px] transition flex justify-between items-center"
+                    >
+                      <span>👨‍💻 DemoTechUser (Tech & Science Fokus)</span>
+                      <span className="text-[#44e2cd] font-mono font-semibold">Auswählen →</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLoginForm({ identifier: 'demogourmet@inwebdesign.net', password: 'DemoUser2026!' });
+                      }}
+                      className="bg-[#0b1326] hover:bg-[#171f33] border border-[#2d3449] hover:border-[#8083ff] text-left p-2 rounded-xl text-[11px] transition flex justify-between items-center"
+                    >
+                      <span>🍳 DemoGourmetUser (Kochen & Natur Fokus)</span>
+                      <span className="text-[#44e2cd] font-mono font-semibold">Auswählen →</span>
+                    </button>
+                  </div>
+                  <div className="mt-1 pt-2 border-t border-[#2d3449]/60 text-[10px] text-[#908fa0]">
+                    💡 <strong>Strapi Admin Panel Editor:</strong><br />
+                    E-Mail: <code className="text-[#c0c1ff]">demo-editor1@inwebdesign.net</code> | Passwort: <code className="text-[#c0c1ff]">DemoEditor2026!</code>
+                  </div>
+                </div>
+
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-[#dae2fd]">E-Mail oder Benutzername</label>
                   <div className="flex items-center bg-[#0b1326] border border-[#2d3449] rounded-xl px-3 py-2.5 text-xs">
