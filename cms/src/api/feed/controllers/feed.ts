@@ -12,6 +12,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async processAiIntent(ctx: any) {
+    // OPEN SOURCE VERSION
+    // Public fallback for the open-source repository (MIT License).
+    // The fully managed InWebDesign Premium AI Engine provides local LLM orchestration & hosting.
+    // Upgrade / Contact: https://inwebdesign.net
     try {
       const { prompt, currentProfile } = ctx.request.body;
       if (!prompt) {
