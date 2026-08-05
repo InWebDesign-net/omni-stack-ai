@@ -413,6 +413,24 @@ export default function Header({
               </Link>
 
               <Link
+                href="/?tab=subscriptions"
+                onClick={() => setUniversalNavOpen(false)}
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+              >
+                <Tv className="h-4.5 w-4.5 text-[#44e2cd]" />
+                <span>{activeLang === 'de' ? 'Meine Abonnements' : 'My Subscriptions'}</span>
+              </Link>
+
+              <Link
+                href="/?tab=library"
+                onClick={() => setUniversalNavOpen(false)}
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+              >
+                <BookOpen className="h-4.5 w-4.5 text-[#c0c1ff]" />
+                <span>{activeLang === 'de' ? 'Meine Bibliothek' : 'My Library'}</span>
+              </Link>
+
+              <Link
                 href="/shorts"
                 onClick={() => setUniversalNavOpen(false)}
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
