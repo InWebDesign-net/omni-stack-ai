@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { tracker } from '../lib/tracking';
 import {
   Menu,
@@ -241,10 +242,12 @@ function UKFlag({ className = "w-4 h-3" }: { className?: string }) {
 }
 
 export default function OmniApp() {
+  const router = useRouter();
   const [lang, setLang] = useState<'de' | 'en'>('de');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>('Alle');
+  const [activeNavTab, setActiveNavTab] = useState<'home' | 'trending' | 'subscriptions' | 'library'>('home');
   const [profile, setProfile] = useState<InterestProfile>(DEFAULT_PROFILE);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -671,10 +674,34 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     ])
   );
 
-  const filteredFeed = feedItems.filter((item) => {
-    if (selectedTag === 'Alle' || selectedTag === 'All') return true;
-    return item.tags.includes(selectedTag);
-  });
+  const filteredFeed = React.useMemo(() => {
+    let items = feedItems.filter((item) => {
+      if (selectedTag === 'Alle' || selectedTag === 'All') return true;
+      return item.tags.includes(selectedTag);
+    });
+
+    if (activeNavTab === 'trending') {
+      return [...items].sort((a, b) => (b.viewsCount * (b.relevanceScore || 1)) - (a.viewsCount * (a.relevanceScore || 1)));
+    }
+
+    if (activeNavTab === 'subscriptions') {
+      return items.filter((item) => {
+        const handle = getAuthorHandle(item);
+        return subscribedChannels.includes(handle) || item.isSubscribedAuthor;
+      });
+    }
+
+    if (activeNavTab === 'library') {
+      if (currentUser) {
+        const userHandle = getCurrentUserHandle(currentUser);
+        const myItems = items.filter((item) => getAuthorHandle(item) === userHandle);
+        if (myItems.length > 0) return myItems;
+      }
+      return items.filter((item) => (item.relevanceScore || 0) > 0.85);
+    }
+
+    return items;
+  }, [feedItems, selectedTag, activeNavTab, subscribedChannels, currentUser]);
 
   const getTopicEmoji = (tag: string) => {
     const l = tag.toLowerCase();
@@ -709,10 +736,10 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
   ];
 
   const sideNavItems = [
-    { icon: Home,     label: lang === 'de' ? 'Startseite' : 'Home',          active: true },
-    { icon: Flame,    label: lang === 'de' ? 'Trending' : 'Trending',         active: false },
-    { icon: Tv,       label: lang === 'de' ? 'Abonnements' : 'Subscriptions', active: false },
-    { icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library',        active: false },
+    { id: 'home' as const,          icon: Home,     label: lang === 'de' ? 'Startseite' : 'Home',          active: activeNavTab === 'home' },
+    { id: 'trending' as const,      icon: Flame,    label: lang === 'de' ? 'Trending' : 'Trending',         active: activeNavTab === 'trending' },
+    { id: 'subscriptions' as const, icon: Tv,       label: lang === 'de' ? 'Abonnements' : 'Subscriptions', active: activeNavTab === 'subscriptions' },
+    { id: 'library' as const,       icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library',        active: activeNavTab === 'library' },
   ];
 
   const sideTopics = dynamicTopics.slice(0, 8).map((tag) => ({
@@ -1012,9 +1039,10 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
         >
           {/* Navigation */}
           <nav className="flex flex-col gap-1 px-2">
-            {sideNavItems.map((item, i) => (
+            {sideNavItems.map((item) => (
               <button
-                key={i}
+                key={item.id}
+                onClick={() => setActiveNavTab(item.id)}
                 title={!sidebarOpen ? item.label : undefined}
                 className={`flex items-center transition-all duration-200 text-sm rounded-xl ${
                   sidebarOpen
@@ -1112,123 +1140,245 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
               : 'Omni - Hyper-Personalized AI Media Network BY INWEBDESIGN'}
           </h1>
 
-          {/* ─ AI Chat Hero ──────────────────────────────────────────────── */}
-          <section className="w-full max-w-3xl mx-auto animate-fadeInUp">
-            <div className="glass-surface-glow p-6 sm:p-7 rounded-3xl relative overflow-hidden group animate-border-glow">
-              {/* Background orbs */}
-              <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#8083ff]/10 rounded-full blur-3xl pointer-events-none animate-orb-float" />
-              <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-[#44e2cd]/08 rounded-full blur-3xl pointer-events-none" />
+          {/* ─ Dynamic Hero Header according to activeNavTab ────────────────────────────── */}
+          {activeNavTab === 'home' && (
+            <section className="w-full max-w-3xl mx-auto animate-fadeInUp">
+              <div className="glass-surface-glow p-6 sm:p-7 rounded-3xl relative overflow-hidden group animate-border-glow">
+                {/* Background orbs */}
+                <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#8083ff]/10 rounded-full blur-3xl pointer-events-none animate-orb-float" />
+                <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-[#44e2cd]/08 rounded-full blur-3xl pointer-events-none" />
 
-              {/* Header row */}
-              <div className="relative flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-[#8083ff]/20 to-[#44e2cd]/10 border border-[#8083ff]/30 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-[#44e2cd]" />
+                {/* Header row */}
+                <div className="relative flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-[#8083ff]/20 to-[#44e2cd]/10 border border-[#8083ff]/30 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-[#44e2cd]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white leading-tight">
+                        {lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}
+                      </p>
+                      <p className="text-[10px] text-[#5c657d] leading-tight">Powered by InWebDesign</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-[#8083ff]/12 border border-[#8083ff]/25 text-[#c0c1ff] px-2.5 py-1 rounded-full">
+                    <div className="h-1.5 w-1.5 rounded-full bg-[#44e2cd] animate-pulse-soft" />
+                    <span className="text-[10px] font-semibold font-mono">Natural Language Control</span>
+                  </div>
+                </div>
+
+                {/* Form */}
+                <form noValidate onSubmit={handleChatSubmit} className="relative flex flex-col gap-3.5">
+                  <div className="relative flex items-center bg-[#080e1e]/80 border border-white/8 focus-within:border-[#8083ff]/60 focus-within:shadow-[0_0_0_3px_rgba(128,131,255,0.10)] rounded-2xl overflow-hidden transition-all duration-200">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder={
+                        lang === 'de'
+                          ? 'Worauf hast du heute Lust? z.B. "Wissenschafts-PDFs", "Kochen & Pasta"...'
+                          : 'What would you like to explore? e.g. "Science PDFs", "Cooking & Pasta"...'
+                      }
+                      className="w-full bg-transparent px-5 py-4 text-sm text-[#dae2fd] placeholder-[#5c657d] focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isAiProcessing}
+                      className="m-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 disabled:opacity-50 text-white p-3 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0 shadow-lg shadow-[#8083ff]/30"
+                    >
+                      {isAiProcessing ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Channel Mentions & Quick prompts */}
+                  <div className="flex flex-col gap-2.5">
+                    <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
+                      <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>@Kanal:</span>
+                      </span>
+                      {[
+                        { handle: '@astro', label: 'Astro-Wissen' },
+                        { handle: '@demotech', label: 'Database Guru' },
+                        { handle: '@demogourmet', label: 'Culinary' },
+                        { handle: '@greenplanet', label: 'Green Planet' },
+                        { handle: '@omniarchitect', label: 'Omni Architect' },
+                        { handle: '@catmania', label: 'Familie & Tiere' },
+                        { handle: '@finanzkompass', label: 'FinanzKompass' },
+                      ].map((creator) => (
+                        <button
+                          key={creator.handle}
+                          type="button"
+                          onClick={() =>
+                            setChatInput((prev) =>
+                              prev.includes(creator.handle) ? prev : `${prev} ${creator.handle}`.trim()
+                            )
+                          }
+                          className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-2.5 py-1 rounded-lg shrink-0 transition-all flex items-center gap-1 group/m"
+                          title={`${creator.label} im Chat erwähnen`}
+                        >
+                          <span className="group-hover/m:underline">{creator.handle}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs von @astro' },
+                        { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte von @demogourmet' },
+                        { label: lang === 'de' ? '🐱 Funny Cats' : '🐱 Funny Cats', prompt: 'Funny Cat Videos von @catmania' },
+                        { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS & PostgreSQL von @demotech' },
+                      ].map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setChatInput(item.prompt)}
+                          className="text-[11px] bg-[#121a30] hover:bg-[#192038] text-[#9ba4bf] hover:text-white border border-white/6 hover:border-white/15 px-3.5 py-1.5 rounded-full transition-all duration-200"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </form>
+
+                {/* AI Reasoning Output */}
+                {aiReasoning && (
+                  <div className="relative mt-4 bg-[#080e1e]/70 border border-[#8083ff]/20 p-4 rounded-2xl animate-fadeIn">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-[#8083ff] animate-pulse-soft" />
+                      <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider">KI-Ausgabe</span>
+                    </div>
+                    <p className="text-xs font-mono text-[#c0c1ff] leading-relaxed">{aiReasoning}</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {activeNavTab === 'trending' && (
+            <section className="w-full max-w-4xl mx-auto animate-fadeInUp">
+              <div className="glass-surface-glow p-6 sm:p-7 rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-[#ffb783]/30 shadow-2xl">
+                <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#ffb783]/10 rounded-full blur-3xl pointer-events-none animate-orb-float" />
+                <div className="flex items-center gap-4 relative">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-[#ffb783] via-[#ff6b81] to-[#8083ff] p-0.5 shadow-lg shadow-[#ffb783]/20 shrink-0">
+                    <div className="h-full w-full bg-[#080e1e] rounded-[14px] flex items-center justify-center">
+                      <Flame className="h-6 w-6 text-[#ffb783] animate-pulse-soft" />
+                    </div>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white leading-tight">
-                      {lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-extrabold text-white tracking-tight">
+                        {lang === 'de' ? '🔥 Trending im Network' : '🔥 Trending in Network'}
+                      </h2>
+                      <span className="text-[10px] font-mono font-bold bg-[#ffb783]/20 text-[#ffb783] border border-[#ffb783]/40 px-2.5 py-0.5 rounded-full">
+                        Ranked Feed
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#9ba4bf] mt-1 max-w-xl">
+                      {lang === 'de'
+                        ? 'Hier findest du die beliebtesten Beiträge mit den höchsten Aufrufzahlen, meisten Interaktionen & bester KI-Relevanz.'
+                        : 'Here you find the most popular posts with highest views, engagement & AI relevance score.'}
                     </p>
-                    <p className="text-[10px] text-[#5c657d] leading-tight">Powered by InWebDesign</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 bg-[#8083ff]/12 border border-[#8083ff]/25 text-[#c0c1ff] px-2.5 py-1 rounded-full">
-                  <div className="h-1.5 w-1.5 rounded-full bg-[#44e2cd] animate-pulse-soft" />
-                  <span className="text-[10px] font-semibold font-mono">Natural Language Control</span>
+                <div className="flex items-center gap-2 bg-[#080e1e]/80 border border-white/10 px-3 py-2 rounded-2xl shrink-0">
+                  <TrendingUp className="h-4 w-4 text-[#44e2cd]" />
+                  <span className="text-xs font-mono font-bold text-[#dae2fd]">
+                    {filteredFeed.length} {lang === 'de' ? 'Beiträge sortiert' : 'posts ranked'}
+                  </span>
                 </div>
               </div>
+            </section>
+          )}
 
-              {/* Form */}
-              <form noValidate onSubmit={handleChatSubmit} className="relative flex flex-col gap-3.5">
-                <div className="relative flex items-center bg-[#080e1e]/80 border border-white/8 focus-within:border-[#8083ff]/60 focus-within:shadow-[0_0_0_3px_rgba(128,131,255,0.10)] rounded-2xl overflow-hidden transition-all duration-200">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder={
-                      lang === 'de'
-                        ? 'Worauf hast du heute Lust? z.B. "Wissenschafts-PDFs", "Kochen & Pasta"...'
-                        : 'What would you like to explore? e.g. "Science PDFs", "Cooking & Pasta"...'
-                    }
-                    className="w-full bg-transparent px-5 py-4 text-sm text-[#dae2fd] placeholder-[#5c657d] focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isAiProcessing}
-                    className="m-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 disabled:opacity-50 text-white p-3 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0 shadow-lg shadow-[#8083ff]/30"
-                  >
-                    {isAiProcessing ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </button>
+          {activeNavTab === 'subscriptions' && (
+            <section className="w-full max-w-4xl mx-auto animate-fadeInUp">
+              <div className="glass-surface-glow p-6 sm:p-7 rounded-3xl relative overflow-hidden flex flex-col gap-5 border border-[#44e2cd]/30 shadow-2xl">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-[#44e2cd]/30 to-[#8083ff]/20 border border-[#44e2cd]/40 flex items-center justify-center">
+                      <Tv className="h-5 w-5 text-[#44e2cd]" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-extrabold text-white tracking-tight">
+                        {lang === 'de' ? '📺 Deine Abonnements' : '📺 Your Subscriptions'}
+                      </h2>
+                      <p className="text-xs text-[#9ba4bf] mt-0.5">
+                        {lang === 'de'
+                          ? 'Inhalte von allen Creator-Kanälen, denen du folgst.'
+                          : 'Exclusive posts from all creator channels you follow.'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-bold bg-[#44e2cd]/15 text-[#44e2cd] border border-[#44e2cd]/30 px-3 py-1 rounded-full">
+                    {subscribedChannels.length} {lang === 'de' ? 'Kanäle abonniert' : 'Channels Subscribed'}
+                  </span>
                 </div>
 
-                {/* Channel Mentions & Quick prompts */}
-                <div className="flex flex-col gap-2.5">
-                  <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
-                    <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>@Kanal:</span>
-                    </span>
-                    {[
-                      { handle: '@astro', label: 'Astro-Wissen' },
-                      { handle: '@demotech', label: 'Database Guru' },
-                      { handle: '@demogourmet', label: 'Culinary' },
-                      { handle: '@greenplanet', label: 'Green Planet' },
-                      { handle: '@omniarchitect', label: 'Omni Architect' },
-                      { handle: '@catmania', label: 'Familie & Tiere' },
-                      { handle: '@finanzkompass', label: 'FinanzKompass' },
-                    ].map((creator) => (
+                {/* Subscribed Creators Strip */}
+                <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-2 border-t border-white/5">
+                  <span className="text-[10px] font-bold text-[#5c657d] uppercase tracking-wider shrink-0 mr-1">
+                    {lang === 'de' ? 'Abonniert:' : 'Following:'}
+                  </span>
+                  {subscribedChannels.map((handle) => (
+                    <div
+                      key={handle}
+                      className="flex items-center gap-2 bg-[#080e1e] border border-white/10 hover:border-[#44e2cd]/50 px-3 py-1.5 rounded-xl shrink-0 transition-all group"
+                    >
+                      <span className="text-xs font-mono font-bold text-[#44e2cd]">{handle}</span>
                       <button
-                        key={creator.handle}
                         type="button"
-                        onClick={() =>
-                          setChatInput((prev) =>
-                            prev.includes(creator.handle) ? prev : `${prev} ${creator.handle}`.trim()
-                          )
-                        }
-                        className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-2.5 py-1 rounded-lg shrink-0 transition-all flex items-center gap-1 group/m"
-                        title={`${creator.label} im Chat erwähnen`}
+                        onClick={() => toggleSubscribeChannel(handle)}
+                        className="text-[10px] text-[#5c657d] hover:text-red-400 font-bold ml-1 transition-colors"
+                        title="Abonnement beenden"
                       >
-                        <span className="group-hover/m:underline">{creator.handle}</span>
+                        ✕
                       </button>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs von @astro' },
-                      { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte von @demogourmet' },
-                      { label: lang === 'de' ? '🐱 Funny Cats' : '🐱 Funny Cats', prompt: 'Funny Cat Videos von @catmania' },
-                      { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS & PostgreSQL von @demotech' },
-                    ].map((item, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setChatInput(item.prompt)}
-                        className="text-[11px] bg-[#121a30] hover:bg-[#192038] text-[#9ba4bf] hover:text-white border border-white/6 hover:border-white/15 px-3.5 py-1.5 rounded-full transition-all duration-200"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              </form>
+              </div>
+            </section>
+          )}
 
-              {/* AI Reasoning Output */}
-              {aiReasoning && (
-                <div className="relative mt-4 bg-[#080e1e]/70 border border-[#8083ff]/20 p-4 rounded-2xl animate-fadeIn">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-[#8083ff] animate-pulse-soft" />
-                    <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider">KI-Ausgabe</span>
+          {activeNavTab === 'library' && (
+            <section className="w-full max-w-4xl mx-auto animate-fadeInUp">
+              <div className="glass-surface-glow p-6 sm:p-7 rounded-3xl relative overflow-hidden flex flex-col gap-4 border border-[#8083ff]/30 shadow-2xl">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-[#8083ff]/30 to-[#44e2cd]/20 border border-[#8083ff]/40 flex items-center justify-center">
+                      <BookOpen className="h-5 w-5 text-[#c0c1ff]" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-extrabold text-white tracking-tight">
+                        {lang === 'de' ? '📚 Meine Bibliothek & eigene Beiträge' : '📚 My Library & Posts'}
+                      </h2>
+                      <p className="text-xs text-[#9ba4bf] mt-0.5">
+                        {lang === 'de'
+                          ? 'Deine erstellten Videos, Artikel und gespeicherten Inhalte.'
+                          : 'Your published videos, articles and saved bookmarks.'}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs font-mono text-[#c0c1ff] leading-relaxed">{aiReasoning}</p>
+                  {currentUser && (
+                    <button
+                      type="button"
+                      onClick={() => setCreateItemModalOpen(true)}
+                      className="bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-[#8083ff]/25 flex items-center gap-2 shrink-0 transition-all"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
+                      <span>{lang === 'de' ? 'Neuen Beitrag erstellen' : 'Create New Post'}</span>
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-          </section>
+              </div>
+            </section>
+          )}
 
           {/* ─ Category Pills ────────────────────────────────────────────── */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar -mx-1 px-1">
@@ -1272,7 +1422,11 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   key={item.id}
                   onClick={() => {
                     tracker.track('click', item.tags, item.mediaType);
-                    setSelectedMedia(item);
+                    if (item.mediaType === 'short') {
+                      router.push(`/shorts/${item.slug}`);
+                    } else {
+                      router.push(`/content/${item.slug}`);
+                    }
                   }}
                   className="flex flex-col gap-3 group cursor-pointer feed-card-enter"
                 >
@@ -1286,10 +1440,16 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#080e1e]/75 via-transparent to-transparent" />
 
-                    {/* Play button on hover */}
+                    {/* Action Icon on Hover (Play for Video/Short, FileText for PDF, BookOpen for Article) */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center">
-                        <Play className="h-4 w-4 text-white ml-0.5" />
+                      <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center shadow-lg">
+                        {item.mediaType === 'video' || item.mediaType === 'short' ? (
+                          <Play className="h-4 w-4 text-white ml-0.5" />
+                        ) : item.mediaType === 'pdf' ? (
+                          <FileText className="h-4 w-4 text-red-400" />
+                        ) : (
+                          <BookOpen className="h-4 w-4 text-[#44e2cd]" />
+                        )}
                       </div>
                     </div>
 
@@ -1298,10 +1458,17 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                       <MediaTypeBadge type={item.mediaType} />
                     </div>
 
-                    {/* Slot badge */}
-                    <div className="absolute top-2.5 left-2.5 bg-[#0d1528]/85 backdrop-blur-md border border-white/8 text-[#9ba4bf] px-2 py-0.5 rounded-lg font-mono text-[9px] font-semibold tracking-wide">
-                      #{item.slotIndex || idx + 1} · {item.bucketSource}
-                    </div>
+                    {/* Slot badge or Trending rank badge */}
+                    {activeNavTab === 'trending' ? (
+                      <div className="absolute top-2.5 left-2.5 bg-gradient-to-r from-[#ffb783] to-[#ff6b81] text-[#080e1e] font-black text-[9px] tracking-wider px-2 py-0.5 rounded-md shadow-lg flex items-center gap-1">
+                        <Flame className="h-3 w-3 fill-current" />
+                        <span>HOT #{idx + 1}</span>
+                      </div>
+                    ) : (
+                      <div className="absolute top-2.5 left-2.5 bg-[#0d1528]/85 backdrop-blur-md border border-white/8 text-[#9ba4bf] px-2 py-0.5 rounded-lg font-mono text-[9px] font-semibold tracking-wide">
+                        #{item.slotIndex || idx + 1} · {item.bucketSource}
+                      </div>
+                    )}
                   </div>
 
                   {/* Meta info */}
