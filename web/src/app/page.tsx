@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { tracker } from '../lib/tracking';
 import {
@@ -36,6 +36,7 @@ import {
   UserPlus,
   LogIn,
   TrendingUp,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   ExternalLink,
@@ -245,6 +246,8 @@ export default function OmniApp() {
   const router = useRouter();
   const [lang, setLang] = useState<'de' | 'en'>('de');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>('Alle');
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'trending' | 'subscriptions' | 'library'>('home');
@@ -302,13 +305,36 @@ export default function OmniApp() {
     );
   };
 
-  const openChannelModal = (item: FeedItem) => {
+  const channelScrollRef = useRef<HTMLDivElement>(null);
+  const tagScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
+    if (ref.current) {
+      const amount = direction === 'left' ? -240 : 240;
+      ref.current.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+  };
+
+  const openChannelModal = (creatorOrItem: any) => {
+    if (creatorOrItem.authorHandle || creatorOrItem.handle) {
+      const handle = creatorOrItem.authorHandle || creatorOrItem.handle;
+      const name = creatorOrItem.authorName || creatorOrItem.label || creatorOrItem.username || handle.replace('@', '');
+      const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || creatorOrItem.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+      setSelectedChannel({
+        username: name,
+        handle: handle.startsWith('@') ? handle : `@${handle}`,
+        avatarUrl: avatar,
+        bio: 'Creator & Content Publisher im Omni Network.',
+        subscribersCount: 15400,
+      });
+      return;
+    }
     setSelectedChannel({
-      username: getAuthorName(item),
-      handle: getAuthorHandle(item),
-      avatarUrl: getAuthorAvatar(item),
-      bio: getAuthorBio(item),
-      subscribersCount: getAuthorSubscribers(item),
+      username: getAuthorName(creatorOrItem),
+      handle: getAuthorHandle(creatorOrItem),
+      avatarUrl: getAuthorAvatar(creatorOrItem),
+      bio: getAuthorBio(creatorOrItem),
+      subscribersCount: getAuthorSubscribers(creatorOrItem),
     });
   };
 
@@ -856,7 +882,10 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
         {/* Brand & Menu */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={() => {
+              setSidebarOpen(!sidebarOpen);
+              setMobileSidebarOpen(!mobileSidebarOpen);
+            }}
             className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
             title="Menu"
             aria-label="Toggle sidebar"
@@ -1229,6 +1258,73 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
           </div>
         </aside>
 
+        {/* ── Mobile Sidebar Drawer ────────────────────────────────────────── */}
+        {mobileSidebarOpen && (
+          <div className="fixed inset-0 z-50 flex sm:hidden">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+            {/* Drawer */}
+            <aside className="relative w-72 max-w-[80vw] bg-[#080e1e] border-r border-white/10 flex flex-col gap-3 p-4 z-50 overflow-y-auto h-full shadow-2xl">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <a href="#" className="flex items-center gap-2">
+                  <OmniLogo size={20} />
+                  <span className="font-bold text-white text-base">Omni Navigation</span>
+                </a>
+                <button
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-2 rounded-xl text-[#9ba4bf] hover:text-white hover:bg-white/5"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Navigation Items */}
+              <nav className="flex flex-col gap-1">
+                {sideNavItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveNavTab(item.id);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                      item.active ? 'nav-item-active font-semibold' : 'text-[#5c657d] hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 ${item.active ? 'text-[#8083ff]' : ''}`} />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="border-t border-white/5 my-1" />
+
+              {/* Topics */}
+              <div className="flex flex-col gap-1">
+                <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#5c657d] mb-1">Themen</p>
+                {sideTopics.map((cat, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedTag(cat.tag);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm ${
+                      selectedTag === cat.tag ? 'text-white bg-white/10 font-semibold' : 'text-[#5c657d] hover:text-white'
+                    }`}
+                  >
+                    <cat.icon className="h-4 w-4 text-[#44e2cd]" />
+                    <span>{cat.label}</span>
+                  </button>
+                ))}
+              </div>
+            </aside>
+          </div>
+        )}
+
         {/* ── Center Content ────────────────────────────────────────────────── */}
         <main className="flex-1 p-5 sm:p-7 lg:p-8 flex flex-col gap-7 min-w-0">
 
@@ -1292,55 +1388,65 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                     </button>
                   </div>
 
-                  {/* Channel Mentions & Quick prompts */}
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
+                  {/* Channel Quick Bar with smooth scroll and direct modal opening */}
+                  <div className="relative flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => scrollContainer(channelScrollRef, 'left')}
+                      className="absolute left-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
+                      title="Zurück scrollen"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </button>
+
+                    <div
+                      ref={channelScrollRef}
+                      className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:none px-7 py-1 scroll-smooth w-full"
+                    >
                       <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        <span>@Kanal:</span>
+                        <span>Kanäle:</span>
                       </span>
                       {[
-                        { handle: '@astro', label: 'Astro-Wissen' },
-                        { handle: '@demotech', label: 'Database Guru' },
-                        { handle: '@demogourmet', label: 'Culinary' },
-                        { handle: '@greenplanet', label: 'Green Planet' },
-                        { handle: '@omniarchitect', label: 'Omni Architect' },
-                        { handle: '@catmania', label: 'Familie & Tiere' },
-                        { handle: '@finanzkompass', label: 'FinanzKompass' },
+                        { handle: '@astro', label: 'Astro-Wissen', avatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&q=80' },
+                        { handle: '@demotech', label: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+                        { handle: '@demogourmet', label: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
+                        { handle: '@greenplanet', label: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
+                        { handle: '@omniarchitect', label: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+                        { handle: '@catmania', label: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
+                        { handle: '@finanzkompass', label: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
                       ].map((creator) => (
                         <button
                           key={creator.handle}
                           type="button"
                           onClick={() =>
-                            setChatInput((prev) =>
-                              prev.includes(creator.handle) ? prev : `${prev} ${creator.handle}`.trim()
-                            )
+                            openChannelModal({
+                              authorHandle: creator.handle,
+                              authorName: creator.label,
+                              authorAvatar: creator.avatar,
+                            })
                           }
-                          className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-2.5 py-1 rounded-lg shrink-0 transition-all flex items-center gap-1 group/m"
-                          title={`${creator.label} im Chat erwähnen`}
+                          className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-3 py-1.5 rounded-xl shrink-0 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                          title={`Kanal ${creator.label} direkt öffnen`}
                         >
-                          <span className="group-hover/m:underline">{creator.handle}</span>
+                          <img
+                            src={creator.avatar}
+                            alt={creator.label}
+                            className="h-3.5 w-3.5 rounded-full object-cover border border-white/20 shrink-0"
+                          />
+                          <span>{creator.handle}</span>
                         </button>
                       ))}
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { label: lang === 'de' ? '📄 Wissenschafts-PDFs' : '📄 Science PDFs', prompt: 'Wissenschafts PDFs von @astro' },
-                        { label: lang === 'de' ? '🍳 Kochen & Rezepte' : '🍳 Cooking & Recipes', prompt: 'Kochen und Rezepte von @demogourmet' },
-                        { label: lang === 'de' ? '🐱 Funny Cats' : '🐱 Funny Cats', prompt: 'Funny Cat Videos von @catmania' },
-                        { label: lang === 'de' ? '💻 Tech & NextJS' : '💻 Tech & NextJS', prompt: 'NextJS & PostgreSQL von @demotech' },
-                      ].map((item, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setChatInput(item.prompt)}
-                          className="text-[11px] bg-[#121a30] hover:bg-[#192038] text-[#9ba4bf] hover:text-white border border-white/6 hover:border-white/15 px-3.5 py-1.5 rounded-full transition-all duration-200"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => scrollContainer(channelScrollRef, 'right')}
+                      className="absolute right-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
+                      title="Weiter scrollen"
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </form>
 
@@ -1478,22 +1584,45 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
             </section>
           )}
 
-          {/* ─ Category Pills ────────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar -mx-1 px-1">
-            {categoryPills.map((pill) => (
-              <button
-                key={pill.label}
-                onClick={() => setSelectedTag(pill.label)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
-                  selectedTag === pill.label
-                    ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
-                    : 'bg-[#0d1528] text-[#9ba4bf] hover:bg-[#192038] hover:text-white border border-white/6 hover:border-white/15'
-                }`}
-              >
-                <span className="text-[11px]">{pill.emoji}</span>
-                <span>{pill.label}</span>
-              </button>
-            ))}
+          {/* ─ Category Pills with smooth scroll and hidden scrollbar ────────────────── */}
+          <div className="relative flex items-center my-1">
+            <button
+              type="button"
+              onClick={() => scrollContainer(tagScrollRef, 'left')}
+              className="absolute left-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
+              title="Zurück scrollen"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+
+            <div
+              ref={tagScrollRef}
+              className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:none px-7 py-1 scroll-smooth w-full"
+            >
+              {categoryPills.map((pill) => (
+                <button
+                  key={pill.label}
+                  onClick={() => setSelectedTag(pill.label)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${
+                    selectedTag === pill.label
+                      ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
+                      : 'bg-[#0d1528] text-[#9ba4bf] hover:bg-[#192038] hover:text-white border border-white/6 hover:border-white/15'
+                  }`}
+                >
+                  <span className="text-[11px]">{pill.emoji}</span>
+                  <span>{pill.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => scrollContainer(tagScrollRef, 'right')}
+              className="absolute right-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
+              title="Weiter scrollen"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           </div>
 
           {/* ─ Feed Grid ─────────────────────────────────────────────────── */}
@@ -1528,13 +1657,29 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   }}
                   className="flex flex-col gap-3 group cursor-pointer feed-card-enter"
                 >
-                  {/* Thumbnail */}
+                  {/* Thumbnail with broken image fallback icon */}
                   <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0d1528] border border-white/6 group-hover:border-[#8083ff]/40 transition-all duration-300 shadow-md group-hover:shadow-xl group-hover:shadow-[#8083ff]/10 group-hover:scale-[1.015]">
-                    <img
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                    {failedImages[item.id] ? (
+                      <div className="w-full h-full bg-gradient-to-tr from-[#0d1528] via-[#161f38] to-[#251f42] flex flex-col items-center justify-center gap-2 p-4 text-center">
+                        <div className="h-10 w-10 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+                          {item.mediaType === 'video' || item.mediaType === 'short' ? (
+                            <Play className="h-5 w-5 text-[#44e2cd]" />
+                          ) : item.mediaType === 'pdf' ? (
+                            <FileText className="h-5 w-5 text-red-400" />
+                          ) : (
+                            <BookOpen className="h-5 w-5 text-[#8083ff]" />
+                          )}
+                        </div>
+                        <span className="text-[10px] font-mono text-[#9ba4bf] line-clamp-1">{item.title}</span>
+                      </div>
+                    ) : (
+                      <img
+                        src={item.thumbnailUrl}
+                        alt={item.title}
+                        onError={() => setFailedImages((prev) => ({ ...prev, [item.id]: true }))}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    )}
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#080e1e]/75 via-transparent to-transparent" />
 
