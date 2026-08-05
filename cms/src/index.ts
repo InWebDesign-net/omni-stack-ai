@@ -1,7 +1,23 @@
 import type { Core } from '@strapi/strapi';
 
 export default {
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register({ strapi }: { strapi: Core.Strapi }) {
+    (strapi.server.app as any).use(async (ctx: any, next: any) => {
+      if (ctx.path.startsWith('/.strapi/client/')) {
+        const relativePath = ctx.path.replace('/.strapi/client/', '');
+        const fs = require('fs');
+        const path = require('path');
+        const filePath = path.join(process.cwd(), '.strapi/client', relativePath);
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const mime = require('mime-types');
+          ctx.type = mime.lookup(filePath) || 'application/javascript';
+          ctx.body = fs.createReadStream(filePath);
+          return;
+        }
+      }
+      await next();
+    });
+  },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     try {
