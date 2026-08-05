@@ -1385,6 +1385,24 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   </button>
                 ))}
               </div>
+
+              {/* Mobile Drawer Footer */}
+              <div className="mt-auto pt-3 border-t border-white/10 flex flex-col gap-2 text-[11px]">
+                <div className="bg-[#0d1528] border border-white/6 p-3 rounded-2xl flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-[#5c657d] uppercase tracking-wider font-semibold">Managed AI Stack</span>
+                  </div>
+                  <a
+                    href="https://inwebdesign.net"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group/link flex items-center justify-between text-[#8083ff] hover:text-[#c0c1ff] font-semibold transition-colors mt-0.5"
+                  >
+                    <span>InWebDesign.net</span>
+                    <ExternalLink className="h-3.5 w-3.5 group-hover/link:translate-x-0.5 transition-transform" />
+                  </a>
+                </div>
+              </div>
             </aside>
           </div>
         )}
