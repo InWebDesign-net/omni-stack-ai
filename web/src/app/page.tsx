@@ -308,12 +308,41 @@ export default function OmniApp() {
   const channelScrollRef = useRef<HTMLDivElement>(null);
   const tagScrollRef = useRef<HTMLDivElement>(null);
 
+  const [canChannelScrollLeft, setCanChannelScrollLeft] = useState(false);
+  const [canChannelScrollRight, setCanChannelScrollRight] = useState(true);
+
+  const [canTagScrollLeft, setCanTagScrollLeft] = useState(false);
+  const [canTagScrollRight, setCanTagScrollRight] = useState(true);
+
+  const updateScrollState = (
+    ref: React.RefObject<HTMLDivElement | null>,
+    setLeft: (val: boolean) => void,
+    setRight: (val: boolean) => void
+  ) => {
+    if (ref.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = ref.current;
+      setLeft(scrollLeft > 4);
+      setRight(scrollLeft < scrollWidth - clientWidth - 4);
+    }
+  };
+
   const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
     if (ref.current) {
       const amount = direction === 'left' ? -240 : 240;
       ref.current.scrollBy({ left: amount, behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    const checkScrolls = () => {
+      updateScrollState(channelScrollRef, setCanChannelScrollLeft, setCanChannelScrollRight);
+      updateScrollState(tagScrollRef, setCanTagScrollLeft, setCanTagScrollRight);
+    };
+
+    checkScrolls();
+    window.addEventListener('resize', checkScrolls);
+    return () => window.removeEventListener('resize', checkScrolls);
+  }, [feedItems]);
 
   const openChannelModal = (creatorOrItem: any) => {
     if (creatorOrItem.authorHandle || creatorOrItem.handle) {
@@ -1388,65 +1417,84 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                     </button>
                   </div>
 
-                  {/* Channel Quick Bar with smooth scroll and direct modal opening */}
-                  <div className="relative flex items-center">
-                    <button
-                      type="button"
-                      onClick={() => scrollContainer(channelScrollRef, 'left')}
-                      className="absolute left-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
-                      title="Zurück scrollen"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                    </button>
+                  {/* Channel Quick Bar with static label and dynamic chevron controls */}
+                  <div className="relative flex items-center w-full">
+                    {/* Static Pinned Label */}
+                    <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-2 flex items-center gap-1 select-none">
+                      <Users className="h-3 w-3" />
+                      <span>Kanäle:</span>
+                    </span>
 
-                    <div
-                      ref={channelScrollRef}
-                      className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:none px-7 py-1 scroll-smooth w-full"
-                    >
-                      <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        <span>Kanäle:</span>
-                      </span>
-                      {[
-                        { handle: '@astro', label: 'Astro-Wissen', avatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&q=80' },
-                        { handle: '@demotech', label: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
-                        { handle: '@demogourmet', label: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
-                        { handle: '@greenplanet', label: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
-                        { handle: '@omniarchitect', label: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
-                        { handle: '@catmania', label: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
-                        { handle: '@finanzkompass', label: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
-                      ].map((creator) => (
-                        <button
-                          key={creator.handle}
-                          type="button"
-                          onClick={() =>
-                            openChannelModal({
-                              authorHandle: creator.handle,
-                              authorName: creator.label,
-                              authorAvatar: creator.avatar,
-                            })
-                          }
-                          className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-3 py-1.5 rounded-xl shrink-0 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
-                          title={`Kanal ${creator.label} direkt öffnen`}
-                        >
-                          <img
-                            src={creator.avatar}
-                            alt={creator.label}
-                            className="h-3.5 w-3.5 rounded-full object-cover border border-white/20 shrink-0"
-                          />
-                          <span>{creator.handle}</span>
-                        </button>
-                      ))}
+                    {/* Scroll Container with Faded Edges */}
+                    <div className="relative flex-1 overflow-hidden flex items-center">
+                      {/* Left Fade & Button */}
+                      {canChannelScrollLeft && (
+                        <>
+                          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#080e1e] to-transparent z-10 pointer-events-none" />
+                          <button
+                            type="button"
+                            onClick={() => scrollContainer(channelScrollRef, 'left')}
+                            className="absolute left-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+                            title="Zurück scrollen"
+                          >
+                            <ChevronLeft className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Scrollable Creator List */}
+                      <div
+                        ref={channelScrollRef}
+                        onScroll={() => updateScrollState(channelScrollRef, setCanChannelScrollLeft, setCanChannelScrollRight)}
+                        className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:none px-1 py-1 scroll-smooth w-full"
+                      >
+                        {[
+                          { handle: '@astro', label: 'Astro-Wissen', avatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&q=80' },
+                          { handle: '@demotech', label: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+                          { handle: '@demogourmet', label: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
+                          { handle: '@greenplanet', label: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
+                          { handle: '@omniarchitect', label: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+                          { handle: '@catmania', label: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
+                          { handle: '@finanzkompass', label: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
+                        ].map((creator) => (
+                          <button
+                            key={creator.handle}
+                            type="button"
+                            onClick={() =>
+                              openChannelModal({
+                                authorHandle: creator.handle,
+                                authorName: creator.label,
+                                authorAvatar: creator.avatar,
+                              })
+                            }
+                            className="text-[10px] font-mono font-bold bg-[#8083ff]/15 hover:bg-[#8083ff]/30 text-[#c0c1ff] hover:text-white border border-[#8083ff]/30 px-3 py-1.5 rounded-xl shrink-0 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                            title={`Kanal ${creator.label} direkt öffnen`}
+                          >
+                            <img
+                              src={creator.avatar}
+                              alt={creator.label}
+                              className="h-3.5 w-3.5 rounded-full object-cover border border-white/20 shrink-0"
+                            />
+                            <span>{creator.handle}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Right Fade & Button */}
+                      {canChannelScrollRight && (
+                        <>
+                          <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#080e1e] to-transparent z-10 pointer-events-none" />
+                          <button
+                            type="button"
+                            onClick={() => scrollContainer(channelScrollRef, 'right')}
+                            className="absolute right-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+                            title="Weiter scrollen"
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => scrollContainer(channelScrollRef, 'right')}
-                      className="absolute right-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
-                      title="Weiter scrollen"
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </button>
                   </div>
                 </form>
 
@@ -1584,20 +1632,28 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
             </section>
           )}
 
-          {/* ─ Category Pills with smooth scroll and hidden scrollbar ────────────────── */}
-          <div className="relative flex items-center my-1">
-            <button
-              type="button"
-              onClick={() => scrollContainer(tagScrollRef, 'left')}
-              className="absolute left-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
-              title="Zurück scrollen"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
+          {/* ─ Category Pills with dynamic chevrons and faded edges ────────────────── */}
+          <div className="relative flex items-center w-full my-1 overflow-hidden">
+            {/* Left Fade & Button */}
+            {canTagScrollLeft && (
+              <>
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#080e1e] to-transparent z-10 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => scrollContainer(tagScrollRef, 'left')}
+                  className="absolute left-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+                  title="Zurück scrollen"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+              </>
+            )}
 
+            {/* Scrollable Tags List */}
             <div
               ref={tagScrollRef}
-              className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:none px-7 py-1 scroll-smooth w-full"
+              onScroll={() => updateScrollState(tagScrollRef, setCanTagScrollLeft, setCanTagScrollRight)}
+              className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:none px-1 py-1 scroll-smooth w-full"
             >
               {categoryPills.map((pill) => (
                 <button
@@ -1615,14 +1671,20 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={() => scrollContainer(tagScrollRef, 'right')}
-              className="absolute right-0 z-10 p-1.5 rounded-full bg-[#080e1e]/90 border border-white/10 text-[#9ba4bf] hover:text-white shadow-md backdrop-blur-md"
-              title="Weiter scrollen"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
+            {/* Right Fade & Button */}
+            {canTagScrollRight && (
+              <>
+                <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#080e1e] to-transparent z-10 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => scrollContainer(tagScrollRef, 'right')}
+                  className="absolute right-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+                  title="Weiter scrollen"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </>
+            )}
           </div>
 
           {/* ─ Feed Grid ─────────────────────────────────────────────────── */}
