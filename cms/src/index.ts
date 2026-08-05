@@ -485,6 +485,17 @@ export default {
         console.log('🛡️ Configuring Editor Role Admin permissions for Preview Environment...');
         const editorRoleId = editorRoleObj.id;
 
+        // Reset existing permissions for Editor role to ensure clean state
+        await strapi.db.query('admin::permission').deleteMany({ where: { role: editorRoleId } });
+
+        const getFields = (subject: string) => {
+          const model = (strapi as any).contentTypes[subject];
+          if (!model || !model.attributes) return [];
+          return Object.keys(model.attributes).filter(
+            (f) => f !== 'password' && f !== 'resetPasswordToken' && f !== 'confirmationToken'
+          );
+        };
+
         // Content Manager full permissions for website content
         const fullAccessSubjects = [
           'api::feed-item.feed-item',
@@ -502,58 +513,34 @@ export default {
         ];
 
         for (const subject of fullAccessSubjects) {
+          if (!(strapi as any).contentTypes[subject]) continue;
+          const fields = getFields(subject);
           for (const action of contentActions) {
-            const existing = await strapi.db.query('admin::permission').findOne({
-              where: { role: editorRoleId, action, subject },
+            await strapi.db.query('admin::permission').create({
+              data: {
+                role: editorRoleId,
+                action,
+                subject,
+                properties: { fields },
+                conditions: [],
+              },
             });
-            if (!existing) {
-              await strapi.db.query('admin::permission').create({
-                data: {
-                  role: editorRoleId,
-                  action,
-                  subject,
-                  properties: {},
-                  conditions: [],
-                },
-              });
-            }
           }
         }
 
         // Read-Only permission for plugin::users-permissions.user (can view users, cannot edit or delete users)
-        const userReadPerm = await strapi.db.query('admin::permission').findOne({
-          where: {
-            role: editorRoleId,
-            action: 'plugin::content-manager.explorer.read',
-            subject: 'plugin::users-permissions.user',
-          },
-        });
-        if (!userReadPerm) {
+        if ((strapi as any).contentTypes['plugin::users-permissions.user']) {
+          const userFields = getFields('plugin::users-permissions.user');
           await strapi.db.query('admin::permission').create({
             data: {
               role: editorRoleId,
               action: 'plugin::content-manager.explorer.read',
               subject: 'plugin::users-permissions.user',
-              properties: {},
+              properties: { fields: userFields },
               conditions: [],
             },
           });
         }
-
-        // Remove create, update, delete permissions for plugin::users-permissions.user
-        await strapi.db.query('admin::permission').deleteMany({
-          where: {
-            role: editorRoleId,
-            subject: 'plugin::users-permissions.user',
-            action: {
-              $in: [
-                'plugin::content-manager.explorer.create',
-                'plugin::content-manager.explorer.update',
-                'plugin::content-manager.explorer.delete',
-              ],
-            },
-          },
-        });
 
         // Ensure Media Library (upload plugin) access
         const uploadActions = [
@@ -564,28 +551,15 @@ export default {
           'plugin::upload.assets.copy-link',
         ];
         for (const action of uploadActions) {
-          const existing = await strapi.db.query('admin::permission').findOne({
-            where: { role: editorRoleId, action },
+          await strapi.db.query('admin::permission').create({
+            data: {
+              role: editorRoleId,
+              action,
+              properties: {},
+              conditions: [],
+            },
           });
-          if (!existing) {
-            await strapi.db.query('admin::permission').create({
-              data: {
-                role: editorRoleId,
-                action,
-                properties: {},
-                conditions: [],
-              },
-            });
-          }
         }
-
-        // Remove any admin::settings permissions for Editor role to keep UI clean
-        await strapi.db.query('admin::permission').deleteMany({
-          where: {
-            role: editorRoleId,
-            action: { $startsWith: 'admin::settings' },
-          },
-        });
       }
     } catch (err) {
       console.error('❌ Strapi Bootstrap Error:', err);
