@@ -42,6 +42,42 @@ import {
   CommentItem,
 } from '@/lib/comments';
 
+function CardThumbnail({
+  item,
+  className = 'w-full h-full object-cover',
+}: {
+  item: { id?: string | number; title: string; mediaType: string; thumbnailUrl?: string };
+  className?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !item.thumbnailUrl) {
+    return (
+      <div className="w-full h-full bg-gradient-to-tr from-[#0d1528] via-[#161f38] to-[#251f42] flex flex-col items-center justify-center gap-2 p-3 text-center">
+        <div className="h-9 w-9 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+          {item.mediaType === 'video' || item.mediaType === 'short' ? (
+            <Play className="h-4 w-4 text-[#44e2cd]" />
+          ) : item.mediaType === 'pdf' ? (
+            <FileText className="h-4 w-4 text-red-400" />
+          ) : (
+            <BookOpen className="h-4 w-4 text-[#8083ff]" />
+          )}
+        </div>
+        <span className="text-[10px] font-mono text-[#9ba4bf] line-clamp-1">{item.title}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={item.thumbnailUrl}
+      alt={item.title}
+      onError={() => setHasError(true)}
+      className={className}
+    />
+  );
+}
+
 export default function ContentDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -523,7 +559,7 @@ export default function ContentDetailPage() {
               <div className="bg-[#0d1528] rounded-3xl border border-white/8 overflow-hidden shadow-2xl">
                 {/* Hero Banner Image */}
                 <div className="relative aspect-video w-full max-h-[380px] bg-black">
-                  <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
+                  <CardThumbnail item={item} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0d1528] via-[#0d1528]/40 to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-xs text-[#44e2cd] font-mono">
@@ -753,7 +789,7 @@ export default function ContentDetailPage() {
                 className="bg-[#0d1528] hover:bg-[#121a30] border border-white/6 hover:border-[#8083ff]/40 p-3 rounded-2xl flex gap-3 transition-all duration-200 group"
               >
                 <div className="relative w-32 aspect-video rounded-xl overflow-hidden bg-black shrink-0">
-                  <img src={rel.thumbnailUrl} alt={rel.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <CardThumbnail item={rel} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[8px] font-bold text-white uppercase">
                     {rel.mediaType}
                   </div>

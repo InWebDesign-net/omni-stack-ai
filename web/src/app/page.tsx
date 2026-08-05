@@ -236,9 +236,44 @@ function UKFlag({ className = "w-4 h-3" }: { className?: string }) {
         <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6"/>
         <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="4" clipPath="url(#gb-t)"/>
         <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10"/>
-        <path d="M30,0 v30 M0,15 h60" stroke="#cf142b" strokeWidth="6"/>
       </g>
     </svg>
+  );
+}
+
+function CardThumbnail({
+  item,
+  className = 'w-full h-full object-cover',
+}: {
+  item: { id?: string | number; title: string; mediaType: string; thumbnailUrl?: string };
+  className?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !item.thumbnailUrl) {
+    return (
+      <div className="w-full h-full bg-gradient-to-tr from-[#0d1528] via-[#161f38] to-[#251f42] flex flex-col items-center justify-center gap-2 p-3 text-center">
+        <div className="h-9 w-9 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+          {item.mediaType === 'video' || item.mediaType === 'short' ? (
+            <Play className="h-4 w-4 text-[#44e2cd]" />
+          ) : item.mediaType === 'pdf' ? (
+            <FileText className="h-4 w-4 text-red-400" />
+          ) : (
+            <BookOpen className="h-4 w-4 text-[#8083ff]" />
+          )}
+        </div>
+        <span className="text-[10px] font-mono text-[#9ba4bf] line-clamp-1">{item.title}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={item.thumbnailUrl}
+      alt={item.title}
+      onError={() => setHasError(true)}
+      className={className}
+    />
   );
 }
 
@@ -1719,29 +1754,12 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   }}
                   className="flex flex-col gap-3 group cursor-pointer feed-card-enter"
                 >
-                  {/* Thumbnail with broken image fallback icon */}
+                  {/* Thumbnail with bulletproof error handling */}
                   <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0d1528] border border-white/6 group-hover:border-[#8083ff]/40 transition-all duration-300 shadow-md group-hover:shadow-xl group-hover:shadow-[#8083ff]/10 group-hover:scale-[1.015]">
-                    {failedImages[item.id] ? (
-                      <div className="w-full h-full bg-gradient-to-tr from-[#0d1528] via-[#161f38] to-[#251f42] flex flex-col items-center justify-center gap-2 p-4 text-center">
-                        <div className="h-10 w-10 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
-                          {item.mediaType === 'video' || item.mediaType === 'short' ? (
-                            <Play className="h-5 w-5 text-[#44e2cd]" />
-                          ) : item.mediaType === 'pdf' ? (
-                            <FileText className="h-5 w-5 text-red-400" />
-                          ) : (
-                            <BookOpen className="h-5 w-5 text-[#8083ff]" />
-                          )}
-                        </div>
-                        <span className="text-[10px] font-mono text-[#9ba4bf] line-clamp-1">{item.title}</span>
-                      </div>
-                    ) : (
-                      <img
-                        src={item.thumbnailUrl}
-                        alt={item.title}
-                        onError={() => setFailedImages((prev) => ({ ...prev, [item.id]: true }))}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    )}
+                    <CardThumbnail
+                      item={item}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#080e1e]/75 via-transparent to-transparent" />
 
@@ -2250,9 +2268,8 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                       className="bg-[#121a30] hover:bg-[#192038] border border-white/8 hover:border-[#8083ff]/40 p-3 rounded-2xl cursor-pointer transition-all flex flex-col gap-2 group"
                     >
                       <div className="relative aspect-video rounded-xl overflow-hidden bg-[#080e1e]">
-                        <img
-                          src={item.thumbnailUrl}
-                          alt={item.title}
+                        <CardThumbnail
+                          item={item}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                         <div className="absolute bottom-2 right-2">
