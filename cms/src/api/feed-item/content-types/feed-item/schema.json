@@ -28,7 +28,12 @@
     "slug": {
       "type": "uid",
       "targetField": "title",
-      "required": true
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "summary": {
       "type": "text",
@@ -50,7 +55,12 @@
         "shared.quote",
         "shared.headline",
         "shared.pdf"
-      ]
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "author": {
       "type": "relation",
@@ -60,7 +70,12 @@
     },
     "tags": {
       "type": "json",
-      "required": true
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "viewsCount": {
       "type": "integer",

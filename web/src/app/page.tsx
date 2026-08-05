@@ -1633,17 +1633,9 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   </p>
                   <p className="text-sm text-[#5c657d] max-w-md">
                     {lang === 'de'
-                      ? 'Die Datenbank in Strapi ist aktuell leer. Du kannst im Strapi Admin CMS neue Inhalte anlegen oder die Demo-Daten neu generieren lassen.'
-                      : 'The database in Strapi is currently empty. You can create new content in Strapi Admin CMS or regenerate demo seed data.'}
+                      ? 'Die Datenbank in Strapi ist aktuell leer. Du kannst im Strapi Admin CMS neue Inhalte und Übersetzungen anlegen.'
+                      : 'The database in Strapi is currently empty. You can create new content and translations in Strapi Admin CMS.'}
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleReSeedStrapi}
-                    className="mt-3 px-4 py-2 rounded-xl bg-[#8083ff]/15 hover:bg-[#8083ff]/30 border border-[#8083ff]/30 text-xs font-semibold text-[#c0c1ff] hover:text-white transition-all shadow-md active:scale-95 flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5 text-[#44e2cd]" />
-                    <span>{lang === 'de' ? '🌱 Strapi Demo-Daten neu seeden' : '🌱 Re-seed Strapi Demo Data'}</span>
-                  </button>
                 </div>
               </div>
             ) : (
