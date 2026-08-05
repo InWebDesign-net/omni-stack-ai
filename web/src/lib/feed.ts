@@ -285,8 +285,8 @@ Durch diesen Slot-Interleaving-Mechanismus erhält jeder Nutzer ein maßgeschnei
   },
   {
     id: 203,
-    title: 'Meisterkurs: Italienische Nudelherstellung von Grund auf',
-    slug: 'meisterkurs-italienische-pasta',
+    title: 'Kochen wie der Chefkoch: Italienische Pastasaucen selbst gemacht',
+    slug: 'kochen-wie-der-chefkoch-italienische-pasta',
     summary: 'Artikel & Schritt-für-Schritt Anleitung für perfekten Pasta-Teig mit Semola rimacinata.',
     content: `Der Schlüssel zu perfekter hausgemachter Pasta liegt im richtigen Mehl-Eigelb-Verhältnis. 
 
