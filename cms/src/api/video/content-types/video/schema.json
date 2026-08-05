@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "videos",
+  "info": {
+    "singularName": "video",
+    "pluralName": "videos",
+    "displayName": "Video",
+    "description": "Standalone Video Media Assets with HLS streaming, ABR qualities, and monetization"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "duration": {
+      "type": "integer",
+      "default": 0
+    },
+    "isProcessing": {
+      "type": "boolean",
+      "default": true
+    },
+    "isForSale": {
+      "type": "boolean",
+      "default": false
+    },
+    "price": {
+      "type": "float",
+      "default": 0
+    },
+    "hlsUrl": {
+      "type": "string"
+    },
+    "mp4Url": {
+      "type": "string"
+    },
+    "thumbnailUrl": {
+      "type": "string"
+    },
+    "ogImageUrl": {
+      "type": "string"
+    },
+    "creator": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "feedItems": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::feed-item.feed-item",
+      "mappedBy": "video"
+    }
+  }
+}

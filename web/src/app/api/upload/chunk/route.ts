@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       }
       fs.renameSync(tempFilePath, finalRawPath);
 
-      // Call Strapi to create FeedItem with isProcessing: true
+      // 1. Create Standalone Video entity in Strapi
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -55,6 +55,33 @@ export async function POST(req: Request) {
         headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
       }
 
+      let createdVideoDocId = null;
+      try {
+        const videoRes = await fetch(`${strapiUrl}/api/videos`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            data: {
+              title,
+              slug: cleanSlug,
+              mp4Url: `/media/videos/${cleanSlug}.mp4`,
+              hlsUrl: `/media/videos/hls/${cleanSlug}/master.m3u8`,
+              thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
+              ogImageUrl: `/media/og/${cleanSlug}.jpg`,
+              isProcessing: true,
+              isForSale: false,
+              price: 0,
+              publishedAt: new Date().toISOString(),
+            },
+          }),
+        });
+        if (videoRes.ok) {
+          const vData = await videoRes.json();
+          createdVideoDocId = vData?.data?.documentId || null;
+        }
+      } catch (e) {}
+
+      // 2. Create FeedItem referencing the standalone Video
       const createRes = await fetch(`${strapiUrl}/api/feed-items`, {
         method: 'POST',
         headers,
@@ -66,9 +93,10 @@ export async function POST(req: Request) {
             content: 'Das Video befindet sich im Konvertierungsprozess (HLS ABR Stream).',
             mediaType: mediaType === 'short' ? 'short' : 'video',
             mediaUrl: `/media/videos/${cleanSlug}.mp4`,
-            thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
+            thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
             tags: ['Community', 'Video', 'Neu'],
             isProcessing: true,
+            video: createdVideoDocId,
             publishedAt: new Date().toISOString(),
           },
         }),

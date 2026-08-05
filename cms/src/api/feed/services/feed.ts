@@ -168,12 +168,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     let items = SAMPLE_SEED_ITEMS;
     try {
       const dbItemsDe = await strapi.documents('api::feed-item.feed-item').findMany({
-        populate: ['author'],
+        populate: ['author', 'video'],
         status: 'published',
         locale: 'de',
       });
       const dbItemsEn = await strapi.documents('api::feed-item.feed-item').findMany({
-        populate: ['author'],
+        populate: ['author', 'video'],
         status: 'published',
         locale: 'en',
       });
@@ -181,12 +181,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
       if ((userProfileInput as any)?.includeDrafts) {
         const draftDe = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: ['author'],
+          populate: ['author', 'video'],
           status: 'draft',
           locale: 'de',
         });
         const draftEn = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: ['author'],
+          populate: ['author', 'video'],
           status: 'draft',
           locale: 'en',
         });
@@ -210,7 +210,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               filters: { slug: { $eq: target } },
               locale,
               status,
-              populate: ['author'],
+              populate: ['author', 'video'],
             });
             if (matches && matches.length > 0) return matches[0];
           } catch (e) {}
@@ -220,7 +220,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               documentId: target,
               locale,
               status,
-              populate: ['author'],
+              populate: ['author', 'video'],
             });
             if (doc) return doc;
           } catch (e) {}
@@ -258,7 +258,19 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
 
     // 2. Score items against Interest Vector
-    const scoredItems = items.map((item) => {
+    const scoredItems = items.map((rawItem: any) => {
+      const item = rawItem.video
+        ? {
+            ...rawItem,
+            mediaUrl: rawItem.video.mp4Url || rawItem.video.hlsUrl || rawItem.mediaUrl,
+            thumbnailUrl: rawItem.video.thumbnailUrl || rawItem.thumbnailUrl,
+            duration: rawItem.video.duration || rawItem.duration || 0,
+            isProcessing: rawItem.video.isProcessing !== undefined ? rawItem.video.isProcessing : rawItem.isProcessing,
+            isForSale: rawItem.video.isForSale || false,
+            price: rawItem.video.price || 0,
+          }
+        : rawItem;
+
       let topicScore = 0.2; // baseline
       item.tags.forEach((tag: string) => {
         if (profile.interests[tag]) {
@@ -580,7 +592,26 @@ CRITICAL: Return JSON ONLY in this format:
     if (fs.existsSync(donePath)) { try { fs.unlinkSync(donePath); } catch (e) {} }
     if (fs.existsSync(metaPath)) { try { fs.unlinkSync(metaPath); } catch (e) {} }
 
-    // 5. Update Strapi DB entries for draft and published versions
+    // 5. Update Strapi DB entries for standalone Video and FeedItem
+    try {
+      const videoMatches = await strapi.documents('api::video.video').findMany({
+        filters: { slug: { $eq: base } },
+      });
+      if (videoMatches && videoMatches.length > 0) {
+        await strapi.documents('api::video.video').update({
+          documentId: videoMatches[0].documentId,
+          data: {
+            isProcessing: false,
+            duration: metaDuration || (videoMatches[0] as any).duration || 0,
+            hlsUrl: `/media/videos/hls/${base}/master.m3u8`,
+            mp4Url: `/media/videos/${base}.mp4`,
+            thumbnailUrl: `/media/thumbnails/${base}-1.png`,
+            ogImageUrl: `/media/og/${base}.jpg`,
+          } as any,
+        });
+      }
+    } catch (e) {}
+
     const updateStrapiItem = async (status: 'draft' | 'published') => {
       try {
         const matches = await strapi.documents('api::feed-item.feed-item').findMany({

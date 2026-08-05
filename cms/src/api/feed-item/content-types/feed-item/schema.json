@@ -63,6 +63,12 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "feedItems"
     },
+    "video": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::video.video",
+      "inversedBy": "feedItems"
+    },
     "tags": {
       "type": "json",
       "required": true

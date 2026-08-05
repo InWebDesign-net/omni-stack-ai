@@ -515,6 +515,7 @@ export default {
         // Content Manager full permissions for website content
         const fullAccessSubjects = [
           'api::feed-item.feed-item',
+          'api::video.video',
           'api::comment.comment',
           'api::user-profile.user-profile',
           'api::feed.feed',
