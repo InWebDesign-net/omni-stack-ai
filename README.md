@@ -13,7 +13,7 @@
 
 ## 📄 License & Premium AI Features
 
-The core boilerplate, standard feed assembly, batch tracking, and authentication code in this repository are open-source and released under the **[MIT License](LICENSE)**. You are free to use, modify, and distribute this foundation for your own projects.
+The core boilerplate, standard feed assembly, batch tracking, content detail views, shorts feed, and authentication code in this repository are open-source and released under the **[MIT License](LICENSE)**. You are free to use, modify, and distribute this foundation for your own projects.
 
 ### 🌟 Unlock the Premium AI Engine
 The advanced local LLM orchestration (Ollama CPU/GPU inference), real-time intent classification, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
@@ -40,27 +40,22 @@ Instead of logging millions of individual click events in separate database rows
 }
 ```
 
-### 2. Hyper-Personalized Feed Assembly
+### 2. Dynamic Media-Type Routing & Views
+* 🎬 **YouTube-Style Widescreen Theater (`/content/[slug]`):** 16:9 cinema video player with expandable description, likes, share links, channel subscribe cards, and comments.
+* 📄 **PDF Document Viewer & Download Hub (`/content/[slug]`):** Clean document preview canvas with direct download links and fullscreen viewer toolbar.
+* 📰 **Article Reader (`/content/[slug]`):** Typography-optimized article reader with estimated reading time, callouts, and author bio.
+* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed (`/shorts/[slug]`):** TikTok / YouTube Shorts style vertical feed player with `snap-y snap-mandatory` smooth snapping, keyboard navigation (Up/Down arrows), floating action sidebar (Like, Comment Drawer, Share, Sound Toggle), and real-time URL synchronization.
+
+### 3. Hyper-Personalized Feed Assembly & Navigation Modes
 Feeds are assembled dynamically by querying **4 Parallel Buckets**:
 * 🎯 **High Intent:** Content matching user affinities (Score > 0.45).
-* 👥 **Network & Subs:** Subscribed authors & recent channels.
+* 👥 **Network & Subs:** Subscribed authors & followed channels.
 * 🧭 **Exploration:** Wildcard / novelty content for filter bubble breakout.
-* 🔥 **Fresh & Trending:** High view/like velocity across the platform.
+* 🔥 **Fresh & Trending:** High view/like velocity across the platform (featuring `🔥 HOT #1`, `#2`, `#3` rank badges).
 
-Content is interleaved according to configurable **Slot Patterns** (*Discovery Pattern* vs. *Deep Dive Pattern*).
-
-### 3. Batch Tracking & 14-Day Time Decay Engine
-* **Client-side Batching:** Next.js buffers impressions (+1 pt), clicks (+5 pts), and completions (+20 pts) and flushes them every 15 seconds or via `navigator.sendBeacon`.
-* **Server-side Time Decay:** Automatically halves historical topic scores if `last_interacted` exceeds 14 days.
-
-### 4. Fullstack Authentication & User Profiles
-* **Strapi Users-Permissions Integration:** JWT authentication, registration, and login.
-* **1:1 User Profiles:** Linked `user-profile` documents holding custom bio, avatar, and personal `affinityGraph` vectors.
-
-### 5. Modern Widescreen "Vivid Narrative" UI
-* **Far-Left Desktop Navigation Sidebar:** Aligned to the desktop viewport edge (YouTube-style).
-* **Hero AI Chat Mask:** Conversational prompt input box for instant intent steering.
-* **Algorithm Control Drawer:** Real-time sliders and pattern toggles.
+### 4. Fullstack Authentication, User Profiles & Creator Channels
+* **Strapi Users-Permissions Integration:** JWT authentication, registration, and login tabs.
+* **1:1 User Profiles & Channel Management:** Edit profile modal (Username, Handle `@name`, Avatar URL, Bio), Creator Channel View with follower toggling, and user post publication.
 
 ---
 
@@ -72,8 +67,8 @@ omni-stack-ai/
 │   ├── config/              # PostgreSQL & Plugin configurations
 │   └── src/api/             # Custom Controllers & Services (feed, tracking, user-profile)
 ├── web/                     # Next.js 16 App Router Frontend
-│   ├── src/app/             # Pages, Hero AI Chat Mask, Media Preview Modals
-│   └── src/lib/             # Batch Tracking Manager (IntersectionObserver + sendBeacon)
+│   ├── src/app/             # Pages, Content Detail (/content/[slug]), Shorts Feed (/shorts/[slug]), Auth & Modals
+│   └── src/lib/             # Batch Tracking & Shared Feed Dataset Helpers
 ├── ecosystem.config.js      # PM2 Process Manager setup
 ├── turbo.json               # Turborepo task pipeline (Turbo v2)
 ├── package.json             # Monorepo workspaces configuration
