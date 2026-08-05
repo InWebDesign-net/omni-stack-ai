@@ -29,9 +29,6 @@
     "affinityGraph": {
       "type": "json"
     },
-    "interestVector": {
-      "type": "json"
-    },
     "user": {
       "type": "relation",
       "relation": "oneToOne",

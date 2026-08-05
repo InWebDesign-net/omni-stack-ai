@@ -55,7 +55,7 @@ export async function POST(req: Request) {
             username: user.username,
             bio: bio || 'Omni Community Mitglied',
             avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80`,
-            interestVector: defaultVector,
+            affinityGraph: defaultVector,
             user: user.id,
           },
         }),
