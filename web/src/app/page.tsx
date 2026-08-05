@@ -568,7 +568,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'trending' || tabParam === 'subscriptions' || tabParam === 'library') {
       setActiveNavTab(tabParam as any);
-    } else if (tabParam === 'home' || (searchParams.has('tab') && !tabParam)) {
+    } else {
       setActiveNavTab('home');
     }
 
@@ -579,7 +579,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
       setSelectedTag('Video Tutorial');
     } else if (typeParam === 'article') {
       setSelectedTag('Programmierung');
-    } else if (typeParam === 'all') {
+    } else {
       setSelectedTag('Alle');
     }
 
