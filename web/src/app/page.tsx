@@ -1642,9 +1642,31 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                       </button>
                     ))}
                   </div>
-                  <div className="pt-2 border-t border-white/5 text-[10px] text-[#5c657d]">
-                    💡 <strong className="text-[#9ba4bf]">Strapi Editor:</strong>{' '}
-                    <code className="text-[#c0c1ff] bg-[#121a30] px-1 py-0.5 rounded">demo-editor1@inwebdesign.net</code>
+                  <div className="pt-2.5 border-t border-white/8 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-[#9ba4bf] flex items-center gap-1">
+                        🛠️ <span>Strapi CMS Admin Dashboard</span>
+                      </span>
+                      <a
+                        href="https://omni-cms.inwebdesign.net/admin"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-bold text-[#8083ff] hover:text-[#a3a5ff] flex items-center gap-1 hover:underline transition-colors"
+                      >
+                        <span>Strapi öffnen</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="bg-[#121a30]/80 border border-white/6 rounded-xl p-2.5 flex flex-col gap-1.5 text-[10px]">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#5c657d]">E-Mail:</span>
+                        <code className="text-[#c0c1ff] bg-black/40 px-1.5 py-0.5 rounded font-mono">demo-editor1@inwebdesign.net</code>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#5c657d]">Passwort:</span>
+                        <code className="text-[#44e2cd] bg-black/40 px-1.5 py-0.5 rounded font-mono">DemoEditor2026!</code>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
