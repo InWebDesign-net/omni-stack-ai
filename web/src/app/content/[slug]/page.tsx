@@ -387,10 +387,8 @@ export default function ContentDetailPage() {
         </div>
       )}
 
-      {/* ── Standardized Header Component ───────────────────────────────────── */}
+      {/* ── 100% Unified Universal Header Component ───────────────────────────── */}
       <Header
-        showMenuButton={false}
-        currentUser={userProfile}
         onOpenUserProfileModal={() => {
           if (userProfile) {
             openChannelModal({

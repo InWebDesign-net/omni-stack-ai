@@ -41,7 +41,9 @@ import {
   ChevronDown,
   ExternalLink,
   Users,
+  PlusCircle,
 } from 'lucide-react';
+import Header from '@/components/Header';
 
 interface UserProfileSession {
   id: number;
@@ -940,201 +942,52 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     <div className="min-h-screen bg-mesh text-[#dae2fd] flex flex-col font-sans">
 
       {/* ── Top Header ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-3 sm:px-4 h-14 flex items-center justify-between gap-4"
-        style={{ boxShadow: '0 1px 0 rgba(128,131,255,0.10), 0 4px 16px -4px rgba(8,14,30,0.80)' }}>
-
-        {/* Brand & Menu */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setSidebarOpen(!sidebarOpen);
-              setMobileSidebarOpen(!mobileSidebarOpen);
-            }}
-            className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
-            title="Menu"
-            aria-label="Toggle sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <a href="#" className="flex items-center gap-3 group select-none">
-            <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] opacity-30 blur-md group-hover:opacity-60 transition-opacity duration-300" />
-              <div className="relative rounded-xl bg-[#0d1528] border border-white/10 p-1.5 group-hover:border-white/20 transition-colors duration-200">
-                <OmniLogo size={22} />
-              </div>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-extrabold text-[17px] tracking-[-0.04em] text-white leading-tight">
-                Omni
-              </span>
-              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
-                BY INWEBDESIGN
-              </span>
-            </div>
-          </a>
-        </div>
-
-        {/* Right Header Controls */}
-        <div className="flex items-center gap-2">
-
-          {/* Algorithm Control */}
-          <button
-            onClick={() => setAlgoDrawerOpen(!algoDrawerOpen)}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
-              algoDrawerOpen
-                ? 'bg-[#8083ff] border-[#8083ff] text-white glow-primary'
-                : 'bg-[#121a30] border-white/8 text-[#9ba4bf] hover:bg-[#192038] hover:text-white hover:border-white/15'
-            }`}
-          >
-            <Sliders className={`h-3.5 w-3.5 ${algoDrawerOpen ? 'text-white' : 'text-[#44e2cd]'}`} />
-            <span className="hidden sm:inline">
-              {lang === 'de' ? 'Algo-Steuerung' : 'Algorithm'}
-            </span>
-          </button>
-
-          {/* Language Toggle */}
-          <button
-            onClick={toggleLanguage}
-            title={lang === 'de' ? 'Sprache auf Englisch wechseln' : 'Switch language to German'}
-            className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all duration-200 shadow-sm active:scale-95 group"
-          >
-            <div className="group-hover:scale-110 transition-transform">
-              {lang === 'de' ? <GermanFlag className="w-4 h-3" /> : <UKFlag className="w-4 h-3" />}
-            </div>
-            <span className="text-xs font-extrabold tracking-wide text-[#dae2fd]">
-              {lang === 'de' ? 'DE' : 'EN'}
-            </span>
-            <span className="text-[9px] text-[#5c657d] group-hover:text-[#44e2cd] font-mono transition-colors">
-              ⇄
-            </span>
-          </button>
-
-          {/* Auth User Profile Dropdown */}
-          {currentUser ? (
-            <div className="relative z-50">
-              <button
-                type="button"
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2.5 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-1.5 rounded-xl text-xs text-white transition-all group"
-              >
-                <img
-                  src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
-                  alt={currentUser.username}
-                  className="h-6 w-6 rounded-full object-cover border border-white/15 shrink-0"
-                />
-                <div className="flex flex-col text-left hidden sm:flex">
-                  <span className="font-semibold text-[#dae2fd] text-[11px] leading-tight group-hover:text-white">
-                    {currentUser.username}
-                  </span>
-                  <span className="text-[9px] text-[#8083ff] font-mono font-bold leading-none">
-                    {getCurrentUserHandle(currentUser)}
-                  </span>
-                </div>
-                <ChevronDown className="h-3.5 w-3.5 text-[#5c657d] group-hover:text-white transition-transform" />
-              </button>
-
-              {/* Popover Menu */}
-              {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-[#0d1528] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      openChannelModal({
-                        id: 0,
-                        title: '',
-                        slug: '',
-                        summary: '',
-                        content: '',
-                        mediaType: 'article',
-                        mediaUrl: '',
-                        thumbnailUrl: '',
-                        tags: [],
-                        viewsCount: 0,
-                        likesCount: 0,
-                        publishedAt: '',
-                        relevanceScore: 1,
-                        bucketSource: '',
-                        slotIndex: 0,
-                        author: {
-                          id: currentUser.id,
-                          username: currentUser.username,
-                          handle: getCurrentUserHandle(currentUser),
-                          avatarUrl: currentUser.avatarUrl,
-                          bio: currentUser.bio,
-                          subscribersCount: currentUser.subscribersCount,
-                        },
-                      });
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
-                  >
-                    <Tv className="h-4 w-4 text-[#8083ff]" />
-                    <span>Mein Kanal ({getCurrentUserHandle(currentUser)})</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      const userHandle = getCurrentUserHandle(currentUser);
-                      setEditProfileForm({
-                        username: currentUser.username || '',
-                        handle: userHandle.replace(/^@/, ''),
-                        avatarUrl: currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-                        bio: currentUser.bio || 'Creator & Content Publisher im Omni Network.',
-                      });
-                      setEditProfileModalOpen(true);
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
-                  >
-                    <Sliders className="h-4 w-4 text-[#44e2cd]" />
-                    <span>{lang === 'de' ? 'Einstellungen' : 'Settings'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      setCreateItemModalOpen(true);
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
-                  >
-                    <Sparkles className="h-4 w-4 text-[#ffb783]" />
-                    <span>Neuen Beitrag erstellen</span>
-                  </button>
-
-                  <div className="my-1 border-t border-white/5" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      handleLogout();
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all text-left"
-                  >
-                    <LogOut className="h-4 w-4 text-red-400" />
-                    <span>Abmelden</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setAuthMode('register');
-                setAuthError(null);
-                setAuthModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-[#8083ff]/25"
-            >
-              <User className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{lang === 'de' ? 'Anmelden' : 'Sign In'}</span>
-            </button>
-          )}
-        </div>
-      </header>
+      <Header
+        showMenuButton={true}
+        onToggleSidebar={() => {
+          setSidebarOpen(!sidebarOpen);
+          setMobileSidebarOpen(!mobileSidebarOpen);
+        }}
+        onToggleAlgoDrawer={() => setAlgoDrawerOpen(!algoDrawerOpen)}
+        algoDrawerOpen={algoDrawerOpen}
+        lang={lang}
+        onToggleLanguage={toggleLanguage}
+        currentUser={currentUser}
+        onOpenAuthModal={() => {
+          setAuthMode('register');
+          setAuthError(null);
+          setAuthModalOpen(true);
+        }}
+        onOpenUserProfileModal={() => {
+          if (currentUser) {
+            openChannelModal({
+              id: 0,
+              title: '',
+              slug: '',
+              summary: '',
+              content: '',
+              mediaType: 'article',
+              mediaUrl: '',
+              thumbnailUrl: '',
+              tags: [],
+              viewsCount: 0,
+              likesCount: 0,
+              publishedAt: '',
+              relevanceScore: 1,
+              bucketSource: '',
+              slotIndex: 0,
+              author: {
+                id: currentUser.id,
+                username: currentUser.username,
+                handle: getCurrentUserHandle(currentUser),
+                avatarUrl: currentUser.avatarUrl,
+                bio: currentUser.bio,
+                subscribersCount: currentUser.subscribersCount,
+              },
+            });
+          }
+        }}
+      />
 
       {/* ── Algorithm Drawer ─────────────────────────────────────────────────── */}
       {algoDrawerOpen && (

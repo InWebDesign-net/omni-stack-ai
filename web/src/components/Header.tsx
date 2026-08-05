@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Sliders, Menu } from 'lucide-react';
 
 export function OmniLogo({ size = 22 }: { size?: number }) {
@@ -72,13 +73,74 @@ export default function Header({
   onToggleSidebar,
   onToggleAlgoDrawer,
   algoDrawerOpen = false,
-  lang = 'de',
-  onToggleLanguage,
-  currentUser,
+  lang: propLang,
+  onToggleLanguage: propToggleLang,
+  currentUser: propUser,
   onOpenAuthModal,
   onOpenUserProfileModal,
   showMenuButton = true,
 }: HeaderProps) {
+  const router = useRouter();
+
+  // Internal fallback states when used on sub-pages without explicit props
+  const [internalLang, setInternalLang] = useState<'de' | 'en'>('de');
+  const [internalUser, setInternalUser] = useState<{ username: string; handle?: string; avatarUrl?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
+      if (savedLang === 'de' || savedLang === 'en') {
+        setInternalLang(savedLang);
+      }
+      const savedUser = localStorage.getItem('omni_user');
+      if (savedUser) {
+        setInternalUser(JSON.parse(savedUser));
+      }
+    } catch (e) {}
+  }, []);
+
+  const activeLang = propLang || internalLang;
+  const activeUser = propUser !== undefined ? propUser : internalUser;
+
+  const handleLanguageClick = () => {
+    if (propToggleLang) {
+      propToggleLang();
+    } else {
+      const next = activeLang === 'de' ? 'en' : 'de';
+      setInternalLang(next);
+      try {
+        localStorage.setItem('omni_lang', next);
+      } catch (e) {}
+      window.location.reload();
+    }
+  };
+
+  const handleMenuClick = () => {
+    if (onToggleSidebar) {
+      onToggleSidebar();
+    } else {
+      router.push('/?sidebar=open');
+    }
+  };
+
+  const handleAlgoClick = () => {
+    if (onToggleAlgoDrawer) {
+      onToggleAlgoDrawer();
+    } else {
+      router.push('/?algo=open');
+    }
+  };
+
+  const handleAuthClick = () => {
+    if (activeUser && onOpenUserProfileModal) {
+      onOpenUserProfileModal();
+    } else if (!activeUser && onOpenAuthModal) {
+      onOpenAuthModal();
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <header
       className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-3 sm:px-5 h-14 flex items-center justify-between gap-4"
@@ -86,9 +148,9 @@ export default function Header({
     >
       {/* Brand & Menu */}
       <div className="flex items-center gap-2">
-        {showMenuButton && onToggleSidebar && (
+        {showMenuButton && (
           <button
-            onClick={onToggleSidebar}
+            onClick={handleMenuClick}
             className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
             title="Menu"
             aria-label="Toggle sidebar"
@@ -118,61 +180,57 @@ export default function Header({
       {/* Right Header Controls */}
       <div className="flex items-center gap-2">
         {/* Algorithm Control */}
-        {onToggleAlgoDrawer && (
-          <button
-            onClick={onToggleAlgoDrawer}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
-              algoDrawerOpen
-                ? 'bg-[#8083ff] border-[#8083ff] text-white glow-primary'
-                : 'bg-[#121a30] border-white/8 text-[#9ba4bf] hover:bg-[#192038] hover:text-white hover:border-white/15'
-            }`}
-          >
-            <Sliders className={`h-3.5 w-3.5 ${algoDrawerOpen ? 'text-white' : 'text-[#44e2cd]'}`} />
-            <span className="hidden sm:inline">
-              {lang === 'de' ? 'Algo-Steuerung' : 'Algorithm'}
-            </span>
-          </button>
-        )}
+        <button
+          onClick={handleAlgoClick}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
+            algoDrawerOpen
+              ? 'bg-[#8083ff] border-[#8083ff] text-white glow-primary'
+              : 'bg-[#121a30] border-white/8 text-[#9ba4bf] hover:bg-[#192038] hover:text-white hover:border-white/15'
+          }`}
+        >
+          <Sliders className={`h-3.5 w-3.5 ${algoDrawerOpen ? 'text-white' : 'text-[#44e2cd]'}`} />
+          <span className="hidden sm:inline">
+            {activeLang === 'de' ? 'Algo-Steuerung' : 'Algorithm'}
+          </span>
+        </button>
 
         {/* Language Toggle */}
-        {onToggleLanguage && (
-          <button
-            onClick={onToggleLanguage}
-            title={lang === 'de' ? 'Sprache auf Englisch wechseln' : 'Switch language to German'}
-            className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-2 rounded-xl text-xs font-bold text-[#dae2fd] transition-all duration-200 shadow-sm active:scale-95 group"
-          >
-            <div className="group-hover:scale-110 transition-transform">
-              {lang === 'de' ? <GermanFlag className="w-4 h-3" /> : <UKFlag className="w-4 h-3" />}
-            </div>
-            <span className="text-xs font-extrabold tracking-wide text-[#dae2fd]">
-              {lang === 'de' ? 'DE' : 'EN'}
-            </span>
-            <span className="text-[9px] text-[#5c657d] group-hover:text-[#44e2cd] font-mono transition-colors">
-              ⇄
-            </span>
-          </button>
-        )}
+        <button
+          onClick={handleLanguageClick}
+          title={activeLang === 'de' ? 'Sprache auf Englisch wechseln' : 'Switch language to German'}
+          className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-2 rounded-xl text-xs font-bold text-[#dae2fd] transition-all duration-200 shadow-sm active:scale-95 group"
+        >
+          <div className="group-hover:scale-110 transition-transform">
+            {activeLang === 'de' ? <GermanFlag className="w-4 h-3" /> : <UKFlag className="w-4 h-3" />}
+          </div>
+          <span className="text-xs font-extrabold tracking-wide text-[#dae2fd]">
+            {activeLang === 'de' ? 'DE' : 'EN'}
+          </span>
+          <span className="text-[9px] text-[#5c657d] group-hover:text-[#44e2cd] font-mono transition-colors">
+            ⇄
+          </span>
+        </button>
 
         {/* Auth / User Profile */}
-        {currentUser ? (
+        {activeUser ? (
           <button
-            onClick={onOpenUserProfileModal}
+            onClick={handleAuthClick}
             className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 p-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold text-white transition-all"
             title="Dein Profil öffnen"
           >
             <img
-              src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
-              alt={currentUser.username}
-              className="h-7 w-7 rounded-full object-cover border border-white/10 shrink-0"
+              src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
+              alt={activeUser.username}
+              className="h-7 w-7 rounded-full object-cover border border-[#8083ff]/30 shrink-0"
             />
-            <span className="hidden md:inline font-bold text-white">{currentUser.username}</span>
+            <span className="hidden md:inline font-bold text-white">{activeUser.username}</span>
           </button>
         ) : (
           <button
-            onClick={onOpenAuthModal}
+            onClick={handleAuthClick}
             className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-lg shadow-[#8083ff]/25"
           >
-            {lang === 'de' ? 'Anmelden' : 'Login'}
+            {activeLang === 'de' ? 'Anmelden' : 'Login'}
           </button>
         )}
       </div>
