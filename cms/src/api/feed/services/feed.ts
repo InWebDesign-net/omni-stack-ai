@@ -165,10 +165,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     };
 
     // 1. Fetch all items (from database or fall back to sample seed items if database empty)
+    const statusFilter = (userProfileInput as any)?.includeDrafts ? '*' : 'published';
     let items = SAMPLE_SEED_ITEMS;
     try {
       const dbItems = await strapi.documents('api::feed-item.feed-item').findMany({
         locale: targetLocale,
+        status: statusFilter as any,
         populate: ['author'],
       });
       if (dbItems && dbItems.length > 0) {

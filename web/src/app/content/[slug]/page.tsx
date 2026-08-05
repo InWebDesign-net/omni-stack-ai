@@ -77,24 +77,30 @@ export default function ContentDetailPage() {
     } catch (e) {}
 
     const fetchItemData = async () => {
-      const found = FALLBACK_FEED_ITEMS.find((i) => i.slug === slug || String(i.id) === slug);
-      if (found) {
-        setItem(found);
-        setLikesCount(found.likesCount);
-        setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== found.slug && i.mediaType !== 'short').slice(0, 5));
-        return;
+      const isBypass = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
+
+      if (!isBypass) {
+        const found = FALLBACK_FEED_ITEMS.find((i) => i.slug === slug || String(i.id) === slug || (i as any).documentId === slug);
+        if (found) {
+          setItem(found);
+          setLikesCount(found.likesCount);
+          setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== found.slug && i.mediaType !== 'short').slice(0, 5));
+          return;
+        }
       }
 
       try {
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ activePattern: 'discovery' }),
+          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass }),
         });
         if (res.ok) {
           const data = await res.json();
           if (data.feed && data.feed.length > 0) {
-            const apiMatch = data.feed.find((i: FeedItem) => i.slug === slug || String(i.id) === slug);
+            const apiMatch = data.feed.find(
+              (i: FeedItem) => i.slug === slug || String(i.id) === slug || (i as any).documentId === slug
+            );
             if (apiMatch) {
               setItem(apiMatch);
               setLikesCount(apiMatch.likesCount || 100);
@@ -107,7 +113,7 @@ export default function ContentDetailPage() {
         console.error('Error fetching item from Strapi API:', e);
       }
 
-      const defaultItem = FALLBACK_FEED_ITEMS[0];
+      const defaultItem = FALLBACK_FEED_ITEMS.find((i) => i.slug === slug || String(i.id) === slug || (i as any).documentId === slug) || FALLBACK_FEED_ITEMS[0];
       setItem(defaultItem);
       setLikesCount(defaultItem.likesCount);
       setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== defaultItem.slug).slice(0, 5));
