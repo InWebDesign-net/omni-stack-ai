@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sliders, Menu } from 'lucide-react';
+import { Sliders, Menu, ChevronDown, Tv, Sparkles, LogOut, User } from 'lucide-react';
 
 export function OmniLogo({ size = 22 }: { size?: number }) {
   return (
@@ -63,9 +63,12 @@ interface HeaderProps {
   algoDrawerOpen?: boolean;
   lang?: 'de' | 'en';
   onToggleLanguage?: () => void;
-  currentUser?: { username: string; handle?: string; avatarUrl?: string } | null;
+  currentUser?: { id?: number; username: string; handle?: string; avatarUrl?: string; bio?: string; subscribersCount?: number } | null;
   onOpenAuthModal?: () => void;
   onOpenUserProfileModal?: () => void;
+  onOpenSettingsModal?: () => void;
+  onOpenCreateModal?: () => void;
+  onLogout?: () => void;
   showMenuButton?: boolean;
 }
 
@@ -78,13 +81,17 @@ export default function Header({
   currentUser: propUser,
   onOpenAuthModal,
   onOpenUserProfileModal,
+  onOpenSettingsModal,
+  onOpenCreateModal,
+  onLogout,
   showMenuButton = true,
 }: HeaderProps) {
   const router = useRouter();
 
-  // Internal fallback states when used on sub-pages without explicit props
+  // Internal state
   const [internalLang, setInternalLang] = useState<'de' | 'en'>('de');
-  const [internalUser, setInternalUser] = useState<{ username: string; handle?: string; avatarUrl?: string } | null>(null);
+  const [internalUser, setInternalUser] = useState<{ id?: number; username: string; handle?: string; avatarUrl?: string; bio?: string; subscribersCount?: number } | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -131,19 +138,28 @@ export default function Header({
     }
   };
 
-  const handleAuthClick = () => {
-    if (activeUser && onOpenUserProfileModal) {
-      onOpenUserProfileModal();
-    } else if (!activeUser && onOpenAuthModal) {
-      onOpenAuthModal();
+  const handleLogoutAction = () => {
+    if (onLogout) {
+      onLogout();
     } else {
-      router.push('/');
+      try {
+        localStorage.removeItem('omni_user');
+        localStorage.removeItem('omni_jwt');
+        document.cookie = 'omni_jwt=; path=/; max-age=0';
+      } catch (e) {}
+      window.location.reload();
     }
+  };
+
+  const getUserHandleString = (usr: typeof activeUser) => {
+    if (!usr) return '@creator';
+    if (usr.handle) return usr.handle.startsWith('@') ? usr.handle : `@${usr.handle}`;
+    return `@${usr.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
   };
 
   return (
     <header
-      className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-3 sm:px-5 h-14 flex items-center justify-between gap-4"
+      className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-3 sm:px-5 h-14 flex items-center justify-between gap-4 select-none"
       style={{ boxShadow: '0 1px 0 rgba(128,131,255,0.10), 0 4px 16px -4px rgba(8,14,30,0.80)' }}
     >
       {/* Brand & Menu */}
@@ -211,26 +227,114 @@ export default function Header({
           </span>
         </button>
 
-        {/* Auth / User Profile */}
+        {/* Auth / User Profile Dropdown */}
         {activeUser ? (
-          <button
-            onClick={handleAuthClick}
-            className="flex items-center gap-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 p-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold text-white transition-all"
-            title="Dein Profil öffnen"
-          >
-            <img
-              src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
-              alt={activeUser.username}
-              className="h-7 w-7 rounded-full object-cover border border-[#8083ff]/30 shrink-0"
-            />
-            <span className="hidden md:inline font-bold text-white">{activeUser.username}</span>
-          </button>
+          <div className="relative z-50">
+            <button
+              type="button"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="flex items-center gap-2.5 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 px-3 py-1.5 rounded-xl text-xs text-white transition-all group"
+            >
+              <img
+                src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
+                alt={activeUser.username}
+                className="h-6 w-6 rounded-full object-cover border border-white/15 shrink-0"
+              />
+              <div className="flex flex-col text-left hidden sm:flex">
+                <span className="font-semibold text-[#dae2fd] text-[11px] leading-tight group-hover:text-white">
+                  {activeUser.username}
+                </span>
+                <span className="text-[9px] text-[#8083ff] font-mono font-bold leading-none">
+                  {getUserHandleString(activeUser)}
+                </span>
+              </div>
+              <ChevronDown className="h-3.5 w-3.5 text-[#5c657d] group-hover:text-white transition-transform" />
+            </button>
+
+            {/* Popover Menu */}
+            {userDropdownOpen && (
+              <div
+                className="absolute right-0 mt-2 w-56 bg-[#0d1528] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn flex flex-col gap-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    if (onOpenUserProfileModal) {
+                      onOpenUserProfileModal();
+                    } else {
+                      router.push('/');
+                    }
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                >
+                  <Tv className="h-4 w-4 text-[#8083ff]" />
+                  <span>
+                    {activeLang === 'de' ? 'Mein Kanal' : 'My Channel'} ({getUserHandleString(activeUser)})
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    if (onOpenSettingsModal) {
+                      onOpenSettingsModal();
+                    } else {
+                      router.push('/');
+                    }
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                >
+                  <Sliders className="h-4 w-4 text-[#44e2cd]" />
+                  <span>{activeLang === 'de' ? 'Einstellungen' : 'Settings'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    if (onOpenCreateModal) {
+                      onOpenCreateModal();
+                    } else {
+                      router.push('/');
+                    }
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                >
+                  <Sparkles className="h-4 w-4 text-[#ffb783]" />
+                  <span>{activeLang === 'de' ? 'Neuen Beitrag erstellen' : 'Create Post'}</span>
+                </button>
+
+                <div className="my-1 border-t border-white/5" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    handleLogoutAction();
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all text-left"
+                >
+                  <LogOut className="h-4 w-4 text-red-400" />
+                  <span>{activeLang === 'de' ? 'Abmelden' : 'Log Out'}</span>
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button
-            onClick={handleAuthClick}
-            className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-lg shadow-[#8083ff]/25"
+            onClick={() => {
+              if (onOpenAuthModal) {
+                onOpenAuthModal();
+              } else {
+                router.push('/');
+              }
+            }}
+            className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-[#8083ff]/25"
           >
-            {activeLang === 'de' ? 'Anmelden' : 'Login'}
+            <User className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{activeLang === 'de' ? 'Anmelden' : 'Sign In'}</span>
           </button>
         )}
       </div>

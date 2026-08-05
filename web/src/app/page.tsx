@@ -987,6 +987,20 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
             });
           }
         }}
+        onOpenSettingsModal={() => {
+          if (currentUser) {
+            const userHandle = getCurrentUserHandle(currentUser);
+            setEditProfileForm({
+              username: currentUser.username || '',
+              handle: userHandle.replace(/^@/, ''),
+              avatarUrl: currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+              bio: currentUser.bio || 'Creator & Content Publisher im Omni Network.',
+            });
+            setEditProfileModalOpen(true);
+          }
+        }}
+        onOpenCreateModal={() => setCreateItemModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* ── Algorithm Drawer ─────────────────────────────────────────────────── */}
