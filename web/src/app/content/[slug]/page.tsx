@@ -93,7 +93,7 @@ export default function ContentDetailPage() {
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass }),
+          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass, targetSlug: slug }),
         });
         if (res.ok) {
           const data = await res.json();

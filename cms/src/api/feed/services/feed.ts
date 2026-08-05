@@ -165,19 +165,55 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     };
 
     // 1. Fetch all items (from database or fall back to sample seed items if database empty)
-    const statusFilter = (userProfileInput as any)?.includeDrafts ? '*' : 'published';
     let items = SAMPLE_SEED_ITEMS;
     try {
-      const dbItems = await strapi.documents('api::feed-item.feed-item').findMany({
-        locale: targetLocale,
-        status: statusFilter as any,
+      let dbItems = await strapi.documents('api::feed-item.feed-item').findMany({
         populate: ['author'],
+        status: 'published',
       });
+
+      if ((userProfileInput as any)?.includeDrafts) {
+        const draftDbItems = await strapi.documents('api::feed-item.feed-item').findMany({
+          populate: ['author'],
+          status: 'draft',
+        });
+        dbItems = [...dbItems, ...draftDbItems];
+      }
+
       if (dbItems && dbItems.length > 0) {
         items = dbItems as any;
       }
     } catch (err) {
       // Fallback to sample seed items
+    }
+
+    // Direct target slug / documentId lookup to guarantee preview availability
+    const target = (userProfileInput as any)?.targetSlug;
+    if (target) {
+      const alreadyIn = items.some((i: any) => i.slug === target || i.documentId === target || String(i.id) === target);
+      if (!alreadyIn) {
+        try {
+          let directMatch = await strapi.documents('api::feed-item.feed-item').findFirst({
+            where: {
+              $or: [{ slug: target }, { documentId: target }],
+            },
+            populate: ['author'],
+            status: 'draft',
+          });
+          if (!directMatch) {
+            directMatch = await strapi.documents('api::feed-item.feed-item').findFirst({
+              where: {
+                $or: [{ slug: target }, { documentId: target }],
+              },
+              populate: ['author'],
+              status: 'published',
+            });
+          }
+          if (directMatch) {
+            items = [directMatch as any, ...items];
+          }
+        } catch (e) {}
+      }
     }
 
     // 2. Score items against Interest Vector

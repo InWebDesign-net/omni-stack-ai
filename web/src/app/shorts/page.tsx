@@ -39,11 +39,36 @@ export default function ShortsFeedPage() {
   const params = useParams();
   const initialSlug = params?.slug as string;
 
-  // Filter all shorts from dataset
-  const shortsList = React.useMemo(() => {
+  // Dynamic shorts list from Strapi with fallback
+  const [shortsList, setShortsList] = useState<FeedItem[]>(() => {
     const allShorts = FALLBACK_FEED_ITEMS.filter((item) => item.mediaType === 'short');
     return allShorts.length > 0 ? allShorts : FALLBACK_FEED_ITEMS;
-  }, []);
+  });
+
+  useEffect(() => {
+    const fetchShorts = async () => {
+      const isBypass = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
+      try {
+        const res = await fetch('/api/strapi-feed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass, targetSlug: initialSlug }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.feed && data.feed.length > 0) {
+            const apiShorts = data.feed.filter(
+              (i: FeedItem) => i.mediaType === 'short' || i.slug === initialSlug || (i as any).documentId === initialSlug
+            );
+            if (apiShorts.length > 0) {
+              setShortsList(apiShorts);
+            }
+          }
+        }
+      } catch (e) {}
+    };
+    fetchShorts();
+  }, [initialSlug]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
