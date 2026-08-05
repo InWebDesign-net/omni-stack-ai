@@ -410,7 +410,7 @@ export default function ContentDetailPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d1528] hover:bg-[#121a30] text-xs font-semibold text-[#dae2fd] transition-all border border-white/8 hover:border-white/20 shadow-md group"
           >
             <ArrowLeft className="h-4 w-4 text-[#8083ff] group-hover:-translate-x-0.5 transition-transform" />
-            <span>← Zurück zur Startseite</span>
+            <span>Zurück zur Startseite</span>
           </Link>
 
           {item && (
