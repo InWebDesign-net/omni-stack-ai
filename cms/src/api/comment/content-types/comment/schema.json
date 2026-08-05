@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "comments",
+  "info": {
+    "singularName": "comment",
+    "pluralName": "comments",
+    "displayName": "Comment",
+    "description": "User comments on feed items and shorts"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "authorName": {
+      "type": "string"
+    },
+    "authorHandle": {
+      "type": "string"
+    },
+    "authorAvatar": {
+      "type": "string"
+    },
+    "isEdited": {
+      "type": "boolean",
+      "default": false
+    },
+    "feedSlug": {
+      "type": "string",
+      "required": true
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

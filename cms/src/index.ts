@@ -369,6 +369,112 @@ export default {
           }
         }
       }
+
+      // 3. Grant Public & Authenticated permissions for api::comment.comment
+      const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+        where: { type: 'public' },
+      });
+      const commentActions = [
+        'api::comment.comment.find',
+        'api::comment.comment.findOne',
+        'api::comment.comment.create',
+        'api::comment.comment.update',
+        'api::comment.comment.delete',
+      ];
+
+      for (const roleObj of [publicRole, authRole]) {
+        if (!roleObj) continue;
+        for (const action of commentActions) {
+          const existingPerm = await strapi.db.query('plugin::users-permissions.permission').findOne({
+            where: { action, role: roleObj.id },
+          });
+          if (!existingPerm) {
+            await strapi.db.query('plugin::users-permissions.permission').create({
+              data: { action, role: roleObj.id },
+            });
+          }
+        }
+      }
+
+      // 4. Seed initial Comments if none exist
+      const existingComments = await strapi.documents('api::comment.comment').findMany({});
+      if (!existingComments || existingComments.length === 0) {
+        console.log('💬 Seeding initial Comments in Strapi...');
+        const initialComments = [
+          {
+            feedSlug: 'faszination-weltall-james-webb-pdf',
+            authorName: 'AstroFan99',
+            authorHandle: '@astrofan99',
+            authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+            text: 'Unglaubliche Auflösung! Besonders Seite 4 mit den Spektralanalysen hat mich fasziniert.',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'faszination-weltall-james-webb-pdf',
+            authorName: 'Dr. Evelyn Carter',
+            authorHandle: '@evelyn_c',
+            authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
+            text: 'Sehr fundierte Zusammenfassung. Das PDF eignet sich perfekt für Vorlesungen.',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'postgres-15-gin-indizes-hyper-personalized-feeds',
+            authorName: 'DevJonas',
+            authorHandle: '@jonas_dev',
+            authorAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&q=80',
+            text: 'Der GIN-Index Benchmark auf JSONB ist der Wahnsinn! Konnte meine Response Times um 60% senken.',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'kochen-wie-der-chefkoch-italienische-pasta',
+            authorName: 'Maria Rossi',
+            authorHandle: '@maria_cooks',
+            authorAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80',
+            text: 'Endlich mal jemand der erklärt, warum Echtes Nudelwasser mit Stärke so wichtig für die Emulsion ist!',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'short-postgresql-16-hacks',
+            authorName: 'CodeCraft',
+            authorHandle: '@codecraft',
+            authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+            text: 'EXPLAIN ANALYZE rettet jeden Freitag-Release! 🔥',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'short-tiefsee-geheimnisse',
+            authorName: 'OceanExplorer',
+            authorHandle: '@oceanic',
+            authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+            text: 'Schwarze Raucher sind wie fremde Welten mitten auf der Erde. Toller Short!',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'short-creamy-carbonara',
+            authorName: 'Nico Gourmet',
+            authorHandle: '@nico_food',
+            authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
+            text: 'Keine Sahne in die Carbonara! Ehrenmann 💪🏼',
+            isEdited: false,
+          },
+          {
+            feedSlug: 'suesse-katzenwelpen-lustige-momente',
+            authorName: 'Mia & Felix',
+            authorHandle: '@mia_cat',
+            authorAvatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
+            text: 'Wie niedlich bei Min 0:22! Wir haben vor Lachen geweint 😻',
+            isEdited: false,
+          }
+        ];
+
+        for (const c of initialComments) {
+          await strapi.documents('api::comment.comment').create({
+            data: c,
+            status: 'published',
+          });
+        }
+        console.log(`✅ ${initialComments.length} Comments seeded successfully!`);
+      }
     } catch (err) {
       console.error('❌ Strapi Bootstrap Error:', err);
     }

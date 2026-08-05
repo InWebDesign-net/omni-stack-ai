@@ -27,8 +27,19 @@ import {
   Tag,
   ChevronDown,
   ChevronUp,
+  Pencil,
+  Trash2,
+  Check,
+  X,
 } from 'lucide-react';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import {
+  fetchCommentsForSlug,
+  createCommentInStrapi,
+  updateCommentInStrapi,
+  deleteCommentFromStrapi,
+  CommentItem,
+} from '@/lib/comments';
 
 export default function ContentDetailPage() {
   const params = useParams();
@@ -43,28 +54,23 @@ export default function ContentDetailPage() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
 
-  // Comment section state
-  const [comments, setComments] = useState<Array<{ id: number; author: string; avatar: string; handle: string; text: string; date: string }>>([
-    {
-      id: 1,
-      author: 'Astro-Wissen',
-      handle: '@astro',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-      text: 'Extrem gut erklärt! Passt perfekt zu unserem aktuellen Strapi 5 & Next.js 16 Projekt.',
-      date: 'Vor 2 Stunden',
-    },
-    {
-      id: 2,
-      author: 'Demo Gourmet',
-      handle: '@demogourmet',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&q=80',
-      text: 'Super strukturierte Übersicht und anschauliche Beispiele 👍',
-      date: 'Vor 4 Stunden',
-    },
-  ]);
+  // Comment section state connected to Strapi
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [loadingComments, setLoadingComments] = useState(true);
   const [newCommentText, setNewCommentText] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
+  const [editCommentText, setEditCommentText] = useState('');
+  const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
 
   useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('omni_user');
+      if (storedUser) {
+        setUserProfile(JSON.parse(storedUser));
+      }
+    } catch (e) {}
+
     const fetchItemData = async () => {
       const found = FALLBACK_FEED_ITEMS.find((i) => i.slug === slug || String(i.id) === slug);
       if (found) {
@@ -102,7 +108,17 @@ export default function ContentDetailPage() {
       setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== defaultItem.slug).slice(0, 5));
     };
 
+    const loadComments = async () => {
+      setLoadingComments(true);
+      if (slug) {
+        const fetched = await fetchCommentsForSlug(slug);
+        setComments(fetched);
+      }
+      setLoadingComments(false);
+    };
+
     fetchItemData();
+    loadComments();
   }, [slug]);
 
   if (!item) {
@@ -121,22 +137,69 @@ export default function ContentDetailPage() {
     setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCommentText.trim()) return;
+    if (!newCommentText.trim() || isSubmittingComment) return;
 
-    setComments((prev) => [
-      {
-        id: Date.now(),
-        author: 'Du (Benutzer)',
-        handle: '@du',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-        text: newCommentText.trim(),
-        date: 'Gerade eben',
-      },
-      ...prev,
-    ]);
+    setIsSubmittingComment(true);
+    const authorName = userProfile?.username || 'Du (Benutzer)';
+    const authorHandle = userProfile?.handle || '@du';
+    const authorAvatar = userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+
+    const created = await createCommentInStrapi({
+      feedSlug: slug,
+      text: newCommentText.trim(),
+      authorName,
+      authorHandle,
+      authorAvatar,
+    });
+
+    if (created) {
+      setComments((prev) => [created, ...prev]);
+    } else {
+      setComments((prev) => [
+        {
+          id: Date.now(),
+          documentId: String(Date.now()),
+          text: newCommentText.trim(),
+          authorName,
+          authorHandle,
+          authorAvatar,
+          isEdited: false,
+          feedSlug: slug,
+          createdAt: 'Gerade eben',
+          isCurrentUser: true,
+        },
+        ...prev,
+      ]);
+    }
     setNewCommentText('');
+    setIsSubmittingComment(false);
+  };
+
+  const handleStartEdit = (comment: CommentItem) => {
+    setEditingCommentId(comment.documentId || comment.id);
+    setEditCommentText(comment.text);
+  };
+
+  const handleSaveEdit = async (commentId: string | number) => {
+    if (!editCommentText.trim()) return;
+
+    await updateCommentInStrapi(commentId, editCommentText.trim());
+    setComments((prev) =>
+      prev.map((c) =>
+        c.documentId === commentId || c.id === commentId
+          ? { ...c, text: editCommentText.trim(), isEdited: true }
+          : c
+      )
+    );
+    setEditingCommentId(null);
+    setEditCommentText('');
+  };
+
+  const handleDeleteComment = async (commentId: string | number) => {
+    await deleteCommentFromStrapi(commentId);
+    setComments((prev) => prev.filter((c) => c.documentId !== commentId && c.id !== commentId));
   };
 
   const authorName = getAuthorName(item);
@@ -433,35 +496,106 @@ export default function ContentDetailPage() {
                 type="text"
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
-                placeholder="Schreibe deinen Kommentar zum Beitrag..."
+                placeholder={userProfile ? `Als ${userProfile.username} kommentieren...` : "Schreibe deinen Kommentar zum Beitrag..."}
                 className="flex-1 bg-[#080e1e] border border-white/8 focus:border-[#8083ff] rounded-2xl px-4 py-3 text-xs text-white placeholder-[#5c657d] focus:outline-none transition-all"
+                disabled={isSubmittingComment}
               />
               <button
                 type="submit"
-                className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-5 py-3 rounded-2xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5"
+                disabled={isSubmittingComment || !newCommentText.trim()}
+                className="bg-[#8083ff] hover:bg-[#6b6eff] disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-3 rounded-2xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5"
               >
                 <Send className="h-3.5 w-3.5" />
-                <span>Senden</span>
+                <span>{isSubmittingComment ? 'Senden...' : 'Senden'}</span>
               </button>
             </form>
 
             {/* Comments List */}
             <div className="flex flex-col gap-3">
-              {comments.map((c) => (
-                <div key={c.id} className="bg-[#080e1e]/60 border border-white/5 p-4 rounded-2xl flex gap-3">
-                  <img src={c.avatar} alt={c.author} className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0" />
-                  <div className="flex flex-col gap-1 flex-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white">{c.author}</span>
-                        <span className="text-[10px] text-[#8083ff] font-mono">{c.handle}</span>
-                      </div>
-                      <span className="text-[10px] text-[#5c657d]">{c.date}</span>
-                    </div>
-                    <p className="text-xs text-[#dae2fd] leading-relaxed">{c.text}</p>
-                  </div>
+              {loadingComments ? (
+                <div className="py-6 text-center text-xs text-[#9ba4bf] font-mono animate-pulse">
+                  Lade Kommentare aus Strapi CMS...
                 </div>
-              ))}
+              ) : comments.length === 0 ? (
+                <div className="py-6 text-center text-xs text-[#5c657d] font-mono">
+                  Noch keine Kommentare vorhanden. Schreibe den ersten Kommentar!
+                </div>
+              ) : (
+                comments.map((c) => {
+                  const commentKey = c.documentId || String(c.id);
+                  const isEditing = editingCommentId === commentKey;
+                  const isOwner = c.isCurrentUser || c.authorHandle === '@du' || (userProfile && c.authorHandle === userProfile.handle);
+
+                  return (
+                    <div key={commentKey} className="bg-[#080e1e]/60 border border-white/5 p-4 rounded-2xl flex gap-3 group transition-all">
+                      <img src={c.authorAvatar} alt={c.authorName} className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0" />
+                      <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-white">{c.authorName}</span>
+                            <span className="text-[10px] text-[#8083ff] font-mono">{c.authorHandle}</span>
+                            {c.isEdited && (
+                              <span className="text-[9px] text-[#9ba4bf] italic font-mono">(bearbeitet)</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-[#5c657d]">{c.createdAt}</span>
+                            {isOwner && !isEditing && (
+                              <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(c)}
+                                  title="Kommentar bearbeiten"
+                                  className="p-1 text-[#9ba4bf] hover:text-[#8083ff] rounded-lg hover:bg-white/5 transition-all"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteComment(commentKey)}
+                                  title="Kommentar löschen"
+                                  className="p-1 text-[#9ba4bf] hover:text-red-400 rounded-lg hover:bg-white/5 transition-all"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {isEditing ? (
+                          <div className="flex flex-col gap-2 mt-1">
+                            <textarea
+                              value={editCommentText}
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                              className="w-full bg-[#080e1e] border border-[#8083ff] rounded-xl p-2.5 text-xs text-white focus:outline-none resize-y min-h-[60px]"
+                            />
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingCommentId(null)}
+                                className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-[#9ba4bf] font-medium transition-all"
+                              >
+                                Abbrechen
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEdit(commentKey)}
+                                className="px-3 py-1 rounded-lg bg-[#8083ff] hover:bg-[#6b6eff] text-[11px] text-white font-medium flex items-center gap-1 transition-all"
+                              >
+                                <Check className="h-3 w-3" />
+                                <span>Speichern</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-[#dae2fd] leading-relaxed break-words">{c.text}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </section>
 

@@ -21,8 +21,18 @@ import {
   Sparkles,
   Flame,
   User,
+  Pencil,
+  Trash2,
+  Check,
 } from 'lucide-react';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import {
+  fetchCommentsForSlug,
+  createCommentInStrapi,
+  updateCommentInStrapi,
+  deleteCommentFromStrapi,
+  CommentItem,
+} from '@/lib/comments';
 
 export default function ShortsFeedPage() {
   const router = useRouter();
@@ -41,12 +51,16 @@ export default function ShortsFeedPage() {
   const [likesMap, setLikesMap] = useState<Record<number, number>>({});
   const [bookmarkedMap, setBookmarkedMap] = useState<Record<number, boolean>>({});
   const [subscribedMap, setSubscribedMap] = useState<Record<string, boolean>>({});
+  
+  // Comments state connected to Strapi
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [activeComments, setActiveComments] = useState<Array<{ id: number; author: string; handle: string; text: string }>>([
-    { id: 1, author: 'Astro', handle: '@astro', text: 'Klasse Video! Das muss ich gleich ausprobieren 🔥' },
-    { id: 2, author: 'DemoGourmet', handle: '@demogourmet', text: 'Super knackig erklärt 👍' },
-  ]);
+  const [commentsMap, setCommentsMap] = useState<Record<string, CommentItem[]>>({});
+  const [loadingComments, setLoadingComments] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
+  const [editCommentText, setEditCommentText] = useState('');
+  const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -107,6 +121,35 @@ export default function ShortsFeedPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, shortsList.length]);
 
+  const activeShort = shortsList[activeIndex];
+
+  // Load user profile
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('omni_user');
+      if (storedUser) {
+        setUserProfile(JSON.parse(storedUser));
+      }
+    } catch (e) {}
+  }, []);
+
+  // Fetch comments from Strapi for active short
+  useEffect(() => {
+    if (!activeShort) return;
+    const slug = activeShort.slug;
+    
+    const loadComments = async () => {
+      setLoadingComments(true);
+      const fetched = await fetchCommentsForSlug(slug);
+      setCommentsMap((prev) => ({ ...prev, [slug]: fetched }));
+      setLoadingComments(false);
+    };
+
+    loadComments();
+  }, [activeShort?.slug, commentsOpen]);
+
+  const activeComments = (activeShort && commentsMap[activeShort.slug]) || [];
+
   const toggleLike = (id: number, currentLikes: number) => {
     setLikedMap((prev) => {
       const currentlyLiked = !!prev[id];
@@ -119,15 +162,77 @@ export default function ShortsFeedPage() {
     setSubscribedMap((prev) => ({ ...prev, [handle]: !prev[handle] }));
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || isSubmittingComment || !activeShort) return;
 
-    setActiveComments((prev) => [
-      { id: Date.now(), author: 'Du', handle: '@du', text: commentText.trim() },
+    setIsSubmittingComment(true);
+    const slug = activeShort.slug;
+    const authorName = userProfile?.username || 'Du (Benutzer)';
+    const authorHandle = userProfile?.handle || '@du';
+    const authorAvatar = userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+
+    const created = await createCommentInStrapi({
+      feedSlug: slug,
+      text: commentText.trim(),
+      authorName,
+      authorHandle,
+      authorAvatar,
+    });
+
+    const newCommentItem: CommentItem = created || {
+      id: Date.now(),
+      documentId: String(Date.now()),
+      text: commentText.trim(),
+      authorName,
+      authorHandle,
+      authorAvatar,
+      isEdited: false,
+      feedSlug: slug,
+      createdAt: 'Gerade eben',
+      isCurrentUser: true,
+    };
+
+    setCommentsMap((prev) => ({
       ...prev,
-    ]);
+      [slug]: [newCommentItem, ...(prev[slug] || [])],
+    }));
+
     setCommentText('');
+    setIsSubmittingComment(false);
+  };
+
+  const handleStartEdit = (comment: CommentItem) => {
+    setEditingCommentId(comment.documentId || comment.id);
+    setEditCommentText(comment.text);
+  };
+
+  const handleSaveEdit = async (commentId: string | number) => {
+    if (!editCommentText.trim() || !activeShort) return;
+    const slug = activeShort.slug;
+
+    await updateCommentInStrapi(commentId, editCommentText.trim());
+    setCommentsMap((prev) => ({
+      ...prev,
+      [slug]: (prev[slug] || []).map((c) =>
+        c.documentId === commentId || c.id === commentId
+          ? { ...c, text: editCommentText.trim(), isEdited: true }
+          : c
+      ),
+    }));
+    setEditingCommentId(null);
+    setEditCommentText('');
+  };
+
+  const handleDeleteComment = async (commentId: string | number) => {
+    if (!activeShort) return;
+    const slug = activeShort.slug;
+
+    await deleteCommentFromStrapi(commentId);
+    setCommentsMap((prev) => ({
+      ...prev,
+      [slug]: (prev[slug] || []).filter((c) => c.documentId !== commentId && c.id !== commentId),
+    }));
   };
 
   return (
@@ -325,23 +430,99 @@ export default function ShortsFeedPage() {
                 <span>Kommentare ({activeComments.length})</span>
               </h3>
               <button
+                type="button"
                 onClick={() => setCommentsOpen(false)}
-                className="p-1 text-[#9ba4bf] hover:text-white rounded-lg"
+                className="p-1 text-[#9ba4bf] hover:text-white rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-3">
-              {activeComments.map((c) => (
-                <div key={c.id} className="bg-[#080e1e] p-3 rounded-xl border border-white/5 flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-white">{c.author}</span>
-                    <span className="font-mono text-[#8083ff] text-[10px]">{c.handle}</span>
-                  </div>
-                  <p className="text-xs text-[#dae2fd]">{c.text}</p>
+              {loadingComments ? (
+                <div className="py-6 text-center text-xs text-[#9ba4bf] font-mono animate-pulse">
+                  Lade Kommentare aus Strapi CMS...
                 </div>
-              ))}
+              ) : activeComments.length === 0 ? (
+                <div className="py-6 text-center text-xs text-[#5c657d] font-mono">
+                  Noch keine Kommentare vorhanden. Schreibe den ersten!
+                </div>
+              ) : (
+                activeComments.map((c) => {
+                  const commentKey = c.documentId || String(c.id);
+                  const isEditing = editingCommentId === commentKey;
+                  const isOwner = c.isCurrentUser || c.authorHandle === '@du' || (userProfile && c.authorHandle === userProfile.handle);
+
+                  return (
+                    <div key={commentKey} className="bg-[#080e1e] p-3 rounded-xl border border-white/5 flex gap-3 group transition-all">
+                      <img src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 rounded-full object-cover border border-white/10 shrink-0" />
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-bold text-white">{c.authorName}</span>
+                            <span className="font-mono text-[#8083ff] text-[10px]">{c.authorHandle}</span>
+                            {c.isEdited && (
+                              <span className="text-[9px] text-[#9ba4bf] italic font-mono">(bearbeitet)</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[9px] text-[#5c657d]">{c.createdAt}</span>
+                            {isOwner && !isEditing && (
+                              <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(c)}
+                                  title="Kommentar bearbeiten"
+                                  className="p-1 text-[#9ba4bf] hover:text-[#8083ff] rounded hover:bg-white/5 transition-all"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteComment(commentKey)}
+                                  title="Kommentar löschen"
+                                  className="p-1 text-[#9ba4bf] hover:text-red-400 rounded hover:bg-white/5 transition-all"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {isEditing ? (
+                          <div className="flex flex-col gap-2 mt-1">
+                            <textarea
+                              value={editCommentText}
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                              className="w-full bg-[#080e1e] border border-[#8083ff] rounded-lg p-2 text-xs text-white focus:outline-none resize-y min-h-[50px]"
+                            />
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingCommentId(null)}
+                                className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-[#9ba4bf] font-medium transition-all"
+                              >
+                                Abbrechen
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEdit(commentKey)}
+                                className="px-2.5 py-1 rounded bg-[#8083ff] hover:bg-[#6b6eff] text-[10px] text-white font-medium flex items-center gap-1 transition-all"
+                              >
+                                <Check className="h-3 w-3" />
+                                <span>Speichern</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-[#dae2fd] leading-relaxed break-words">{c.text}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             <form onSubmit={handleAddComment} className="pt-3 border-t border-white/10 flex gap-2">
@@ -349,12 +530,14 @@ export default function ShortsFeedPage() {
                 type="text"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Kommentar schreiben..."
+                placeholder={userProfile ? `Als ${userProfile.username} kommentieren...` : "Kommentar schreiben..."}
                 className="flex-1 bg-[#080e1e] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-[#5c657d] focus:outline-none"
+                disabled={isSubmittingComment}
               />
               <button
                 type="submit"
-                className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-4 py-2 rounded-xl text-xs font-semibold"
+                disabled={isSubmittingComment || !commentText.trim()}
+                className="bg-[#8083ff] hover:bg-[#6b6eff] disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 shrink-0 transition-all"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>
