@@ -309,13 +309,32 @@ export default function OmniApp() {
     });
   };
 
+function getCurrentUserHandle(user: UserProfileSession | null): string {
+  if (!user) return '@user';
+  if (user.handle && user.handle.trim()) {
+    return user.handle.startsWith('@') ? user.handle.trim() : `@${user.handle.trim()}`;
+  }
+  const fallback = user.username ? user.username.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user';
+  return `@${fallback || 'user'}`;
+}
+
   // Check stored auth session & language preference on mount
   useEffect(() => {
     try {
       const savedUser = localStorage.getItem('omni_user');
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
-        setCurrentUser(parsed);
+        const userHandle = parsed.handle || `@${(parsed.username || 'user').toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+        setCurrentUser({
+          id: parsed.id || 1,
+          username: parsed.username || 'Demo User',
+          email: parsed.email || 'user@example.com',
+          handle: userHandle.startsWith('@') ? userHandle : `@${userHandle}`,
+          avatarUrl: parsed.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+          bio: parsed.bio || 'Creator & Content Publisher im Omni Network.',
+          subscribersCount: parsed.subscribersCount || 0,
+          jwt: parsed.jwt,
+        });
       }
 
       const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en' | null;
@@ -791,7 +810,7 @@ export default function OmniApp() {
                     {currentUser.username}
                   </span>
                   <span className="text-[9px] text-[#8083ff] font-mono font-bold leading-none">
-                    {currentUser.handle}
+                    {getCurrentUserHandle(currentUser)}
                   </span>
                 </div>
                 <ChevronDown className="h-3.5 w-3.5 text-[#5c657d] group-hover:text-white transition-transform" />
@@ -823,7 +842,7 @@ export default function OmniApp() {
                         author: {
                           id: currentUser.id,
                           username: currentUser.username,
-                          handle: currentUser.handle,
+                          handle: getCurrentUserHandle(currentUser),
                           avatarUrl: currentUser.avatarUrl,
                           bio: currentUser.bio,
                           subscribersCount: currentUser.subscribersCount,
@@ -833,18 +852,19 @@ export default function OmniApp() {
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
                   >
                     <Tv className="h-4 w-4 text-[#8083ff]" />
-                    <span>Mein Kanal ({currentUser.handle})</span>
+                    <span>Mein Kanal ({getCurrentUserHandle(currentUser)})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
                       setUserDropdownOpen(false);
+                      const userHandle = getCurrentUserHandle(currentUser);
                       setEditProfileForm({
-                        username: currentUser.username,
-                        handle: currentUser.handle.replace(/^@/, ''),
-                        avatarUrl: currentUser.avatarUrl,
-                        bio: currentUser.bio,
+                        username: currentUser.username || '',
+                        handle: userHandle.replace(/^@/, ''),
+                        avatarUrl: currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+                        bio: currentUser.bio || 'Creator & Content Publisher im Omni Network.',
                       });
                       setEditProfileModalOpen(true);
                     }}
@@ -1591,28 +1611,61 @@ export default function OmniApp() {
                 </div>
               </div>
 
-              {/* Subscribe Action */}
+              {/* Subscribe Action or Edit/Create if Own Channel */}
               <div className="relative z-10">
-                <button
-                  onClick={() => toggleSubscribeChannel(selectedChannel.handle)}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 ${
-                    subscribedChannels.includes(selectedChannel.handle)
-                      ? 'bg-white/10 text-white border border-white/15 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30'
-                      : 'bg-[#8083ff] hover:bg-[#6b6eff] text-white shadow-[#8083ff]/30'
-                  }`}
-                >
-                  {subscribedChannels.includes(selectedChannel.handle) ? (
-                    <>
-                      <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
-                      <span>Abonniert</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4" />
-                      <span>Kanal abonnieren</span>
-                    </>
-                  )}
-                </button>
+                {currentUser && getCurrentUserHandle(currentUser) === selectedChannel.handle ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedChannel(null);
+                        const userHandle = getCurrentUserHandle(currentUser);
+                        setEditProfileForm({
+                          username: currentUser.username || '',
+                          handle: userHandle.replace(/^@/, ''),
+                          avatarUrl: currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+                          bio: currentUser.bio || 'Creator & Content Publisher im Omni Network.',
+                        });
+                        setEditProfileModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 rounded-xl text-xs font-semibold text-white transition-all flex items-center gap-1.5"
+                    >
+                      <Sliders className="h-3.5 w-3.5 text-[#44e2cd]" />
+                      <span>{lang === 'de' ? 'Einstellungen' : 'Settings'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setSelectedChannel(null);
+                        setCreateItemModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white rounded-xl text-xs font-semibold transition-all shadow-lg shadow-[#8083ff]/25 flex items-center gap-1.5"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>{lang === 'de' ? 'Beitrag erstellen' : 'Create Post'}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => toggleSubscribeChannel(selectedChannel.handle)}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 ${
+                      subscribedChannels.includes(selectedChannel.handle)
+                        ? 'bg-white/10 text-white border border-white/15 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30'
+                        : 'bg-[#8083ff] hover:bg-[#6b6eff] text-white shadow-[#8083ff]/30'
+                    }`}
+                  >
+                    {subscribedChannels.includes(selectedChannel.handle) ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
+                        <span>Abonniert</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4" />
+                        <span>Kanal abonnieren</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
