@@ -48,7 +48,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
         }
 
         const secret = env('STRAPI_PREVIEW_SECRET', 'omni_preview_secret_2026');
-        const baseUrl = env('PUBLIC_FRONTEND_URL', 'https://omni.inwebdesign.net');
+        const baseUrl = env('PUBLIC_FRONTEND_URL', 'https://omni-web.inwebdesign.net');
 
         return `${baseUrl}/api/preview?secret=${secret}&slug=${slug}&type=${mediaType}&documentId=${documentId}`;
       },
