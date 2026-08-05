@@ -5,6 +5,7 @@
   "description": "A Strapi application",
   "scripts": {
     "build": "strapi build",
+    "postbuild": "mkdir -p node_modules/@strapi/admin/dist/server/server && ln -sfn ../../../../../dist/build node_modules/@strapi/admin/dist/server/server/build && ln -sfn dist/build build",
     "console": "strapi console",
     "deploy": "strapi deploy",
     "dev": "strapi develop",
