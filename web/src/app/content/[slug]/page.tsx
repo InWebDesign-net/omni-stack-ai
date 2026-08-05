@@ -77,7 +77,10 @@ export default function ContentDetailPage() {
     } catch (e) {}
 
     const fetchItemData = async () => {
-      const isBypass = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
+      const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const statusParam = urlParams ? urlParams.get('status') : null;
+      const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
+      const isBypass = hasCookie && statusParam !== 'published';
 
       const matchItem = (itemsList: FeedItem[], target: string) => {
         if (!target) return null;
@@ -92,7 +95,11 @@ export default function ContentDetailPage() {
       try {
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store',
+          },
+          cache: 'no-store',
           body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass, targetSlug: slug }),
         });
         if (res.ok) {

@@ -1,12 +1,16 @@
 import { draftMode } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
   const slug = searchParams.get('slug');
   const documentId = searchParams.get('documentId');
   const type = searchParams.get('type') || 'article';
+  const status = searchParams.get('status') || 'draft';
 
   const expectedSecret = process.env.STRAPI_PREVIEW_SECRET || 'omni_preview_secret_2026';
 
@@ -15,13 +19,17 @@ export async function GET(request: Request) {
   }
 
   const targetSlug = slug || documentId;
-
   const draft = await draftMode();
-  draft.enable();
 
-  if (type === 'short') {
-    redirect(`/shorts/${targetSlug}`);
+  if (status === 'published') {
+    draft.disable();
   } else {
-    redirect(`/content/${targetSlug}`);
+    draft.enable();
   }
+
+  const destination = type === 'short'
+    ? `/shorts/${targetSlug}?status=${status}`
+    : `/content/${targetSlug}?status=${status}`;
+
+  redirect(destination);
 }
