@@ -36,4 +36,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       return ctx.badRequest('Demo Reset Error', { error: err.message });
     }
   },
+
+  async ingestFinalizedVideo(ctx: any) {
+    try {
+      const payload = ctx.request.body;
+      const result = await strapi.service('api::feed.feed').ingestFinalizedVideo(payload);
+      return ctx.send(result);
+    } catch (err: any) {
+      return ctx.badRequest('Ingest Finalized Error', { error: err.message });
+    }
+  },
 });

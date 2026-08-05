@@ -32,5 +32,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/feed/ingest-finalized',
+      handler: 'feed.ingestFinalizedVideo',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

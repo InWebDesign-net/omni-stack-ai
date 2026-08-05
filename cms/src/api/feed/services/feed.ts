@@ -503,11 +503,127 @@ CRITICAL: Return JSON ONLY in this format:
   /**
    * Reset Demo Data
    */
-  async resetDemoData() {
-    return {
-      success: true,
-      message: 'Demo-Daten erfolgreich auf Werkszustand zurückgesetzt.',
-      profile: DEFAULT_USER_PROFILE,
+  /**
+   * Ingest Finalized Video (moves files from /root/media/out to /root/media/videos and updates Strapi)
+   */
+  async ingestFinalizedVideo(payload: { slug: string; duration?: number; workerSecret?: string }) {
+    const { slug, duration } = payload;
+    if (!slug) {
+      throw new Error('Missing slug parameter');
+    }
+
+    const OUT_DIR = '/root/media/out';
+    const FINAL_DIR = '/root/media/videos';
+    const THUMB_DIR = '/root/media/thumbnails';
+    const OG_DEST_DIR = '/root/media/og';
+
+    const fs = require('fs');
+    const path = require('path');
+    const glob = require('glob');
+
+    const base = slug;
+    const videoPath = path.join(OUT_DIR, base + '.mp4');
+    const donePath = path.join(OUT_DIR, base + '.done');
+    const metaPath = path.join(OUT_DIR, base + '.meta');
+
+    let metaDuration = duration || 0;
+
+    // Read meta file if exists
+    if (fs.existsSync(metaPath)) {
+      try {
+        const lines = fs.readFileSync(metaPath, 'utf8').split('\n');
+        for (const line of lines) {
+          const [key, value] = line.split('=');
+          if (key && value && key.trim() === 'duration') {
+            metaDuration = parseInt(value.trim(), 10) || metaDuration;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 1. Move Thumbnails
+    const thumbPattern = path.join(OUT_DIR, 'thumbnails', `${base}-*.png`);
+    const thumbFiles = glob.sync(thumbPattern);
+    fs.mkdirSync(THUMB_DIR, { recursive: true });
+    for (const src of thumbFiles) {
+      const dest = path.join(THUMB_DIR, path.basename(src));
+      fs.copyFileSync(src, dest);
+      try { fs.unlinkSync(src); } catch (e) {}
+    }
+
+    // 2. Move OG image
+    const ogSrc = path.join(OUT_DIR, 'og', `${base}.jpg`);
+    fs.mkdirSync(OG_DEST_DIR, { recursive: true });
+    if (fs.existsSync(ogSrc)) {
+      const ogDest = path.join(OG_DEST_DIR, path.basename(ogSrc));
+      fs.copyFileSync(ogSrc, ogDest);
+      try { fs.unlinkSync(ogSrc); } catch (e) {}
+    }
+
+    // 3. Move ABR HLS directory
+    const hlsSrcDir = path.join(OUT_DIR, 'hls', base);
+    const hlsDestDir = path.join(FINAL_DIR, 'hls', base);
+    if (fs.existsSync(hlsSrcDir)) {
+      fs.mkdirSync(path.join(FINAL_DIR, 'hls'), { recursive: true });
+      fs.cpSync(hlsSrcDir, hlsDestDir, { recursive: true });
+      try { fs.rmSync(hlsSrcDir, { recursive: true, force: true }); } catch (e) {}
+    }
+
+    // 4. Move MP4 file
+    if (fs.existsSync(videoPath)) {
+      const targetPath = path.join(FINAL_DIR, base + '.mp4');
+      fs.copyFileSync(videoPath, targetPath);
+      try { fs.unlinkSync(videoPath); } catch (e) {}
+    }
+
+    // Clean up markers
+    if (fs.existsSync(donePath)) { try { fs.unlinkSync(donePath); } catch (e) {} }
+    if (fs.existsSync(metaPath)) { try { fs.unlinkSync(metaPath); } catch (e) {} }
+
+    // 5. Update Strapi DB entries for draft and published versions
+    const updateStrapiItem = async (status: 'draft' | 'published') => {
+      try {
+        const matches = await strapi.documents('api::feed-item.feed-item').findMany({
+          filters: { slug: { $eq: base } },
+          locale: 'de',
+          status,
+        });
+
+        if (matches && matches.length > 0) {
+          await strapi.documents('api::feed-item.feed-item').update({
+            documentId: matches[0].documentId,
+            locale: 'de',
+            status,
+            data: {
+              isProcessing: false,
+              duration: metaDuration || (matches[0] as any).duration || 0,
+            } as any,
+          });
+        }
+
+        const matchesEn = await strapi.documents('api::feed-item.feed-item').findMany({
+          filters: { slug: { $eq: base } },
+          locale: 'en',
+          status,
+        });
+
+        if (matchesEn && matchesEn.length > 0) {
+          await strapi.documents('api::feed-item.feed-item').update({
+            documentId: matchesEn[0].documentId,
+            locale: 'en',
+            status,
+            data: {
+              isProcessing: false,
+              duration: metaDuration || (matchesEn[0] as any).duration || 0,
+            } as any,
+          });
+        }
+      } catch (e) {}
     };
+
+    await updateStrapiItem('draft');
+    await updateStrapiItem('published');
+
+    return { success: true, slug: base, isProcessing: false, duration: metaDuration };
   },
 });

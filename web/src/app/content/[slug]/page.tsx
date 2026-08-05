@@ -31,6 +31,7 @@ import {
   Trash2,
   Check,
   X,
+  RefreshCw,
 } from 'lucide-react';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
@@ -140,6 +141,31 @@ export default function ContentDetailPage() {
     fetchItemData();
     loadComments();
   }, [slug]);
+
+  // Auto-poll item status if video is currently in processing state
+  useEffect(() => {
+    if (!(item as any)?.isProcessing) return;
+    const interval = setInterval(async () => {
+      try {
+        const isBypass = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
+        const res = await fetch('/api/strapi-feed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass, targetSlug: slug }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.feed && data.feed.length > 0) {
+            const apiMatch = data.feed.find((i: any) => i.slug === slug || i.documentId === slug) || data.feed[0];
+            if (apiMatch) {
+              setItem(apiMatch);
+            }
+          }
+        }
+      } catch (e) {}
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [(item as any)?.isProcessing, slug]);
 
   if (!item) {
     return (
@@ -272,6 +298,22 @@ export default function ContentDetailPage() {
           {/* 🎬 1. VIDEO LAYOUT */}
           {item.mediaType === 'video' && (
             <div className="flex flex-col gap-5">
+              {/* Processing Banner */}
+              {(item as any).isProcessing && (
+                <div className="bg-[#8083ff]/15 border border-[#8083ff]/30 p-4 rounded-2xl flex items-center justify-between gap-4 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <RefreshCw className="h-5 w-5 text-[#44e2cd] animate-spin shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-white">⚡ Video wird konvertiert & verarbeitet</p>
+                      <p className="text-xs text-[#9ba4bf]">Intel QSV Hardware-Encoding & ABR HLS Streams werden im Hintergrund generiert...</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-[#8083ff]/30 text-[#44e2cd] px-3 py-1 rounded-full border border-[#44e2cd]/30 shrink-0">
+                    Konvertierung läuft
+                  </span>
+                </div>
+              )}
+
               {/* Full-width Video Theater Frame */}
               <div className="w-full aspect-video bg-black rounded-3xl border border-white/8 overflow-hidden shadow-2xl relative group">
                 <video

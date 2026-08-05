@@ -75,6 +75,14 @@
       "type": "integer",
       "default": 0
     },
+    "isProcessing": {
+      "type": "boolean",
+      "default": false
+    },
+    "duration": {
+      "type": "integer",
+      "default": 0
+    },
     "publishedAt": {
       "type": "datetime"
     }
