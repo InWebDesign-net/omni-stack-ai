@@ -35,6 +35,7 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react';
+import Header from '@/components/Header';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
   fetchCommentsForSlug,
@@ -386,67 +387,20 @@ export default function ContentDetailPage() {
         </div>
       )}
 
-      {/* ── Standardized Top Header Bar ───────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 group select-none">
-            <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] opacity-30 blur-md group-hover:opacity-60 transition-opacity duration-300" />
-              <div className="relative rounded-xl bg-[#0d1528] border border-white/10 p-1.5 group-hover:border-white/20 transition-colors duration-200">
-                <OmniLogo size={22} />
-              </div>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-extrabold text-[17px] tracking-[-0.04em] text-white leading-tight">
-                Omni
-              </span>
-              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
-                BY INWEBDESIGN
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Right Header Controls */}
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#121a30] border border-white/8 text-[#dae2fd] hover:bg-[#192038] hover:text-white transition-all shadow-sm"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 text-[#8083ff]" />
-            <span>Startseite</span>
-          </Link>
-
-          {userProfile ? (
-            <button
-              onClick={() =>
-                openChannelModal({
-                  authorHandle: userProfile.handle,
-                  authorName: userProfile.username,
-                  authorAvatar: userProfile.avatarUrl,
-                })
-              }
-              className="flex items-center gap-2 bg-[#121a30] border border-white/10 hover:border-[#8083ff]/40 p-1.5 rounded-xl transition-all"
-              title="Dein Profil öffnen"
-            >
-              <img
-                src={userProfile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
-                alt={userProfile.username}
-                className="h-7 w-7 rounded-full object-cover border border-white/10"
-              />
-              <span className="text-xs font-bold text-white hidden md:inline pr-1">{userProfile.username}</span>
-            </button>
-          ) : (
-            <Link
-              href="/"
-              className="px-3.5 py-2 rounded-xl bg-[#8083ff] hover:bg-[#6b6eff] text-white text-xs font-semibold transition-all shadow-lg shadow-[#8083ff]/25"
-            >
-              Anmelden
-            </Link>
-          )}
-        </div>
-      </header>
+      {/* ── Standardized Header Component ───────────────────────────────────── */}
+      <Header
+        showMenuButton={false}
+        currentUser={userProfile}
+        onOpenUserProfileModal={() => {
+          if (userProfile) {
+            openChannelModal({
+              authorHandle: userProfile.handle,
+              authorName: userProfile.username,
+              authorAvatar: userProfile.avatarUrl,
+            });
+          }
+        }}
+      />
 
       {/* ── Main Content Canvas ────────────────────────────────────────────── */}
       <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
