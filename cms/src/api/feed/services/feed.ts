@@ -300,6 +300,25 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     });
 
+    // Ensure target item is ALWAYS included at index 0 if targetSlug was requested
+    if (target) {
+      const matchInFeed = assembledFeed.find(
+        (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
+      );
+      if (!matchInFeed) {
+        const itemInScored = scoredItems.find(
+          (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
+        );
+        if (itemInScored) {
+          assembledFeed.unshift({
+            ...itemInScored,
+            bucketSource: 'TargetPreview',
+            slotIndex: 1,
+          });
+        }
+      }
+    }
+
     return {
       feed: assembledFeed,
       meta: {

@@ -82,11 +82,9 @@ export default function ContentDetailPage() {
       const matchItem = (itemsList: FeedItem[], target: string) => {
         if (!target) return null;
         const norm = target.toLowerCase().trim();
-        return itemsList.find(
-          (i: any) =>
-            i.slug === norm ||
-            String(i.id) === norm ||
-            i.documentId === norm
+        return (
+          itemsList.find((i: any) => i.slug === norm || i.documentId === norm || String(i.id) === norm) ||
+          itemsList.find((i: any) => i.slug && norm && (i.slug.includes(norm) || norm.includes(i.slug)))
         );
       };
 
@@ -100,7 +98,7 @@ export default function ContentDetailPage() {
         if (res.ok) {
           const data = await res.json();
           if (data.feed && data.feed.length > 0) {
-            const apiMatch = matchItem(data.feed, slug) || data.feed.find((i: any) => i.slug === slug || i.documentId === slug);
+            const apiMatch = matchItem(data.feed, slug) || data.feed[0];
             if (apiMatch) {
               setItem(apiMatch);
               setLikesCount(apiMatch.likesCount || 100);
