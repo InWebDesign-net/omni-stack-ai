@@ -164,20 +164,33 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       activePattern: userProfileInput?.activePattern || DEFAULT_USER_PROFILE.activePattern,
     };
 
-    // 1. Fetch all items (from database or fall back to sample seed items if database empty)
+    // 1. Fetch all items across locales (from database or fall back to sample seed items if database empty)
     let items = SAMPLE_SEED_ITEMS;
     try {
-      let dbItems = await strapi.documents('api::feed-item.feed-item').findMany({
+      const dbItemsDe = await strapi.documents('api::feed-item.feed-item').findMany({
         populate: ['author'],
         status: 'published',
+        locale: 'de',
       });
+      const dbItemsEn = await strapi.documents('api::feed-item.feed-item').findMany({
+        populate: ['author'],
+        status: 'published',
+        locale: 'en',
+      });
+      let dbItems = [...dbItemsDe, ...dbItemsEn];
 
       if ((userProfileInput as any)?.includeDrafts) {
-        const draftDbItems = await strapi.documents('api::feed-item.feed-item').findMany({
+        const draftDe = await strapi.documents('api::feed-item.feed-item').findMany({
           populate: ['author'],
           status: 'draft',
+          locale: 'de',
         });
-        dbItems = [...dbItems, ...draftDbItems];
+        const draftEn = await strapi.documents('api::feed-item.feed-item').findMany({
+          populate: ['author'],
+          status: 'draft',
+          locale: 'en',
+        });
+        dbItems = [...dbItems, ...draftDe, ...draftEn];
       }
 
       if (dbItems && dbItems.length > 0) {
@@ -187,28 +200,30 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // Fallback to sample seed items
     }
 
-    // Direct target slug / documentId lookup to guarantee preview availability
+    // Direct target slug / documentId lookup across all locales and statuses
     const target = (userProfileInput as any)?.targetSlug;
     if (target) {
       const alreadyIn = items.some((i: any) => i.slug === target || i.documentId === target || String(i.id) === target);
       if (!alreadyIn) {
         try {
-          let directMatch = await strapi.documents('api::feed-item.feed-item').findFirst({
-            where: {
-              $or: [{ slug: target }, { documentId: target }],
-            },
-            populate: ['author'],
-            status: 'draft',
-          });
-          if (!directMatch) {
-            directMatch = await strapi.documents('api::feed-item.feed-item').findFirst({
-              where: {
-                $or: [{ slug: target }, { documentId: target }],
+          const findTarget = async (locale: string, status: 'draft' | 'published') => {
+            const matches = await strapi.documents('api::feed-item.feed-item').findMany({
+              filters: {
+                $or: [{ slug: { $eq: target } }, { documentId: { $eq: target } }],
               },
+              locale,
+              status,
               populate: ['author'],
-              status: 'published',
             });
-          }
+            return matches && matches.length > 0 ? matches[0] : null;
+          };
+
+          const directMatch =
+            (await findTarget('de', 'draft')) ||
+            (await findTarget('en', 'draft')) ||
+            (await findTarget('de', 'published')) ||
+            (await findTarget('en', 'published'));
+
           if (directMatch) {
             items = [directMatch as any, ...items];
           }

@@ -86,19 +86,11 @@ export default function ContentDetailPage() {
           (i: any) =>
             i.slug === norm ||
             String(i.id) === norm ||
-            i.documentId === norm ||
-            (norm.includes('pasta') && (i.slug.includes('pasta') || i.title.toLowerCase().includes('pasta')))
+            i.documentId === norm
         );
       };
 
-      const foundFallback = matchItem(FALLBACK_FEED_ITEMS, slug);
-      if (!isBypass && foundFallback) {
-        setItem(foundFallback);
-        setLikesCount(foundFallback.likesCount);
-        setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== foundFallback.slug && i.mediaType !== 'short').slice(0, 5));
-        return;
-      }
-
+      // 1. STRAPI-FIRST: Always fetch real item data from Strapi API first
       try {
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
@@ -108,7 +100,7 @@ export default function ContentDetailPage() {
         if (res.ok) {
           const data = await res.json();
           if (data.feed && data.feed.length > 0) {
-            const apiMatch = matchItem(data.feed, slug);
+            const apiMatch = matchItem(data.feed, slug) || data.feed.find((i: any) => i.slug === slug || i.documentId === slug);
             if (apiMatch) {
               setItem(apiMatch);
               setLikesCount(apiMatch.likesCount || 100);
@@ -121,10 +113,11 @@ export default function ContentDetailPage() {
         console.error('Error fetching item from Strapi API:', e);
       }
 
-      const defaultItem = foundFallback || FALLBACK_FEED_ITEMS[0];
-      setItem(defaultItem);
-      setLikesCount(defaultItem.likesCount);
-      setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== defaultItem.slug).slice(0, 5));
+      // 2. Offline fallback ONLY if Strapi API is unreachable
+      const foundFallback = matchItem(FALLBACK_FEED_ITEMS, slug) || FALLBACK_FEED_ITEMS[0];
+      setItem(foundFallback);
+      setLikesCount(foundFallback.likesCount);
+      setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== foundFallback.slug && i.mediaType !== 'short').slice(0, 5));
     };
 
     const loadComments = async () => {
