@@ -678,28 +678,21 @@ CRITICAL: Return JSON ONLY in this format:
 
   async seedDemoData(force = false) {
     try {
-      const existingItemsDe = await strapi.documents('api::feed-item.feed-item').findMany({ locale: 'de' });
-      const existingItemsEn = await strapi.documents('api::feed-item.feed-item').findMany({ locale: 'en' });
-      const existingItems = [...existingItemsDe, ...existingItemsEn];
+      const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });
 
       if (!force && existingItems && existingItems.length > 0) {
         console.log(`ℹ️ Strapi DB already contains ${existingItems.length} items. Skipping automatic seed.`);
         return { success: true, message: 'Database already contains items.', count: existingItems.length };
       }
 
-      if (force && existingItems && existingItems.length > 0) {
+      if (force) {
         console.log('🧹 Force re-seed requested. Deleting existing Feed Items & Video records...');
-        for (const item of existingItems) {
-          try {
-            await strapi.documents('api::feed-item.feed-item').delete({ documentId: item.documentId });
-          } catch (e) {}
-        }
-        const allVideos = await strapi.documents('api::video.video').findMany({});
-        for (const vid of allVideos) {
-          try {
-            await strapi.documents('api::video.video').delete({ documentId: vid.documentId });
-          } catch (e) {}
-        }
+        try {
+          await strapi.db.query('api::feed-item.feed-item').deleteMany({});
+        } catch (e) {}
+        try {
+          await strapi.db.query('api::video.video').deleteMany({});
+        } catch (e) {}
       }
 
       console.log('🌱 Seeding initial bilingual Feed Items with Dynamic Zone Blocks in Strapi...');
@@ -1098,22 +1091,7 @@ CRITICAL: Return JSON ONLY in this format:
       for (const item of seedItems) {
         const authorId = item.creator?.documentId || item.creator?.id;
 
-        const createdDe = await strapi.documents('api::feed-item.feed-item').create({
-          data: {
-            ...item.de,
-            mediaType: item.mediaType,
-            thumbnailUrl: item.thumbnailUrl,
-            viewsCount: item.viewsCount,
-            likesCount: item.likesCount,
-            publishedAt: item.publishedAt,
-            author: authorId,
-          } as any,
-          locale: 'de',
-          status: 'published',
-        });
-
-        await strapi.documents('api::feed-item.feed-item').create({
-          documentId: createdDe.documentId,
+        const createdEn = await strapi.documents('api::feed-item.feed-item').create({
           data: {
             ...item.en,
             mediaType: item.mediaType,
@@ -1124,6 +1102,21 @@ CRITICAL: Return JSON ONLY in this format:
             author: authorId,
           } as any,
           locale: 'en',
+          status: 'published',
+        });
+
+        await strapi.documents('api::feed-item.feed-item').create({
+          documentId: createdEn.documentId,
+          data: {
+            ...item.de,
+            mediaType: item.mediaType,
+            thumbnailUrl: item.thumbnailUrl,
+            viewsCount: item.viewsCount,
+            likesCount: item.likesCount,
+            publishedAt: item.publishedAt,
+            author: authorId,
+          } as any,
+          locale: 'de',
           status: 'published',
         });
       }
