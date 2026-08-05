@@ -237,12 +237,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             (await findTargetItem('en', 'published')) ||
             (await findTargetItem('de', 'published'));
         } else {
-          // Priority to PUBLISHED when live
+          // Strictly PUBLISHED when live or previewing published tab
           targetMatch =
             (await findTargetItem('de', 'published')) ||
-            (await findTargetItem('en', 'published')) ||
-            (await findTargetItem('de', 'draft')) ||
-            (await findTargetItem('en', 'draft'));
+            (await findTargetItem('en', 'published'));
         }
 
         if (targetMatch) {
