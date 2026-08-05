@@ -5,7 +5,7 @@
     "singularName": "feed-item",
     "pluralName": "feed-items",
     "displayName": "Feed Item",
-    "description": "Content item for the Hyper-Personalized Feed Assembly"
+    "description": "Dynamic Content Post assembled by AI Recommendation Matrix"
   },
   "options": {
     "draftAndPublish": true
@@ -27,7 +27,8 @@
     },
     "slug": {
       "type": "uid",
-      "targetField": "title"
+      "targetField": "title",
+      "required": true
     },
     "summary": {
       "type": "text",
@@ -37,36 +38,24 @@
         }
       }
     },
-    "content": {
-      "type": "richtext",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "mediaType": {
-      "type": "enumeration",
-      "enum": ["video", "pdf", "article", "short"],
-      "default": "article",
-      "required": true
-    },
-    "mediaUrl": {
-      "type": "string"
-    },
     "thumbnailUrl": {
       "type": "string"
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "components": [
+        "shared.rich-text",
+        "shared.video",
+        "shared.media",
+        "shared.quote",
+        "shared.headline",
+        "shared.pdf"
+      ]
     },
     "author": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "feedItems"
-    },
-    "video": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::video.video",
       "inversedBy": "feedItems"
     },
     "tags": {
@@ -78,14 +67,6 @@
       "default": 0
     },
     "likesCount": {
-      "type": "integer",
-      "default": 0
-    },
-    "isProcessing": {
-      "type": "boolean",
-      "default": false
-    },
-    "duration": {
       "type": "integer",
       "default": 0
     },

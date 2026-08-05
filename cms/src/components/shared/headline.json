@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_shared_headlines",
+  "info": {
+    "displayName": "Headline",
+    "icon": "heading",
+    "description": "Section headline block"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

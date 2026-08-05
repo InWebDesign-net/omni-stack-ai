@@ -549,10 +549,57 @@ export default function ContentDetailPage() {
                     💡 {item.summary}
                   </div>
 
-                  {/* Main Article Text */}
-                  <div className="text-sm text-[#dae2fd] leading-relaxed whitespace-pre-line font-serif space-y-4">
-                    {item.content}
-                  </div>
+                  {/* Main Article Text / Dynamic Zone Blocks */}
+                  {(item as any).blocks && (item as any).blocks.length > 0 ? (
+                    <div className="space-y-6">
+                      {(item as any).blocks.map((block: any, idx: number) => {
+                        const comp = block.__component || '';
+                        if (comp === 'shared.rich-text' || block.body) {
+                          return (
+                            <div key={idx} className="text-sm text-[#dae2fd] leading-relaxed space-y-4 whitespace-pre-line">
+                              {block.body}
+                            </div>
+                          );
+                        }
+                        if (comp === 'shared.headline' || block.title) {
+                          return (
+                            <h2 key={idx} className="text-xl font-bold text-white mt-6 mb-2">
+                              {block.title}
+                            </h2>
+                          );
+                        }
+                        if (comp === 'shared.quote' || block.quote) {
+                          return (
+                            <blockquote key={idx} className="border-l-4 border-[#8083ff] pl-4 py-2 italic text-white bg-[#8083ff]/5 rounded-r-2xl my-4">
+                              <p className="text-sm">"{block.quote}"</p>
+                              {block.author && <cite className="text-xs text-[#9ba4bf] font-sans block mt-1">— {block.author}</cite>}
+                            </blockquote>
+                          );
+                        }
+                        if (comp === 'shared.media' || block.imageUrl) {
+                          return (
+                            <figure key={idx} className="my-4">
+                              <img src={block.imageUrl} alt={block.caption || ''} className="rounded-2xl border border-white/10 w-full object-cover max-h-[500px]" />
+                              {block.caption && <figcaption className="text-xs text-[#9ba4bf] mt-2 text-center">{block.caption}</figcaption>}
+                            </figure>
+                          );
+                        }
+                        if (comp === 'shared.pdf' || block.pdfUrl) {
+                          return (
+                            <div key={idx} className="my-4 space-y-2">
+                              {block.title && <h4 className="text-xs font-bold text-white">{block.title}</h4>}
+                              <iframe src={block.pdfUrl} className="w-full h-[600px] rounded-2xl border border-white/10 bg-black/40" />
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-[#dae2fd] leading-relaxed whitespace-pre-line font-serif space-y-4">
+                      {item.content}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

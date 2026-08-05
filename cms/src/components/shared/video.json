@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_shared_videos",
+  "info": {
+    "displayName": "Video Block",
+    "icon": "play",
+    "description": "Embedded Video block referencing a Video entity"
+  },
+  "options": {},
+  "attributes": {
+    "video": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::video.video"
+    },
+    "caption": {
+      "type": "string"
+    }
+  }
+}

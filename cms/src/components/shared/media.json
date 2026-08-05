@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_shared_media",
+  "info": {
+    "displayName": "Image / Media",
+    "icon": "picture",
+    "description": "Single image or banner block"
+  },
+  "options": {},
+  "attributes": {
+    "imageUrl": {
+      "type": "string"
+    },
+    "caption": {
+      "type": "string"
+    }
+  }
+}

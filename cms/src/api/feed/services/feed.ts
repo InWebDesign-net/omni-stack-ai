@@ -166,14 +166,21 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // 1. Fetch all items across locales (from database or fall back to sample seed items if database empty)
     let items = SAMPLE_SEED_ITEMS;
+    const populateConfig = {
+      author: true,
+      blocks: {
+        populate: '*',
+      },
+    };
+
     try {
       const dbItemsDe = await strapi.documents('api::feed-item.feed-item').findMany({
-        populate: ['author', 'video'],
+        populate: populateConfig as any,
         status: 'published',
         locale: 'de',
       });
       const dbItemsEn = await strapi.documents('api::feed-item.feed-item').findMany({
-        populate: ['author', 'video'],
+        populate: populateConfig as any,
         status: 'published',
         locale: 'en',
       });
@@ -181,12 +188,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
       if ((userProfileInput as any)?.includeDrafts) {
         const draftDe = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: ['author', 'video'],
+          populate: populateConfig as any,
           status: 'draft',
           locale: 'de',
         });
         const draftEn = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: ['author', 'video'],
+          populate: populateConfig as any,
           status: 'draft',
           locale: 'en',
         });
@@ -210,7 +217,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               filters: { slug: { $eq: target } },
               locale,
               status,
-              populate: ['author', 'video'],
+              populate: populateConfig as any,
             });
             if (matches && matches.length > 0) return matches[0];
           } catch (e) {}
@@ -220,7 +227,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               documentId: target,
               locale,
               status,
-              populate: ['author', 'video'],
+              populate: populateConfig as any,
             });
             if (doc) return doc;
           } catch (e) {}
@@ -259,17 +266,28 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // 2. Score items against Interest Vector
     const scoredItems = items.map((rawItem: any) => {
-      const item = rawItem.video
-        ? {
-            ...rawItem,
-            mediaUrl: rawItem.video.mp4Url || rawItem.video.hlsUrl || rawItem.mediaUrl,
-            thumbnailUrl: rawItem.video.thumbnailUrl || rawItem.thumbnailUrl,
-            duration: rawItem.video.duration || rawItem.duration || 0,
-            isProcessing: rawItem.video.isProcessing !== undefined ? rawItem.video.isProcessing : rawItem.isProcessing,
-            isForSale: rawItem.video.isForSale || false,
-            price: rawItem.video.price || 0,
-          }
-        : rawItem;
+      const blocks = rawItem.blocks || [];
+      const videoBlock = blocks.find((b: any) => b.__component === 'shared.video' || b.video);
+      const pdfBlock = blocks.find((b: any) => b.__component === 'shared.pdf' || b.pdfUrl);
+      const richTextBlock = blocks.find((b: any) => b.__component === 'shared.rich-text' || b.body);
+
+      let derivedMediaType = rawItem.mediaType || 'article';
+      if (videoBlock) derivedMediaType = 'video';
+      else if (pdfBlock) derivedMediaType = 'pdf';
+
+      const videoData = videoBlock?.video || rawItem.video;
+
+      const item = {
+        ...rawItem,
+        mediaType: derivedMediaType,
+        content: richTextBlock?.body || rawItem.content || rawItem.summary || '',
+        mediaUrl: videoData?.mp4Url || videoData?.hlsUrl || pdfBlock?.pdfUrl || rawItem.mediaUrl || '',
+        thumbnailUrl: videoData?.thumbnailUrl || rawItem.thumbnailUrl || '',
+        duration: videoData?.duration || rawItem.duration || 0,
+        isProcessing: videoData?.isProcessing !== undefined ? videoData.isProcessing : (rawItem.isProcessing || false),
+        isForSale: videoData?.isForSale || false,
+        price: videoData?.price || 0,
+      };
 
       let topicScore = 0.2; // baseline
       item.tags.forEach((tag: string) => {
