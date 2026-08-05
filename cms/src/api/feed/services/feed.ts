@@ -1105,8 +1105,9 @@ CRITICAL: Return JSON ONLY in this format:
           status: 'published',
         });
 
-        await strapi.documents('api::feed-item.feed-item').create({
+        await strapi.documents('api::feed-item.feed-item').update({
           documentId: createdEn.documentId,
+          locale: 'de',
           data: {
             ...item.de,
             mediaType: item.mediaType,
@@ -1116,7 +1117,6 @@ CRITICAL: Return JSON ONLY in this format:
             publishedAt: item.publishedAt,
             author: authorId,
           } as any,
-          locale: 'de',
           status: 'published',
         });
       }

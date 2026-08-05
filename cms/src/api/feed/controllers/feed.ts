@@ -43,6 +43,70 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
+  async testI18nLink(ctx: any) {
+    try {
+      const createdEn = await strapi.documents('api::feed-item.feed-item').create({
+        data: {
+          title: 'Test EN Title ' + Date.now(),
+          slug: 'test-en-slug-' + Date.now(),
+          summary: 'EN summary',
+          tags: ['Tech'],
+        } as any,
+        locale: 'en',
+        status: 'published',
+      });
+
+      let createdDeA: any = null;
+      let errA: any = null;
+      try {
+        createdDeA = await strapi.documents('api::feed-item.feed-item').create({
+          documentId: createdEn.documentId,
+          data: {
+            title: 'Test DE Title A ' + Date.now(),
+            slug: 'test-de-slug-a-' + Date.now(),
+            summary: 'DE summary A',
+            tags: ['Tech'],
+          } as any,
+          locale: 'de',
+          status: 'published',
+        });
+      } catch (e: any) {
+        errA = e.message;
+      }
+
+      let createdDeB: any = null;
+      let errB: any = null;
+      try {
+        createdDeB = await strapi.documents('api::feed-item.feed-item').update({
+          documentId: createdEn.documentId,
+          locale: 'de',
+          data: {
+            title: 'Test DE Title B ' + Date.now(),
+            slug: 'test-de-slug-b-' + Date.now(),
+            summary: 'DE summary B',
+            tags: ['Tech'],
+          } as any,
+        });
+      } catch (e: any) {
+        errB = e.message;
+      }
+
+      const all = await strapi.documents('api::feed-item.feed-item').findMany({
+        filters: { documentId: { $eq: createdEn.documentId } },
+        locale: '*',
+      });
+
+      return ctx.send({
+        createdEn: { documentId: createdEn.documentId, locale: createdEn.locale },
+        createdDeA: createdDeA ? { documentId: createdDeA.documentId, locale: createdDeA.locale } : { error: errA },
+        createdDeB: createdDeB ? { documentId: createdDeB.documentId, locale: createdDeB.locale } : { error: errB },
+        allInDb: all.map((i: any) => ({ documentId: i.documentId, locale: i.locale, title: i.title })),
+      });
+    } catch (e: any) {
+      return ctx.send({ error: e.message, stack: e.stack });
+    }
+  },
+
   async ingestFinalizedVideo(ctx: any) {
     try {
       const payload = ctx.request.body;
