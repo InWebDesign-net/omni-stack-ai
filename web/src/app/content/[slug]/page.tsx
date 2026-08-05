@@ -62,8 +62,13 @@ export default function ContentDetailPage() {
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
   const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
+  const [isPreviewActive, setIsPreviewActive] = useState(false);
 
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setIsPreviewActive(document.cookie.includes('__prerender_bypass'));
+    }
+
     try {
       const storedUser = localStorage.getItem('omni_user');
       if (storedUser) {
@@ -208,6 +213,21 @@ export default function ContentDetailPage() {
 
   return (
     <div className="min-h-screen bg-mesh text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
+      {isPreviewActive && (
+        <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 sm:px-6 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
+          <div className="flex items-center gap-2 font-bold tracking-wide">
+            <Sparkles className="h-4 w-4 animate-spin-slow text-yellow-300 shrink-0" />
+            <span>⚡ Live-Entwurfsmodus aktiv (Vorschau aus Strapi CMS)</span>
+          </div>
+          <a
+            href={`/api/exit-preview?redirect=${encodeURIComponent(`/content/${slug}`)}`}
+            className="bg-black/50 hover:bg-black/80 text-white px-3 py-1 rounded-lg font-bold text-[11px] border border-white/20 transition-all shrink-0"
+          >
+            Vorschau beenden
+          </a>
+        </div>
+      )}
+
       {/* ── Top Header Bar ─────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">

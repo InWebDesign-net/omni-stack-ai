@@ -61,6 +61,7 @@ export default function ShortsFeedPage() {
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
   const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
+  const [isPreviewActive, setIsPreviewActive] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -123,8 +124,12 @@ export default function ShortsFeedPage() {
 
   const activeShort = shortsList[activeIndex];
 
-  // Load user profile
+  // Load user profile & preview status
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setIsPreviewActive(document.cookie.includes('__prerender_bypass'));
+    }
+
     try {
       const storedUser = localStorage.getItem('omni_user');
       if (storedUser) {
@@ -237,6 +242,20 @@ export default function ShortsFeedPage() {
 
   return (
     <div className="relative h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none">
+      {isPreviewActive && (
+        <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
+          <div className="flex items-center gap-2 font-bold tracking-wide">
+            <Sparkles className="h-4 w-4 animate-spin-slow text-yellow-300 shrink-0" />
+            <span>⚡ Live-Entwurfsmodus aktiv (Vorschau aus Strapi CMS)</span>
+          </div>
+          <a
+            href={`/api/exit-preview?redirect=${encodeURIComponent(activeShort ? `/shorts/${activeShort.slug}` : '/shorts')}`}
+            className="bg-black/50 hover:bg-black/80 text-white px-3 py-1 rounded-lg font-bold text-[11px] border border-white/20 transition-all shrink-0"
+          >
+            Vorschau beenden
+          </a>
+        </div>
+      )}
       
       {/* ── Top Floating Navigation Overlay ─────────────────────────────────── */}
       <header className="absolute top-0 left-0 right-0 z-40 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-auto">
