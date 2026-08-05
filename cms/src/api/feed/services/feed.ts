@@ -164,8 +164,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       activePattern: userProfileInput?.activePattern || DEFAULT_USER_PROFILE.activePattern,
     };
 
-    // 1. Fetch all items across locales (from database or fall back to sample seed items if database empty)
-    let items = SAMPLE_SEED_ITEMS;
+    // 1. Fetch items from database matching targetLocale
+    let items: any[] = [];
     const populateConfig = {
       author: true,
       blocks: {
@@ -174,37 +174,37 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     };
 
     try {
-      const dbItemsDe = await strapi.documents('api::feed-item.feed-item').findMany({
+      const primaryItems = await strapi.documents('api::feed-item.feed-item').findMany({
         populate: populateConfig as any,
         status: 'published',
-        locale: 'de',
+        locale: targetLocale,
       });
-      const dbItemsEn = await strapi.documents('api::feed-item.feed-item').findMany({
-        populate: populateConfig as any,
-        status: 'published',
-        locale: 'en',
-      });
-      let dbItems = [...dbItemsDe, ...dbItemsEn];
+
+      let dbItems = [...primaryItems];
+
+      // If target locale has 0 items, check alternative locale as fallback
+      if (dbItems.length === 0) {
+        const altLocale = targetLocale === 'de' ? 'en' : 'de';
+        const altItems = await strapi.documents('api::feed-item.feed-item').findMany({
+          populate: populateConfig as any,
+          status: 'published',
+          locale: altLocale,
+        });
+        dbItems = [...altItems];
+      }
 
       if ((userProfileInput as any)?.includeDrafts) {
-        const draftDe = await strapi.documents('api::feed-item.feed-item').findMany({
+        const draftItems = await strapi.documents('api::feed-item.feed-item').findMany({
           populate: populateConfig as any,
           status: 'draft',
-          locale: 'de',
+          locale: targetLocale,
         });
-        const draftEn = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: populateConfig as any,
-          status: 'draft',
-          locale: 'en',
-        });
-        dbItems = [...dbItems, ...draftDe, ...draftEn];
+        dbItems = [...dbItems, ...draftItems];
       }
 
-      if (dbItems && dbItems.length > 0) {
-        items = dbItems as any;
-      }
+      items = dbItems as any;
     } catch (err) {
-      // Fallback to sample seed items
+      items = [];
     }
 
     // Direct target slug / documentId lookup with draft priority
@@ -674,5 +674,465 @@ CRITICAL: Return JSON ONLY in this format:
     await updateStrapiItem('published');
 
     return { success: true, slug: base, isProcessing: false, duration: metaDuration };
+  },
+
+  async seedDemoData(force = false) {
+    try {
+      const existingItemsDe = await strapi.documents('api::feed-item.feed-item').findMany({ locale: 'de' });
+      const existingItemsEn = await strapi.documents('api::feed-item.feed-item').findMany({ locale: 'en' });
+      const existingItems = [...existingItemsDe, ...existingItemsEn];
+
+      if (!force && existingItems && existingItems.length > 0) {
+        console.log(`ℹ️ Strapi DB already contains ${existingItems.length} items. Skipping automatic seed.`);
+        return { success: true, message: 'Database already contains items.', count: existingItems.length };
+      }
+
+      if (force && existingItems && existingItems.length > 0) {
+        console.log('🧹 Force re-seed requested. Deleting existing Feed Items & Video records...');
+        for (const item of existingItems) {
+          try {
+            await strapi.documents('api::feed-item.feed-item').delete({ documentId: item.documentId });
+          } catch (e) {}
+        }
+        const allVideos = await strapi.documents('api::video.video').findMany({});
+        for (const vid of allVideos) {
+          try {
+            await strapi.documents('api::video.video').delete({ documentId: vid.documentId });
+          } catch (e) {}
+        }
+      }
+
+      console.log('🌱 Seeding initial bilingual Feed Items with Dynamic Zone Blocks in Strapi...');
+
+      const authRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+        where: { type: 'authenticated' },
+      });
+      const roleId = authRole?.id || 1;
+
+      const getOrCreateCreator = async (creator: {
+        username: string;
+        handle: string;
+        email: string;
+        avatarUrl: string;
+        bio: string;
+        subscribersCount: number;
+      }) => {
+        try {
+          let existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+            where: { handle: creator.handle },
+          });
+
+          if (!existingUser) {
+            existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+              where: { email: creator.email },
+            });
+          }
+
+          if (existingUser) {
+            await strapi.db.query('plugin::users-permissions.user').update({
+              where: { id: existingUser.id },
+              data: {
+                handle: creator.handle,
+                avatarUrl: creator.avatarUrl,
+                bio: creator.bio,
+                subscribersCount: creator.subscribersCount,
+              },
+            });
+            return existingUser;
+          }
+
+          const created = await strapi.service('plugin::users-permissions.user').add({
+            username: creator.username,
+            email: creator.email,
+            password: 'DemoUser2026!',
+            confirmed: true,
+            provider: 'local',
+            role: roleId,
+          });
+
+          await strapi.db.query('plugin::users-permissions.user').update({
+            where: { id: created.id },
+            data: {
+              handle: creator.handle,
+              avatarUrl: creator.avatarUrl,
+              bio: creator.bio,
+              subscribersCount: creator.subscribersCount,
+            },
+          });
+          return created;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const creators = {
+        astro: await getOrCreateCreator({
+          username: 'Astro-Wissen Magazin',
+          handle: 'astro',
+          email: 'astro@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+          bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.',
+          subscribersCount: 14800,
+        }),
+        demotech: await getOrCreateCreator({
+          username: 'Database Guru',
+          handle: 'demotech',
+          email: 'demotech@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+          bio: 'High-Performance Databases, PostgreSQL Indizes, Vector Search & Code Architecture.',
+          subscribersCount: 28900,
+        }),
+        demogourmet: await getOrCreateCreator({
+          username: 'Culinary Masterclass',
+          handle: 'demogourmet',
+          email: 'demogourmet@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
+          bio: 'Italienische Küche, feine Rezepte & Kulinarik-Tutorials aus Leidenschaft.',
+          subscribersCount: 54100,
+        }),
+        greenplanet: await getOrCreateCreator({
+          username: 'Green Planet Doku',
+          handle: 'greenplanet',
+          email: 'greenplanet@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
+          bio: 'Naturdokumentationen, Artenvielfalt, Artenschutz & Ökosysteme.',
+          subscribersCount: 31200,
+        }),
+        omniarchitect: await getOrCreateCreator({
+          username: 'Omni Architect',
+          handle: 'omniarchitect',
+          email: 'omniarchitect@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+          bio: 'NextJS 15, Strapi v5, Monorepo Turborepo Architecture & Microservices.',
+          subscribersCount: 42000,
+        }),
+        catmania: await getOrCreateCreator({
+          username: 'Familie & Tiere',
+          handle: 'catmania',
+          email: 'catmania@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
+          bio: 'Lustige Tier-Shorts, Katzenwelpen & Unterhaltung für die ganze Familie.',
+          subscribersCount: 189000,
+        }),
+        finanzkompass: await getOrCreateCreator({
+          username: 'FinanzKompass',
+          handle: 'finanzkompass',
+          email: 'finanzkompass@inwebdesign.net',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+          bio: 'Finanzwissen, ETF-Sparpläne, Vermögensaufbau & Zinseszins für Einsteiger.',
+          subscribersCount: 27500,
+        }),
+      };
+
+      const createVideoRecord = async (videoData: {
+        title: string;
+        slug: string;
+        duration: number;
+        thumbnailUrl: string;
+        mp4Url: string;
+        creator: any;
+      }) => {
+        try {
+          const created = await strapi.documents('api::video.video').create({
+            data: {
+              title: videoData.title,
+              slug: videoData.slug,
+              duration: videoData.duration,
+              isProcessing: false,
+              isForSale: false,
+              price: 0,
+              mp4Url: videoData.mp4Url,
+              thumbnailUrl: videoData.thumbnailUrl,
+              creator: videoData.creator?.documentId || videoData.creator?.id,
+            } as any,
+            status: 'published',
+          });
+          return created;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const pastaVideo = await createVideoRecord({
+        title: 'Italienische Pastasoßen Masterclass',
+        slug: 'kochen-wie-der-chefkoch-italienische-pasta',
+        duration: 840,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
+        mp4Url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        creator: creators.demogourmet,
+      });
+
+      const beesVideo = await createVideoRecord({
+        title: 'Faszination Wildbienen Dokumentation',
+        slug: 'natur-artenvielfalt-wildbienen-doku',
+        duration: 1620,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?w=800&q=80',
+        mp4Url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        creator: creators.greenplanet,
+      });
+
+      const catShortVideo = await createVideoRecord({
+        title: 'Lustige Katzenwelpen 2026',
+        slug: 'suesse-katzenwelpen-lustige-momente',
+        duration: 45,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80',
+        mp4Url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        creator: creators.catmania,
+      });
+
+      const seedItems = [
+        {
+          creator: creators.astro,
+          de: {
+            title: 'Faszination Weltall: Die Geheimnisse des James-Webb-Teleskops (PDF)',
+            slug: 'faszination-weltall-james-webb-pdf',
+            summary: 'Atemberaubende Aufnahmen und wissenschaftliche Analysen der ältesten Galaxien unseres Universums.',
+            content: 'Das James-Webb-Weltraumteleskop revolutioniert unser Verständnis der Astrophysik...',
+            tags: ['Wissenschaft', 'Astronomie', 'PDF Doku', 'Weltall'],
+            blocks: [
+              {
+                __component: 'shared.headline',
+                title: 'Erforschung der ersten Galaxien im Universum',
+                level: 'h2',
+              },
+              {
+                __component: 'shared.pdf',
+                title: 'Vollständiger Forschungsbericht James Webb (PDF)',
+                pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+                downloadable: true,
+              },
+              {
+                __component: 'shared.rich-text',
+                body: 'Mit seinem 6.5 Meter großen Hauptspiegel blickt das James-Webb-Teleskop tiefer in die Vergangenheit des Kosmos als jedes Instrument zuvor.',
+              },
+            ],
+          },
+          en: {
+            title: 'Fascinating Universe: Secrets of the James Webb Telescope (PDF)',
+            slug: 'fascinating-universe-james-webb-pdf',
+            summary: 'Breathtaking imagery and scientific analysis of the oldest galaxies in our universe.',
+            content: 'The James Webb Space Telescope is revolutionizing our understanding of astrophysics...',
+            tags: ['Science', 'Astronomy', 'PDF Doc', 'Space'],
+            blocks: [
+              {
+                __component: 'shared.headline',
+                title: 'Exploring the First Galaxies in the Universe',
+                level: 'h2',
+              },
+              {
+                __component: 'shared.pdf',
+                title: 'Full James Webb Research Report (PDF)',
+                pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+                downloadable: true,
+              },
+              {
+                __component: 'shared.rich-text',
+                body: 'With its 6.5-meter primary mirror, the James Webb Space Telescope peers deeper into cosmic history than ever before.',
+              },
+            ],
+          },
+          mediaType: 'pdf',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80',
+          viewsCount: 48200,
+          likesCount: 5900,
+          publishedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+        },
+        {
+          creator: creators.demotech,
+          de: {
+            title: 'PostgreSQL 15 & GIN-Indizes für Hyper-Personalized Feeds',
+            slug: 'postgres-15-gin-indizes-hyper-personalized-feeds',
+            summary: 'Entwickler-Tutorial: Wie man High-Performance JSONB Vektoren für Echtzeit-Algorithmen abfragt.',
+            content: 'Schritt-für-Schritt Anleitung zur Optimierung von Vektor-Scores in PostgreSQL...',
+            tags: ['PostgreSQL', 'Programmierung', 'Database', 'Tech'],
+            blocks: [
+              {
+                __component: 'shared.headline',
+                title: 'High-Performance Vektorsuche in relationalen Datenbanken',
+                level: 'h2',
+              },
+              {
+                __component: 'shared.rich-text',
+                body: 'PostgreSQL bietet mit JSONB-Feldern und GIN-Indizes eine extrem performante Möglichkeit, Nutzer-Interessensvektoren direkt in SQL abzufragen.',
+              },
+            ],
+          },
+          en: {
+            title: 'PostgreSQL 15 & GIN Indexes for Hyper-Personalized Feeds',
+            slug: 'postgres-15-gin-indexes-hyper-personalized-feeds',
+            summary: 'Developer Tutorial: Querying high-performance JSONB vectors for real-time algorithms.',
+            content: 'Step-by-step guide to optimizing vector scores in PostgreSQL...',
+            tags: ['PostgreSQL', 'Programming', 'Database', 'Tech'],
+            blocks: [
+              {
+                __component: 'shared.headline',
+                title: 'High-Performance Vector Search in Relational Databases',
+                level: 'h2',
+              },
+              {
+                __component: 'shared.rich-text',
+                body: 'PostgreSQL provides JSONB fields and GIN indexes for querying user interest vectors in SQL at sub-millisecond speeds.',
+              },
+            ],
+          },
+          mediaType: 'article',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&q=80',
+          viewsCount: 18900,
+          likesCount: 2300,
+          publishedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+        },
+        {
+          creator: creators.demogourmet,
+          de: {
+            title: 'Kochen wie der Chefkoch: Italienische Pastasoßen von Grund auf',
+            slug: 'kochen-wie-der-chefkoch-italienische-pasta',
+            summary: 'Das Geheimnis hinter der perfekten Carbonara und Cacio e Pepe in 15 Minuten.',
+            content: 'In diesem Video-Tutorial zeigt Küchenmeister Marco, wie mit nur 4 Zutaten unvergessliche Pasta entsteht...',
+            tags: ['Kochen', 'Rezepte', 'Kulinarik', 'Video Tutorial'],
+            blocks: [
+              {
+                __component: 'shared.video',
+                video: pastaVideo?.documentId || pastaVideo?.id,
+              },
+              {
+                __component: 'shared.headline',
+                title: 'Die Kunst der echten römischen Carbonara',
+                level: 'h2',
+              },
+            ],
+          },
+          en: {
+            title: 'Cook Like a Chef: Italian Pasta Sauces From Scratch',
+            slug: 'cook-like-a-chef-italian-pasta-sauces',
+            summary: 'The secret behind the perfect Carbonara and Cacio e Pepe in 15 minutes.',
+            content: 'In this video tutorial, master chef Marco shows how to craft unforgettable pasta...',
+            tags: ['Cooking', 'Recipes', 'Culinary', 'Video Tutorial'],
+            blocks: [
+              {
+                __component: 'shared.video',
+                video: pastaVideo?.documentId || pastaVideo?.id,
+              },
+              {
+                __component: 'shared.headline',
+                title: 'The Art of Authentic Roman Carbonara',
+                level: 'h2',
+              },
+            ],
+          },
+          mediaType: 'video',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
+          viewsCount: 92400,
+          likesCount: 14200,
+          publishedAt: new Date(Date.now() - 3600000 * 10).toISOString(),
+        },
+        {
+          creator: creators.greenplanet,
+          de: {
+            title: 'Natur & Artenvielfalt: Die faszinierende Welt der Wildbienen',
+            slug: 'natur-artenvielfalt-wildbienen-doku',
+            summary: 'Ein Dokumentarfilm über den Schutz unserer heimischen Insekten und Ökosysteme.',
+            content: 'Entdecke die überraschenden Fähigkeiten von Wildbienen...',
+            tags: ['Natur', 'Umwelt', 'Dokumentation', 'Tiere'],
+            blocks: [
+              {
+                __component: 'shared.video',
+                video: beesVideo?.documentId || beesVideo?.id,
+              },
+            ],
+          },
+          en: {
+            title: 'Nature & Biodiversity: The Fascinating World of Wild Bees',
+            slug: 'nature-biodiversity-wild-bees-doc',
+            summary: 'A documentary on protecting native insects and local ecosystems.',
+            content: 'Discover the surprising capabilities of wild bees...',
+            tags: ['Nature', 'Environment', 'Documentary', 'Animals'],
+            blocks: [
+              {
+                __component: 'shared.video',
+                video: beesVideo?.documentId || beesVideo?.id,
+              },
+            ],
+          },
+          mediaType: 'video',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?w=800&q=80',
+          viewsCount: 65100,
+          likesCount: 8900,
+          publishedAt: new Date(Date.now() - 3600000 * 18).toISOString(),
+        },
+        {
+          creator: creators.catmania,
+          de: {
+            title: 'Süße Katzenwelpen & Ihre Lustigsten Momente 2026',
+            slug: 'suesse-katzenwelpen-lustige-momente',
+            summary: 'Lachen garantiert: Die niedlichsten Katzen beim Spielen und Toben im Familienalltag.',
+            content: 'Eine herzerwärmende Zusammenstellung für die ganze Familie...',
+            tags: ['Funny Cat Videos', 'Humor', 'Familie', 'Tiere'],
+            blocks: [
+              {
+                __component: 'shared.video',
+                video: catShortVideo?.documentId || catShortVideo?.id,
+              },
+            ],
+          },
+          en: {
+            title: 'Cute Kittens & Their Funniest Moments 2026',
+            slug: 'cute-kittens-funniest-moments-2026',
+            summary: 'Guaranteed laughs: The cutest cats playing and jumping in everyday family life.',
+            content: 'A heartwarming compilation for the entire family...',
+            tags: ['Funny Cat Videos', 'Humor', 'Family', 'Animals'],
+            blocks: [
+              {
+                __component: 'shared.video',
+                video: catShortVideo?.documentId || catShortVideo?.id,
+              },
+            ],
+          },
+          mediaType: 'short',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80',
+          viewsCount: 230000,
+          likesCount: 35000,
+          publishedAt: new Date(Date.now() - 3600000 * 30).toISOString(),
+        },
+      ];
+
+      for (const item of seedItems) {
+        const authorId = item.creator?.documentId || item.creator?.id;
+
+        const createdDe = await strapi.documents('api::feed-item.feed-item').create({
+          data: {
+            ...item.de,
+            mediaType: item.mediaType,
+            thumbnailUrl: item.thumbnailUrl,
+            viewsCount: item.viewsCount,
+            likesCount: item.likesCount,
+            publishedAt: item.publishedAt,
+            author: authorId,
+          } as any,
+          locale: 'de',
+          status: 'published',
+        });
+
+        await strapi.documents('api::feed-item.feed-item').create({
+          documentId: createdDe.documentId,
+          data: {
+            ...item.en,
+            mediaType: item.mediaType,
+            thumbnailUrl: item.thumbnailUrl,
+            viewsCount: item.viewsCount,
+            likesCount: item.likesCount,
+            publishedAt: item.publishedAt,
+            author: authorId,
+          } as any,
+          locale: 'en',
+          status: 'published',
+        });
+      }
+
+      console.log(`✅ Seed completed: ${seedItems.length * 2} bilingual items linked with Dynamic Zone components created!`);
+      return { success: true, count: seedItems.length * 2 };
+    } catch (err: any) {
+      console.error('Error in seedDemoData:', err);
+      return { success: false, error: err.message };
+    }
   },
 });

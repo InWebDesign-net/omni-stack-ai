@@ -215,6 +215,7 @@ export default function ContentDetailPage() {
           }
         } catch (e) {}
 
+        const currentLang = typeof window !== 'undefined' ? (localStorage.getItem('omni_lang') || 'de') : 'de';
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
           headers: {
@@ -222,7 +223,7 @@ export default function ContentDetailPage() {
             'Cache-Control': 'no-cache, no-store',
           },
           cache: 'no-store',
-          body: JSON.stringify({ ...savedProfile, includeDrafts: isBypass, targetSlug: slug }),
+          body: JSON.stringify({ ...savedProfile, includeDrafts: isBypass, targetSlug: slug, locale: currentLang }),
         });
         if (res.ok) {
           const data = await res.json();

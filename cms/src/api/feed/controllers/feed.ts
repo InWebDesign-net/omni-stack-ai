@@ -12,10 +12,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async processAiIntent(ctx: any) {
-    // OPEN SOURCE VERSION
-    // Public fallback for the open-source repository (MIT License).
-    // The fully managed InWebDesign Premium AI Engine provides local LLM orchestration & hosting.
-    // Upgrade / Contact: https://inwebdesign.net
     try {
       const { prompt, currentProfile } = ctx.request.body;
       if (!prompt) {
@@ -30,10 +26,20 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async resetDemoData(ctx: any) {
     try {
-      const result = await strapi.service('api::feed.feed').resetDemoData();
+      const result = await strapi.service('api::feed.feed').seedDemoData(true);
       return ctx.send(result);
     } catch (err: any) {
       return ctx.badRequest('Demo Reset Error', { error: err.message });
+    }
+  },
+
+  async seedDemoData(ctx: any) {
+    try {
+      const { force } = ctx.request.body || ctx.query || {};
+      const result = await strapi.service('api::feed.feed').seedDemoData(force === true || force === 'true');
+      return ctx.send(result);
+    } catch (err: any) {
+      return ctx.badRequest('Seed Demo Error', { error: err.message });
     }
   },
 

@@ -34,6 +34,14 @@ export default {
     },
     {
       method: 'POST',
+      path: '/feed/seed-demo',
+      handler: 'feed.seedDemoData',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
       path: '/feed/ingest-finalized',
       handler: 'feed.ingestFinalizedVideo',
       config: {

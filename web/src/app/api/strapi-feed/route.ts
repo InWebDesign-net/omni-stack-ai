@@ -6,6 +6,10 @@ export const revalidate = 0;
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const payload = {
+      ...body,
+      locale: body.lang || body.locale || 'de',
+    };
     
     // Proxy request to Strapi custom controller
     const headers: Record<string, string> = {
@@ -19,7 +23,7 @@ export async function POST(req: Request) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337'}/api/feed/assembly`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
       cache: 'no-store',
     });
 
