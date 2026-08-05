@@ -32,6 +32,8 @@ import {
   Check,
   X,
   RefreshCw,
+  UserPlus,
+  Users,
 } from 'lucide-react';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
@@ -78,6 +80,33 @@ function CardThumbnail({
   );
 }
 
+function OmniLogo({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logo-outer-detail" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8083ff" />
+          <stop offset="50%" stopColor="#44e2cd" />
+          <stop offset="100%" stopColor="#ffb783" />
+        </linearGradient>
+        <linearGradient id="logo-inner-detail" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#c0c1ff" />
+          <stop offset="100%" stopColor="#44e2cd" />
+        </linearGradient>
+      </defs>
+      <circle cx="20" cy="20" r="18" stroke="url(#logo-outer-detail)" strokeWidth="1.5" fill="none" opacity="0.6" />
+      <circle cx="20" cy="20" r="13" stroke="url(#logo-inner-detail)" strokeWidth="1" fill="none" opacity="0.4" strokeDasharray="2 3" />
+      <circle cx="20" cy="20" r="8" fill="url(#logo-outer-detail)" opacity="0.15" />
+      <circle cx="20" cy="20" r="5.5" fill="url(#logo-outer-detail)" opacity="0.25" />
+      <circle cx="20" cy="20" r="2.5" fill="url(#logo-inner-detail)" />
+      <line x1="20" y1="4" x2="20" y2="8" stroke="url(#logo-outer-detail)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="20" y1="32" x2="20" y2="36" stroke="url(#logo-outer-detail)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="4" y1="20" x2="8" y2="20" stroke="url(#logo-outer-detail)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="32" y1="20" x2="36" y2="20" stroke="url(#logo-outer-detail)" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function ContentDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -100,6 +129,47 @@ export default function ContentDetailPage() {
   const [editCommentText, setEditCommentText] = useState('');
   const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
+
+  // Channel Profile Modal State
+  const [selectedChannel, setSelectedChannel] = useState<{
+    username: string;
+    handle: string;
+    avatarUrl: string;
+    bio: string;
+    subscribersCount: number;
+  } | null>(null);
+
+  const [subscribedChannels, setSubscribedChannels] = useState<string[]>(['@demotech', '@astro']);
+
+  const toggleSubscribeChannel = (handle: string) => {
+    setSubscribedChannels((prev) =>
+      prev.includes(handle) ? prev.filter((h) => h !== handle) : [...prev, handle]
+    );
+  };
+
+  const openChannelModal = (creatorOrItem: any) => {
+    if (!creatorOrItem) return;
+    if (creatorOrItem.authorHandle || creatorOrItem.handle) {
+      const handle = creatorOrItem.authorHandle || creatorOrItem.handle;
+      const name = creatorOrItem.authorName || creatorOrItem.label || creatorOrItem.username || handle.replace('@', '');
+      const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || creatorOrItem.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+      setSelectedChannel({
+        username: name,
+        handle: handle.startsWith('@') ? handle : `@${handle}`,
+        avatarUrl: avatar,
+        bio: 'Creator & Content Publisher im Omni Network.',
+        subscribersCount: 15400,
+      });
+      return;
+    }
+    setSelectedChannel({
+      username: getAuthorName(creatorOrItem),
+      handle: getAuthorHandle(creatorOrItem),
+      avatarUrl: getAuthorAvatar(creatorOrItem),
+      bio: 'Creator & Content Publisher im Omni Network.',
+      subscribersCount: 15400,
+    });
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -316,28 +386,90 @@ export default function ContentDetailPage() {
         </div>
       )}
 
-      {/* ── Top Header Bar ─────────────────────────────────────────────────── */}
+      {/* ── Standardized Top Header Bar ───────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+        {/* Brand */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-[#dae2fd] transition-all border border-white/8"
-          >
-            <ArrowLeft className="h-4 w-4 text-[#8083ff]" />
-            <span>Startseite</span>
+          <Link href="/" className="flex items-center gap-3 group select-none">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] opacity-30 blur-md group-hover:opacity-60 transition-opacity duration-300" />
+              <div className="relative rounded-xl bg-[#0d1528] border border-white/10 p-1.5 group-hover:border-white/20 transition-colors duration-200">
+                <OmniLogo size={22} />
+              </div>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-extrabold text-[17px] tracking-[-0.04em] text-white leading-tight">
+                Omni
+              </span>
+              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
+                BY INWEBDESIGN
+              </span>
+            </div>
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono font-bold text-[#44e2cd] bg-[#44e2cd]/10 border border-[#44e2cd]/20 px-3 py-1 rounded-full flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>KI-Relevanz: {(item.relevanceScore * 100).toFixed(0)}%</span>
-          </span>
+        {/* Right Header Controls */}
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#121a30] border border-white/8 text-[#dae2fd] hover:bg-[#192038] hover:text-white transition-all shadow-sm"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 text-[#8083ff]" />
+            <span>Startseite</span>
+          </Link>
+
+          {userProfile ? (
+            <button
+              onClick={() =>
+                openChannelModal({
+                  authorHandle: userProfile.handle,
+                  authorName: userProfile.username,
+                  authorAvatar: userProfile.avatarUrl,
+                })
+              }
+              className="flex items-center gap-2 bg-[#121a30] border border-white/10 hover:border-[#8083ff]/40 p-1.5 rounded-xl transition-all"
+              title="Dein Profil öffnen"
+            >
+              <img
+                src={userProfile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
+                alt={userProfile.username}
+                className="h-7 w-7 rounded-full object-cover border border-white/10"
+              />
+              <span className="text-xs font-bold text-white hidden md:inline pr-1">{userProfile.username}</span>
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="px-3.5 py-2 rounded-xl bg-[#8083ff] hover:bg-[#6b6eff] text-white text-xs font-semibold transition-all shadow-lg shadow-[#8083ff]/25"
+            >
+              Anmelden
+            </Link>
+          )}
         </div>
       </header>
 
-      {/* ── Full-Width YouTube Theater Layout ──────────────────────────────── */}
-      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* ── Main Content Canvas ────────────────────────────────────────────── */}
+      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+        
+        {/* Navigation & AI Relevance Sub-Header Bar (One Level Down) */}
+        <div className="flex items-center justify-between gap-4 pb-3 border-b border-white/5">
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d1528] hover:bg-[#121a30] text-xs font-semibold text-[#dae2fd] transition-all border border-white/8 hover:border-white/20 shadow-md group"
+          >
+            <ArrowLeft className="h-4 w-4 text-[#8083ff] group-hover:-translate-x-0.5 transition-transform" />
+            <span>← Zurück zur Startseite</span>
+          </Link>
+
+          {item && (
+            <span className="text-xs font-mono font-bold text-[#44e2cd] bg-[#44e2cd]/10 border border-[#44e2cd]/20 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>KI-Relevanz: {((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match</span>
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left / Main Canvas (YouTube Wide Theater Column) */}
         <section className="lg:col-span-8 flex flex-col gap-6">
@@ -428,17 +560,21 @@ export default function ContentDetailPage() {
                 </div>
               </div>
 
-              {/* Channel Author Card */}
+              {/* Channel Author Card with Clickable Profile Modal */}
               <div className="flex items-center justify-between gap-4 bg-[#0d1528] p-4 rounded-2xl border border-white/6">
-                <div className="flex items-center gap-3.5">
+                <div
+                  onClick={() => openChannelModal({ handle: authorHandle, username: authorName, avatarUrl: authorAvatar })}
+                  className="flex items-center gap-3.5 cursor-pointer group/author transition-all"
+                  title={`Profil von ${authorName} öffnen`}
+                >
                   <img
                     src={authorAvatar}
                     alt={authorName}
-                    className="h-11 w-11 rounded-full object-cover border border-white/10 shrink-0"
+                    className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all shrink-0"
                   />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-sm text-white">{authorName}</span>
+                      <span className="font-bold text-sm text-white group-hover/author:text-[#44e2cd] transition-colors">{authorName}</span>
                       <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
                     </div>
                     <p className="text-xs text-[#8083ff] font-mono font-semibold">{authorHandle}</p>
@@ -577,12 +713,16 @@ export default function ContentDetailPage() {
 
                 {/* Article Content Body */}
                 <div className="p-6 sm:p-8 flex flex-col gap-6">
-                  {/* Author Strip */}
+                  {/* Author Strip with Clickable Profile Modal */}
                   <div className="flex items-center justify-between pb-4 border-b border-white/6">
-                    <div className="flex items-center gap-3">
-                      <img src={authorAvatar} alt={authorName} className="h-10 w-10 rounded-full object-cover border border-white/10" />
+                    <div
+                      onClick={() => openChannelModal({ handle: authorHandle, username: authorName, avatarUrl: authorAvatar })}
+                      className="flex items-center gap-3 cursor-pointer group/author transition-all"
+                      title={`Profil von ${authorName} öffnen`}
+                    >
+                      <img src={authorAvatar} alt={authorName} className="h-10 w-10 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" />
                       <div>
-                        <p className="text-xs font-bold text-white">{authorName}</p>
+                        <p className="text-xs font-bold text-white group-hover/author:text-[#44e2cd] transition-colors">{authorName}</p>
                         <p className="text-[10px] text-[#8083ff] font-mono">{authorHandle}</p>
                       </div>
                     </div>
@@ -699,11 +839,21 @@ export default function ContentDetailPage() {
 
                   return (
                     <div key={commentKey} className="bg-[#080e1e]/60 border border-white/5 p-4 rounded-2xl flex gap-3 group transition-all">
-                      <img src={c.authorAvatar} alt={c.authorName} className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0" />
+                      <img
+                        src={c.authorAvatar}
+                        alt={c.authorName}
+                        onClick={() => openChannelModal({ handle: c.authorHandle, username: c.authorName, avatarUrl: c.authorAvatar })}
+                        className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0 cursor-pointer hover:border-[#8083ff] transition-all"
+                        title={`Profil von ${c.authorName} öffnen`}
+                      />
                       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-bold text-white">{c.authorName}</span>
+                          <div
+                            onClick={() => openChannelModal({ handle: c.authorHandle, username: c.authorName, avatarUrl: c.authorAvatar })}
+                            className="flex items-center gap-2 flex-wrap cursor-pointer group/c"
+                            title={`Profil von ${c.authorName} öffnen`}
+                          >
+                            <span className="text-xs font-bold text-white group-hover/c:text-[#44e2cd] transition-colors">{c.authorName}</span>
                             <span className="text-[10px] text-[#8083ff] font-mono">{c.authorHandle}</span>
                             {c.isEdited && (
                               <span className="text-[9px] text-[#9ba4bf] italic font-mono">(bearbeitet)</span>
@@ -798,7 +948,15 @@ export default function ContentDetailPage() {
                   <h4 className="text-xs font-semibold text-[#dae2fd] group-hover:text-white transition-colors line-clamp-2 leading-snug">
                     {rel.title}
                   </h4>
-                  <p className="text-[10px] text-[#5c657d] font-mono">{getAuthorHandle(rel)}</p>
+                  <p
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openChannelModal(rel);
+                    }}
+                    className="text-[10px] text-[#5c657d] hover:text-[#44e2cd] font-mono cursor-pointer transition-colors"
+                  >
+                    {getAuthorHandle(rel)}
+                  </p>
                   <span className="text-[9px] font-mono text-[#44e2cd] mt-auto">
                     Score: {(rel.relevanceScore * 100).toFixed(0)}%
                   </span>
@@ -808,7 +966,81 @@ export default function ContentDetailPage() {
           </div>
         </aside>
 
+        </div>
       </main>
+
+      {/* ── Channel Profile Modal ─────────────────────────────────────────────── */}
+      {selectedChannel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
+            onClick={() => setSelectedChannel(null)}
+          />
+          <div className="relative w-full max-w-2xl bg-[#080e1e] border border-white/10 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col max-h-[85vh] animate-fadeInUp">
+            {/* Modal Header & Cover Banner */}
+            <div className="relative h-28 bg-gradient-to-r from-[#8083ff]/30 via-[#44e2cd]/20 to-[#ffb783]/20 p-4 border-b border-white/5 flex items-start justify-between">
+              <button
+                onClick={() => setSelectedChannel(null)}
+                className="p-2 rounded-full bg-black/40 text-[#9ba4bf] hover:text-white hover:bg-black/60 transition-all border border-white/10 ml-auto"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Profile Avatar & Primary Action */}
+            <div className="px-6 relative flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-10 pb-4">
+              <div className="flex items-end gap-4">
+                <img
+                  src={selectedChannel.avatarUrl}
+                  alt={selectedChannel.username}
+                  className="h-20 w-20 rounded-full object-cover border-4 border-[#080e1e] shadow-2xl bg-[#0d1528] shrink-0"
+                />
+                <div className="pb-1">
+                  <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+                    <span>{selectedChannel.username}</span>
+                    <CheckCircle2 className="h-4.5 w-4.5 text-[#44e2cd]" />
+                  </h2>
+                  <p className="text-xs font-mono text-[#8083ff] font-semibold">{selectedChannel.handle}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleSubscribeChannel(selectedChannel.handle)}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 ${
+                    subscribedChannels.includes(selectedChannel.handle)
+                      ? 'bg-white/10 text-white border border-white/15 hover:bg-red-500/20 hover:text-red-300'
+                      : 'bg-[#8083ff] hover:bg-[#6b6eff] text-white shadow-[#8083ff]/30'
+                  }`}
+                >
+                  {subscribedChannels.includes(selectedChannel.handle) ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
+                      <span>Abonniert</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      <span>Kanal abonnieren</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Bio & Stats bar */}
+            <div className="px-6 py-4 bg-[#080e1e] border-t border-b border-white/5 flex flex-col gap-2">
+              <p className="text-xs text-[#dae2fd]/90 leading-relaxed">{selectedChannel.bio}</p>
+              <div className="flex items-center gap-4 text-xs font-mono text-[#5c657d]">
+                <div className="flex items-center gap-1.5 text-white font-bold">
+                  <Users className="h-3.5 w-3.5 text-[#44e2cd]" />
+                  <span>{(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
