@@ -97,6 +97,17 @@ export default function ContentDetailPage() {
 
       // 1. STRAPI-FIRST: Always fetch real item data from Strapi API first
       try {
+        let savedProfile: any = { activePattern: 'discovery' };
+        try {
+          const stored = localStorage.getItem('omni_user_interest_profile');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.interests) {
+              savedProfile = parsed;
+            }
+          }
+        } catch (e) {}
+
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
           headers: {
@@ -104,7 +115,7 @@ export default function ContentDetailPage() {
             'Cache-Control': 'no-cache, no-store',
           },
           cache: 'no-store',
-          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass, targetSlug: slug }),
+          body: JSON.stringify({ ...savedProfile, includeDrafts: isBypass, targetSlug: slug }),
         });
         if (res.ok) {
           const data = await res.json();

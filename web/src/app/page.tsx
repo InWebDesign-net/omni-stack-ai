@@ -394,9 +394,63 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     setIsLoading(false);
   };
 
+  // Helper to persist and sync updated profile state across sessions and database
+  const updateProfileState = (newProfile: InterestProfile) => {
+    setProfile(newProfile);
+    try {
+      localStorage.setItem('omni_user_interest_profile', JSON.stringify(newProfile));
+    } catch (e) {}
+
+    if (currentUser?.jwt) {
+      const docId = (currentUser as any)?.profile?.documentId || (currentUser as any)?.profile?.id;
+      if (docId) {
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+        fetch(`${strapiUrl}/api/user-profiles/${docId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || currentUser.jwt}`,
+          },
+          body: JSON.stringify({
+            data: {
+              affinityGraph: newProfile,
+            },
+          }),
+        }).catch(() => {});
+      }
+    }
+  };
+
   useEffect(() => {
-    fetchFeed(profile, lang);
-  }, [lang]);
+    let initialProf = profile;
+    try {
+      const stored = localStorage.getItem('omni_user_interest_profile');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.interests) {
+          initialProf = parsed;
+          setProfile(parsed);
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const savedUser = localStorage.getItem('omni_user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        setCurrentUser(parsedUser);
+        if (parsedUser?.profile?.affinityGraph && parsedUser.profile.affinityGraph.interests) {
+          initialProf = parsedUser.profile.affinityGraph;
+          setProfile(parsedUser.profile.affinityGraph);
+          try {
+            localStorage.setItem('omni_user_interest_profile', JSON.stringify(parsedUser.profile.affinityGraph));
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+
+    fetchFeed(initialProf, lang);
+  }, []);
 
   // Handle Google Demo Test Account Login
   const handleGoogleDemoLogin = async () => {
@@ -677,7 +731,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
       if (res.ok) {
         const data = await res.json();
         if (data.updatedProfile) {
-          setProfile(data.updatedProfile);
+          updateProfileState(data.updatedProfile);
           fetchFeed(data.updatedProfile);
         }
         if (data.aiExplanation) {
@@ -706,7 +760,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
         },
       },
     };
-    setProfile(updated);
+    updateProfileState(updated);
     fetchFeed(updated);
   };
 
@@ -1035,7 +1089,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                 <button
                   onClick={() => {
                     const u = { ...profile, activePattern: 'discovery' as const };
-                    setProfile(u);
+                    updateProfileState(u);
                     fetchFeed(u);
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
@@ -1049,7 +1103,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                 <button
                   onClick={() => {
                     const u = { ...profile, activePattern: 'deep_dive' as const };
-                    setProfile(u);
+                    updateProfileState(u);
                     fetchFeed(u);
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
