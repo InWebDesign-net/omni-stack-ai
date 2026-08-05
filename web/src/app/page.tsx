@@ -558,6 +558,48 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
       }
     } catch (e) {}
 
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'trending' || tabParam === 'subscriptions' || tabParam === 'library') {
+        setActiveNavTab(tabParam as any);
+      }
+      const typeParam = params.get('type');
+      if (typeParam === 'pdf') setSelectedTag('PDF Doku');
+      else if (typeParam === 'video') setSelectedTag('Video Tutorial');
+      else if (typeParam === 'article') setSelectedTag('Programmierung');
+
+      const channelParam = params.get('channel');
+      if (channelParam) {
+        const creatorMap: Record<string, { name: string; avatar: string }> = {
+          astro: { name: 'Astro-Wissen Magazin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
+          demotech: { name: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+          demogourmet: { name: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
+          greenplanet: { name: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
+          omniarchitect: { name: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+          catmania: { name: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
+          finanzkompass: { name: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
+        };
+        const normHandle = channelParam.replace(/^@/, '');
+        const match = creatorMap[normHandle];
+        if (match) {
+          openChannelModal({
+            authorHandle: `@${normHandle}`,
+            authorName: match.name,
+            authorAvatar: match.avatar,
+          });
+        }
+      }
+
+      if (params.get('algo') === 'open') {
+        setAlgoDrawerOpen(true);
+      }
+      if (params.get('sidebar') === 'open') {
+        setSidebarOpen(true);
+        setMobileSidebarOpen(true);
+      }
+    }
+
     fetchFeed(initialProf, lang);
   }, []);
 
