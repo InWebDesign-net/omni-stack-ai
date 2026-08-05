@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { tracker } from '../lib/tracking';
 import {
   Menu,
@@ -279,8 +279,9 @@ function CardThumbnail({
   );
 }
 
-export default function OmniApp() {
+function OmniAppContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [lang, setLang] = useState<'de' | 'en'>('de');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -558,50 +559,56 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
       }
     } catch (e) {}
 
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam === 'trending' || tabParam === 'subscriptions' || tabParam === 'library') {
-        setActiveNavTab(tabParam as any);
-      }
-      const typeParam = params.get('type');
-      if (typeParam === 'pdf') setSelectedTag('PDF Doku');
-      else if (typeParam === 'video') setSelectedTag('Video Tutorial');
-      else if (typeParam === 'article') setSelectedTag('Programmierung');
+    fetchFeed(initialProf, lang);
+  }, []);
 
-      const channelParam = params.get('channel');
-      if (channelParam) {
-        const creatorMap: Record<string, { name: string; avatar: string }> = {
-          astro: { name: 'Astro-Wissen Magazin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
-          demotech: { name: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
-          demogourmet: { name: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
-          greenplanet: { name: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
-          omniarchitect: { name: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
-          catmania: { name: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
-          finanzkompass: { name: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
-        };
-        const normHandle = channelParam.replace(/^@/, '');
-        const match = creatorMap[normHandle];
-        if (match) {
-          openChannelModal({
-            authorHandle: `@${normHandle}`,
-            authorName: match.name,
-            authorAvatar: match.avatar,
-          });
-        }
-      }
+  useEffect(() => {
+    if (!searchParams) return;
 
-      if (params.get('algo') === 'open') {
-        setAlgoDrawerOpen(true);
-      }
-      if (params.get('sidebar') === 'open') {
-        setSidebarOpen(true);
-        setMobileSidebarOpen(true);
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'trending' || tabParam === 'subscriptions' || tabParam === 'library') {
+      setActiveNavTab(tabParam as any);
+    } else if (tabParam === 'home' || (searchParams.has('tab') && !tabParam)) {
+      setActiveNavTab('home');
+    }
+
+    const typeParam = searchParams.get('type');
+    if (typeParam === 'pdf') {
+      setSelectedTag('PDF Doku');
+    } else if (typeParam === 'video') {
+      setSelectedTag('Video Tutorial');
+    } else if (typeParam === 'article') {
+      setSelectedTag('Programmierung');
+    } else if (typeParam === 'all') {
+      setSelectedTag('Alle');
+    }
+
+    const channelParam = searchParams.get('channel');
+    if (channelParam) {
+      const creatorMap: Record<string, { name: string; avatar: string }> = {
+        astro: { name: 'Astro-Wissen Magazin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
+        demotech: { name: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+        demogourmet: { name: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
+        greenplanet: { name: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
+        omniarchitect: { name: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
+        catmania: { name: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
+        finanzkompass: { name: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
+      };
+      const normHandle = channelParam.replace(/^@/, '');
+      const match = creatorMap[normHandle];
+      if (match) {
+        openChannelModal({
+          authorHandle: `@${normHandle}`,
+          authorName: match.name,
+          authorAvatar: match.avatar,
+        });
       }
     }
 
-    fetchFeed(initialProf, lang);
-  }, []);
+    if (searchParams.get('algo') === 'open') {
+      setAlgoDrawerOpen(true);
+    }
+  }, [searchParams]);
 
   // Handle Google Demo Test Account Login
   const handleGoogleDemoLogin = async () => {
@@ -2234,5 +2241,13 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OmniApp() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#080e1e]" />}>
+      <OmniAppContent />
+    </Suspense>
   );
 }
