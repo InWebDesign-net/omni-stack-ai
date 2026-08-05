@@ -394,6 +394,10 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     setIsLoading(false);
   };
 
+  useEffect(() => {
+    fetchFeed(profile, lang);
+  }, [lang]);
+
   // Handle Google Demo Test Account Login
   const handleGoogleDemoLogin = async () => {
     setAuthError(null);
