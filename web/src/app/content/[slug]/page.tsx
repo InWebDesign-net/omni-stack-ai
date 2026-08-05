@@ -65,8 +65,11 @@ export default function ContentDetailPage() {
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      setIsPreviewActive(document.cookie.includes('__prerender_bypass'));
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const statusParam = urlParams.get('status');
+      const hasCookie = document.cookie.includes('__prerender_bypass');
+      setIsPreviewActive(statusParam === 'draft' || (hasCookie && statusParam !== 'published'));
     }
 
     try {
@@ -80,7 +83,7 @@ export default function ContentDetailPage() {
       const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
       const statusParam = urlParams ? urlParams.get('status') : null;
       const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
-      const isBypass = hasCookie && statusParam !== 'published';
+      const isBypass = statusParam === 'draft' || (hasCookie && statusParam !== 'published');
 
       const matchItem = (itemsList: FeedItem[], target: string) => {
         if (!target) return null;
