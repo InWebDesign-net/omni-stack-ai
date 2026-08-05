@@ -200,35 +200,63 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // Fallback to sample seed items
     }
 
-    // Direct target slug / documentId lookup across all locales and statuses
+    // Direct target slug / documentId lookup with draft priority
     const target = (userProfileInput as any)?.targetSlug;
     if (target) {
-      const alreadyIn = items.some((i: any) => i.slug === target || i.documentId === target || String(i.id) === target);
-      if (!alreadyIn) {
-        try {
-          const findTarget = async (locale: string, status: 'draft' | 'published') => {
+      try {
+        const findTargetItem = async (locale: string, status: 'draft' | 'published') => {
+          try {
             const matches = await strapi.documents('api::feed-item.feed-item').findMany({
-              filters: {
-                $or: [{ slug: { $eq: target } }, { documentId: { $eq: target } }],
-              },
+              filters: { slug: { $eq: target } },
               locale,
               status,
               populate: ['author'],
             });
-            return matches && matches.length > 0 ? matches[0] : null;
-          };
+            if (matches && matches.length > 0) return matches[0];
+          } catch (e) {}
 
-          const directMatch =
-            (await findTarget('de', 'draft')) ||
-            (await findTarget('en', 'draft')) ||
-            (await findTarget('de', 'published')) ||
-            (await findTarget('en', 'published'));
+          try {
+            const doc = await strapi.documents('api::feed-item.feed-item').findOne({
+              documentId: target,
+              locale,
+              status,
+              populate: ['author'],
+            });
+            if (doc) return doc;
+          } catch (e) {}
 
-          if (directMatch) {
-            items = [directMatch as any, ...items];
-          }
-        } catch (e) {}
-      }
+          return null;
+        };
+
+        let targetMatch: any = null;
+        if ((userProfileInput as any)?.includeDrafts) {
+          // Priority to DRAFTS when previewing
+          targetMatch =
+            (await findTargetItem('en', 'draft')) ||
+            (await findTargetItem('de', 'draft')) ||
+            (await findTargetItem('en', 'published')) ||
+            (await findTargetItem('de', 'published'));
+        } else {
+          // Priority to PUBLISHED when live
+          targetMatch =
+            (await findTargetItem('de', 'published')) ||
+            (await findTargetItem('en', 'published')) ||
+            (await findTargetItem('de', 'draft')) ||
+            (await findTargetItem('en', 'draft'));
+        }
+
+        if (targetMatch) {
+          // Remove any previous versions of this item from items list to prevent stale versions
+          items = items.filter(
+            (i: any) =>
+              i.documentId !== targetMatch.documentId &&
+              i.slug !== targetMatch.slug &&
+              String(i.id) !== String(targetMatch.id)
+          );
+          // Place the exact targetMatch at index 0
+          items = [targetMatch, ...items];
+        }
+      } catch (e) {}
     }
 
     // 2. Score items against Interest Vector
@@ -300,12 +328,15 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     });
 
-    // Ensure target item is ALWAYS included at index 0 if targetSlug was requested
+    // Ensure target preview item is ALWAYS placed strictly at index 0
     if (target) {
-      const matchInFeed = assembledFeed.find(
+      const existingIdx = assembledFeed.findIndex(
         (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
       );
-      if (!matchInFeed) {
+      if (existingIdx > 0) {
+        const [targetObj] = assembledFeed.splice(existingIdx, 1);
+        assembledFeed.unshift(targetObj);
+      } else if (existingIdx === -1) {
         const itemInScored = scoredItems.find(
           (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
         );
