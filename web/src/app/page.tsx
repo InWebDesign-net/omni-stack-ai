@@ -1347,19 +1347,16 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
 
                     {/* Scroll Container with Faded Edges */}
                     <div className="relative flex-1 overflow-hidden flex items-center">
-                      {/* Left Fade & Button */}
+                      {/* Left Scroll Button */}
                       {canChannelScrollLeft && (
-                        <>
-                          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#080e1e] to-transparent z-10 pointer-events-none" />
-                          <button
-                            type="button"
-                            onClick={() => scrollContainer(channelScrollRef, 'left')}
-                            className="absolute left-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
-                            title="Zurück scrollen"
-                          >
-                            <ChevronLeft className="h-3.5 w-3.5" />
-                          </button>
-                        </>
+                        <button
+                          type="button"
+                          onClick={() => scrollContainer(channelScrollRef, 'left')}
+                          className="absolute left-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+                          title="Zurück scrollen"
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                        </button>
                       )}
 
                       {/* Scrollable Creator List */}
@@ -1400,19 +1397,16 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                         ))}
                       </div>
 
-                      {/* Right Fade & Button */}
+                      {/* Right Scroll Button */}
                       {canChannelScrollRight && (
-                        <>
-                          <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#080e1e] to-transparent z-10 pointer-events-none" />
-                          <button
-                            type="button"
-                            onClick={() => scrollContainer(channelScrollRef, 'right')}
-                            className="absolute right-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
-                            title="Weiter scrollen"
-                          >
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </button>
-                        </>
+                        <button
+                          type="button"
+                          onClick={() => scrollContainer(channelScrollRef, 'right')}
+                          className="absolute right-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+                          title="Weiter scrollen"
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
                       )}
                     </div>
                   </div>
