@@ -114,6 +114,7 @@ export default function ContentDetailPage() {
   const slug = params?.slug as string;
 
   const [item, setItem] = useState<FeedItem | null>(null);
+  const [lang, setLang] = useState<'de' | 'en'>('de');
   const [relatedItems, setRelatedItems] = useState<FeedItem[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -178,6 +179,11 @@ export default function ContentDetailPage() {
       const statusParam = urlParams.get('status');
       const hasCookie = document.cookie.includes('__prerender_bypass');
       setIsPreviewActive(statusParam === 'draft' || (hasCookie && statusParam !== 'published'));
+
+      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
+      if (savedLang === 'de' || savedLang === 'en') {
+        setLang(savedLang);
+      }
     }
 
     try {
@@ -187,79 +193,89 @@ export default function ContentDetailPage() {
       }
     } catch (e) {}
 
-    const fetchItemData = async () => {
-      const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-      const statusParam = urlParams ? urlParams.get('status') : null;
-      const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
-      const isBypass = statusParam === 'draft' || (hasCookie && statusParam !== 'published');
-
-      const matchItem = (itemsList: FeedItem[], target: string) => {
-        if (!target) return null;
-        const norm = target.toLowerCase().trim();
-        return (
-          itemsList.find((i: any) => i.slug === norm || i.documentId === norm || String(i.id) === norm) ||
-          itemsList.find((i: any) => i.slug && norm && (i.slug.includes(norm) || norm.includes(i.slug)))
-        );
-      };
-
-      // 1. STRAPI-FIRST: Always fetch real item data from Strapi API first
-      try {
-        let savedProfile: any = { activePattern: 'discovery' };
-        try {
-          const stored = localStorage.getItem('omni_user_interest_profile');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed && parsed.interests) {
-              savedProfile = parsed;
-            }
-          }
-        } catch (e) {}
-
-        const currentLang = typeof window !== 'undefined' ? (localStorage.getItem('omni_lang') || 'de') : 'de';
-        const res = await fetch('/api/strapi-feed', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store',
-          },
-          cache: 'no-store',
-          body: JSON.stringify({ ...savedProfile, includeDrafts: isBypass, targetSlug: slug, locale: currentLang }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.feed && data.feed.length > 0) {
-            const apiMatch = matchItem(data.feed, slug) || data.feed[0];
-            if (apiMatch) {
-              setItem(apiMatch);
-              setLikesCount(apiMatch.likesCount || 100);
-              setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== apiMatch.slug && i.mediaType !== 'short').slice(0, 5));
-              return;
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Error fetching item from Strapi API:', e);
-      }
-
-      // 2. Offline fallback ONLY if Strapi API is unreachable
-      const foundFallback = matchItem(FALLBACK_FEED_ITEMS, slug) || FALLBACK_FEED_ITEMS[0];
-      setItem(foundFallback);
-      setLikesCount(foundFallback.likesCount);
-      setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== foundFallback.slug && i.mediaType !== 'short').slice(0, 5));
-    };
-
-    const loadComments = async () => {
-      setLoadingComments(true);
-      if (slug) {
-        const fetched = await fetchCommentsForSlug(slug);
-        setComments(fetched);
-      }
-      setLoadingComments(false);
-    };
-
     fetchItemData();
     loadComments();
   }, [slug]);
+
+  const toggleLanguage = () => {
+    const next = lang === 'de' ? 'en' : 'de';
+    setLang(next);
+    try {
+      localStorage.setItem('omni_lang', next);
+      document.cookie = `omni_lang=${next}; path=/; max-age=31536000`;
+    } catch (e) {}
+    fetchItemData(next);
+  };
+
+  const fetchItemData = async (targetLang?: 'de' | 'en') => {
+    const activeLang = targetLang || lang || (typeof window !== 'undefined' ? (localStorage.getItem('omni_lang') as any || 'de') : 'de');
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const statusParam = urlParams ? urlParams.get('status') : null;
+    const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
+    const isBypass = statusParam === 'draft' || (hasCookie && statusParam !== 'published');
+
+    const matchItem = (itemsList: FeedItem[], target: string) => {
+      if (!target) return null;
+      const norm = target.toLowerCase().trim();
+      return (
+        itemsList.find((i: any) => i.slug === norm || i.documentId === norm || String(i.id) === norm) ||
+        itemsList.find((i: any) => i.slug && norm && (i.slug.includes(norm) || norm.includes(i.slug)))
+      );
+    };
+
+    // 1. STRAPI-FIRST: Always fetch real item data from Strapi API first
+    try {
+      let savedProfile: any = { activePattern: 'discovery' };
+      try {
+        const stored = localStorage.getItem('omni_user_interest_profile');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.interests) {
+            savedProfile = parsed;
+          }
+        }
+      } catch (e) {}
+
+      const res = await fetch('/api/strapi-feed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store',
+        },
+        cache: 'no-store',
+        body: JSON.stringify({ ...savedProfile, includeDrafts: isBypass, targetSlug: slug, locale: activeLang }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.feed && data.feed.length > 0) {
+          const apiMatch = matchItem(data.feed, slug) || data.feed[0];
+          if (apiMatch) {
+            setItem(apiMatch);
+            setLikesCount(apiMatch.likesCount || 100);
+            setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== apiMatch.slug && i.mediaType !== 'short').slice(0, 5));
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching item from Strapi API:', e);
+    }
+
+    // 2. Offline fallback ONLY if Strapi API is unreachable
+    const foundFallback = matchItem(FALLBACK_FEED_ITEMS, slug) || FALLBACK_FEED_ITEMS[0];
+    setItem(foundFallback);
+    setLikesCount(foundFallback.likesCount || 100);
+    setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== foundFallback.slug && i.mediaType !== 'short').slice(0, 5));
+  };
+
+  const loadComments = async () => {
+    setLoadingComments(true);
+    if (slug) {
+      const fetched = await fetchCommentsForSlug(slug);
+      setComments(fetched);
+    }
+    setLoadingComments(false);
+  };
 
   // Auto-poll item status if video is currently in processing state
   useEffect(() => {
@@ -390,6 +406,8 @@ export default function ContentDetailPage() {
 
       {/* ── 100% Unified Universal Header Component ───────────────────────────── */}
       <Header
+        lang={lang}
+        onToggleLanguage={toggleLanguage}
         onOpenUserProfileModal={() => {
           if (userProfile) {
             openChannelModal({

@@ -131,15 +131,15 @@ export default function Header({
   const activeUser = propUser !== undefined ? propUser : internalUser;
 
   const handleLanguageClick = () => {
+    const next = activeLang === 'de' ? 'en' : 'de';
+    setInternalLang(next);
+    try {
+      localStorage.setItem('omni_lang', next);
+      document.cookie = `omni_lang=${next}; path=/; max-age=31536000`;
+    } catch (e) {}
+
     if (propToggleLang) {
       propToggleLang();
-    } else {
-      const next = activeLang === 'de' ? 'en' : 'de';
-      setInternalLang(next);
-      try {
-        localStorage.setItem('omni_lang', next);
-      } catch (e) {}
-      window.location.reload();
     }
   };
 
