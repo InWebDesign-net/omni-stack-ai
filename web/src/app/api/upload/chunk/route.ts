@@ -31,14 +31,17 @@ export async function POST(req: Request) {
     const isComplete = chunkIndex === totalChunks - 1;
 
     if (isComplete) {
-      // Generate clean slug from title & uploadId
-      const cleanSlug = title
+      // Generate clean, unique collision-free slug from title & timestamp/hash
+      const baseSlug = title
         .toLowerCase()
         .trim()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '') || `video-${Date.now()}`;
+        .replace(/^-+|-+$/g, '') || 'video';
       
-      const finalRawPath = path.join(inDir, `${cleanSlug}.mp4`);
+      const uniqueHash = Math.random().toString(36).substring(2, 7);
+      const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}-${uniqueHash}`;
+      
+      const finalRawPath = path.join(inDir, `${uniqueSlug}.mp4`);
       
       // Rename temp file to final raw video path in /root/media/in
       if (fs.existsSync(finalRawPath)) {
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
           headers,
           body: JSON.stringify({
             title,
-            slug: cleanSlug,
+            slug: uniqueSlug,
             tags: ['Community', 'Video', 'Neu'],
             userId: userId,
           }),
@@ -83,7 +86,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         isComplete: true,
-        slug: cleanSlug,
+        slug: uniqueSlug,
         documentId: createdVideoDocId,
         isProcessing: true,
         message: 'Upload abgeschlossen. Video wurde zur Konvertierung eingereiht.',
