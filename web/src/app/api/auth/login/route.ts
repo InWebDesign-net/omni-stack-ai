@@ -6,7 +6,7 @@ export async function POST(req: Request) {
 
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
 
-    // 1. Login user with Strapi users-permissions plugin
+    // Login user with Strapi users-permissions plugin
     const loginRes = await fetch(`${strapiUrl}/api/auth/local`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -27,25 +27,7 @@ export async function POST(req: Request) {
 
     const { jwt, user } = loginData;
 
-    // 2. Fetch User Profile linked to this user
-    let userProfile = null;
-    try {
-      const profileRes = await fetch(`${strapiUrl}/api/user-profiles?filters[username][$eq]=${encodeURIComponent(user.username)}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || jwt}`,
-        },
-      });
-
-      if (profileRes.ok) {
-        const profileData = await profileRes.json();
-        if (profileData.data && profileData.data.length > 0) {
-          userProfile = profileData.data[0];
-        }
-      }
-    } catch (e) {
-      console.error('Error fetching user profile:', e);
-    }
-
+    // All profile fields are now directly on the user object
     return NextResponse.json({
       success: true,
       jwt,
@@ -53,7 +35,11 @@ export async function POST(req: Request) {
         id: user.id,
         username: user.username,
         email: user.email,
-        profile: userProfile,
+        handle: user.handle,
+        avatarUrl: user.avatarUrl,
+        bio: user.bio,
+        subscribersCount: user.subscribersCount,
+        affinityGraph: user.affinityGraph,
       },
     });
   } catch (error: any) {

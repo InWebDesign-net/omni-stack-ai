@@ -84,6 +84,9 @@
       "relation": "oneToMany",
       "target": "api::feed-item.feed-item",
       "mappedBy": "author"
+    },
+    "affinityGraph": {
+      "type": "json"
     }
   }
 }

@@ -480,22 +480,17 @@ function OmniAppContent() {
     } catch (e) {}
 
     if (currentUser?.jwt) {
-      const docId = (currentUser as any)?.profile?.documentId || (currentUser as any)?.profile?.id;
-      if (docId) {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-        fetch(`${strapiUrl}/api/user-profiles/${docId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || currentUser.jwt}`,
-          },
-          body: JSON.stringify({
-            data: {
-              affinityGraph: newProfile,
-            },
-          }),
-        }).catch(() => {});
-      }
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      fetch(`${strapiUrl}/api/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || currentUser.jwt}`,
+        },
+        body: JSON.stringify({
+          affinityGraph: newProfile,
+        }),
+      }).catch(() => {});
     }
   };
 

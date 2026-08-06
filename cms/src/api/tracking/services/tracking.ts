@@ -49,11 +49,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     let graph: AffinityGraph = JSON.parse(JSON.stringify(DEFAULT_AFFINITY_GRAPH));
     let profileId: any = null;
 
-    // 1. Fetch User Profile if userId provided
+    // 1. Fetch User if userId provided
     if (userId) {
       try {
-        const profiles = await strapi.documents('api::user-profile.user-profile').findMany({
-          filters: { user: { id: { $eq: userId } } },
+        const profiles = await strapi.documents('plugin::users-permissions.user').findMany({
+          filters: { id: { $eq: userId } },
         });
         if (profiles && profiles.length > 0) {
           const profile = profiles[0] as any;
@@ -117,7 +117,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // 4. Save updated affinityGraph back to Strapi DB
     if (profileId) {
       try {
-        await strapi.documents('api::user-profile.user-profile').update({
+        await strapi.documents('plugin::users-permissions.user').update({
           documentId: profileId,
           data: {
             affinityGraph: graph,
