@@ -157,14 +157,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         videoData.creator = userId;
       }
 
-      // 1. Create EN (default locale) entry - draft by default
+      // 1. Create EN (default locale) entry - published
       const createdEn = await strapi.documents('api::video.video').create({
         data: videoData,
         locale: 'en',
-        status: 'draft',
+        status: 'published',
       });
 
-      // 2. Create DE locale entry linked to the same documentId - draft by default
+      // 2. Create DE locale entry linked to the same documentId - published
       try {
         await strapi.documents('api::video.video').update({
           documentId: createdEn.documentId,
@@ -173,7 +173,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             ...videoData,
             // Strapi v5 i18n: update with locale 'de' on the same documentId creates the DE version
           },
-          status: 'draft',
+          status: 'published',
         });
       } catch (deErr: any) {
         console.error('Failed to create DE locale for video:', deErr.message);

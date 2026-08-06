@@ -94,6 +94,23 @@ export default {
         await enablePermission(authRole.id, 'api::comment.comment.update');
         await enablePermission(authRole.id, 'api::comment.comment.delete');
       }
+
+      // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)
+      const outDir = '/root/media/out';
+      setInterval(async () => {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          if (fs.existsSync(outDir)) {
+            const outFiles = fs.readdirSync(outDir);
+            const doneFiles = outFiles.filter((f: string) => f.endsWith('.done'));
+            for (const doneFile of doneFiles) {
+              const base = path.basename(doneFile, '.done');
+              await strapi.service('api::feed.feed').ingestFinalizedVideo({ slug: base });
+            }
+          }
+        } catch (e) {}
+      }, 3000);
     } catch (error) {
       console.error('Error during Strapi bootstrap:', error);
     }
