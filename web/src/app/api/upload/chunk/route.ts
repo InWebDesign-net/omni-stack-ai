@@ -46,6 +46,9 @@ export async function POST(req: Request) {
       }
       fs.renameSync(tempFilePath, finalRawPath);
 
+      const userIdStr = formData.get('userId') as string | null;
+      const userId = userIdStr ? parseInt(userIdStr, 10) : null;
+
       // 1. Create Standalone Video entity in Strapi
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       const headers: Record<string, string> = {
@@ -57,23 +60,26 @@ export async function POST(req: Request) {
 
       let createdVideoDocId = null;
       try {
+        const videoPayload: any = {
+          title,
+          slug: cleanSlug,
+          mp4Url: `/media/videos/${cleanSlug}.mp4`,
+          hlsUrl: `/media/videos/hls/${cleanSlug}/master.m3u8`,
+          thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
+          ogImageUrl: `/media/og/${cleanSlug}.jpg`,
+          isProcessing: true,
+          isForSale: false,
+          price: 0,
+          publishedAt: new Date().toISOString(),
+        };
+        if (userId) {
+          videoPayload.creator = userId;
+        }
+
         const videoRes = await fetch(`${strapiUrl}/api/videos`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({
-            data: {
-              title,
-              slug: cleanSlug,
-              mp4Url: `/media/videos/${cleanSlug}.mp4`,
-              hlsUrl: `/media/videos/hls/${cleanSlug}/master.m3u8`,
-              thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
-              ogImageUrl: `/media/og/${cleanSlug}.jpg`,
-              isProcessing: true,
-              isForSale: false,
-              price: 0,
-              publishedAt: new Date().toISOString(),
-            },
-          }),
+          body: JSON.stringify({ data: videoPayload }),
         });
         if (videoRes.ok) {
           const vData = await videoRes.json();
@@ -81,25 +87,28 @@ export async function POST(req: Request) {
         }
       } catch (e) {}
 
-      // 2. Create FeedItem referencing the standalone Video
+      // 2. Create FeedItem referencing the standalone Video & User Author
+      const feedItemPayload: any = {
+        title,
+        slug: cleanSlug,
+        summary: 'Video wird verarbeitet...',
+        content: 'Das Video befindet sich im Konvertierungsprozess (HLS ABR Stream).',
+        mediaType: 'video',
+        mediaUrl: `/media/videos/${cleanSlug}.mp4`,
+        thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
+        tags: ['Community', 'Video', 'Neu'],
+        isProcessing: true,
+        video: createdVideoDocId,
+        publishedAt: new Date().toISOString(),
+      };
+      if (userId) {
+        feedItemPayload.author = userId;
+      }
+
       const createRes = await fetch(`${strapiUrl}/api/feed-items`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          data: {
-            title,
-            slug: cleanSlug,
-            summary: 'Video wird verarbeitet...',
-            content: 'Das Video befindet sich im Konvertierungsprozess (HLS ABR Stream).',
-            mediaType: mediaType === 'short' ? 'short' : 'video',
-            mediaUrl: `/media/videos/${cleanSlug}.mp4`,
-            thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
-            tags: ['Community', 'Video', 'Neu'],
-            isProcessing: true,
-            video: createdVideoDocId,
-            publishedAt: new Date().toISOString(),
-          },
-        }),
+        body: JSON.stringify({ data: feedItemPayload }),
       });
 
       let createdData = null;

@@ -131,6 +131,14 @@ export default function VideoUploadModal({
         formData.append('mediaType', task.mediaType);
         formData.append('file', chunk, file.name);
 
+        try {
+          const storedUserStr = typeof window !== 'undefined' ? localStorage.getItem('omni_user') : null;
+          const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
+          if (storedUser?.id) {
+            formData.append('userId', storedUser.id.toString());
+          }
+        } catch (e) {}
+
         const res = await fetch('/api/upload/chunk', {
           method: 'POST',
           body: formData,
