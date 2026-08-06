@@ -154,13 +154,13 @@ export default function ContentDetailPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.feed && data.feed.length > 0) {
-          const apiMatch = matchItem(data.feed, slug) || data.feed[0];
-          if (apiMatch) {
-            setItem(apiMatch);
-            setLikesCount(apiMatch.likesCount || 100);
-            setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== apiMatch.slug && i.mediaType !== 'video' && i.mediaType !== 'short').slice(0, 5));
-            if (typeof window !== 'undefined' && apiMatch.slug && apiMatch.slug !== slug) {
-              window.history.replaceState(null, '', `/content/${apiMatch.slug}`);
+          const targetItem = data.feed[0];
+          if (targetItem) {
+            setItem(targetItem);
+            setLikesCount(targetItem.likesCount || 100);
+            setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== targetItem.slug && i.mediaType !== 'video' && i.mediaType !== 'short').slice(0, 5));
+            if (targetItem.slug && targetItem.slug !== slug) {
+              router.replace(`/content/${targetItem.slug}`);
             }
             return;
           }

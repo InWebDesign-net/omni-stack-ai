@@ -143,13 +143,13 @@ export default function VideoDetailPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.feed && data.feed.length > 0) {
-          const apiMatch = matchItem(data.feed, slug) || data.feed[0];
-          if (apiMatch) {
-            setItem(apiMatch);
-            setLikesCount(apiMatch.likesCount || 100);
-            setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== apiMatch.slug && i.mediaType === 'video').slice(0, 6));
-            if (typeof window !== 'undefined' && apiMatch.slug && apiMatch.slug !== slug) {
-              window.history.replaceState(null, '', `/video/${apiMatch.slug}`);
+          const targetItem = data.feed[0];
+          if (targetItem) {
+            setItem(targetItem);
+            setLikesCount(targetItem.likesCount || 100);
+            setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== targetItem.slug && i.mediaType === 'video').slice(0, 6));
+            if (targetItem.slug && targetItem.slug !== slug) {
+              router.replace(`/video/${targetItem.slug}`);
             }
             return;
           }
