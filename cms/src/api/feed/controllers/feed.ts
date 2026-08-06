@@ -126,4 +126,67 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       return ctx.badRequest('Toggle Publish Error', { error: err.message });
     }
   },
+
+  /**
+   * Create bilingual Video entry (EN default + DE locale) via Document Service API.
+   * Both locales are linked via documentId and published immediately.
+   */
+  async createVideo(ctx: any) {
+    try {
+      const { title, slug, tags, userId } = ctx.request.body;
+      if (!title || !slug) {
+        return ctx.badRequest('title and slug are required');
+      }
+
+      const videoData: any = {
+        title,
+        slug,
+        summary: [{ type: 'paragraph', children: [{ type: 'text', text: 'Video wird verarbeitet...' }] }],
+        tags: tags || ['Community', 'Video', 'Neu'],
+        viewsCount: 0,
+        likesCount: 0,
+        mp4Url: `/media/videos/${slug}.mp4`,
+        hlsUrl: `/media/videos/hls/${slug}/master.m3u8`,
+        thumbnailUrl: `/media/thumbnails/${slug}-1.png`,
+        ogImageUrl: `/media/og/${slug}.jpg`,
+        isProcessing: true,
+        isForSale: false,
+        price: 0,
+      };
+      if (userId) {
+        videoData.creator = userId;
+      }
+
+      // 1. Create EN (default locale) entry - published
+      const createdEn = await strapi.documents('api::video.video').create({
+        data: videoData,
+        locale: 'en',
+        status: 'published',
+      });
+
+      // 2. Create DE locale entry linked to the same documentId - published
+      try {
+        await strapi.documents('api::video.video').update({
+          documentId: createdEn.documentId,
+          locale: 'de',
+          data: {
+            ...videoData,
+            // Strapi v5 i18n: update with locale 'de' on the same documentId creates the DE version
+          },
+          status: 'published',
+        });
+      } catch (deErr: any) {
+        console.error('Failed to create DE locale for video:', deErr.message);
+      }
+
+      return ctx.send({
+        success: true,
+        documentId: createdEn.documentId,
+        slug,
+        isProcessing: true,
+      });
+    } catch (err: any) {
+      return ctx.badRequest('Create Video Error', { error: err.message });
+    }
+  },
 });

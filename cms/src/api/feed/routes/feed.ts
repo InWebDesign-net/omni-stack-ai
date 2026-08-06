@@ -64,5 +64,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/feed/create-video',
+      handler: 'feed.createVideo',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

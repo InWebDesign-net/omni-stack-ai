@@ -49,7 +49,9 @@ export async function POST(req: Request) {
       const userIdStr = formData.get('userId') as string | null;
       const userId = userIdStr ? parseInt(userIdStr, 10) : null;
 
-      // 1. Create Standalone Video entity in Strapi
+      // Create bilingual Video entity via Strapi backend endpoint
+      // This calls the feed controller's createVideo action which uses the Document Service API
+      // to properly create EN + DE locale entries linked via documentId, both published.
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -60,70 +62,29 @@ export async function POST(req: Request) {
 
       let createdVideoDocId = null;
       try {
-        const videoPayload: any = {
-          title,
-          slug: cleanSlug,
-          summary: 'Video wird verarbeitet...',
-          tags: ['Community', 'Video', 'Neu'],
-          viewsCount: 0,
-          likesCount: 0,
-          mp4Url: `/media/videos/${cleanSlug}.mp4`,
-          hlsUrl: `/media/videos/hls/${cleanSlug}/master.m3u8`,
-          thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
-          ogImageUrl: `/media/og/${cleanSlug}.jpg`,
-          isProcessing: true,
-          isForSale: false,
-          price: 0,
-          locale: 'de',
-        };
-        if (userId) {
-          videoPayload.creator = userId;
-        }
-
-        const videoRes = await fetch(`${strapiUrl}/api/videos`, {
+        const createRes = await fetch(`${strapiUrl}/api/feed/create-video`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ data: videoPayload }),
+          body: JSON.stringify({
+            title,
+            slug: cleanSlug,
+            tags: ['Community', 'Video', 'Neu'],
+            userId: userId,
+          }),
         });
-        if (videoRes.ok) {
-          const vData = await videoRes.json();
-          createdVideoDocId = vData?.data?.documentId || null;
+        if (createRes.ok) {
+          const createData = await createRes.json();
+          createdVideoDocId = createData?.documentId || null;
         }
-      } catch (e) {}
-
-      // 2. Create FeedItem referencing the standalone Video & User Author (Unpublished Draft by default)
-      const feedItemPayload: any = {
-        title,
-        slug: cleanSlug,
-        summary: 'Video wird verarbeitet...',
-        content: 'Das Video befindet sich im Konvertierungsprozess (HLS ABR Stream).',
-        mediaType: 'video',
-        mediaUrl: `/media/videos/${cleanSlug}.mp4`,
-        thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
-        tags: ['Community', 'Video', 'Neu'],
-        isProcessing: true,
-        video: createdVideoDocId,
-      };
-      if (userId) {
-        feedItemPayload.author = userId;
-      }
-
-      const createRes = await fetch(`${strapiUrl}/api/feed-items`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ data: feedItemPayload }),
-      });
-
-      let createdData = null;
-      if (createRes.ok) {
-        createdData = await createRes.json();
+      } catch (e) {
+        console.error('Failed to create bilingual video entry:', e);
       }
 
       return NextResponse.json({
         success: true,
         isComplete: true,
         slug: cleanSlug,
-        documentId: createdData?.data?.documentId || null,
+        documentId: createdVideoDocId,
         isProcessing: true,
         message: 'Upload abgeschlossen. Video wurde zur Konvertierung eingereiht.',
       });

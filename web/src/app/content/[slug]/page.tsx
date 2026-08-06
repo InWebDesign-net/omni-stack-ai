@@ -90,7 +90,7 @@ export default function ContentDetailPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
-  const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
+  const [userData, setUserData] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
   const { lang, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
@@ -106,7 +106,7 @@ export default function ContentDetailPage() {
     try {
       const storedUser = localStorage.getItem('omni_user');
       if (storedUser) {
-        setUserProfile(JSON.parse(storedUser));
+        setUserData(JSON.parse(storedUser));
       }
     } catch (e) {}
 
@@ -199,8 +199,8 @@ export default function ContentDetailPage() {
     if (!newCommentText.trim() || isSubmittingComment || !slug) return;
 
     setIsSubmittingComment(true);
-    const authorName = userProfile?.username || 'Community User';
-    const authorAvatar = userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+    const authorName = userData?.username || 'Community User';
+    const authorAvatar = userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
 
     const created = await createCommentInStrapi({
       feedSlug: slug,
@@ -271,12 +271,12 @@ export default function ContentDetailPage() {
       <Header
         lang={lang}
         onToggleLanguage={toggleLanguage}
-        onOpenUserProfileModal={() => {
-          if (userProfile) {
+        onOpenProfileModal={() => {
+          if (userData) {
             openChannelModal({
-              authorHandle: userProfile.handle,
-              authorName: userProfile.username,
-              authorAvatar: userProfile.avatarUrl,
+              authorHandle: userData.handle,
+              authorName: userData.username,
+              authorAvatar: userData.avatarUrl,
             });
           }
         }}
@@ -439,7 +439,7 @@ export default function ContentDetailPage() {
               {/* Add Comment Form */}
               <form onSubmit={handleAddComment} className="flex gap-3">
                 <img
-                  src={userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+                  src={userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                   alt="Dein Avatar"
                   className="h-9 w-9 rounded-full object-cover border border-white/10 shrink-0 mt-1"
                 />

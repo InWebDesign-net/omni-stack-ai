@@ -512,11 +512,11 @@ function OmniAppContent() {
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
         setCurrentUser(parsedUser);
-        if (parsedUser?.profile?.affinityGraph && parsedUser.profile.affinityGraph.interests) {
-          initialProf = parsedUser.profile.affinityGraph;
-          setProfile(parsedUser.profile.affinityGraph);
+        if (parsedUser?.affinityGraph && parsedUser.affinityGraph.interests) {
+          initialProf = parsedUser.affinityGraph;
+          setProfile(parsedUser.affinityGraph);
           try {
-            localStorage.setItem('omni_user_interest_profile', JSON.stringify(parsedUser.profile.affinityGraph));
+            localStorage.setItem('omni_user_interest_profile', JSON.stringify(parsedUser.affinityGraph));
           } catch (e) {}
         }
       }
@@ -751,7 +751,7 @@ function OmniAppContent() {
         onToggleLanguage={toggleLanguage}
         currentUser={currentUser}
         onOpenAuthModal={() => openAuthModal()}
-        onOpenUserProfileModal={() => {
+        onOpenProfileModal={() => {
           if (currentUser) {
             openChannelModal(currentUser);
           }

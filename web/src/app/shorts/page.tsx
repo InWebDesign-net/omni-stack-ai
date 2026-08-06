@@ -93,7 +93,7 @@ export default function ShortsFeedPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
-  const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
+  const [userData, setUserData] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -169,7 +169,7 @@ export default function ShortsFeedPage() {
     try {
       const storedUser = localStorage.getItem('omni_user');
       if (storedUser) {
-        setUserProfile(JSON.parse(storedUser));
+        setUserData(JSON.parse(storedUser));
       }
     } catch (e) {}
   }, []);
@@ -209,9 +209,9 @@ export default function ShortsFeedPage() {
 
     setIsSubmittingComment(true);
     const slug = activeShort.slug;
-    const authorName = userProfile?.username || 'Du (Benutzer)';
-    const authorHandle = userProfile?.handle || '@du';
-    const authorAvatar = userProfile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+    const authorName = userData?.username || 'Du (Benutzer)';
+    const authorHandle = userData?.handle || '@du';
+    const authorAvatar = userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
 
     const created = await createCommentInStrapi({
       feedSlug: slug,
@@ -513,7 +513,7 @@ export default function ShortsFeedPage() {
                 activeComments.map((c) => {
                   const commentKey = c.documentId || String(c.id);
                   const isEditing = editingCommentId === commentKey;
-                  const isOwner = c.isCurrentUser || c.authorHandle === '@du' || (userProfile && c.authorHandle === userProfile.handle);
+                  const isOwner = c.isCurrentUser || c.authorHandle === '@du' || (userData && c.authorHandle === userData.handle);
 
                   return (
                     <div key={commentKey} className="bg-[#080e1e] p-3 rounded-xl border border-white/5 flex gap-3 group transition-all">
@@ -592,7 +592,7 @@ export default function ShortsFeedPage() {
                 type="text"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder={userProfile ? `Als ${userProfile.username} kommentieren...` : "Kommentar schreiben..."}
+                placeholder={userData ? `Als ${userData.username} kommentieren...` : "Kommentar schreiben..."}
                 className="flex-1 bg-[#080e1e] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-[#5c657d] focus:outline-none"
                 disabled={isSubmittingComment}
               />

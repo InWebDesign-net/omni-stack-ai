@@ -84,7 +84,7 @@ interface HeaderProps {
   onToggleLanguage?: () => void;
   currentUser?: { id?: number; username: string; handle?: string; avatarUrl?: string; bio?: string; subscribersCount?: number } | null;
   onOpenAuthModal?: () => void;
-  onOpenUserProfileModal?: () => void;
+  onOpenProfileModal?: () => void;
   onOpenSettingsModal?: () => void;
   onOpenCreateModal?: () => void;
   onOpenVideoUploadModal?: () => void;
@@ -100,7 +100,7 @@ export default function Header({
   onToggleLanguage: propToggleLang,
   currentUser: propUser,
   onOpenAuthModal,
-  onOpenUserProfileModal,
+  onOpenProfileModal,
   onOpenSettingsModal,
   onOpenCreateModal,
   onOpenVideoUploadModal,
@@ -266,8 +266,8 @@ export default function Header({
                     type="button"
                     onClick={() => {
                       setUserDropdownOpen(false);
-                      if (onOpenUserProfileModal) {
-                        onOpenUserProfileModal();
+                      if (onOpenProfileModal) {
+                        onOpenProfileModal();
                       } else if (activeUser) {
                         openChannelModal(activeUser);
                       }

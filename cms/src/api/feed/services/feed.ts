@@ -768,23 +768,58 @@ CRITICAL: Return JSON ONLY in this format:
     if (fs.existsSync(donePath)) { try { fs.unlinkSync(donePath); } catch (e) {} }
     if (fs.existsSync(metaPath)) { try { fs.unlinkSync(metaPath); } catch (e) {} }
 
-    // 5. Update Strapi DB entries for standalone Video and FeedItem
+    // 5. Update Strapi DB entries for standalone Video (ALL locales, always published)
     try {
       const videoMatches = await strapi.documents('api::video.video').findMany({
         filters: { slug: { $eq: base } },
+        locale: '*',
       });
       if (videoMatches && videoMatches.length > 0) {
-        await strapi.documents('api::video.video').update({
-          documentId: videoMatches[0].documentId,
-          data: {
-            isProcessing: false,
-            duration: metaDuration || (videoMatches[0] as any).duration || 0,
-            hlsUrl: `/media/videos/hls/${base}/master.m3u8`,
-            mp4Url: `/media/videos/${base}.mp4`,
-            thumbnailUrl: `/media/thumbnails/${base}-1.png`,
-            ogImageUrl: `/media/og/${base}.jpg`,
-          } as any,
-        });
+        const docId = videoMatches[0].documentId;
+        const updateData = {
+          isProcessing: false,
+          duration: metaDuration || (videoMatches[0] as any).duration || 0,
+          hlsUrl: `/media/videos/hls/${base}/master.m3u8`,
+          mp4Url: `/media/videos/${base}.mp4`,
+          thumbnailUrl: `/media/thumbnails/${base}-1.png`,
+          ogImageUrl: `/media/og/${base}.jpg`,
+        };
+
+        // Update each locale version individually with status: 'published'
+        const localesFound = new Set(videoMatches.map((v: any) => v.locale || 'en'));
+        for (const locale of localesFound) {
+          try {
+            await strapi.documents('api::video.video').update({
+              documentId: docId,
+              locale,
+              data: updateData as any,
+              status: 'published',
+            });
+          } catch (localeErr) {
+            console.error(`Error updating video locale ${locale}:`, localeErr);
+          }
+        }
+
+        // Ensure both EN and DE exist - if a locale is missing, create it
+        for (const requiredLocale of ['en', 'de']) {
+          if (!localesFound.has(requiredLocale)) {
+            try {
+              await strapi.documents('api::video.video').update({
+                documentId: docId,
+                locale: requiredLocale,
+                data: {
+                  ...updateData,
+                  title: (videoMatches[0] as any).title || base,
+                  slug: base,
+                  tags: (videoMatches[0] as any).tags || ['Video'],
+                } as any,
+                status: 'published',
+              });
+            } catch (e) {
+              console.error(`Error creating missing ${requiredLocale} locale for video:`, e);
+            }
+          }
+        }
       }
     } catch (e) {}
 
@@ -796,11 +831,11 @@ CRITICAL: Return JSON ONLY in this format:
         });
 
         for (const doc of matches) {
-          const isPublished = !!(doc as any).publishedAt;
+          // Always update with status: 'published' to prevent "Modified" draft state
           await strapi.documents('api::feed-item.feed-item').update({
             documentId: doc.documentId,
             locale: (doc as any).locale || 'de',
-            status: isPublished ? 'published' : 'draft',
+            status: 'published',
             data: {
               isProcessing: false,
               duration: metaDuration || (doc as any).duration || 0,
