@@ -785,7 +785,11 @@ CRITICAL: Return JSON ONLY in this format:
           ogImageUrl: `/media/og/${base}.jpg`,
         };
 
-        // Update each locale version individually with status: 'published'
+        // Preserve existing draft or published status
+        const isAlreadyPublished = videoMatches.some((v: any) => v.publishedAt != null);
+        const targetStatus = isAlreadyPublished ? 'published' : 'draft';
+
+        // Update each locale version individually with targetStatus
         const localesFound = new Set(videoMatches.map((v: any) => v.locale || 'en'));
         for (const locale of localesFound) {
           try {
@@ -793,7 +797,7 @@ CRITICAL: Return JSON ONLY in this format:
               documentId: docId,
               locale,
               data: updateData as any,
-              status: 'published',
+              status: targetStatus,
             });
           } catch (localeErr) {
             console.error(`Error updating video locale ${locale}:`, localeErr);
@@ -813,7 +817,7 @@ CRITICAL: Return JSON ONLY in this format:
                   slug: base,
                   tags: (videoMatches[0] as any).tags || ['Video'],
                 } as any,
-                status: 'published',
+                status: targetStatus,
               });
             } catch (e) {
               console.error(`Error creating missing ${requiredLocale} locale for video:`, e);
@@ -831,11 +835,11 @@ CRITICAL: Return JSON ONLY in this format:
         });
 
         for (const doc of matches) {
-          // Always update with status: 'published' to prevent "Modified" draft state
+          const targetStatus = (doc as any).publishedAt ? 'published' : 'draft';
           await strapi.documents('api::feed-item.feed-item').update({
             documentId: doc.documentId,
             locale: (doc as any).locale || 'de',
-            status: 'published',
+            status: targetStatus,
             data: {
               isProcessing: false,
               duration: metaDuration || (doc as any).duration || 0,

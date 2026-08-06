@@ -29,6 +29,7 @@ import {
   RefreshCw,
   UserPlus,
   Users,
+  Lock,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
@@ -91,9 +92,10 @@ export default function VideoDetailPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
-  const [userData, setUserData] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
+  const [userData, setUserData] = useState<{ id?: string | number; username: string; handle: string; avatarUrl: string } | null>(null);
+  const [videoBlobUrl, setVideoBlobUrl] = useState<string | null>(null);
 
-  const { lang, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { lang, currentUser, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
 
   useEffect(() => {
     try {
@@ -106,6 +108,38 @@ export default function VideoDetailPage() {
     fetchItemData(lang);
     loadComments();
   }, [slug, lang]);
+
+  useEffect(() => {
+    if (!item?.mediaUrl) return;
+    let isMounted = true;
+    let createdUrl: string | null = null;
+
+    const streamToBlob = async () => {
+      try {
+        const res = await fetch(item.mediaUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          if (isMounted) {
+            createdUrl = URL.createObjectURL(blob);
+            setVideoBlobUrl(createdUrl);
+          }
+        } else {
+          if (isMounted) setVideoBlobUrl(item.mediaUrl);
+        }
+      } catch (e) {
+        if (isMounted) setVideoBlobUrl(item.mediaUrl);
+      }
+    };
+
+    streamToBlob();
+
+    return () => {
+      isMounted = false;
+      if (createdUrl) {
+        URL.revokeObjectURL(createdUrl);
+      }
+    };
+  }, [item?.mediaUrl]);
 
   const fetchItemData = async (targetLang?: 'de' | 'en') => {
     const activeLang = targetLang || lang || 'de';
@@ -262,6 +296,39 @@ export default function VideoDetailPage() {
   const authorHandle = getAuthorHandle(item);
   const authorAvatar = getAuthorAvatar(item);
 
+  // Check if current user is author of this draft item
+  const isAuthor = (currentUser || userData) && (
+    String(item.author?.id) === String(currentUser?.id || userData?.id) ||
+    item.author?.username === (currentUser?.username || userData?.username) ||
+    item.author?.handle === (currentUser?.handle || userData?.handle)
+  );
+
+  if (item && !item.publishedAt && !isAuthor) {
+    return (
+      <div className="min-h-screen bg-[#080e1e] flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-[#0d1528] border border-white/10 p-8 rounded-3xl max-w-md flex flex-col items-center gap-4 shadow-2xl">
+          <div className="h-14 w-14 rounded-2xl bg-[#ff6b81]/15 text-[#ff6b81] flex items-center justify-center border border-[#ff6b81]/30">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h2 className="text-lg font-bold text-white">
+            {lang === 'de' ? 'Inhalt ist noch ein Entwurf' : 'Content is still a draft'}
+          </h2>
+          <p className="text-xs text-[#9ba4bf] leading-relaxed">
+            {lang === 'de'
+              ? 'Dieser Beitrag wurde noch nicht vom Autor veröffentlicht. Nur der Ersteller kann seinen Upload in der eigenen Bibliothek aufrufen und freischalten.'
+              : 'This post has not been published by the author yet. Only the creator can view and publish their upload in their library.'}
+          </p>
+          <Link
+            href="/"
+            className="mt-2 px-5 py-2.5 rounded-xl bg-[#8083ff] text-white font-bold text-xs hover:bg-[#6b6eff] transition-all"
+          >
+            {lang === 'de' ? 'Zurück zur Startseite' : 'Back to Home'}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col selection:bg-[#8083ff] selection:text-white">
       {/* SEO & Canonical Link */}
@@ -339,7 +406,7 @@ export default function VideoDetailPage() {
             {/* Full-width Video Theater Frame */}
             <div className="w-full aspect-video bg-black rounded-3xl border border-white/8 overflow-hidden shadow-2xl relative group">
               <video
-                src={item.mediaUrl}
+                src={videoBlobUrl || item.mediaUrl}
                 controls
                 autoPlay
                 className="w-full h-full object-cover"
