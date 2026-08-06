@@ -179,6 +179,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     } catch (e) {}
 
+    // Auto-seed initial feed items if missing
+    try {
+      await this.seedDemoData(false);
+    } catch (e) {}
+
     // 1. Fetch items from database matching targetLocale
     let items: any[] = [];
     const populateConfig = {
@@ -222,7 +227,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       items = [];
     }
 
-    // Direct target slug / documentId lookup with draft priority
+    let resolvedTargetMatch: any = null;
     const target = (userProfileInput as any)?.targetSlug;
     if (target) {
       try {
@@ -273,31 +278,30 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           return null;
         };
 
-        let targetMatch: any = null;
         if ((userProfileInput as any)?.includeDrafts) {
           // Priority to DRAFTS when previewing
-          targetMatch =
+          resolvedTargetMatch =
             (await findTargetItem(targetLocale, 'draft')) ||
             (await findTargetItem(altLocale, 'draft')) ||
             (await findTargetItem(targetLocale, 'published')) ||
             (await findTargetItem(altLocale, 'published'));
         } else {
           // Strictly PUBLISHED matching targetLocale first
-          targetMatch =
+          resolvedTargetMatch =
             (await findTargetItem(targetLocale, 'published')) ||
             (await findTargetItem(altLocale, 'published'));
         }
 
-        if (targetMatch) {
+        if (resolvedTargetMatch) {
           // Remove any previous versions of this item from items list to prevent stale versions
           items = items.filter(
             (i: any) =>
-              i.documentId !== targetMatch.documentId &&
-              i.slug !== targetMatch.slug &&
-              String(i.id) !== String(targetMatch.id)
+              i.documentId !== resolvedTargetMatch.documentId &&
+              i.slug !== resolvedTargetMatch.slug &&
+              String(i.id) !== String(resolvedTargetMatch.id)
           );
-          // Place the exact targetMatch at index 0
-          items = [targetMatch, ...items];
+          // Place the exact resolvedTargetMatch at index 0
+          items = [resolvedTargetMatch, ...items];
         }
       } catch (e) {}
     }
@@ -394,25 +398,31 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     });
 
-    // Ensure target preview item is ALWAYS placed strictly at index 0
-    if (target) {
+    // Ensure target preview item (resolvedTargetMatch) is ALWAYS placed strictly at index 0
+    if (resolvedTargetMatch) {
+      const existingIdx = assembledFeed.findIndex(
+        (i: any) =>
+          i.documentId === resolvedTargetMatch.documentId ||
+          i.slug === resolvedTargetMatch.slug ||
+          String(i.id) === String(resolvedTargetMatch.id)
+      );
+      if (existingIdx > 0) {
+        const [targetObj] = assembledFeed.splice(existingIdx, 1);
+        assembledFeed.unshift(targetObj);
+      } else if (existingIdx === -1) {
+        assembledFeed.unshift({
+          ...resolvedTargetMatch,
+          bucketSource: 'TargetPreview',
+          slotIndex: 1,
+        });
+      }
+    } else if (target) {
       const existingIdx = assembledFeed.findIndex(
         (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
       );
       if (existingIdx > 0) {
         const [targetObj] = assembledFeed.splice(existingIdx, 1);
         assembledFeed.unshift(targetObj);
-      } else if (existingIdx === -1) {
-        const itemInScored = scoredItems.find(
-          (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
-        );
-        if (itemInScored) {
-          assembledFeed.unshift({
-            ...itemInScored,
-            bucketSource: 'TargetPreview',
-            slotIndex: 1,
-          });
-        }
       }
     }
 
@@ -749,9 +759,13 @@ CRITICAL: Return JSON ONLY in this format:
     try {
       const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });
 
-      if (!force && existingItems && existingItems.length > 0) {
-        console.log(`ℹ️ Strapi DB already contains ${existingItems.length} items. Skipping automatic seed.`);
-        return { success: true, message: 'Database already contains items.', count: existingItems.length };
+      const webbCheck = await strapi.documents('api::feed-item.feed-item').findMany({
+        filters: { slug: { $in: ['faszination-weltall-james-webb-pdf', 'fascinating-universe-james-webb-pdf'] } },
+        locale: '*',
+      });
+
+      if (!force && webbCheck && webbCheck.length > 0) {
+        return { success: true, message: 'Database already contains bilingual items.', count: existingItems.length };
       }
 
       if (force) {

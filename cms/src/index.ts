@@ -21,8 +21,8 @@ export default {
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     try {
-      // 1. Seed bilingual Feed Items & Blocks in Strapi if empty
-      await strapi.service('api::feed.feed').seedDemoData(false);
+      // 1. Seed bilingual Feed Items & Blocks in Strapi
+      await strapi.service('api::feed.feed').seedDemoData(true);
 
       // 2. Demo Admin Editors Seeding
       const isDemoMode = process.env.DEMO_MODE !== 'false';
