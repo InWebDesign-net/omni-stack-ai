@@ -493,33 +493,25 @@ export default function Header({
                 { handle: '@catmania', label: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
                 { handle: '@finanzkompass', label: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
               ].map((creator) => (
-                <Link
+                <button
                   key={creator.handle}
-                  href={`/?channel=${creator.handle.replace(/^@/, '')}`}
-                  onClick={() => setUniversalNavOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-all"
+                  type="button"
+                  onClick={() => {
+                    setUniversalNavOpen(false);
+                    openChannelModal({
+                      username: creator.label,
+                      handle: creator.handle,
+                      avatarUrl: creator.avatar,
+                    });
+                  }}
+                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-all text-left w-full cursor-pointer"
                 >
                   <img src={creator.avatar} alt={creator.label} className="h-5 w-5 rounded-full object-cover border border-white/20 shrink-0" />
                   <span className="font-mono text-[#c0c1ff]">{creator.handle}</span>
                   <span className="text-[10px] text-[#5c657d] truncate ml-auto">{creator.label}</span>
-                </Link>
+                </button>
               ))}
             </div>
-
-            <div className="border-t border-white/5 my-1" />
-
-            {/* Section 3: Algorithm Control Link */}
-            <Link
-              href="/?algo=open"
-              onClick={() => setUniversalNavOpen(false)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#8083ff]/10 border border-[#8083ff]/25 hover:bg-[#8083ff]/20 transition-all text-xs font-semibold text-[#c0c1ff] hover:text-white group"
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-[#44e2cd]" />
-                <span>{activeLang === 'de' ? 'KI-Vektoren tunen' : 'Tune AI Vectors'}</span>
-              </div>
-              <Sliders className="h-3.5 w-3.5 text-[#8083ff] group-hover:rotate-12 transition-transform" />
-            </Link>
 
             {/* Drawer Footer Link Card */}
             <div className="mt-auto pt-3 border-t border-white/10 flex flex-col gap-2">
