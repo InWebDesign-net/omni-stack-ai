@@ -163,12 +163,25 @@ export default function VideoDetailPage() {
     }
   };
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const handleLikeToggle = async () => {
     if (!item?.slug) return;
     const nextIsLiked = !isLiked;
     const type = nextIsLiked ? 'like' : 'unlike';
     setIsLiked(nextIsLiked);
     setLikesCount((prev) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
+
+    if (nextIsLiked) {
+      showToast(lang === 'de' ? '❤️ Zu deinen Gefällt-mir-Angaben hinzugefügt' : '❤️ Added to your liked videos');
+    } else {
+      showToast(lang === 'de' ? '🤍 Gefällt-mir-Angabe entfernt' : '🤍 Removed from liked videos');
+    }
 
     try {
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
@@ -203,21 +216,15 @@ export default function VideoDetailPage() {
             createdUrl = URL.createObjectURL(blob);
             setVideoBlobUrl(createdUrl);
           }
-        } else {
-          if (isMounted) setVideoBlobUrl(item.mediaUrl);
         }
-      } catch (e) {
-        if (isMounted) setVideoBlobUrl(item.mediaUrl);
-      }
+      } catch (e) {}
     };
 
     streamToBlob();
 
     return () => {
       isMounted = false;
-      if (createdUrl) {
-        URL.revokeObjectURL(createdUrl);
-      }
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
   }, [item?.mediaUrl]);
 
@@ -232,11 +239,10 @@ export default function VideoDetailPage() {
         itemsList.find((i: any) => i.slug && norm && (i.slug.includes(norm) || norm.includes(i.slug)))
       );
     };
-
     try {
-      let savedProfile: any = { activePattern: 'discovery' };
+      let savedProfile = {};
       try {
-        const stored = localStorage.getItem('omni_user_interest_profile');
+        const stored = localStorage.getItem('omni_interest_profile');
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed && parsed.interests) {
@@ -260,7 +266,8 @@ export default function VideoDetailPage() {
           const targetItem = data.feed[0];
           if (targetItem) {
             setItem(targetItem);
-            setLikesCount(targetItem.likesCount || 100);
+            setLikesCount(targetItem.likesCount ?? 0);
+            setViewsCount(targetItem.viewsCount ?? 0);
             setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== targetItem.slug && i.mediaType === 'video').slice(0, 6));
             if (targetItem.slug && targetItem.slug !== slug) {
               router.replace(`/video/${targetItem.slug}`);
@@ -276,7 +283,8 @@ export default function VideoDetailPage() {
     // Fallback if offline
     const foundFallback = matchItem(FALLBACK_FEED_ITEMS, slug) || FALLBACK_FEED_ITEMS[0];
     setItem(foundFallback);
-    setLikesCount(foundFallback.likesCount || 100);
+    setLikesCount(foundFallback.likesCount ?? 0);
+    setViewsCount(foundFallback.viewsCount ?? 0);
     setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== foundFallback.slug && i.mediaType === 'video').slice(0, 6));
   };
 
@@ -727,6 +735,12 @@ export default function VideoDetailPage() {
         </div>
       </main>
 
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#121a30]/95 border border-[#8083ff]/40 text-white px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-semibold animate-bounceIn flex items-center gap-2">
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

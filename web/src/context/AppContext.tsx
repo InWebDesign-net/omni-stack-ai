@@ -213,6 +213,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       <VideoUploadModal
         isOpen={isVideoUploadOpen}
         onClose={() => setIsVideoUploadOpen(false)}
+        onOpen={() => setIsVideoUploadOpen(true)}
         lang={lang}
       />
 

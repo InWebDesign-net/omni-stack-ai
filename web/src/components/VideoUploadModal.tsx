@@ -31,6 +31,7 @@ export interface VideoUploadTask {
 interface VideoUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen?: () => void;
   lang?: 'de' | 'en';
   onUploadSuccess?: () => void;
 }
@@ -40,6 +41,7 @@ const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
 export default function VideoUploadModal({
   isOpen,
   onClose,
+  onOpen,
   lang = 'de',
   onUploadSuccess,
 }: VideoUploadModalProps) {
@@ -242,7 +244,9 @@ export default function VideoUploadModal({
 
     return (
       <div
-        onClick={onClose}
+        onClick={() => {
+          if (onOpen) onOpen();
+        }}
         className="fixed bottom-5 right-5 z-50 bg-[#0d1528] border border-[#8083ff]/40 rounded-2xl p-4 shadow-2xl flex items-center gap-3 cursor-pointer hover:border-[#8083ff] transition-all animate-bounceIn"
         style={{ boxShadow: '0 12px 32px -8px rgba(8,14,30,0.95), 0 1px 0 rgba(128,131,255,0.3)' }}
       >
