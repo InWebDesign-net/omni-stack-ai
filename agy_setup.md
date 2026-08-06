@@ -14,7 +14,10 @@
    - Das Frontend läuft im Production Build unter PM2 (`omni-web`).
    - Nach Code-Änderungen in `web/` immer zuerst Typen prüfen: `cd /root/omni-stack-ai/web && npx tsc --noEmit`.
    - Danach neu bauen und PM2 neustarten: `npm run build && pm2 restart omni-web`.
-3. **Keine Symptom-Flickerei:**
+3. **Global React Context Provider Architekture für Modals & User State:**
+   - Modals (VideoUploadModal, ChannelProfileModal, UserSettingsModal, AuthModal, CreateFeedItemModal) und globaler Session-State MÜSSEN zwingend über den zentralen `<AppProvider>` in `web/src/context/AppContext.tsx` (eingebunden in `web/src/app/layout.tsx`) bereitgestellt werden.
+   - **NIEMALS** Modal-States oder Modal-JSX lokal in einzelnen Unterseiten (`/content/[slug]`, `/video/[slug]`, etc.) neu nachbauen oder duplizieren! Jede Seite greift über `const { openVideoUploadModal, openChannelModal, openSettingsModal, openAuthModal } = useApp()` auf die globalen Modals zu.
+4. **Keine Symptom-Flickerei:**
    - Typsicherheit, sauberes Fehler-Handling und durchgängige Datenstrukturen einhalten.
 
 ---

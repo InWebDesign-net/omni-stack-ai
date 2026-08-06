@@ -422,3 +422,30 @@ export function getAuthorHandle(item: FeedItem): string {
 export function getAuthorAvatar(item: FeedItem): string {
   return item.author?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
 }
+
+export interface InterestProfile {
+  interests: Record<string, { score: number; last_interacted: string }>;
+  contentTypes: Record<string, number>;
+  activePattern: 'discovery' | 'deep_dive';
+}
+
+export const DEFAULT_PROFILE: InterestProfile = {
+  interests: {
+    'Wissenschaft': { score: 0.95, last_interacted: new Date().toISOString() },
+    'Natur': { score: 0.88, last_interacted: new Date().toISOString() },
+    'Kochen': { score: 0.75, last_interacted: new Date().toISOString() },
+    'Finanzen': { score: 0.80, last_interacted: new Date().toISOString() },
+    'PostgreSQL': { score: 0.90, last_interacted: new Date().toISOString() },
+    'Strapi': { score: 0.82, last_interacted: new Date().toISOString() },
+    'NextJS': { score: 0.85, last_interacted: new Date().toISOString() },
+    'Ollama': { score: 0.78, last_interacted: new Date().toISOString() },
+    'Funny Cat Videos': { score: 0.20, last_interacted: '2025-12-10T08:00:00Z' },
+  },
+  contentTypes: {
+    pdf: 0.8,
+    video: 0.9,
+    article: 0.85,
+    short: 0.7,
+  },
+  activePattern: 'discovery',
+};

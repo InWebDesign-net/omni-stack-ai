@@ -44,7 +44,7 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import Header from '@/components/Header';
-import VideoUploadModal from '@/components/VideoUploadModal';
+import { useApp } from '@/context/AppContext';
 
 interface UserProfileSession {
   id: number;
@@ -283,42 +283,32 @@ function CardThumbnail({
 function OmniAppContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [lang, setLang] = useState<'de' | 'en'>('de');
+
+  const {
+    currentUser,
+    setCurrentUser,
+    lang,
+    setLang,
+    toggleLanguage,
+    profile,
+    setProfile,
+    openChannelModal,
+    openVideoUploadModal,
+    openSettingsModal,
+    openAuthModal,
+    openCreateItemModal,
+    subscribedChannels,
+    toggleSubscribeChannel,
+  } = useApp();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>('Alle');
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'trending' | 'subscriptions' | 'library'>('home');
-  const [profile, setProfile] = useState<InterestProfile>(DEFAULT_PROFILE);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // User Auth & Session State
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserProfileSession | null>(null);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [regForm, setRegForm] = useState({ username: '', email: '', password: '', bio: '' });
-  const [loginForm, setLoginForm] = useState({ identifier: '', password: '' });
-
-  // User Channel Management Modals State
-  const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
-  const [editProfileForm, setEditProfileForm] = useState({ username: '', handle: '', avatarUrl: '', bio: '' });
-
-  const [createItemModalOpen, setCreateItemModalOpen] = useState(false);
-  const [videoUploadModalOpen, setVideoUploadModalOpen] = useState(false);
-  const [createItemForm, setCreateItemForm] = useState({
-    title: '',
-    summary: '',
-    content: '',
-    mediaType: 'video' as 'video' | 'pdf' | 'article' | 'short',
-    mediaUrl: '',
-    thumbnailUrl: '',
-    tags: '',
-  });
 
   // AI Prompt / Chat Mask State
   const [chatInput, setChatInput] = useState('');
@@ -327,24 +317,6 @@ function OmniAppContent() {
 
   // Media Player Modal
   const [selectedMedia, setSelectedMedia] = useState<FeedItem | null>(null);
-
-  // Channel Profile Modal State
-  const [selectedChannel, setSelectedChannel] = useState<{
-    username: string;
-    handle: string;
-    avatarUrl: string;
-    bio: string;
-    subscribersCount: number;
-  } | null>(null);
-
-  const [subscribedChannels, setSubscribedChannels] = useState<string[]>(['@demotech', '@astro']);
-
-  const toggleSubscribeChannel = (handle: string) => {
-    setSubscribedChannels((prev) =>
-      prev.includes(handle) ? prev.filter((h) => h !== handle) : [...prev, handle]
-    );
-  };
-
   const channelScrollRef = useRef<HTMLDivElement>(null);
   const tagScrollRef = useRef<HTMLDivElement>(null);
 
@@ -384,37 +356,14 @@ function OmniAppContent() {
     return () => window.removeEventListener('resize', checkScrolls);
   }, [feedItems]);
 
-  const openChannelModal = (creatorOrItem: any) => {
-    if (creatorOrItem.authorHandle || creatorOrItem.handle) {
-      const handle = creatorOrItem.authorHandle || creatorOrItem.handle;
-      const name = creatorOrItem.authorName || creatorOrItem.label || creatorOrItem.username || handle.replace('@', '');
-      const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || creatorOrItem.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
-      setSelectedChannel({
-        username: name,
-        handle: handle.startsWith('@') ? handle : `@${handle}`,
-        avatarUrl: avatar,
-        bio: 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: 15400,
-      });
-      return;
+  function getCurrentUserHandle(user: any): string {
+    if (!user) return '@user';
+    if (user.handle && user.handle.trim()) {
+      return user.handle.startsWith('@') ? user.handle.trim() : `@${user.handle.trim()}`;
     }
-    setSelectedChannel({
-      username: getAuthorName(creatorOrItem),
-      handle: getAuthorHandle(creatorOrItem),
-      avatarUrl: getAuthorAvatar(creatorOrItem),
-      bio: getAuthorBio(creatorOrItem),
-      subscribersCount: getAuthorSubscribers(creatorOrItem),
-    });
-  };
-
-function getCurrentUserHandle(user: UserProfileSession | null): string {
-  if (!user) return '@user';
-  if (user.handle && user.handle.trim()) {
-    return user.handle.startsWith('@') ? user.handle.trim() : `@${user.handle.trim()}`;
+    const fallback = user.username ? user.username.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user';
+    return `@${fallback || 'user'}`;
   }
-  const fallback = user.username ? user.username.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user';
-  return `@${fallback || 'user'}`;
-}
 
   // Check stored auth session & language preference on mount
   useEffect(() => {
@@ -454,17 +403,6 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
       document.documentElement.lang = lang;
     }
   }, [lang]);
-
-  const toggleLanguage = () => {
-    const nextLang = lang === 'de' ? 'en' : 'de';
-    setLang(nextLang);
-    try {
-      localStorage.setItem('omni_lang', nextLang);
-    } catch (e) {
-      // localStorage fallback
-    }
-    fetchFeed(profile, nextLang);
-  };
 
   // Fetch Feed from Strapi API Proxy with target locale
   const fetchFeed = async (currentProfile: InterestProfile, currentLang = lang, includeDrafts = false) => {
@@ -643,257 +581,12 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     }
   }, [searchParams]);
 
-  // Handle Google Demo Test Account Login
-  const handleGoogleDemoLogin = async () => {
-    setAuthError(null);
-    setIsAuthLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: 'demotech@inwebdesign.net',
-          password: 'DemoUser2026!',
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setAuthError(data.error || (lang === 'de' ? 'Google Schnell-Login fehlgeschlagen.' : 'Google Quick Login failed.'));
-        setIsAuthLoading(false);
-        return;
-      }
-
-      const rawHandle = data.user.handle || `@${data.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-      const userData: UserProfileSession = {
-        id: data.user.id,
-        username: data.user.username,
-        email: data.user.email,
-        handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
-        bio: data.user.bio || (lang === 'de' ? 'Google Demo User · Tech & Content Explorer' : 'Google Demo User · Content Explorer'),
-        subscribersCount: data.user.subscribersCount || 1280,
-        jwt: data.jwt,
-      };
-
-      setCurrentUser(userData);
-      localStorage.setItem('omni_user', JSON.stringify(userData));
-      setAuthModalOpen(false);
-    } catch (err: any) {
-      setAuthError(lang === 'de' ? 'Fehler beim Google Test-Login.' : 'Error during Google Test Login.');
-    }
-    setIsAuthLoading(false);
-  };
-
-  // Handle Real Registration with Strapi API
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-
-    // Custom Frontend Validation
-    const username = regForm.username.trim();
-    const email = regForm.email.trim();
-    const password = regForm.password;
-
-    if (!username) {
-      setAuthError(lang === 'de' ? 'Bitte gib einen Benutzernamen ein.' : 'Please enter a username.');
-      return;
-    }
-    if (username.length < 3) {
-      setAuthError(lang === 'de' ? 'Der Benutzername muss mindestens 3 Zeichen lang sein.' : 'Username must be at least 3 characters.');
-      return;
-    }
-    if (!email) {
-      setAuthError(lang === 'de' ? 'Bitte gib eine E-Mail-Adresse ein.' : 'Please enter an email address.');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setAuthError(lang === 'de' ? 'Bitte gib eine gültige E-Mail-Adresse ein (z.B. max@example.com).' : 'Please enter a valid email address.');
-      return;
-    }
-    if (!password) {
-      setAuthError(lang === 'de' ? 'Bitte gib ein Passwort ein.' : 'Please enter a password.');
-      return;
-    }
-    if (password.length < 6) {
-      setAuthError(lang === 'de' ? 'Das Passwort muss mindestens 6 Zeichen lang sein.' : 'Password must be at least 6 characters.');
-      return;
-    }
-
-    setIsAuthLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(regForm),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setAuthError(data.error || 'Registrierung fehlgeschlagen.');
-        setIsAuthLoading(false);
-        return;
-      }
-
-      const rawHandle = data.user.handle || `@${data.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-      const userData: UserProfileSession = {
-        id: data.user.id,
-        username: data.user.username,
-        email: data.user.email,
-        handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-        bio: data.user.bio || (regForm.bio.trim() || 'Creator & Content Publisher im Omni Network.'),
-        subscribersCount: data.user.subscribersCount || 0,
-        jwt: data.jwt,
-      };
-
-      setCurrentUser(userData);
-      localStorage.setItem('omni_user', JSON.stringify(userData));
-      setAuthModalOpen(false);
-      setRegForm({ username: '', email: '', password: '', bio: '' });
-    } catch (err: any) {
-      setAuthError(err.message || 'Verbindungsfehler bei Registrierung.');
-    }
-    setIsAuthLoading(false);
-  };
-
-  // Handle Real Login with Strapi API
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-
-    // Custom Frontend Validation
-    const identifier = loginForm.identifier.trim();
-    const password = loginForm.password;
-
-    if (!identifier) {
-      setAuthError(lang === 'de' ? 'Bitte gib deinen Benutzernamen oder deine E-Mail-Adresse ein.' : 'Please enter your username or email.');
-      return;
-    }
-    if (!password) {
-      setAuthError(lang === 'de' ? 'Bitte gib dein Passwort ein.' : 'Please enter your password.');
-      return;
-    }
-
-    setIsAuthLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginForm),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setAuthError(data.error || 'Anmeldung fehlgeschlagen.');
-        setIsAuthLoading(false);
-        return;
-      }
-
-      const rawHandle = data.user.handle || `@${data.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-      const userData: UserProfileSession = {
-        id: data.user.id,
-        username: data.user.username,
-        email: data.user.email,
-        handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-        bio: data.user.bio || 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: data.user.subscribersCount || 12500,
-        jwt: data.jwt,
-      };
-
-      setCurrentUser(userData);
-      localStorage.setItem('omni_user', JSON.stringify(userData));
-      setAuthModalOpen(false);
-      setLoginForm({ identifier: '', password: '' });
-    } catch (err: any) {
-      setAuthError(err.message || 'Verbindungsfehler bei Anmeldung.');
-    }
-    setIsAuthLoading(false);
-  };
-
   const handleLogout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('omni_user');
-  };
-
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
-
-    const formattedHandle = editProfileForm.handle.trim().startsWith('@')
-      ? editProfileForm.handle.trim()
-      : `@${editProfileForm.handle.trim().toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-
-    const updatedUser: UserProfileSession = {
-      ...currentUser,
-      username: editProfileForm.username.trim() || currentUser.username,
-      handle: formattedHandle || currentUser.handle,
-      avatarUrl: editProfileForm.avatarUrl.trim() || currentUser.avatarUrl,
-      bio: editProfileForm.bio.trim() || currentUser.bio,
-    };
-
-    setCurrentUser(updatedUser);
-    localStorage.setItem('omni_user', JSON.stringify(updatedUser));
-    setEditProfileModalOpen(false);
-  };
-
-  const handleCreateFeedItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
-    if (!createItemForm.title.trim()) return;
-
-    const parsedTags = createItemForm.tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
-
-    const defaultTags = parsedTags.length > 0 ? parsedTags : ['Tech', 'Community'];
-
-    const newItem: FeedItem = {
-      id: Date.now(),
-      title: createItemForm.title.trim(),
-      slug: createItemForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      summary: createItemForm.summary.trim() || 'Neuer Inhalt im Omni Network.',
-      content: createItemForm.content.trim() || createItemForm.summary.trim(),
-      mediaType: createItemForm.mediaType,
-      mediaUrl: createItemForm.mediaUrl.trim() || (createItemForm.mediaType === 'pdf' ? 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' : 'https://www.w3schools.com/html/mov_bbb.mp4'),
-      thumbnailUrl: createItemForm.thumbnailUrl.trim() || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80',
-      tags: defaultTags,
-      viewsCount: 1,
-      likesCount: 1,
-      publishedAt: new Date().toISOString(),
-      relevanceScore: 0.99,
-      bucketSource: 'Creator Upload',
-      slotIndex: 1,
-      author: {
-        id: currentUser.id,
-        username: currentUser.username,
-        handle: currentUser.handle,
-        avatarUrl: currentUser.avatarUrl,
-        bio: currentUser.bio,
-        subscribersCount: currentUser.subscribersCount,
-      },
-    };
-
-    setFeedItems((prev) => [newItem, ...prev]);
-    setCreateItemModalOpen(false);
-    setCreateItemForm({
-      title: '',
-      summary: '',
-      content: '',
-      mediaType: 'video',
-      mediaUrl: '',
-      thumbnailUrl: '',
-      tags: '',
-    });
+    try {
+      localStorage.removeItem('omni_user');
+      localStorage.removeItem('omni_jwt');
+    } catch (e) {}
   };
 
   // Handle Real AI Chat Prompt submission via Strapi & Ollama
@@ -1052,54 +745,15 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
         lang={lang}
         onToggleLanguage={toggleLanguage}
         currentUser={currentUser}
-        onOpenAuthModal={() => {
-          setAuthMode('register');
-          setAuthError(null);
-          setAuthModalOpen(true);
-        }}
+        onOpenAuthModal={() => openAuthModal()}
         onOpenUserProfileModal={() => {
           if (currentUser) {
-            openChannelModal({
-              id: 0,
-              title: '',
-              slug: '',
-              summary: '',
-              content: '',
-              mediaType: 'article',
-              mediaUrl: '',
-              thumbnailUrl: '',
-              tags: [],
-              viewsCount: 0,
-              likesCount: 0,
-              publishedAt: '',
-              relevanceScore: 1,
-              bucketSource: '',
-              slotIndex: 0,
-              author: {
-                id: currentUser.id,
-                username: currentUser.username,
-                handle: getCurrentUserHandle(currentUser),
-                avatarUrl: currentUser.avatarUrl,
-                bio: currentUser.bio,
-                subscribersCount: currentUser.subscribersCount,
-              },
-            });
+            openChannelModal(currentUser);
           }
         }}
-        onOpenSettingsModal={() => {
-          if (currentUser) {
-            const userHandle = getCurrentUserHandle(currentUser);
-            setEditProfileForm({
-              username: currentUser.username || '',
-              handle: userHandle.replace(/^@/, ''),
-              avatarUrl: currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-              bio: currentUser.bio || 'Creator & Content Publisher im Omni Network.',
-            });
-            setEditProfileModalOpen(true);
-          }
-        }}
-        onOpenCreateModal={() => setCreateItemModalOpen(true)}
-        onOpenVideoUploadModal={() => setVideoUploadModalOpen(true)}
+        onOpenSettingsModal={() => openSettingsModal()}
+        onOpenCreateModal={() => openCreateItemModal()}
+        onOpenVideoUploadModal={() => openVideoUploadModal()}
         onLogout={handleLogout}
       />
 
@@ -1450,7 +1104,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   {currentUser && (
                     <button
                       type="button"
-                      onClick={() => setCreateItemModalOpen(true)}
+                      onClick={() => openCreateItemModal()}
                       className="bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-[#8083ff]/25 flex items-center gap-2 shrink-0 transition-all"
                     >
                       <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
@@ -1666,233 +1320,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
         </main>
       </div>
 
-      {/* ── Auth Modal ───────────────────────────────────────────────────────── */}
-      {authModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-lg flex items-center justify-center p-4 animate-fadeIn">
-          <div
-            className="bg-[#0d1528] border border-white/10 max-w-md w-full rounded-3xl p-7 relative flex flex-col gap-6 shadow-2xl animate-fadeInUp"
-            style={{ boxShadow: '0 24px 80px -12px rgba(8,14,30,0.90), 0 0 0 1px rgba(255,255,255,0.05) inset' }}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => setAuthModalOpen(false)}
-              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-all"
-            >
-              <X className="h-4 w-4" />
-            </button>
 
-            {/* Logo + Title */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-[#8083ff]/30 to-[#44e2cd]/15 blur-lg" />
-                <div className="relative rounded-2xl bg-[#080e1e] border border-white/10 p-3">
-                  <OmniLogo size={32} />
-                </div>
-              </div>
-              <div className="text-center">
-                <h2 className="text-lg font-extrabold text-white tracking-tight">
-                  {authMode === 'register'
-                    ? (lang === 'de' ? 'Konto erstellen' : 'Create Account')
-                    : (lang === 'de' ? 'Willkommen zurück' : 'Welcome Back')}
-                </h2>
-                <p className="text-xs text-[#5c657d] mt-0.5">Omni by InWebDesign</p>
-              </div>
-            </div>
-
-            {/* Auth Mode Tabs */}
-            <div className="flex items-center gap-1.5 bg-[#080e1e] p-1 rounded-2xl border border-white/6">
-              {(['register', 'login'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => { setAuthMode(mode); setAuthError(null); }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
-                    authMode === mode
-                      ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
-                      : 'text-[#5c657d] hover:text-[#9ba4bf]'
-                  }`}
-                >
-                  {mode === 'register' ? <UserPlus className="h-3.5 w-3.5" /> : <LogIn className="h-3.5 w-3.5" />}
-                  <span>{mode === 'register' ? 'Registrieren' : 'Anmelden'}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Error */}
-            {authError && (
-              <div className="bg-red-500/10 border border-red-500/25 p-3.5 rounded-xl text-xs text-red-300 flex items-start gap-2">
-                <span className="text-red-400 mt-0.5">⚠</span>
-                {authError}
-              </div>
-            )}
-
-            {/* Register Form */}
-            {authMode === 'register' ? (
-              <form noValidate onSubmit={handleRegister} className="flex flex-col gap-4">
-                {/* Google Test-Login Button */}
-                <button
-                  type="button"
-                  onClick={handleGoogleDemoLogin}
-                  disabled={isAuthLoading}
-                  className="w-full bg-white hover:bg-slate-100 active:scale-[0.98] text-slate-800 font-semibold py-3 px-4 rounded-xl text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-3 border border-slate-200 group disabled:opacity-60"
-                >
-                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                  </svg>
-                  <span>{lang === 'de' ? 'Mit Google anmelden (Test-Account)' : 'Sign in with Google (Test Account)'}</span>
-                </button>
-
-                <div className="relative my-0.5 flex items-center justify-center">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <span className="relative bg-[#0d1528] px-3 text-[10px] font-bold text-[#5c657d] uppercase tracking-wider">
-                    {lang === 'de' ? 'oder manuell registrieren' : 'or register manually'}
-                  </span>
-                </div>
-
-                {[
-                  { key: 'username', label: 'Benutzername', type: 'text', placeholder: 'z.B. MaxMustermann', icon: User },
-                  { key: 'email', label: 'E-Mail', type: 'email', placeholder: 'max@example.com', icon: Mail },
-                  { key: 'password', label: 'Passwort', type: 'password', placeholder: '••••••••', icon: Lock },
-                ].map(({ key, label, type, placeholder, icon: Icon }) => (
-                  <div key={key} className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
-                    <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm transition-all">
-                      <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
-                      <input
-                        type={type}
-                        value={(regForm as any)[key]}
-                        onChange={(e) => setRegForm({ ...regForm, [key]: e.target.value })}
-                        placeholder={placeholder}
-                        className="w-full bg-transparent text-white focus:outline-none placeholder-[#5c657d] text-sm"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <button
-                  type="submit"
-                  disabled={isAuthLoading}
-                  className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
-                >
-                  {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                  <span>Konto in Strapi erstellen</span>
-                </button>
-              </form>
-            ) : (
-              /* Login Form */
-              <form noValidate onSubmit={handleLogin} className="flex flex-col gap-4">
-                {/* Google Test-Login Button */}
-                <button
-                  type="button"
-                  onClick={handleGoogleDemoLogin}
-                  disabled={isAuthLoading}
-                  className="w-full bg-white hover:bg-slate-100 active:scale-[0.98] text-slate-800 font-semibold py-3 px-4 rounded-xl text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-3 border border-slate-200 group disabled:opacity-60"
-                >
-                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                  </svg>
-                  <span>{lang === 'de' ? 'Mit Google anmelden (Test-Account)' : 'Sign in with Google (Test Account)'}</span>
-                </button>
-
-                <div className="relative my-0.5 flex items-center justify-center">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <span className="relative bg-[#0d1528] px-3 text-[10px] font-bold text-[#5c657d] uppercase tracking-wider">
-                    {lang === 'de' ? 'oder mit Demo / Passwort' : 'or with demo / password'}
-                  </span>
-                </div>
-
-                {/* Demo Quick-Login Presets */}
-                <div className="bg-[#080e1e] border border-[#8083ff]/20 p-4 rounded-2xl flex flex-col gap-3">
-                  <span className="text-[11px] font-bold text-[#c0c1ff] flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
-                    Demo Schnell-Login Presets
-                  </span>
-                  <div className="flex flex-col gap-1.5">
-                    {[
-                      { label: '👨‍💻 DemoTechUser', sub: 'Tech & Science Fokus', creds: { identifier: 'demotech@inwebdesign.net', password: 'DemoUser2026!' } },
-                      { label: '🍳 DemoGourmetUser', sub: 'Kochen & Natur Fokus', creds: { identifier: 'demogourmet@inwebdesign.net', password: 'DemoUser2026!' } },
-                    ].map((preset, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setLoginForm(preset.creds)}
-                        className="bg-[#121a30] hover:bg-[#192038] border border-white/6 hover:border-[#8083ff]/30 text-left px-3 py-2.5 rounded-xl text-xs transition-all flex justify-between items-center group"
-                      >
-                        <div>
-                          <p className="font-semibold text-[#dae2fd]">{preset.label}</p>
-                          <p className="text-[#5c657d] text-[10px]">{preset.sub}</p>
-                        </div>
-                        <ChevronRight className="h-3.5 w-3.5 text-[#5c657d] group-hover:text-[#44e2cd] transition-colors" />
-                      </button>
-                    ))}
-                  </div>
-                  <div className="pt-2.5 border-t border-white/8 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold text-[#9ba4bf] flex items-center gap-1">
-                        🛠️ <span>Strapi CMS Admin Dashboard</span>
-                      </span>
-                      <a
-                        href="https://omni-cms.inwebdesign.net/admin"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-bold text-[#8083ff] hover:text-[#a3a5ff] flex items-center gap-1 hover:underline transition-colors"
-                      >
-                        <span>Strapi öffnen</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                    <div className="bg-[#121a30]/80 border border-white/6 rounded-xl p-2.5 flex flex-col gap-1.5 text-[10px]">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#5c657d]">E-Mail:</span>
-                        <code className="text-[#c0c1ff] bg-black/40 px-1.5 py-0.5 rounded font-mono">demo-editor1@inwebdesign.net</code>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#5c657d]">Passwort:</span>
-                        <code className="text-[#44e2cd] bg-black/40 px-1.5 py-0.5 rounded font-mono">DemoEditor2026!</code>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {[
-                  { key: 'identifier', label: 'E-Mail oder Benutzername', type: 'text', placeholder: 'max@example.com', icon: User },
-                  { key: 'password', label: 'Passwort', type: 'password', placeholder: '••••••••', icon: Lock },
-                ].map(({ key, label, type, placeholder, icon: Icon }) => (
-                  <div key={key} className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
-                    <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 transition-all">
-                      <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
-                      <input
-                        type={type}
-                        value={(loginForm as any)[key]}
-                        onChange={(e) => setLoginForm({ ...loginForm, [key]: e.target.value })}
-                        placeholder={placeholder}
-                        className="w-full bg-transparent text-white focus:outline-none placeholder-[#5c657d] text-sm"
-                      />
-                    </div>
-                  </div>
-                ))}
-                <button
-                  type="submit"
-                  disabled={isAuthLoading}
-                  className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
-                >
-                  {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-                  <span>Bei Strapi anmelden</span>
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ── Media Modal ──────────────────────────────────────────────────────── */}
       {selectedMedia && (
@@ -1961,348 +1389,6 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
           </div>
         </div>
       )}
-
-      {/* ── Channel Profile Modal ─────────────────────────────────────────────── */}
-      {selectedChannel && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-[#0d1528] border border-white/10 max-w-4xl w-full rounded-3xl overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col animate-fadeInUp">
-            {/* Banner & Header */}
-            <div className="relative h-44 bg-gradient-to-r from-[#121a30] via-[#1a2544] to-[#080e1e] p-6 flex items-end justify-between border-b border-white/8">
-              <div className="absolute inset-0 bg-mesh opacity-40 pointer-events-none" />
-              <button
-                onClick={() => setSelectedChannel(null)}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-white/70 hover:text-white transition-all"
-              >
-                <X className="h-4 w-4" />
-              </button>
-
-              {/* Creator Identity */}
-              <div className="relative flex items-end gap-4 z-10 translate-y-6">
-                <img
-                  src={selectedChannel.avatarUrl}
-                  alt={selectedChannel.username}
-                  className="w-20 h-20 rounded-2xl object-cover border-4 border-[#080e1e] shadow-xl"
-                />
-                <div className="mb-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-white tracking-tight">{selectedChannel.username}</h2>
-                    <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
-                  </div>
-                  <p className="text-xs font-mono text-[#8083ff] font-bold">{selectedChannel.handle}</p>
-                </div>
-              </div>
-
-              {/* Subscribe Action or Edit/Create if Own Channel */}
-              <div className="relative z-10">
-                {currentUser && getCurrentUserHandle(currentUser) === selectedChannel.handle ? (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedChannel(null);
-                        const userHandle = getCurrentUserHandle(currentUser);
-                        setEditProfileForm({
-                          username: currentUser.username || '',
-                          handle: userHandle.replace(/^@/, ''),
-                          avatarUrl: currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-                          bio: currentUser.bio || 'Creator & Content Publisher im Omni Network.',
-                        });
-                        setEditProfileModalOpen(true);
-                      }}
-                      className="px-3.5 py-2 bg-[#121a30] hover:bg-[#192038] border border-white/10 hover:border-[#8083ff]/40 rounded-xl text-xs font-semibold text-white transition-all flex items-center gap-1.5"
-                    >
-                      <Sliders className="h-3.5 w-3.5 text-[#44e2cd]" />
-                      <span>{lang === 'de' ? 'Einstellungen' : 'Settings'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setSelectedChannel(null);
-                        setCreateItemModalOpen(true);
-                      }}
-                      className="px-3.5 py-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white rounded-xl text-xs font-semibold transition-all shadow-lg shadow-[#8083ff]/25 flex items-center gap-1.5"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                      <span>{lang === 'de' ? 'Beitrag erstellen' : 'Create Post'}</span>
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => toggleSubscribeChannel(selectedChannel.handle)}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 ${
-                      subscribedChannels.includes(selectedChannel.handle)
-                        ? 'bg-white/10 text-white border border-white/15 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30'
-                        : 'bg-[#8083ff] hover:bg-[#6b6eff] text-white shadow-[#8083ff]/30'
-                    }`}
-                  >
-                    {subscribedChannels.includes(selectedChannel.handle) ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
-                        <span>Abonniert</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-4 w-4" />
-                        <span>Kanal abonnieren</span>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Bio & Stats bar */}
-            <div className="pt-8 px-6 pb-4 bg-[#080e1e] border-b border-white/5 flex flex-col gap-3">
-              <p className="text-xs text-[#dae2fd]/90 leading-relaxed max-w-2xl">{selectedChannel.bio}</p>
-              <div className="flex items-center gap-4 text-xs font-mono text-[#5c657d]">
-                <div className="flex items-center gap-1.5 text-white font-bold">
-                  <Users className="h-3.5 w-3.5 text-[#44e2cd]" />
-                  <span>{(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten</span>
-                </div>
-                <span>·</span>
-                <span>
-                  {
-                    feedItems.filter((i) => getAuthorHandle(i) === selectedChannel.handle).length
-                  }{' '}
-                  Beiträge im Feed
-                </span>
-              </div>
-            </div>
-
-            {/* Published Feed items Grid */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#0d1528]">
-              <h3 className="text-xs font-bold text-[#8083ff] uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Tv className="h-3.5 w-3.5" />
-                <span>Kanal-Inhalte von {selectedChannel.username}</span>
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {feedItems
-                  .filter((item) => getAuthorHandle(item) === selectedChannel.handle)
-                  .map((item) => (
-                    <article
-                      key={item.id}
-                      onClick={() => {
-                        setSelectedChannel(null);
-                        setSelectedMedia(item);
-                      }}
-                      className="bg-[#121a30] hover:bg-[#192038] border border-white/8 hover:border-[#8083ff]/40 p-3 rounded-2xl cursor-pointer transition-all flex flex-col gap-2 group"
-                    >
-                      <div className="relative aspect-video rounded-xl overflow-hidden bg-[#080e1e]">
-                        <CardThumbnail
-                          item={item}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                        <div className="absolute bottom-2 right-2">
-                          <MediaTypeBadge type={item.mediaType} />
-                        </div>
-                      </div>
-                      <h4 className="text-xs font-bold text-[#dae2fd] group-hover:text-white line-clamp-2">
-                        {item.title}
-                      </h4>
-                      <p className="text-[11px] text-[#5c657d] line-clamp-1">{item.summary}</p>
-                    </article>
-                  ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Edit Profile Modal ────────────────────────────────────────────────── */}
-      {editProfileModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-[#0d1528] border border-white/10 max-w-lg w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp">
-            <button
-              onClick={() => setEditProfileModalOpen(false)}
-              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-[#44e2cd]/10 border border-[#44e2cd]/20 flex items-center justify-center">
-                <Sliders className="h-5 w-5 text-[#44e2cd]" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white leading-tight">
-                  {lang === 'de' ? 'Einstellungen' : 'Settings'}
-                </h2>
-                <p className="text-xs text-[#5c657d]">
-                  {lang === 'de'
-                    ? 'Verwalte deinen Benutzernamen, Kanal-Slug (@handle), Beschreibung (Bio) & Profilbild.'
-                    : 'Manage your username, channel slug (@handle), description (bio) & avatar.'}
-                </p>
-              </div>
-            </div>
-
-            <form noValidate onSubmit={handleSaveProfile} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
-                  {lang === 'de' ? 'Benutzername / Anzeigename' : 'Username / Display Name'}
-                </label>
-                <input
-                  type="text"
-                  value={editProfileForm.username}
-                  onChange={(e) => setEditProfileForm({ ...editProfileForm, username: e.target.value })}
-                  placeholder="z.B. Max Mustermann"
-                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
-                  {lang === 'de' ? 'Kanal-Handle / Slug (@-Kürzel für Chat)' : 'Channel Handle / Slug (@-mention)'}
-                </label>
-                <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white">
-                  <span className="text-[#8083ff] font-mono font-bold mr-1">@</span>
-                  <input
-                    type="text"
-                    value={editProfileForm.handle}
-                    onChange={(e) => setEditProfileForm({ ...editProfileForm, handle: e.target.value })}
-                    placeholder="maxtech"
-                    className="bg-transparent w-full focus:outline-none text-white font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
-                  {lang === 'de' ? 'Profilbild (Avatar URL)' : 'Avatar Image URL'}
-                </label>
-                <input
-                  type="text"
-                  value={editProfileForm.avatarUrl}
-                  onChange={(e) => setEditProfileForm({ ...editProfileForm, avatarUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
-                  {lang === 'de' ? 'Kanal-Beschreibung (Description / Bio)' : 'Channel Description (Bio)'}
-                </label>
-                <textarea
-                  rows={3}
-                  value={editProfileForm.bio}
-                  onChange={(e) => setEditProfileForm({ ...editProfileForm, bio: e.target.value })}
-                  placeholder={lang === 'de' ? 'Beschreibe deinen Kanal und deine Inhalte...' : 'Describe your channel and content...'}
-                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="mt-2 bg-[#44e2cd] hover:bg-[#34c4b2] text-[#080e1e] font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#44e2cd]/20 flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                <span>{lang === 'de' ? 'Einstellungen speichern' : 'Save Settings'}</span>
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── Create New Feed Item Modal ───────────────────────────────────────── */}
-      {createItemModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-[#0d1528] border border-white/10 max-w-xl w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp">
-            <button
-              onClick={() => setCreateItemModalOpen(false)}
-              className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-[#ffb783]/10 border border-[#ffb783]/20 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-[#ffb783]" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white leading-tight">Neuen Beitrag veröffentlichen</h2>
-                <p className="text-xs text-[#5c657d]">Erstelle neuen Content für deinen Kanal ({currentUser?.handle})</p>
-              </div>
-            </div>
-
-            <form noValidate onSubmit={handleCreateFeedItem} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Titel des Beitrags</label>
-                <input
-                  type="text"
-                  required
-                  value={createItemForm.title}
-                  onChange={(e) => setCreateItemForm({ ...createItemForm, title: e.target.value })}
-                  placeholder="z.B. PostgreSQL Vektor-Suche in Next.js 15"
-                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Medienform</label>
-                  <select
-                    value={createItemForm.mediaType}
-                    onChange={(e) => setCreateItemForm({ ...createItemForm, mediaType: e.target.value as any })}
-                    className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none cursor-pointer"
-                  >
-                    <option value="video">📹 Video</option>
-                    <option value="pdf">📄 PDF Dokument</option>
-                    <option value="article">✍️ Artikel</option>
-                    <option value="short">⚡ Short</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Themen / Tags</label>
-                  <input
-                    type="text"
-                    value={createItemForm.tags}
-                    onChange={(e) => setCreateItemForm({ ...createItemForm, tags: e.target.value })}
-                    placeholder="PostgreSQL, Tech, NextJS"
-                    className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Kurzzusammenfassung (Summary)</label>
-                <input
-                  type="text"
-                  value={createItemForm.summary}
-                  onChange={(e) => setCreateItemForm({ ...createItemForm, summary: e.target.value })}
-                  placeholder="Kompakter Überblick über das Thema..."
-                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Vorschaubild (Thumbnail URL)</label>
-                <input
-                  type="text"
-                  value={createItemForm.thumbnailUrl}
-                  onChange={(e) => setCreateItemForm({ ...createItemForm, thumbnailUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Beitrag auf Kanal veröffentlichen</span>
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* ── Multi-Video Drag & Drop Upload Manager Modal ──────────────────────── */}
-      <VideoUploadModal
-        isOpen={videoUploadModalOpen}
-        onClose={() => setVideoUploadModalOpen(false)}
-        lang={lang}
-        onUploadSuccess={() => fetchFeed(profile, lang)}
-      />
     </div>
   );
 }

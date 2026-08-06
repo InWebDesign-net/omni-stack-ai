@@ -31,6 +31,7 @@ import {
   Play,
 } from 'lucide-react';
 import Header from '@/components/Header';
+import { useApp } from '@/context/AppContext';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
   fetchCommentsForSlug,
@@ -93,46 +94,7 @@ export default function ContentDetailPage() {
   const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
-  // Channel Profile Modal State
-  const [selectedChannel, setSelectedChannel] = useState<{
-    username: string;
-    handle: string;
-    avatarUrl: string;
-    bio: string;
-    subscribersCount: number;
-  } | null>(null);
-
-  const [subscribedChannels, setSubscribedChannels] = useState<string[]>(['@demotech', '@astro']);
-
-  const toggleSubscribeChannel = (handle: string) => {
-    setSubscribedChannels((prev) =>
-      prev.includes(handle) ? prev.filter((h) => h !== handle) : [...prev, handle]
-    );
-  };
-
-  const openChannelModal = (creatorOrItem: any) => {
-    if (!creatorOrItem) return;
-    if (creatorOrItem.authorHandle || creatorOrItem.handle) {
-      const handle = creatorOrItem.authorHandle || creatorOrItem.handle;
-      const name = creatorOrItem.authorName || creatorOrItem.label || creatorOrItem.username || handle.replace('@', '');
-      const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || creatorOrItem.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
-      setSelectedChannel({
-        username: name,
-        handle: handle.startsWith('@') ? handle : `@${handle}`,
-        avatarUrl: avatar,
-        bio: 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: 15400,
-      });
-      return;
-    }
-    setSelectedChannel({
-      username: getAuthorName(creatorOrItem),
-      handle: getAuthorHandle(creatorOrItem),
-      avatarUrl: getAuthorAvatar(creatorOrItem),
-      bio: 'Creator & Content Publisher im Omni Network.',
-      subscribersCount: 15400,
-    });
-  };
+  const { openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -574,37 +536,6 @@ export default function ContentDetailPage() {
         </div>
       </main>
 
-      {/* Channel Profile Modal */}
-      {selectedChannel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedChannel(null)} />
-          <div className="relative w-full max-w-lg bg-[#0d1528] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 z-50 animate-scaleIn">
-            <button
-              onClick={() => setSelectedChannel(null)}
-              className="absolute top-4 right-4 p-2 text-[#9ba4bf] hover:text-white rounded-xl"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="flex items-center gap-4">
-              <img src={selectedChannel.avatarUrl} alt={selectedChannel.username} className="h-16 w-16 rounded-full object-cover border-2 border-[#8083ff]" />
-              <div>
-                <h3 className="text-lg font-bold text-white">{selectedChannel.username}</h3>
-                <p className="text-xs font-mono text-[#9ba4bf]">{selectedChannel.handle}</p>
-                <span className="text-[11px] text-[#44e2cd] font-semibold mt-1 inline-block">{(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten</span>
-              </div>
-            </div>
-            <p className="text-xs text-[#dae2fd] leading-relaxed">{selectedChannel.bio}</p>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setSelectedChannel(null)}
-                className="px-5 py-2.5 bg-[#8083ff] text-white font-extrabold text-xs rounded-xl shadow-md"
-              >
-                Schließen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

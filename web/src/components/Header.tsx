@@ -22,6 +22,7 @@ import {
   X,
   Upload,
 } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 
 export function OmniLogo({ size = 22 }: { size?: number }) {
   return (
@@ -107,39 +108,28 @@ export default function Header({
   showMenuButton = true,
 }: HeaderProps) {
   const router = useRouter();
+  const {
+    currentUser: appContextUser,
+    lang: appLang,
+    toggleLanguage: appToggleLang,
+    openVideoUploadModal,
+    openChannelModal,
+    openSettingsModal,
+    openAuthModal,
+    openCreateItemModal,
+  } = useApp();
 
-  // Internal state
-  const [internalLang, setInternalLang] = useState<'de' | 'en'>('de');
-  const [internalUser, setInternalUser] = useState<{ id?: number; username: string; handle?: string; avatarUrl?: string; bio?: string; subscribersCount?: number } | null>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [universalNavOpen, setUniversalNavOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
-      if (savedLang === 'de' || savedLang === 'en') {
-        setInternalLang(savedLang);
-      }
-      const savedUser = localStorage.getItem('omni_user');
-      if (savedUser) {
-        setInternalUser(JSON.parse(savedUser));
-      }
-    } catch (e) {}
-  }, []);
-
-  const activeLang = propLang || internalLang;
-  const activeUser = propUser !== undefined ? propUser : internalUser;
+  const activeLang = propLang || appLang;
+  const activeUser = propUser !== undefined ? propUser : appContextUser;
 
   const handleLanguageClick = () => {
-    const next = activeLang === 'de' ? 'en' : 'de';
-    setInternalLang(next);
-    try {
-      localStorage.setItem('omni_lang', next);
-      document.cookie = `omni_lang=${next}; path=/; max-age=31536000`;
-    } catch (e) {}
-
     if (propToggleLang) {
       propToggleLang();
+    } else {
+      appToggleLang();
     }
   };
 
@@ -278,8 +268,8 @@ export default function Header({
                       setUserDropdownOpen(false);
                       if (onOpenUserProfileModal) {
                         onOpenUserProfileModal();
-                      } else {
-                        router.push('/?tab=library');
+                      } else if (activeUser) {
+                        openChannelModal(activeUser);
                       }
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
@@ -295,7 +285,7 @@ export default function Header({
                       if (onOpenSettingsModal) {
                         onOpenSettingsModal();
                       } else {
-                        router.push('/');
+                        openSettingsModal();
                       }
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
@@ -310,6 +300,8 @@ export default function Header({
                       setUserDropdownOpen(false);
                       if (onOpenVideoUploadModal) {
                         onOpenVideoUploadModal();
+                      } else {
+                        openVideoUploadModal();
                       }
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-[#8083ff]/15 transition-all text-left"
@@ -325,7 +317,7 @@ export default function Header({
                       if (onOpenCreateModal) {
                         onOpenCreateModal();
                       } else {
-                        router.push('/');
+                        openCreateItemModal();
                       }
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
@@ -356,7 +348,7 @@ export default function Header({
                 if (onOpenAuthModal) {
                   onOpenAuthModal();
                 } else {
-                  router.push('/');
+                  openAuthModal();
                 }
               }}
               className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-[#8083ff]/25"

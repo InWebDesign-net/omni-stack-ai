@@ -116,6 +116,8 @@ const jsonLdOrganization = {
   sameAs: ['https://inwebdesign.net'],
 };
 
+import { AppProvider } from '@/context/AppContext';
+
 export default function RootLayout({
   children,
 }: {
@@ -140,7 +142,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#080e1e] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white">
-        {children}
+        <AppProvider>{children}</AppProvider>
       </body>
     </html>
   );
