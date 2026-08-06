@@ -61,14 +61,11 @@ export default function VideoUploadModal({
         .replace(/\s+/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      // Auto-detect short/vertical if name contains short or reel
-      const isShort = /short|reel|tiktok|vertical/i.test(file.name);
-
       newTasks.push({
         id: `upload_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         file,
         title: cleanTitle,
-        mediaType: isShort ? 'short' : 'video',
+        mediaType: 'video',
         progress: 0,
         status: 'queued',
       });
@@ -368,32 +365,6 @@ export default function VideoUploadModal({
                         {(task.file.size / (1024 * 1024)).toFixed(1)} MB • {task.file.name}
                       </span>
                     </div>
-                  </div>
-
-                  {/* Media Type Selector */}
-                  <div className="flex items-center gap-1 bg-[#162038] p-1 rounded-xl shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => updateTaskMediaType(task.id, 'video')}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                        task.mediaType === 'video'
-                          ? 'bg-[#8083ff] text-white shadow'
-                          : 'text-[#9ba4bf] hover:text-white'
-                      }`}
-                    >
-                      Video
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateTaskMediaType(task.id, 'short')}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                        task.mediaType === 'short'
-                          ? 'bg-[#ff6b81] text-white shadow'
-                          : 'text-[#9ba4bf] hover:text-white'
-                      }`}
-                    >
-                      Short
-                    </button>
                   </div>
 
                   {/* Delete Task */}

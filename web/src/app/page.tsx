@@ -1512,7 +1512,9 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                   key={item.id}
                   onClick={() => {
                     tracker.track('click', item.tags, item.mediaType);
-                    if (item.mediaType === 'short') {
+                    if (item.mediaType === 'video') {
+                      router.push(`/video/${item.slug}`);
+                    } else if (item.mediaType === 'short') {
                       router.push(`/shorts/${item.slug}`);
                     } else {
                       router.push(`/content/${item.slug}`);

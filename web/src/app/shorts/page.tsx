@@ -278,6 +278,13 @@ export default function ShortsFeedPage() {
 
   return (
     <div className="relative h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none">
+      <head>
+        <title>{activeShort ? `${activeShort.title} | Short` : 'Shorts & Reels'}</title>
+        <link
+          rel="canonical"
+          href={activeShort ? `https://omni-web.inwebdesign.net/video/${activeShort.slug}` : 'https://omni-web.inwebdesign.net/'}
+        />
+      </head>
       {isPreviewActive && (
         <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
           <div className="flex items-center gap-2 font-bold tracking-wide">
