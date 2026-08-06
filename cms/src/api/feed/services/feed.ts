@@ -678,48 +678,29 @@ CRITICAL: Return JSON ONLY in this format:
       }
     } catch (e) {}
 
-    const updateStrapiItem = async (status: 'draft' | 'published') => {
+    const updateStrapiItem = async () => {
       try {
         const matches = await strapi.documents('api::feed-item.feed-item').findMany({
           filters: { slug: { $eq: base } },
-          locale: 'de',
-          status,
+          locale: '*',
         });
 
-        if (matches && matches.length > 0) {
+        for (const doc of matches) {
+          const isPublished = !!(doc as any).publishedAt;
           await strapi.documents('api::feed-item.feed-item').update({
-            documentId: matches[0].documentId,
-            locale: 'de',
-            status,
+            documentId: doc.documentId,
+            locale: (doc as any).locale || 'de',
+            status: isPublished ? 'published' : 'draft',
             data: {
               isProcessing: false,
-              duration: metaDuration || (matches[0] as any).duration || 0,
-            } as any,
-          });
-        }
-
-        const matchesEn = await strapi.documents('api::feed-item.feed-item').findMany({
-          filters: { slug: { $eq: base } },
-          locale: 'en',
-          status,
-        });
-
-        if (matchesEn && matchesEn.length > 0) {
-          await strapi.documents('api::feed-item.feed-item').update({
-            documentId: matchesEn[0].documentId,
-            locale: 'en',
-            status,
-            data: {
-              isProcessing: false,
-              duration: metaDuration || (matchesEn[0] as any).duration || 0,
+              duration: metaDuration || (doc as any).duration || 0,
             } as any,
           });
         }
       } catch (e) {}
     };
 
-    await updateStrapiItem('draft');
-    await updateStrapiItem('published');
+    await updateStrapiItem();
 
     return { success: true, slug: base, isProcessing: false, duration: metaDuration };
   },

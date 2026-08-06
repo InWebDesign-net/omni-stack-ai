@@ -531,14 +531,15 @@ function OmniAppContent() {
   }, []);
 
   useEffect(() => {
+    fetchFeed(profile, lang, activeNavTab === 'library');
+  }, [activeNavTab, lang]);
+
+  useEffect(() => {
     if (!searchParams) return;
 
     const tabParam = searchParams.get('tab');
     if (tabParam === 'trending' || tabParam === 'subscriptions' || tabParam === 'library') {
       setActiveNavTab(tabParam as any);
-      if (tabParam === 'library') {
-        fetchFeed(profile, lang, true);
-      }
     } else {
       setActiveNavTab('home');
     }
@@ -675,11 +676,20 @@ function OmniAppContent() {
 
     if (activeNavTab === 'library') {
       if (currentUser) {
-        const userHandle = getCurrentUserHandle(currentUser);
-        const myItems = items.filter((item) => getAuthorHandle(item) === userHandle);
-        if (myItems.length > 0) return myItems;
+        const userHandle = getCurrentUserHandle(currentUser).toLowerCase();
+        return items.filter((item) => {
+          const authorId = item.author?.id;
+          const authorUsername = item.author?.username?.toLowerCase();
+          const authorHandle = getAuthorHandle(item).toLowerCase();
+          
+          const idMatch = authorId && currentUser.id && Number(authorId) === Number(currentUser.id);
+          const usernameMatch = authorUsername && currentUser.username && authorUsername === currentUser.username.toLowerCase();
+          const handleMatch = authorHandle === userHandle;
+
+          return idMatch || usernameMatch || handleMatch;
+        });
       }
-      return items.filter((item) => (item.relevanceScore || 0) > 0.85);
+      return [];
     }
 
     return items;
