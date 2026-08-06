@@ -20,11 +20,11 @@ import {
   Pause,
   Sparkles,
   Flame,
-  User,
   Pencil,
   Trash2,
   Check,
 } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
   fetchCommentsForSlug,
@@ -38,6 +38,7 @@ export default function ShortsFeedPage() {
   const router = useRouter();
   const params = useParams();
   const initialSlug = params?.slug as string;
+  const { lang } = useApp();
 
   // Dynamic shorts list from Strapi with fallback
   const [shortsList, setShortsList] = useState<FeedItem[]>(() => {
@@ -489,7 +490,7 @@ export default function ShortsFeedPage() {
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-[#8083ff]" />
-                <span>Kommentare ({activeComments.length})</span>
+                <span>{lang === 'de' ? `Kommentare (${activeComments.length})` : `Comments (${activeComments.length})`}</span>
               </h3>
               <button
                 type="button"
@@ -503,11 +504,11 @@ export default function ShortsFeedPage() {
             <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-3">
               {loadingComments ? (
                 <div className="py-6 text-center text-xs text-[#9ba4bf] font-mono animate-pulse">
-                  Lade Kommentare aus Strapi CMS...
+                  {lang === 'de' ? 'Lade Kommentare aus Strapi CMS...' : 'Loading comments from Strapi CMS...'}
                 </div>
               ) : activeComments.length === 0 ? (
                 <div className="py-6 text-center text-xs text-[#5c657d] font-mono">
-                  Noch keine Kommentare vorhanden. Schreibe den ersten!
+                  {lang === 'de' ? 'Noch keine Kommentare vorhanden. Schreibe den ersten!' : 'No comments yet. Write the first one!'}
                 </div>
               ) : (
                 activeComments.map((c) => {
@@ -565,7 +566,7 @@ export default function ShortsFeedPage() {
                                 onClick={() => setEditingCommentId(null)}
                                 className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-[#9ba4bf] font-medium transition-all"
                               >
-                                Abbrechen
+                                {lang === 'de' ? 'Abbrechen' : 'Cancel'}
                               </button>
                               <button
                                 type="button"
@@ -573,7 +574,7 @@ export default function ShortsFeedPage() {
                                 className="px-2.5 py-1 rounded bg-[#8083ff] hover:bg-[#6b6eff] text-[10px] text-white font-medium flex items-center gap-1 transition-all"
                               >
                                 <Check className="h-3 w-3" />
-                                <span>Speichern</span>
+                                <span>{lang === 'de' ? 'Speichern' : 'Save'}</span>
                               </button>
                             </div>
                           </div>
@@ -592,7 +593,11 @@ export default function ShortsFeedPage() {
                 type="text"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder={userData ? `Als ${userData.username} kommentieren...` : "Kommentar schreiben..."}
+                placeholder={
+                  userData
+                    ? (lang === 'de' ? `Als ${userData.username} kommentieren...` : `Comment as ${userData.username}...`)
+                    : (lang === 'de' ? 'Kommentar schreiben...' : 'Write a comment...')
+                }
                 className="flex-1 bg-[#080e1e] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-[#5c657d] focus:outline-none"
                 disabled={isSubmittingComment}
               />

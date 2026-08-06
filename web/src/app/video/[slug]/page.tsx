@@ -300,12 +300,12 @@ export default function VideoDetailPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d1528] hover:bg-[#121a30] text-xs font-semibold text-[#dae2fd] transition-all border border-white/8 hover:border-white/20 shadow-md group"
           >
             <ArrowLeft className="h-4 w-4 text-[#8083ff] group-hover:-translate-x-0.5 transition-transform" />
-            <span>Zurück zur Startseite</span>
+            <span>{lang === 'de' ? 'Zurück zur Startseite' : 'Back to Home'}</span>
           </Link>
 
           <span className="text-xs font-mono font-bold text-[#44e2cd] bg-[#44e2cd]/10 border border-[#44e2cd]/20 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>KI-Relevanz: {((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match</span>
+            <span>{lang === 'de' ? `KI-Relevanz: ${((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match` : `AI Relevance: ${((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match`}</span>
           </span>
         </div>
 
@@ -320,12 +320,18 @@ export default function VideoDetailPage() {
                 <div className="flex items-center gap-3">
                   <RefreshCw className="h-5 w-5 text-[#44e2cd] animate-spin shrink-0" />
                   <div>
-                    <p className="text-sm font-bold text-white">⚡ Video wird konvertiert & verarbeitet</p>
-                    <p className="text-xs text-[#9ba4bf]">Intel QSV Hardware-Encoding & ABR HLS Streams werden im Hintergrund generiert...</p>
+                    <p className="text-sm font-bold text-white">
+                      {lang === 'de' ? '⚡ Video wird konvertiert & verarbeitet' : '⚡ Video is being converted & processed'}
+                    </p>
+                    <p className="text-xs text-[#9ba4bf]">
+                      {lang === 'de'
+                        ? 'Intel QSV Hardware-Encoding & ABR HLS Streams werden im Hintergrund generiert...'
+                        : 'Intel QSV hardware encoding & ABR HLS streams are generated in the background...'}
+                    </p>
                   </div>
                 </div>
                 <span className="text-[10px] font-mono font-bold bg-[#8083ff]/30 text-[#44e2cd] px-3 py-1 rounded-full border border-[#44e2cd]/30 shrink-0">
-                  Konvertierung läuft
+                  {lang === 'de' ? 'Konvertierung läuft' : 'Converting...'}
                 </span>
               </div>
             )}
@@ -349,10 +355,10 @@ export default function VideoDetailPage() {
                 <div className="flex items-center gap-3 text-xs text-[#9ba4bf] font-mono">
                   <span className="flex items-center gap-1 text-white font-semibold">
                     <Eye className="h-4 w-4 text-[#44e2cd]" />
-                    {(item.viewsCount / 1000).toFixed(1)}k Aufrufe
+                    {(item.viewsCount / 1000).toFixed(1)}k {lang === 'de' ? 'Aufrufe' : 'views'}
                   </span>
                   <span>•</span>
-                  <span>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('de-DE') : 'Entwurf'}</span>
+                  <span>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US') : (lang === 'de' ? 'Entwurf' : 'Draft')}</span>
                 </div>
 
                 {/* Actions Bar */}
@@ -414,7 +420,7 @@ export default function VideoDetailPage() {
                     <span className="font-bold text-sm text-white group-hover/author:text-[#44e2cd] transition-colors">{authorName}</span>
                     <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
                   </div>
-                  <span className="text-xs font-mono text-[#9ba4bf]">{authorHandle} • 15.4k Abonnenten</span>
+                  <span className="text-xs font-mono text-[#9ba4bf]">{authorHandle} • 15.4k {lang === 'de' ? 'Abonnenten' : 'Subscribers'}</span>
                 </div>
               </div>
 
@@ -429,12 +435,12 @@ export default function VideoDetailPage() {
                 {subscribedChannels.includes(authorHandle) ? (
                   <>
                     <Check className="h-4 w-4 text-[#44e2cd]" />
-                    <span>Abonniert</span>
+                    <span>{lang === 'de' ? 'Abonniert' : 'Subscribed'}</span>
                   </>
                 ) : (
                   <>
                     <UserPlus className="h-4 w-4" />
-                    <span>Kanal abonnieren</span>
+                    <span>{lang === 'de' ? 'Kanal abonnieren' : 'Subscribe to channel'}</span>
                   </>
                 )}
               </button>
@@ -450,7 +456,7 @@ export default function VideoDetailPage() {
                 onClick={() => setDescExpanded(!descExpanded)}
                 className="text-xs font-bold text-[#8083ff] hover:text-[#44e2cd] self-start flex items-center gap-1 transition-colors mt-1"
               >
-                <span>{descExpanded ? 'Weniger anzeigen' : 'Mehr anzeigen'}</span>
+                <span>{descExpanded ? (lang === 'de' ? 'Weniger anzeigen' : 'Show less') : (lang === 'de' ? 'Mehr anzeigen' : 'Show more')}</span>
                 {descExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </button>
             </div>
@@ -460,7 +466,7 @@ export default function VideoDetailPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-[#8083ff]" />
-                  <span>Kommentare ({comments.length})</span>
+                  <span>{lang === 'de' ? `Kommentare (${comments.length})` : `Comments (${comments.length})`}</span>
                 </h3>
               </div>
 
@@ -475,7 +481,7 @@ export default function VideoDetailPage() {
                   <textarea
                     value={newCommentText}
                     onChange={(e) => setNewCommentText(e.target.value)}
-                    placeholder="Einen Kommentar schreiben..."
+                    placeholder={lang === 'de' ? 'Einen Kommentar schreiben...' : 'Write a comment...'}
                     rows={2}
                     className="w-full bg-[#080e1e] border border-white/10 focus:border-[#8083ff]/60 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"
                   />
@@ -486,7 +492,7 @@ export default function VideoDetailPage() {
                       className="px-4 py-2 rounded-xl bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold text-xs transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-md shadow-[#8083ff]/20"
                     >
                       <Send className="h-3.5 w-3.5" />
-                      <span>Kommentieren</span>
+                      <span>{lang === 'de' ? 'Kommentieren' : 'Comment'}</span>
                     </button>
                   </div>
                 </div>
@@ -494,9 +500,13 @@ export default function VideoDetailPage() {
 
               {/* Comment List */}
               {loadingComments ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf]">Kommentare werden geladen...</div>
+                <div className="py-6 text-center text-xs text-[#9ba4bf]">
+                  {lang === 'de' ? 'Kommentare werden geladen...' : 'Loading comments...'}
+                </div>
               ) : comments.length === 0 ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf]">Noch keine Kommentare vorhanden. Schreibe den ersten!</div>
+                <div className="py-6 text-center text-xs text-[#9ba4bf]">
+                  {lang === 'de' ? 'Noch keine Kommentare vorhanden. Schreibe den ersten!' : 'No comments yet. Write the first one!'}
+                </div>
               ) : (
                 <div className="flex flex-col gap-4">
                   {comments.map((comment) => (
@@ -509,7 +519,7 @@ export default function VideoDetailPage() {
                       <div className="flex-1 flex flex-col gap-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-white">{comment.authorName}</span>
-                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || 'Gerade eben'}</span>
+                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || (lang === 'de' ? 'Gerade eben' : 'Just now')}</span>
                         </div>
 
                         {editingCommentId === comment.id ? (
@@ -524,13 +534,13 @@ export default function VideoDetailPage() {
                                 onClick={() => setEditingCommentId(null)}
                                 className="px-2.5 py-1 rounded-lg text-[11px] text-[#9ba4bf] hover:text-white"
                               >
-                                Abbrechen
+                                {lang === 'de' ? 'Abbrechen' : 'Cancel'}
                               </button>
                               <button
                                 onClick={() => handleSaveEditComment(comment.id)}
                                 className="px-3 py-1 rounded-lg bg-[#8083ff] text-white text-[11px] font-bold"
                               >
-                                Speichern
+                                {lang === 'de' ? 'Speichern' : 'Save'}
                               </button>
                             </div>
                           </div>
@@ -549,7 +559,7 @@ export default function VideoDetailPage() {
           <aside className="lg:col-span-4 flex flex-col gap-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Flame className="h-4 w-4 text-[#ffb783]" />
-              <span>Nächste & Empfehlungen</span>
+              <span>{lang === 'de' ? 'Nächste & Empfehlungen' : 'Up Next & Recommended'}</span>
             </h3>
 
             <div className="flex flex-col gap-3">

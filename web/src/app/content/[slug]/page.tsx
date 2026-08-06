@@ -292,13 +292,13 @@ export default function ContentDetailPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d1528] hover:bg-[#121a30] text-xs font-semibold text-[#dae2fd] transition-all border border-white/8 hover:border-white/20 shadow-md group"
           >
             <ArrowLeft className="h-4 w-4 text-[#8083ff] group-hover:-translate-x-0.5 transition-transform" />
-            <span>Zurück zur Startseite</span>
+            <span>{lang === 'de' ? 'Zurück zur Startseite' : 'Back to Home'}</span>
           </Link>
 
           {item && (
             <span className="text-xs font-mono font-bold text-[#44e2cd] bg-[#44e2cd]/10 border border-[#44e2cd]/20 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>KI-Relevanz: {((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match</span>
+              <span>{lang === 'de' ? `KI-Relevanz: ${((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match` : `AI Relevance: ${((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match`}</span>
             </span>
           )}
         </div>
@@ -319,7 +319,7 @@ export default function ContentDetailPage() {
                     <span>Dynamic Article</span>
                     <span>•</span>
                     <Clock className="h-3.5 w-3.5" />
-                    <span>4 Min. Lesezeit</span>
+                    <span>{lang === 'de' ? '4 Min. Lesezeit' : '4 min read'}</span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
                     {item.title}
@@ -432,7 +432,7 @@ export default function ContentDetailPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-[#8083ff]" />
-                  <span>Kommentare ({comments.length})</span>
+                  <span>{lang === 'de' ? `Kommentare (${comments.length})` : `Comments (${comments.length})`}</span>
                 </h3>
               </div>
 
@@ -447,7 +447,7 @@ export default function ContentDetailPage() {
                   <textarea
                     value={newCommentText}
                     onChange={(e) => setNewCommentText(e.target.value)}
-                    placeholder="Einen Kommentar schreiben..."
+                    placeholder={lang === 'de' ? 'Einen Kommentar schreiben...' : 'Write a comment...'}
                     rows={2}
                     className="w-full bg-[#080e1e] border border-white/10 focus:border-[#8083ff]/60 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"
                   />
@@ -458,7 +458,7 @@ export default function ContentDetailPage() {
                       className="px-4 py-2 rounded-xl bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold text-xs transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-md shadow-[#8083ff]/20"
                     >
                       <Send className="h-3.5 w-3.5" />
-                      <span>Kommentieren</span>
+                      <span>{lang === 'de' ? 'Kommentieren' : 'Comment'}</span>
                     </button>
                   </div>
                 </div>
@@ -466,9 +466,13 @@ export default function ContentDetailPage() {
 
               {/* Comment List */}
               {loadingComments ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf]">Kommentare werden geladen...</div>
+                <div className="py-6 text-center text-xs text-[#9ba4bf]">
+                  {lang === 'de' ? 'Kommentare werden geladen...' : 'Loading comments...'}
+                </div>
               ) : comments.length === 0 ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf]">Noch keine Kommentare vorhanden. Schreibe den ersten!</div>
+                <div className="py-6 text-center text-xs text-[#9ba4bf]">
+                  {lang === 'de' ? 'Noch keine Kommentare vorhanden. Schreibe den ersten!' : 'No comments yet. Write the first one!'}
+                </div>
               ) : (
                 <div className="flex flex-col gap-4">
                   {comments.map((comment) => (
@@ -481,7 +485,7 @@ export default function ContentDetailPage() {
                       <div className="flex-1 flex flex-col gap-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-white">{comment.authorName}</span>
-                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || 'Gerade eben'}</span>
+                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || (lang === 'de' ? 'Gerade eben' : 'Just now')}</span>
                         </div>
                         <p className="text-xs text-[#dae2fd] leading-relaxed mt-0.5">{comment.text}</p>
                       </div>
@@ -496,7 +500,7 @@ export default function ContentDetailPage() {
           <aside className="lg:col-span-4 flex flex-col gap-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Flame className="h-4 w-4 text-[#ffb783]" />
-              <span>Weitere Artikel & Beiträge</span>
+              <span>{lang === 'de' ? 'Weitere Artikel & Beiträge' : 'More Articles & Posts'}</span>
             </h3>
 
             <div className="flex flex-col gap-3">
