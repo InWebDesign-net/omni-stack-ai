@@ -44,6 +44,7 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import Header from '@/components/Header';
+import VideoUploadModal from '@/components/VideoUploadModal';
 
 interface UserProfileSession {
   id: number;
@@ -308,6 +309,7 @@ function OmniAppContent() {
   const [editProfileForm, setEditProfileForm] = useState({ username: '', handle: '', avatarUrl: '', bio: '' });
 
   const [createItemModalOpen, setCreateItemModalOpen] = useState(false);
+  const [videoUploadModalOpen, setVideoUploadModalOpen] = useState(false);
   const [createItemForm, setCreateItemForm] = useState({
     title: '',
     summary: '',
@@ -1066,6 +1068,7 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
           }
         }}
         onOpenCreateModal={() => setCreateItemModalOpen(true)}
+        onOpenVideoUploadModal={() => setVideoUploadModalOpen(true)}
         onLogout={handleLogout}
       />
 
@@ -2240,6 +2243,13 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
           </div>
         </div>
       )}
+      {/* ── Multi-Video Drag & Drop Upload Manager Modal ──────────────────────── */}
+      <VideoUploadModal
+        isOpen={videoUploadModalOpen}
+        onClose={() => setVideoUploadModalOpen(false)}
+        lang={lang}
+        onUploadSuccess={() => fetchFeed(profile, lang)}
+      />
     </div>
   );
 }
