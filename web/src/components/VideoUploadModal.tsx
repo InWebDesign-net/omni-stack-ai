@@ -187,18 +187,21 @@ export default function VideoUploadModal({
     }
   };
 
-  // Poll video processing status
+  // Poll video processing status via internal /api/strapi-feed
   const pollProcessingStatus = (taskId: string, slug: string) => {
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
       try {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-        const res = await fetch(`${strapiUrl}/api/videos?filters[slug][$eq]=${slug}`);
+        const res = await fetch('/api/strapi-feed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetSlug: slug }),
+        });
         if (res.ok) {
           const json = await res.json();
-          const video = json?.data?.[0];
-          if (video && video.isProcessing === false) {
+          const item = json?.feed?.find((i: any) => i.slug === slug || i.documentId === slug) || json?.feed?.[0];
+          if (item && item.isProcessing === false) {
             setTasks((prev) =>
               prev.map((t) => (t.id === taskId ? { ...t, status: 'completed' } : t))
             );
