@@ -35,8 +35,10 @@ export const DEFAULT_AFFINITY_GRAPH: AffinityGraph = {
 };
 
 const POINTS_MAP: Record<string, number> = {
-  view: 1,
-  click: 5,
+  view: 2,
+  click: 10,
+  like: 15,
+  unlike: -15,
   completion: 20,
 };
 
@@ -92,7 +94,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           if (!graph.topics[tag]) {
             graph.topics[tag] = { score: 10, last_interacted: now.toISOString() };
           }
-          graph.topics[tag].score = Math.min(100, graph.topics[tag].score + points);
+          graph.topics[tag].score = Math.max(0, Math.min(100, graph.topics[tag].score + points));
           graph.topics[tag].last_interacted = now.toISOString();
         });
       }

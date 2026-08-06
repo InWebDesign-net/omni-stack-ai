@@ -128,16 +128,26 @@ export default function ContentDetailPage() {
     hasTrackedView.current = false;
 
     const checkInteraction = async () => {
+      let localLiked = false;
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        if (storedLikes.includes(item.slug)) localLiked = true;
+      } catch (e) {}
+
       try {
         const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
         const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`);
         if (res.ok) {
           const data = await res.json();
-          setIsLiked(Boolean(data.isLiked));
+          setIsLiked(localLiked || Boolean(data.isLiked));
           if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
           if (typeof data.viewsCount === 'number') setViewsCount(data.viewsCount);
+        } else if (localLiked) {
+          setIsLiked(true);
         }
-      } catch (e) {}
+      } catch (e) {
+        if (localLiked) setIsLiked(true);
+      }
     };
     checkInteraction();
 
@@ -170,12 +180,35 @@ export default function ContentDetailPage() {
     return () => clearTimeout(timer);
   }, [item?.slug, userIdent]);
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const handleLikeToggle = async () => {
     if (!item?.slug) return;
     const nextIsLiked = !isLiked;
     const type = nextIsLiked ? 'like' : 'unlike';
     setIsLiked(nextIsLiked);
     setLikesCount((prev) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
+
+    if (nextIsLiked) {
+      showToast(lang === 'de' ? '❤️ Zu deinen Gefällt-mir-Angaben hinzugefügt' : '❤️ Added to your liked items');
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        if (!storedLikes.includes(item.slug)) {
+          localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, item.slug]));
+        }
+      } catch (e) {}
+    } else {
+      showToast(lang === 'de' ? '🤍 Gefällt-mir-Angabe entfernt' : '🤍 Removed from liked items');
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== item.slug)));
+      } catch (e) {}
+    }
 
     try {
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
@@ -603,6 +636,12 @@ export default function ContentDetailPage() {
         </div>
       </main>
 
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#121a30]/95 border border-[#8083ff]/40 text-white px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-semibold animate-bounceIn flex items-center gap-2">
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

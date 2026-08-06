@@ -20,6 +20,7 @@ export interface VideoUploadTask {
   id: string;
   file: File;
   title: string;
+  tags: string[];
   mediaType: 'video' | 'short';
   progress: number;
   status: 'queued' | 'uploading' | 'processing' | 'completed' | 'error';
@@ -67,6 +68,7 @@ export default function VideoUploadModal({
         id: `upload_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         file,
         title: cleanTitle,
+        tags: ['Wissenschaft', 'Technologie', 'Video'],
         mediaType: 'video',
         progress: 0,
         status: 'queued',
@@ -77,6 +79,20 @@ export default function VideoUploadModal({
       setTasks((prev) => [...prev, ...newTasks]);
       setIsMinimized(false);
     }
+  };
+
+  const toggleTaskTag = (id: string, tag: string) => {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        const currentTags = t.tags || [];
+        const hasTag = currentTags.includes(tag);
+        const nextTags = hasTag
+          ? currentTags.filter((tg) => tg !== tag)
+          : [...currentTags, tag];
+        return { ...t, tags: nextTags };
+      })
+    );
   };
 
   // Drag and Drop handlers
@@ -131,6 +147,7 @@ export default function VideoUploadModal({
         formData.append('totalChunks', totalChunks.toString());
         formData.append('title', task.title);
         formData.append('mediaType', task.mediaType);
+        formData.append('tags', JSON.stringify(task.tags && task.tags.length > 0 ? task.tags : ['Wissenschaft', 'Technologie', 'Video']));
         formData.append('file', chunk, file.name);
 
         try {
@@ -379,6 +396,26 @@ export default function VideoUploadModal({
                       <span className="text-[10px] font-mono text-[#5c657d] truncate">
                         {(task.file.size / (1024 * 1024)).toFixed(1)} MB • {task.file.name}
                       </span>
+                      {/* Tag Chips Selector */}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                        {['Wissenschaft', 'Technologie', 'PostgreSQL', 'Kochen', 'Natur', 'AI/KI', 'Finanzen'].map((presetTag) => {
+                          const isSelected = (task.tags || []).includes(presetTag);
+                          return (
+                            <button
+                              key={presetTag}
+                              type="button"
+                              onClick={() => toggleTaskTag(task.id, presetTag)}
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded-md border transition-all ${
+                                isSelected
+                                  ? 'bg-[#8083ff]/30 text-[#44e2cd] border-[#44e2cd]/40 font-bold shadow-sm'
+                                  : 'bg-[#121a30]/80 text-[#9ba4bf] border-white/8 hover:border-white/20'
+                              }`}
+                            >
+                              #{presetTag}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 

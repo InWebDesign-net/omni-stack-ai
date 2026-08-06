@@ -142,7 +142,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         title,
         slug,
         summary: [{ type: 'paragraph', children: [{ type: 'text', text: 'Video wird verarbeitet...' }] }],
-        tags: tags || ['Community', 'Video', 'Neu'],
+        tags: (tags && Array.isArray(tags) && tags.length > 0) ? tags : ['Wissenschaft', 'Technologie', 'Video'],
         viewsCount: 0,
         likesCount: 0,
         mp4Url: `/media/videos/${slug}.mp4`,

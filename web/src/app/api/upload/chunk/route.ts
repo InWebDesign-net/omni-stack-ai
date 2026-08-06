@@ -52,6 +52,18 @@ export async function POST(req: Request) {
       const userIdStr = formData.get('userId') as string | null;
       const userId = userIdStr ? parseInt(userIdStr, 10) : null;
 
+      const tagsStr = formData.get('tags') as string | null;
+      let parsedTags: string[] = ['Wissenschaft', 'Technologie', 'Video'];
+      if (tagsStr) {
+        try {
+          const raw = JSON.parse(tagsStr);
+          if (Array.isArray(raw) && raw.length > 0) parsedTags = raw;
+        } catch (e) {
+          const split = tagsStr.split(',').map((s) => s.trim()).filter(Boolean);
+          if (split.length > 0) parsedTags = split;
+        }
+      }
+
       // Create bilingual Video entity via Strapi backend endpoint
       // This calls the feed controller's createVideo action which uses the Document Service API
       // to properly create EN + DE locale entries linked via documentId, both published.
@@ -71,7 +83,7 @@ export async function POST(req: Request) {
           body: JSON.stringify({
             title,
             slug: uniqueSlug,
-            tags: ['Community', 'Video', 'Neu'],
+            tags: parsedTags,
             userId: userId,
           }),
         });

@@ -123,16 +123,26 @@ export default function VideoDetailPage() {
     hasTrackedView.current = false;
 
     const checkInteraction = async () => {
+      let localLiked = false;
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        if (storedLikes.includes(item.slug)) localLiked = true;
+      } catch (e) {}
+
       try {
         const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
         const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`);
         if (res.ok) {
           const data = await res.json();
-          setIsLiked(Boolean(data.isLiked));
+          setIsLiked(localLiked || Boolean(data.isLiked));
           if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
           if (typeof data.viewsCount === 'number') setViewsCount(data.viewsCount);
+        } else if (localLiked) {
+          setIsLiked(true);
         }
-      } catch (e) {}
+      } catch (e) {
+        if (localLiked) setIsLiked(true);
+      }
     };
     checkInteraction();
   }, [item?.slug, userIdent]);
@@ -179,8 +189,18 @@ export default function VideoDetailPage() {
 
     if (nextIsLiked) {
       showToast(lang === 'de' ? '❤️ Zu deinen Gefällt-mir-Angaben hinzugefügt' : '❤️ Added to your liked videos');
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        if (!storedLikes.includes(item.slug)) {
+          localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, item.slug]));
+        }
+      } catch (e) {}
     } else {
       showToast(lang === 'de' ? '🤍 Gefällt-mir-Angabe entfernt' : '🤍 Removed from liked videos');
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== item.slug)));
+      } catch (e) {}
     }
 
     try {
