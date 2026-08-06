@@ -77,7 +77,6 @@ export default function ContentDetailPage() {
   const slug = params?.slug as string;
 
   const [item, setItem] = useState<FeedItem | null>(null);
-  const [lang, setLang] = useState<'de' | 'en'>('de');
   const [relatedItems, setRelatedItems] = useState<FeedItem[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -94,7 +93,7 @@ export default function ContentDetailPage() {
   const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
-  const { openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { lang, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -102,11 +101,6 @@ export default function ContentDetailPage() {
       const statusParam = urlParams.get('status');
       const hasCookie = document.cookie.includes('__prerender_bypass');
       setIsPreviewActive(statusParam === 'draft' || (hasCookie && statusParam !== 'published'));
-
-      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
-      if (savedLang === 'de' || savedLang === 'en') {
-        setLang(savedLang);
-      }
     }
 
     try {
@@ -116,22 +110,12 @@ export default function ContentDetailPage() {
       }
     } catch (e) {}
 
-    fetchItemData();
+    fetchItemData(lang);
     loadComments();
-  }, [slug]);
-
-  const toggleLanguage = () => {
-    const next = lang === 'de' ? 'en' : 'de';
-    setLang(next);
-    try {
-      localStorage.setItem('omni_lang', next);
-      document.cookie = `omni_lang=${next}; path=/; max-age=31536000`;
-    } catch (e) {}
-    fetchItemData(next);
-  };
+  }, [slug, lang]);
 
   const fetchItemData = async (targetLang?: 'de' | 'en') => {
-    const activeLang = targetLang || lang || (typeof window !== 'undefined' ? (localStorage.getItem('omni_lang') as any || 'de') : 'de');
+    const activeLang = targetLang || lang || 'de';
     const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const statusParam = urlParams ? urlParams.get('status') : null;
     const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
@@ -175,6 +159,9 @@ export default function ContentDetailPage() {
             setItem(apiMatch);
             setLikesCount(apiMatch.likesCount || 100);
             setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== apiMatch.slug && i.mediaType !== 'video' && i.mediaType !== 'short').slice(0, 5));
+            if (typeof window !== 'undefined' && apiMatch.slug && apiMatch.slug !== slug) {
+              window.history.replaceState(null, '', `/content/${apiMatch.slug}`);
+            }
             return;
           }
         }

@@ -226,7 +226,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const target = (userProfileInput as any)?.targetSlug;
     if (target) {
       try {
+        const altLocale = targetLocale === 'de' ? 'en' : 'de';
+
         const findTargetItem = async (locale: string, status: 'draft' | 'published') => {
+          // 1. Direct slug match in requested locale
           try {
             const matches = await strapi.documents('api::feed-item.feed-item').findMany({
               filters: { slug: { $eq: target } },
@@ -237,6 +240,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             if (matches && matches.length > 0) return matches[0];
           } catch (e) {}
 
+          // 2. Direct documentId match in requested locale
           try {
             const doc = await strapi.documents('api::feed-item.feed-item').findOne({
               documentId: target,
@@ -247,6 +251,25 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             if (doc) return doc;
           } catch (e) {}
 
+          // 3. Reverse lookup: find item by slug in ANY locale to resolve documentId, then fetch target locale
+          try {
+            const altMatches = await strapi.documents('api::feed-item.feed-item').findMany({
+              filters: { slug: { $eq: target } },
+              locale: '*',
+              status,
+              populate: populateConfig as any,
+            });
+            if (altMatches && altMatches.length > 0 && altMatches[0].documentId) {
+              const localizedDoc = await strapi.documents('api::feed-item.feed-item').findOne({
+                documentId: altMatches[0].documentId,
+                locale,
+                status,
+                populate: populateConfig as any,
+              });
+              if (localizedDoc) return localizedDoc;
+            }
+          } catch (e) {}
+
           return null;
         };
 
@@ -254,15 +277,15 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         if ((userProfileInput as any)?.includeDrafts) {
           // Priority to DRAFTS when previewing
           targetMatch =
-            (await findTargetItem('en', 'draft')) ||
-            (await findTargetItem('de', 'draft')) ||
-            (await findTargetItem('en', 'published')) ||
-            (await findTargetItem('de', 'published'));
+            (await findTargetItem(targetLocale, 'draft')) ||
+            (await findTargetItem(altLocale, 'draft')) ||
+            (await findTargetItem(targetLocale, 'published')) ||
+            (await findTargetItem(altLocale, 'published'));
         } else {
-          // Strictly PUBLISHED when live or previewing published tab
+          // Strictly PUBLISHED matching targetLocale first
           targetMatch =
-            (await findTargetItem('de', 'published')) ||
-            (await findTargetItem('en', 'published'));
+            (await findTargetItem(targetLocale, 'published')) ||
+            (await findTargetItem(altLocale, 'published'));
         }
 
         if (targetMatch) {

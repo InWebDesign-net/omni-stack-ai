@@ -77,7 +77,6 @@ export default function VideoDetailPage() {
   const slug = params?.slug as string;
 
   const [item, setItem] = useState<FeedItem | null>(null);
-  const [lang, setLang] = useState<'de' | 'en'>('de');
   const [relatedItems, setRelatedItems] = useState<FeedItem[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -94,16 +93,9 @@ export default function VideoDetailPage() {
   const [editCommentText, setEditCommentText] = useState('');
   const [userProfile, setUserProfile] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
 
-  const { openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { lang, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
-      if (savedLang === 'de' || savedLang === 'en') {
-        setLang(savedLang);
-      }
-    }
-
     try {
       const storedUser = localStorage.getItem('omni_user');
       if (storedUser) {
@@ -111,22 +103,12 @@ export default function VideoDetailPage() {
       }
     } catch (e) {}
 
-    fetchItemData();
+    fetchItemData(lang);
     loadComments();
-  }, [slug]);
-
-  const toggleLanguage = () => {
-    const next = lang === 'de' ? 'en' : 'de';
-    setLang(next);
-    try {
-      localStorage.setItem('omni_lang', next);
-      document.cookie = `omni_lang=${next}; path=/; max-age=31536000`;
-    } catch (e) {}
-    fetchItemData(next);
-  };
+  }, [slug, lang]);
 
   const fetchItemData = async (targetLang?: 'de' | 'en') => {
-    const activeLang = targetLang || lang || (typeof window !== 'undefined' ? (localStorage.getItem('omni_lang') as any || 'de') : 'de');
+    const activeLang = targetLang || lang || 'de';
 
     const matchItem = (itemsList: FeedItem[], target: string) => {
       if (!target) return null;
@@ -166,6 +148,9 @@ export default function VideoDetailPage() {
             setItem(apiMatch);
             setLikesCount(apiMatch.likesCount || 100);
             setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== apiMatch.slug && i.mediaType === 'video').slice(0, 6));
+            if (typeof window !== 'undefined' && apiMatch.slug && apiMatch.slug !== slug) {
+              window.history.replaceState(null, '', `/video/${apiMatch.slug}`);
+            }
             return;
           }
         }
