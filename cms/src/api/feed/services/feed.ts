@@ -222,6 +222,28 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         dbItems = [...dbItems, ...draftItems];
       }
 
+      // Fetch standalone video documents and unify into dbItems
+      try {
+        const videoItems = await strapi.documents('api::video.video').findMany({
+          populate: { creator: true } as any,
+          status: (userProfileInput as any)?.includeDrafts ? undefined : 'published',
+          locale: targetLocale,
+        });
+        const mappedVideos = videoItems.map((v: any) => ({
+          ...v,
+          author: v.creator || v.author,
+          mediaType: 'video',
+          mediaUrl: v.mp4Url || v.hlsUrl,
+          tags: v.tags || ['Video'],
+          summary: v.summary || v.title,
+          blocks: v.blocks || [],
+        }));
+        // Avoid duplicates if video is already linked to a feedItem
+        const existingSlugs = new Set(dbItems.map((i: any) => i.slug));
+        const uniqueVideos = mappedVideos.filter((v: any) => !existingSlugs.has(v.slug));
+        dbItems = [...dbItems, ...uniqueVideos];
+      } catch (e) {}
+
       items = dbItems as any;
     } catch (err) {
       items = [];
@@ -234,7 +256,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         const altLocale = targetLocale === 'de' ? 'en' : 'de';
 
         const findTargetItem = async (locale: string, status: 'draft' | 'published') => {
-          // 1. Direct slug match in requested locale
+          // 1. Direct slug match in requested locale in feed-item
           try {
             const matches = await strapi.documents('api::feed-item.feed-item').findMany({
               filters: { slug: { $eq: target } },
@@ -245,7 +267,29 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             if (matches && matches.length > 0) return matches[0];
           } catch (e) {}
 
-          // 2. Direct documentId match in requested locale
+          // 2. Direct slug match in standalone video
+          try {
+            const videoMatches = await strapi.documents('api::video.video').findMany({
+              filters: { slug: { $eq: target } },
+              locale,
+              status,
+              populate: { creator: true } as any,
+            });
+            if (videoMatches && videoMatches.length > 0) {
+              const v = videoMatches[0] as any;
+              return {
+                ...v,
+                author: v.creator || v.author,
+                mediaType: 'video',
+                mediaUrl: v.mp4Url || v.hlsUrl,
+                tags: v.tags || ['Video'],
+                summary: v.summary || v.title,
+                blocks: v.blocks || [],
+              };
+            }
+          } catch (e) {}
+
+          // 3. Direct documentId match in requested locale in feed-item
           try {
             const doc = await strapi.documents('api::feed-item.feed-item').findOne({
               documentId: target,
@@ -256,7 +300,29 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             if (doc) return doc;
           } catch (e) {}
 
-          // 3. Reverse lookup: find item by slug in ANY locale to resolve documentId, then fetch target locale
+          // 4. Direct documentId match in standalone video
+          try {
+            const vDoc = await strapi.documents('api::video.video').findOne({
+              documentId: target,
+              locale,
+              status,
+              populate: { creator: true } as any,
+            });
+            if (vDoc) {
+              const v = vDoc as any;
+              return {
+                ...v,
+                author: v.creator || v.author,
+                mediaType: 'video',
+                mediaUrl: v.mp4Url || v.hlsUrl,
+                tags: v.tags || ['Video'],
+                summary: v.summary || v.title,
+                blocks: v.blocks || [],
+              };
+            }
+          } catch (e) {}
+
+          // 5. Reverse lookup: find item by slug in ANY locale to resolve documentId, then fetch target locale
           try {
             const altMatches = await strapi.documents('api::feed-item.feed-item').findMany({
               filters: { slug: { $eq: target } },
@@ -272,6 +338,36 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 populate: populateConfig as any,
               });
               if (localizedDoc) return localizedDoc;
+            }
+          } catch (e) {}
+
+          // 6. Reverse lookup in standalone video
+          try {
+            const altVideoMatches = await strapi.documents('api::video.video').findMany({
+              filters: { slug: { $eq: target } },
+              locale: '*',
+              status,
+              populate: { creator: true } as any,
+            });
+            if (altVideoMatches && altVideoMatches.length > 0 && altVideoMatches[0].documentId) {
+              const localizedVDoc = await strapi.documents('api::video.video').findOne({
+                documentId: altVideoMatches[0].documentId,
+                locale,
+                status,
+                populate: { creator: true } as any,
+              });
+              if (localizedVDoc) {
+                const v = localizedVDoc as any;
+                return {
+                  ...v,
+                  author: v.creator || v.author,
+                  mediaType: 'video',
+                  mediaUrl: v.mp4Url || v.hlsUrl,
+                  tags: v.tags || ['Video'],
+                  summary: v.summary || v.title,
+                  blocks: v.blocks || [],
+                };
+              }
             }
           } catch (e) {}
 
@@ -710,29 +806,67 @@ CRITICAL: Return JSON ONLY in this format:
       throw new Error('Missing documentId');
     }
     if (publish) {
-      const pubDe = await strapi.documents('api::feed-item.feed-item').publish({
-        documentId,
-        locale: 'de',
-      });
       try {
-        await strapi.documents('api::feed-item.feed-item').publish({
+        const pubDe = await strapi.documents('api::feed-item.feed-item').publish({
           documentId,
-          locale: 'en',
+          locale: 'de',
         });
-      } catch (e) {}
-      return { success: true, documentId, published: true, data: pubDe };
+        try {
+          await strapi.documents('api::feed-item.feed-item').publish({
+            documentId,
+            locale: 'en',
+          });
+        } catch (e) {}
+        return { success: true, documentId, published: true, data: pubDe };
+      } catch (e) {
+        // Fallback to standalone video model
+        try {
+          const vPub = await strapi.documents('api::video.video').publish({
+            documentId,
+            locale: 'de',
+          });
+          try {
+            await strapi.documents('api::video.video').publish({
+              documentId,
+              locale: 'en',
+            });
+          } catch (e) {}
+          return { success: true, documentId, published: true, data: vPub };
+        } catch (vErr: any) {
+          throw vErr;
+        }
+      }
     } else {
-      const unpubDe = await strapi.documents('api::feed-item.feed-item').unpublish({
-        documentId,
-        locale: 'de',
-      });
       try {
-        await strapi.documents('api::feed-item.feed-item').unpublish({
+        const unpubDe = await strapi.documents('api::feed-item.feed-item').unpublish({
           documentId,
-          locale: 'en',
+          locale: 'de',
         });
-      } catch (e) {}
-      return { success: true, documentId, published: false, data: unpubDe };
+        try {
+          await strapi.documents('api::feed-item.feed-item').unpublish({
+            documentId,
+            locale: 'en',
+          });
+        } catch (e) {}
+        return { success: true, documentId, published: false, data: unpubDe };
+      } catch (e) {
+        // Fallback to standalone video model
+        try {
+          const vUnpub = await strapi.documents('api::video.video').unpublish({
+            documentId,
+            locale: 'de',
+          });
+          try {
+            await strapi.documents('api::video.video').unpublish({
+              documentId,
+              locale: 'en',
+            });
+          } catch (e) {}
+          return { success: true, documentId, published: false, data: vUnpub };
+        } catch (vErr: any) {
+          throw vErr;
+        }
+      }
     }
   },
 

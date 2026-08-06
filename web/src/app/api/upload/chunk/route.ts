@@ -63,6 +63,10 @@ export async function POST(req: Request) {
         const videoPayload: any = {
           title,
           slug: cleanSlug,
+          summary: 'Video wird verarbeitet...',
+          tags: ['Community', 'Video', 'Neu'],
+          viewsCount: 0,
+          likesCount: 0,
           mp4Url: `/media/videos/${cleanSlug}.mp4`,
           hlsUrl: `/media/videos/hls/${cleanSlug}/master.m3u8`,
           thumbnailUrl: `/media/thumbnails/${cleanSlug}-1.png`,
@@ -70,6 +74,7 @@ export async function POST(req: Request) {
           isProcessing: true,
           isForSale: false,
           price: 0,
+          locale: 'de',
         };
         if (userId) {
           videoPayload.creator = userId;
