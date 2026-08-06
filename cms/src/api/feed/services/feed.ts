@@ -402,6 +402,18 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       } catch (e) {}
     }
 
+    const extractText = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (Array.isArray(val)) {
+        return val
+          .map((b: any) => (Array.isArray(b?.children) ? b.children.map((c: any) => c?.text || '').join('') : ''))
+          .filter(Boolean)
+          .join('\n');
+      }
+      return String(val);
+    };
+
     // 2. Score items against Interest Vector
     const scoredItems = items.map((rawItem: any) => {
       const blocks = rawItem.blocks || [];
@@ -414,11 +426,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       else if (pdfBlock) derivedMediaType = 'pdf';
 
       const videoData = videoBlock?.video || rawItem.video;
+      const parsedSummary = extractText(rawItem.summary);
 
       const item = {
         ...rawItem,
+        summary: parsedSummary || rawItem.title || '',
         mediaType: derivedMediaType,
-        content: richTextBlock?.body || rawItem.content || rawItem.summary || '',
+        content: richTextBlock?.body || rawItem.content || parsedSummary || '',
         mediaUrl: videoData?.mp4Url || videoData?.hlsUrl || pdfBlock?.pdfUrl || rawItem.mediaUrl || '',
         thumbnailUrl: videoData?.thumbnailUrl || rawItem.thumbnailUrl || '',
         duration: videoData?.duration || rawItem.duration || 0,

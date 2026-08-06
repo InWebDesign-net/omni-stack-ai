@@ -36,7 +36,7 @@
       }
     },
     "summary": {
-      "type": "text",
+      "type": "blocks",
       "pluginOptions": {
         "i18n": {
           "localized": true

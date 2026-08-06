@@ -36,7 +36,7 @@
       }
     },
     "summary": {
-      "type": "text",
+      "type": "blocks",
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -86,20 +86,6 @@
     },
     "ogImageUrl": {
       "type": "string"
-    },
-    "blocks": {
-      "type": "dynamiczone",
-      "components": [
-        "shared.rich-text",
-        "shared.headline",
-        "shared.quote",
-        "shared.media"
-      ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
     },
     "creator": {
       "type": "relation",
