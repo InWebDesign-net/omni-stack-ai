@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -81,9 +81,11 @@ export default function VideoDetailPage() {
   const [relatedItems, setRelatedItems] = useState<FeedItem[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [viewsCount, setViewsCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+  const hasTrackedView = useRef(false);
 
   // Comment section state connected to Strapi
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -97,6 +99,10 @@ export default function VideoDetailPage() {
 
   const { lang, currentUser, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
 
+  const userIdent = useMemo(() => {
+    return currentUser?.id ? `user-${currentUser.id}` : (userData?.id ? `user-${userData.id}` : 'anon-session');
+  }, [currentUser?.id, userData?.id]);
+
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('omni_user');
@@ -108,6 +114,80 @@ export default function VideoDetailPage() {
     fetchItemData(lang);
     loadComments();
   }, [slug, lang]);
+
+  // Fetch initial interaction status
+  useEffect(() => {
+    if (!item?.slug) return;
+    setLikesCount(item.likesCount ?? 0);
+    setViewsCount(item.viewsCount ?? 0);
+    hasTrackedView.current = false;
+
+    const checkInteraction = async () => {
+      try {
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+        const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsLiked(Boolean(data.isLiked));
+          if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
+          if (typeof data.viewsCount === 'number') setViewsCount(data.viewsCount);
+        }
+      } catch (e) {}
+    };
+    checkInteraction();
+  }, [item?.slug, userIdent]);
+
+  const handleVideoTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    if (!hasTrackedView.current && video.currentTime >= 5 && item?.slug) {
+      hasTrackedView.current = true;
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      fetch(`${strapiUrl}/api/feed/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: item.slug,
+          type: 'view',
+          watchTimeSeconds: video.currentTime,
+          userIdentifier: userIdent,
+          userId: currentUser?.id || userData?.id,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.counted && typeof data.viewsCount === 'number') {
+            setViewsCount(data.viewsCount);
+          }
+        })
+        .catch(() => {});
+    }
+  };
+
+  const handleLikeToggle = async () => {
+    if (!item?.slug) return;
+    const nextIsLiked = !isLiked;
+    const type = nextIsLiked ? 'like' : 'unlike';
+    setIsLiked(nextIsLiked);
+    setLikesCount((prev) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
+
+    try {
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/feed/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: item.slug,
+          type,
+          userIdentifier: userIdent,
+          userId: currentUser?.id || userData?.id,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
+      }
+    } catch (e) {}
+  };
 
   useEffect(() => {
     if (!item?.mediaUrl) return;
@@ -232,14 +312,6 @@ export default function VideoDetailPage() {
     }, 4000);
     return () => clearInterval(interval);
   }, [(item as any)?.isProcessing, slug]);
-
-  const handleLikeToggle = () => {
-    setIsLiked((prev) => {
-      const next = !prev;
-      setLikesCount((count) => (next ? count + 1 : count - 1));
-      return next;
-    });
-  };
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -409,6 +481,7 @@ export default function VideoDetailPage() {
                 src={videoBlobUrl || item.mediaUrl}
                 controls
                 autoPlay
+                onTimeUpdate={handleVideoTimeUpdate}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -422,7 +495,7 @@ export default function VideoDetailPage() {
                 <div className="flex items-center gap-3 text-xs text-[#9ba4bf] font-mono">
                   <span className="flex items-center gap-1 text-white font-semibold">
                     <Eye className="h-4 w-4 text-[#44e2cd]" />
-                    {(item.viewsCount / 1000).toFixed(1)}k {lang === 'de' ? 'Aufrufe' : 'views'}
+                    {viewsCount >= 1000 ? `${(viewsCount / 1000).toFixed(1)}k` : viewsCount} {lang === 'de' ? 'Aufrufe' : 'views'}
                   </span>
                   <span>•</span>
                   <span>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US') : (lang === 'de' ? 'Entwurf' : 'Draft')}</span>

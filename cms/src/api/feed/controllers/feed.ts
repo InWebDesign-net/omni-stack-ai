@@ -189,4 +189,24 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       return ctx.badRequest('Create Video Error', { error: err.message });
     }
   },
+
+  async handleInteraction(ctx: any) {
+    try {
+      const payload = ctx.request.body;
+      const result = await strapi.service('api::feed.feed').handleInteraction(payload);
+      return ctx.send(result);
+    } catch (err: any) {
+      return ctx.badRequest('Interaction Error', { error: err.message });
+    }
+  },
+
+  async getInteractionStatus(ctx: any) {
+    try {
+      const { slug, userIdentifier } = ctx.query;
+      const result = await strapi.service('api::feed.feed').getInteractionStatus(slug, userIdentifier);
+      return ctx.send(result);
+    } catch (err: any) {
+      return ctx.badRequest('Interaction Status Error', { error: err.message });
+    }
+  },
 });

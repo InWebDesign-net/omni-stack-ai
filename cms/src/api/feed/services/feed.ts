@@ -1,5 +1,8 @@
 import { Core } from '@strapi/strapi';
 
+const dailyViewsSet = new Set<string>();
+const likedItemsSet = new Set<string>();
+
 export interface InterestProfile {
   interests: Record<string, { score: number; last_interacted: string }>;
   contentTypes: Record<string, number>;
@@ -1373,5 +1376,238 @@ CRITICAL: Return JSON ONLY in this format:
       console.error('Error in seedDemoData:', err);
       return { success: false, error: err.message };
     }
+  },
+
+  async getInteractionStatus(slug: string, userIdentifier: string = 'anonymous') {
+    const today = new Date().toISOString().split('T')[0];
+    const viewKey = `view:${slug}:${userIdentifier}:${today}`;
+    const likeKey = `like:${slug}:${userIdentifier}`;
+
+    const hasViewedToday = dailyViewsSet.has(viewKey);
+    const isLiked = likedItemsSet.has(likeKey);
+
+    let viewsCount = 0;
+    let likesCount = 0;
+
+    try {
+      const videoMatches = await strapi.documents('api::video.video').findMany({
+        filters: { slug: slug },
+      });
+      if (videoMatches && videoMatches.length > 0) {
+        viewsCount = (videoMatches[0] as any).viewsCount || 0;
+        likesCount = (videoMatches[0] as any).likesCount || 0;
+      } else {
+        const feedMatches = await strapi.documents('api::feed-item.feed-item').findMany({
+          filters: { slug: slug },
+        });
+        if (feedMatches && feedMatches.length > 0) {
+          viewsCount = (feedMatches[0] as any).viewsCount || 0;
+          likesCount = (feedMatches[0] as any).likesCount || 0;
+        }
+      }
+    } catch (e) {}
+
+    return {
+      slug,
+      isLiked,
+      hasViewedToday,
+      viewsCount,
+      likesCount,
+    };
+  },
+
+  async handleInteraction(payload: {
+    slug: string;
+    type: 'view' | 'like' | 'unlike';
+    watchTimeSeconds?: number;
+    userIdentifier?: string;
+    userId?: number | string;
+  }) {
+    const { slug, type, watchTimeSeconds = 0, userIdentifier = 'anonymous', userId } = payload;
+    const today = new Date().toISOString().split('T')[0];
+    const viewKey = `view:${slug}:${userIdentifier}:${today}`;
+    const likeKey = `like:${slug}:${userIdentifier}`;
+
+    if (!slug) {
+      return { success: false, error: 'Slug is required' };
+    }
+
+    let videoMatches: any[] = [];
+    let feedMatches: any[] = [];
+    try {
+      videoMatches = await strapi.documents('api::video.video').findMany({
+        filters: { slug: slug },
+      });
+      feedMatches = await strapi.documents('api::feed-item.feed-item').findMany({
+        filters: { slug: slug },
+      });
+    } catch (e: any) {
+      console.error('Error in handleInteraction findMany:', e.message || e);
+    }
+
+    if (videoMatches.length === 0 && feedMatches.length === 0) {
+      return { success: false, error: 'Entity not found' };
+    }
+
+    const currentItem = videoMatches[0] || feedMatches[0];
+    let currentViewsCount = Number(currentItem?.viewsCount || 0);
+    let currentLikesCount = Number(currentItem?.likesCount || 0);
+    const tags: string[] = currentItem?.tags || ['Community'];
+
+    if (type === 'view') {
+      const mediaType = currentItem?.mediaType || 'video';
+      const requiredDuration = (mediaType === 'video' || mediaType === 'short') ? 5 : 3;
+
+      if (watchTimeSeconds < requiredDuration) {
+        return {
+          success: true,
+          counted: false,
+          reason: 'duration_below_threshold',
+          requiredDuration,
+          currentViewsCount,
+          currentLikesCount,
+        };
+      }
+
+      if (dailyViewsSet.has(viewKey)) {
+        return {
+          success: true,
+          counted: false,
+          reason: 'already_viewed_today',
+          currentViewsCount,
+          currentLikesCount,
+        };
+      }
+
+      dailyViewsSet.add(viewKey);
+      currentViewsCount += 1;
+
+      for (const doc of videoMatches) {
+        try {
+          await strapi.documents('api::video.video').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            data: { viewsCount: currentViewsCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      for (const doc of feedMatches) {
+        try {
+          await strapi.documents('api::feed-item.feed-item').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            data: { viewsCount: currentViewsCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      if (userId) {
+        try {
+          await strapi.service('api::tracking.tracking').processBatch(userId, [
+            { type: 'view', tags, mediaType },
+          ]);
+        } catch (e) {}
+      }
+
+      return {
+        success: true,
+        counted: true,
+        viewsCount: currentViewsCount,
+        likesCount: currentLikesCount,
+      };
+    }
+
+    if (type === 'like') {
+      if (likedItemsSet.has(likeKey)) {
+        return {
+          success: true,
+          isLiked: true,
+          viewsCount: currentViewsCount,
+          likesCount: currentLikesCount,
+        };
+      }
+
+      likedItemsSet.add(likeKey);
+      currentLikesCount += 1;
+
+      for (const doc of videoMatches) {
+        try {
+          await strapi.documents('api::video.video').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            data: { likesCount: currentLikesCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      for (const doc of feedMatches) {
+        try {
+          await strapi.documents('api::feed-item.feed-item').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            data: { likesCount: currentLikesCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      if (userId) {
+        try {
+          await strapi.service('api::tracking.tracking').processBatch(userId, [
+            { type: 'click', tags, mediaType: currentItem?.mediaType },
+          ]);
+        } catch (e) {}
+      }
+
+      return {
+        success: true,
+        isLiked: true,
+        viewsCount: currentViewsCount,
+        likesCount: currentLikesCount,
+      };
+    }
+
+    if (type === 'unlike') {
+      if (!likedItemsSet.has(likeKey)) {
+        return {
+          success: true,
+          isLiked: false,
+          viewsCount: currentViewsCount,
+          likesCount: currentLikesCount,
+        };
+      }
+
+      likedItemsSet.delete(likeKey);
+      currentLikesCount = Math.max(0, currentLikesCount - 1);
+
+      for (const doc of videoMatches) {
+        try {
+          await strapi.documents('api::video.video').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            data: { likesCount: currentLikesCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      for (const doc of feedMatches) {
+        try {
+          await strapi.documents('api::feed-item.feed-item').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            data: { likesCount: currentLikesCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      return {
+        success: true,
+        isLiked: false,
+        viewsCount: currentViewsCount,
+        likesCount: currentLikesCount,
+      };
+    }
+
+    return { success: false, error: 'Invalid interaction type' };
   },
 });

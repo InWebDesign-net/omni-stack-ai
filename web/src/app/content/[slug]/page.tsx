@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -80,8 +80,10 @@ export default function ContentDetailPage() {
   const [relatedItems, setRelatedItems] = useState<FeedItem[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [viewsCount, setViewsCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const hasTrackedView = useRef(false);
 
   // Comment section state connected to Strapi
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -90,10 +92,14 @@ export default function ContentDetailPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
-  const [userData, setUserData] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
+  const [userData, setUserData] = useState<{ id?: string | number; username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
-  const { lang, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { lang, currentUser, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+
+  const userIdent = useMemo(() => {
+    return currentUser?.id ? `user-${currentUser.id}` : ((userData as any)?.id ? `user-${(userData as any).id}` : 'anon-session');
+  }, [currentUser?.id, userData]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -113,6 +119,82 @@ export default function ContentDetailPage() {
     fetchItemData(lang);
     loadComments();
   }, [slug, lang]);
+
+  // Fetch initial interaction status & track article view after 3 seconds
+  useEffect(() => {
+    if (!item?.slug) return;
+    setLikesCount(item.likesCount ?? 0);
+    setViewsCount(item.viewsCount ?? 0);
+    hasTrackedView.current = false;
+
+    const checkInteraction = async () => {
+      try {
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+        const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsLiked(Boolean(data.isLiked));
+          if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
+          if (typeof data.viewsCount === 'number') setViewsCount(data.viewsCount);
+        }
+      } catch (e) {}
+    };
+    checkInteraction();
+
+    // Track view after reading for 3 seconds
+    const timer = setTimeout(() => {
+      if (!hasTrackedView.current) {
+        hasTrackedView.current = true;
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+        fetch(`${strapiUrl}/api/feed/interaction`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug: item.slug,
+            type: 'view',
+            watchTimeSeconds: 3,
+            userIdentifier: userIdent,
+            userId: currentUser?.id || (userData as any)?.id,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.counted && typeof data.viewsCount === 'number') {
+              setViewsCount(data.viewsCount);
+            }
+          })
+          .catch(() => {});
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [item?.slug, userIdent]);
+
+  const handleLikeToggle = async () => {
+    if (!item?.slug) return;
+    const nextIsLiked = !isLiked;
+    const type = nextIsLiked ? 'like' : 'unlike';
+    setIsLiked(nextIsLiked);
+    setLikesCount((prev) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
+
+    try {
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/feed/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: item.slug,
+          type,
+          userIdentifier: userIdent,
+          userId: currentUser?.id || (userData as any)?.id,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
+      }
+    } catch (e) {}
+  };
 
   const fetchItemData = async (targetLang?: 'de' | 'en') => {
     const activeLang = targetLang || lang || 'de';
@@ -157,7 +239,8 @@ export default function ContentDetailPage() {
           const targetItem = data.feed[0];
           if (targetItem) {
             setItem(targetItem);
-            setLikesCount(targetItem.likesCount || 100);
+            setLikesCount(targetItem.likesCount ?? 0);
+            setViewsCount(targetItem.viewsCount ?? 0);
             setRelatedItems(data.feed.filter((i: FeedItem) => i.slug !== targetItem.slug && i.mediaType !== 'video' && i.mediaType !== 'short').slice(0, 5));
             if (targetItem.slug && targetItem.slug !== slug) {
               router.replace(`/content/${targetItem.slug}`);
@@ -173,7 +256,8 @@ export default function ContentDetailPage() {
     // Offline fallback ONLY if Strapi API is unreachable
     const foundFallback = matchItem(FALLBACK_FEED_ITEMS, slug) || FALLBACK_FEED_ITEMS[0];
     setItem(foundFallback);
-    setLikesCount(foundFallback.likesCount || 100);
+    setLikesCount(foundFallback.likesCount ?? 0);
+    setViewsCount(foundFallback.viewsCount ?? 0);
     setRelatedItems(FALLBACK_FEED_ITEMS.filter((i) => i.slug !== foundFallback.slug && i.mediaType !== 'video' && i.mediaType !== 'short').slice(0, 5));
   };
 
@@ -184,14 +268,6 @@ export default function ContentDetailPage() {
       setComments(fetched);
     }
     setLoadingComments(false);
-  };
-
-  const handleLikeToggle = () => {
-    setIsLiked((prev) => {
-      const next = !prev;
-      setLikesCount((count) => (next ? count + 1 : count - 1));
-      return next;
-    });
   };
 
   const handleAddComment = async (e: React.FormEvent) => {

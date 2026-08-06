@@ -72,5 +72,21 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/feed/interaction',
+      handler: 'feed.handleInteraction',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'GET',
+      path: '/feed/interaction-status',
+      handler: 'feed.getInteractionStatus',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
