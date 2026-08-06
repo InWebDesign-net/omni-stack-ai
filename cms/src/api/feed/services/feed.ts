@@ -691,6 +691,37 @@ CRITICAL: Return JSON ONLY in this format:
     return { success: true, slug: base, isProcessing: false, duration: metaDuration };
   },
 
+  async togglePublish(documentId: string, publish: boolean) {
+    if (!documentId) {
+      throw new Error('Missing documentId');
+    }
+    if (publish) {
+      const pubDe = await strapi.documents('api::feed-item.feed-item').publish({
+        documentId,
+        locale: 'de',
+      });
+      try {
+        await strapi.documents('api::feed-item.feed-item').publish({
+          documentId,
+          locale: 'en',
+        });
+      } catch (e) {}
+      return { success: true, documentId, published: true, data: pubDe };
+    } else {
+      const unpubDe = await strapi.documents('api::feed-item.feed-item').unpublish({
+        documentId,
+        locale: 'de',
+      });
+      try {
+        await strapi.documents('api::feed-item.feed-item').unpublish({
+          documentId,
+          locale: 'en',
+        });
+      } catch (e) {}
+      return { success: true, documentId, published: false, data: unpubDe };
+    }
+  },
+
   async seedDemoData(force = false) {
     try {
       const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });

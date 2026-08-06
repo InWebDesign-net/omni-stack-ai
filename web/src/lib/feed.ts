@@ -9,6 +9,7 @@ export interface FeedItemAuthor {
 
 export interface FeedItem {
   id: number;
+  documentId?: string;
   title: string;
   slug: string;
   summary: string;
@@ -22,11 +23,12 @@ export interface FeedItem {
   tags: string[];
   viewsCount: number;
   likesCount: number;
-  publishedAt: string;
+  publishedAt?: string;
   relevanceScore: number;
   bucketSource?: string;
   slotIndex?: number;
   author?: FeedItemAuthor;
+  isProcessing?: boolean;
 }
 
 export const FALLBACK_FEED_ITEMS: FeedItem[] = [

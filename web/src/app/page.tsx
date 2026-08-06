@@ -467,13 +467,13 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
   };
 
   // Fetch Feed from Strapi API Proxy with target locale
-  const fetchFeed = async (currentProfile: InterestProfile, currentLang = lang) => {
+  const fetchFeed = async (currentProfile: InterestProfile, currentLang = lang, includeDrafts = false) => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/strapi-feed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...currentProfile, locale: currentLang }),
+        body: JSON.stringify({ ...currentProfile, locale: currentLang, includeDrafts }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -488,6 +488,34 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     }
     setFeedItems([]);
     setIsLoading(false);
+  };
+
+  const handleTogglePublish = async (item: FeedItem) => {
+    const isCurrentlyPublished = !!item.publishedAt;
+    const docId = (item as any).documentId || item.id;
+    try {
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/feed/toggle-publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: docId,
+          publish: !isCurrentlyPublished,
+        }),
+      });
+
+      if (res.ok) {
+        setFeedItems((prev) =>
+          prev.map((i: any) =>
+            i.id === item.id || (i.documentId && i.documentId === (item as any).documentId)
+              ? { ...i, publishedAt: !isCurrentlyPublished ? new Date().toISOString() : undefined }
+              : i
+          )
+        );
+      }
+    } catch (e) {
+      console.error('Toggle publish error:', e);
+    }
   };
 
   const handleReSeedStrapi = async () => {
@@ -570,6 +598,9 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'trending' || tabParam === 'subscriptions' || tabParam === 'library') {
       setActiveNavTab(tabParam as any);
+      if (tabParam === 'library') {
+        fetchFeed(profile, lang, true);
+      }
     } else {
       setActiveNavTab('home');
     }
@@ -1548,6 +1579,26 @@ function getCurrentUserHandle(user: UserProfileSession | null): string {
                     <div className="absolute bottom-2.5 right-2.5">
                       <MediaTypeBadge type={item.mediaType} />
                     </div>
+
+                    {/* User Publish Status Badge & Toggle Button (Freischalten Switch) */}
+                    {(activeNavTab === 'library' || (currentUser && getAuthorHandle(item) === currentUser.handle) || !item.publishedAt) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTogglePublish(item);
+                        }}
+                        className={`absolute top-2.5 right-2.5 z-20 px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all flex items-center gap-1.5 shadow-lg border backdrop-blur-md ${
+                          item.publishedAt
+                            ? 'bg-[#44e2cd]/20 text-[#44e2cd] border-[#44e2cd]/40 hover:bg-[#44e2cd]/30'
+                            : 'bg-amber-500/25 text-amber-300 border-amber-500/50 hover:bg-amber-500/40 animate-pulse'
+                        }`}
+                        title={item.publishedAt ? 'Klicken zum Deaktivieren (Entwurf)' : 'Klicken zum Freischalten (Veröffentlichen)'}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.publishedAt ? 'bg-[#44e2cd]' : 'bg-amber-400'}`} />
+                        <span>{item.publishedAt ? 'Veröffentlicht ✓' : 'Freischalten 🚀'}</span>
+                      </button>
+                    )}
 
                     {/* Slot badge or Trending rank badge */}
                     {activeNavTab === 'trending' ? (

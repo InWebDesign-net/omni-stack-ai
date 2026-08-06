@@ -70,7 +70,6 @@ export async function POST(req: Request) {
           isProcessing: true,
           isForSale: false,
           price: 0,
-          publishedAt: new Date().toISOString(),
         };
         if (userId) {
           videoPayload.creator = userId;
@@ -87,7 +86,7 @@ export async function POST(req: Request) {
         }
       } catch (e) {}
 
-      // 2. Create FeedItem referencing the standalone Video & User Author
+      // 2. Create FeedItem referencing the standalone Video & User Author (Unpublished Draft by default)
       const feedItemPayload: any = {
         title,
         slug: cleanSlug,
@@ -99,7 +98,6 @@ export async function POST(req: Request) {
         tags: ['Community', 'Video', 'Neu'],
         isProcessing: true,
         video: createdVideoDocId,
-        publishedAt: new Date().toISOString(),
       };
       if (userId) {
         feedItemPayload.author = userId;

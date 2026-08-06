@@ -116,4 +116,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       return ctx.badRequest('Ingest Finalized Error', { error: err.message });
     }
   },
+
+  async togglePublish(ctx: any) {
+    try {
+      const { documentId, publish } = ctx.request.body;
+      const result = await strapi.service('api::feed.feed').togglePublish(documentId, publish);
+      return ctx.send(result);
+    } catch (err: any) {
+      return ctx.badRequest('Toggle Publish Error', { error: err.message });
+    }
+  },
 });

@@ -405,7 +405,7 @@ export default function VideoDetailPage() {
                     {(item.viewsCount / 1000).toFixed(1)}k Aufrufe
                   </span>
                   <span>•</span>
-                  <span>{new Date(item.publishedAt).toLocaleDateString('de-DE')}</span>
+                  <span>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('de-DE') : 'Entwurf'}</span>
                 </div>
 
                 {/* Actions Bar */}

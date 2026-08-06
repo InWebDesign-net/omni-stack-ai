@@ -56,5 +56,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/feed/toggle-publish',
+      handler: 'feed.togglePublish',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
