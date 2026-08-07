@@ -33,15 +33,7 @@ import {
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
-import { loadStoredAffinityGraph, getStoredJwt } from '@/lib/affinity';
-
-// JSON headers incl. the user's JWT so Strapi can attribute interactions
-const jsonAuthHeaders = (): Record<string, string> => {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  const jwt = getStoredJwt();
-  if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
-  return headers;
-};
+import { loadStoredAffinityGraph, getStoredJwt, jsonAuthHeaders } from '@/lib/affinity';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,

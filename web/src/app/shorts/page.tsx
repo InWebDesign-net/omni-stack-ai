@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import { jsonAuthHeaders } from '@/lib/affinity';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -57,7 +58,7 @@ export default function ShortsFeedPage() {
         const res = await fetch('/api/strapi-feed', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            ...jsonAuthHeaders(),
             'Cache-Control': 'no-cache, no-store',
           },
           cache: 'no-store',

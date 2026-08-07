@@ -1275,6 +1275,7 @@ CRITICAL: Return JSON ONLY in this format:
     try {
       const videoMatches = await strapi.documents('api::video.video').findMany({
         filters: { slug: slug },
+        locale: '*',
       });
       if (videoMatches && videoMatches.length > 0) {
         viewsCount = Number((videoMatches[0] as any).viewsCount || 0);
@@ -1283,6 +1284,7 @@ CRITICAL: Return JSON ONLY in this format:
       } else {
         const feedMatches = await strapi.documents('api::feed-item.feed-item').findMany({
           filters: { slug: slug },
+          locale: '*',
         });
         if (feedMatches && feedMatches.length > 0) {
           viewsCount = Number((feedMatches[0] as any).viewsCount || 0);
@@ -1344,9 +1346,11 @@ CRITICAL: Return JSON ONLY in this format:
     try {
       videoMatches = await strapi.documents('api::video.video').findMany({
         filters: { slug: slug },
+        locale: '*',
       });
       feedMatches = await strapi.documents('api::feed-item.feed-item').findMany({
         filters: { slug: slug },
+        locale: '*',
       });
     } catch (e: any) {
       console.error('Error in handleInteraction findMany:', e.message || e);

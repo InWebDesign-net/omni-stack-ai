@@ -145,3 +145,15 @@ export function getStoredJwt(): string | null {
     return null;
   }
 }
+
+/** Standard JSON headers with optional Authorization bearer token for API requests. */
+export function jsonAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  const jwt = getStoredJwt();
+  if (jwt) {
+    headers['Authorization'] = `Bearer ${jwt}`;
+  }
+  return headers;
+}
