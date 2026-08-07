@@ -43,7 +43,6 @@ export const metadata: Metadata = {
       { rel: 'android-chrome-512x512', url: '/android-chrome-512x512.png' },
     ],
   },
-  manifest: '/site.webmanifest',
   alternates: {
     canonical: 'https://omni-web.inwebdesign.net',
     languages: {
