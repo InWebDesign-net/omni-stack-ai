@@ -4,7 +4,7 @@ import { normalizeAffinityGraph } from '../../../lib/affinity';
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
   async assembleFeed(ctx: any) {
     try {
-      const userProfileInput = ctx.request.body || ctx.query;
+      const userProfileInput = { ...(ctx.query || {}), ...(ctx.request.body || {}) };
       const viewerId = ctx.state?.user?.id;
       const result = await strapi.service('api::feed.feed').assembleFeed(userProfileInput, viewerId);
       return ctx.send(result);

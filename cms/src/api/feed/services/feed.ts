@@ -14,6 +14,7 @@ const NETWORK_CREATOR_THRESHOLD = 60;
 
 export interface FeedAssemblyInput {
   locale?: string;
+  lang?: string;
   includeDrafts?: boolean;
   targetSlug?: string;
   activePattern?: 'discovery' | 'deep_dive';
@@ -29,7 +30,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * Bucketing and Interleaving Engine
    */
   async assembleFeed(userProfileInput?: FeedAssemblyInput, viewerId?: number | string) {
-    const targetLocale = userProfileInput?.locale || 'de';
+    const targetLocale = userProfileInput?.locale || userProfileInput?.lang || 'de';
 
     // Ranking source of truth: the authenticated viewer's stored affinityGraph.
     // Anonymous visitors rank against the (local) graph they send along.
@@ -827,23 +828,10 @@ CRITICAL: Return JSON ONLY in this format:
       if (force) {
         console.log('🧹 Force re-seed requested. Deleting existing Feed Items & Video records...');
         try {
-          const feedDocs = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });
-          const docIds = Array.from(new Set(feedDocs.map((d: any) => d.documentId)));
-          for (const docId of docIds) {
-            try {
-              await strapi.documents('api::feed-item.feed-item').delete({ documentId: docId });
-            } catch (e) {}
-          }
+          await strapi.db.query('api::feed-item.feed-item').deleteMany({});
         } catch (e) {}
-
         try {
-          const videoDocs = await strapi.documents('api::video.video').findMany({ locale: '*' });
-          const docIds = Array.from(new Set(videoDocs.map((d: any) => d.documentId)));
-          for (const docId of docIds) {
-            try {
-              await strapi.documents('api::video.video').delete({ documentId: docId });
-            } catch (e) {}
-          }
+          await strapi.db.query('api::video.video').deleteMany({});
         } catch (e) {}
       }
 
@@ -1002,27 +990,7 @@ CRITICAL: Return JSON ONLY in this format:
         creator: any;
       }) => {
         try {
-          const existing = await strapi.documents('api::video.video').findMany({
-            filters: { slug: { $eq: videoData.slug } },
-            locale: '*',
-          });
-          if (existing && existing.length > 0) {
-            const updated = await strapi.documents('api::video.video').update({
-              documentId: existing[0].documentId,
-              locale: existing[0].locale || 'de',
-              status: 'published',
-              data: {
-                title: videoData.title,
-                duration: videoData.duration,
-                mp4Url: videoData.mp4Url,
-                thumbnailUrl: videoData.thumbnailUrl,
-                creator: videoData.creator?.documentId || videoData.creator?.id,
-              } as any,
-            });
-            return updated;
-          }
-
-          const created = await strapi.documents('api::video.video').create({
+          const createdEn = await strapi.documents('api::video.video').create({
             data: {
               title: videoData.title,
               slug: videoData.slug,
@@ -1033,10 +1001,34 @@ CRITICAL: Return JSON ONLY in this format:
               mp4Url: videoData.mp4Url,
               thumbnailUrl: videoData.thumbnailUrl,
               creator: videoData.creator?.documentId || videoData.creator?.id,
+              visibility: 'public',
             } as any,
+            locale: 'en',
             status: 'published',
           });
-          return created;
+
+          if (createdEn?.documentId) {
+            try {
+              await strapi.documents('api::video.video').update({
+                documentId: createdEn.documentId,
+                locale: 'de',
+                status: 'published',
+                data: {
+                  title: videoData.title,
+                  slug: videoData.slug,
+                  duration: videoData.duration,
+                  isProcessing: false,
+                  isForSale: false,
+                  price: 0,
+                  mp4Url: videoData.mp4Url,
+                  thumbnailUrl: videoData.thumbnailUrl,
+                  creator: videoData.creator?.documentId || videoData.creator?.id,
+                  visibility: 'public',
+                } as any,
+              });
+            } catch (e) {}
+          }
+          return createdEn;
         } catch (e) {
           return null;
         }
@@ -1287,63 +1279,42 @@ CRITICAL: Return JSON ONLY in this format:
       for (const item of seedItems) {
         const authorId = item.creator?.documentId || item.creator?.id;
 
-        let createdEn: any = null;
         try {
-          const existingEn = await strapi.documents('api::feed-item.feed-item').findMany({
-            filters: { slug: { $eq: item.en.slug } },
-            locale: '*',
+          const createdEn = await strapi.documents('api::feed-item.feed-item').create({
+            data: {
+              ...item.en,
+              mediaType: item.mediaType,
+              thumbnailUrl: item.thumbnailUrl,
+              viewsCount: item.viewsCount,
+              likesCount: item.likesCount,
+              publishedAt: item.publishedAt,
+              author: authorId,
+              visibility: 'public',
+            } as any,
+            locale: 'en',
+            status: 'published',
           });
 
-          if (existingEn && existingEn.length > 0) {
-            createdEn = await strapi.documents('api::feed-item.feed-item').update({
-              documentId: existingEn[0].documentId,
-              locale: existingEn[0].locale || 'en',
-              status: 'published',
-              data: {
-                ...item.en,
-                mediaType: item.mediaType,
-                thumbnailUrl: item.thumbnailUrl,
-                viewsCount: item.viewsCount,
-                likesCount: item.likesCount,
-                publishedAt: item.publishedAt,
-                author: authorId,
-              } as any,
-            });
-          } else {
-            createdEn = await strapi.documents('api::feed-item.feed-item').create({
-              data: {
-                ...item.en,
-                mediaType: item.mediaType,
-                thumbnailUrl: item.thumbnailUrl,
-                viewsCount: item.viewsCount,
-                likesCount: item.likesCount,
-                publishedAt: item.publishedAt,
-                author: authorId,
-              } as any,
-              locale: 'en',
-              status: 'published',
-            });
+          if (createdEn?.documentId) {
+            try {
+              await strapi.documents('api::feed-item.feed-item').update({
+                documentId: createdEn.documentId,
+                locale: 'de',
+                data: {
+                  ...item.de,
+                  mediaType: item.mediaType,
+                  thumbnailUrl: item.thumbnailUrl,
+                  viewsCount: item.viewsCount,
+                  likesCount: item.likesCount,
+                  publishedAt: item.publishedAt,
+                  author: authorId,
+                  visibility: 'public',
+                } as any,
+                status: 'published',
+              });
+            } catch (deErr) {}
           }
-        } catch (e) {}
-
-        if (createdEn?.documentId) {
-          try {
-            await strapi.documents('api::feed-item.feed-item').update({
-              documentId: createdEn.documentId,
-              locale: 'de',
-              data: {
-                ...item.de,
-                mediaType: item.mediaType,
-                thumbnailUrl: item.thumbnailUrl,
-                viewsCount: item.viewsCount,
-                likesCount: item.likesCount,
-                publishedAt: item.publishedAt,
-                author: authorId,
-              } as any,
-              status: 'published',
-            });
-          } catch (e) {}
-        }
+        } catch (itemErr) {}
       }
 
       console.log(`✅ Seed completed: ${seedItems.length * 2} bilingual items linked with Dynamic Zone components created!`);
