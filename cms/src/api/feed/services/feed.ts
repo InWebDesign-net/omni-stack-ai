@@ -381,9 +381,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         selectedItem = trendingBucket.find((i) => !usedIds.has(itemKey(i)));
       }
 
-      // Fallback if bucket empty (only include items with positive relevance score)
+      // Fallback if bucket empty: try items with positive relevanceScore first,
+      // but if none left, pick any remaining item so feed is never empty!
       if (!selectedItem) {
-        selectedItem = scoredItems.find((i) => !usedIds.has(itemKey(i)) && i.relevanceScore > 0);
+        selectedItem =
+          scoredItems.find((i) => !usedIds.has(itemKey(i)) && i.relevanceScore > 0) ||
+          scoredItems.find((i) => !usedIds.has(itemKey(i)));
         sourceBucket = `${slotType} (Fallback)`;
       }
 
