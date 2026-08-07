@@ -52,26 +52,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       graph.activePattern = userProfileInput.activePattern;
     }
 
-    // Auto-check for any pending .done files in /root/media/out
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const outDir = '/root/media/out';
-      if (fs.existsSync(outDir)) {
-        const outFiles = fs.readdirSync(outDir);
-        const doneFiles = outFiles.filter((f: string) => f.endsWith('.done'));
-        for (const doneFile of doneFiles) {
-          const base = path.basename(doneFile, '.done');
-          await this.ingestFinalizedVideo({ slug: base });
-        }
-      }
-    } catch (e) {}
-
-    // Auto-seed initial feed items if missing
-    try {
-      await this.seedDemoData(false);
-    } catch (e) {}
-
     // 1. Fetch items from database matching targetLocale
     let items: any[] = [];
     const populateConfig = {
