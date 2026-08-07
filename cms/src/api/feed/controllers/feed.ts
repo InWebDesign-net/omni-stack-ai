@@ -202,11 +202,21 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async getInteractionStatus(ctx: any) {
     try {
-      const { slug, userIdentifier } = ctx.query;
-      const result = await strapi.service('api::feed.feed').getInteractionStatus(slug, userIdentifier);
+      const { slug, userIdentifier, userId } = ctx.query;
+      const result = await strapi.service('api::feed.feed').getInteractionStatus(slug, userIdentifier, userId);
       return ctx.send(result);
     } catch (err: any) {
       return ctx.badRequest('Interaction Status Error', { error: err.message });
+    }
+  },
+
+  async getUserFavorites(ctx: any) {
+    try {
+      const { userIdentifier, userId } = ctx.query;
+      const result = await strapi.service('api::feed.feed').getUserFavorites(userIdentifier as string, userId);
+      return ctx.send(result);
+    } catch (err: any) {
+      return ctx.badRequest('User Favorites Error', { error: err.message });
     }
   },
 });

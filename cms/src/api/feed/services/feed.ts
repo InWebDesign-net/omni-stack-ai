@@ -1378,32 +1378,58 @@ CRITICAL: Return JSON ONLY in this format:
     }
   },
 
-  async getInteractionStatus(slug: string, userIdentifier: string = 'anonymous') {
+  async getInteractionStatus(slug: string, userIdentifier: string = 'anonymous', userId?: number | string) {
     const today = new Date().toISOString().split('T')[0];
     const viewKey = `view:${slug}:${userIdentifier}:${today}`;
-    const likeKey = `like:${slug}:${userIdentifier}`;
-
     const hasViewedToday = dailyViewsSet.has(viewKey);
-    const isLiked = likedItemsSet.has(likeKey);
 
     let viewsCount = 0;
     let likesCount = 0;
+    let isLiked = false;
+
+    let targetVideoDocId: string | null = null;
+    let targetFeedItemDocId: string | null = null;
 
     try {
       const videoMatches = await strapi.documents('api::video.video').findMany({
         filters: { slug: slug },
       });
       if (videoMatches && videoMatches.length > 0) {
-        viewsCount = (videoMatches[0] as any).viewsCount || 0;
-        likesCount = (videoMatches[0] as any).likesCount || 0;
+        viewsCount = Number((videoMatches[0] as any).viewsCount || 0);
+        likesCount = Number((videoMatches[0] as any).likesCount || 0);
+        targetVideoDocId = (videoMatches[0] as any).documentId;
       } else {
         const feedMatches = await strapi.documents('api::feed-item.feed-item').findMany({
           filters: { slug: slug },
         });
         if (feedMatches && feedMatches.length > 0) {
-          viewsCount = (feedMatches[0] as any).viewsCount || 0;
-          likesCount = (feedMatches[0] as any).likesCount || 0;
+          viewsCount = Number((feedMatches[0] as any).viewsCount || 0);
+          likesCount = Number((feedMatches[0] as any).likesCount || 0);
+          targetFeedItemDocId = (feedMatches[0] as any).documentId;
         }
+      }
+    } catch (e) {}
+
+    // Query Fav collection relation in database
+    try {
+      const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
+      if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+
+      const favQuery: any = {
+        filters: {
+          $or: favFilters,
+        },
+      };
+
+      if (targetVideoDocId) {
+        favQuery.filters.video = { documentId: { $eq: targetVideoDocId } };
+      } else if (targetFeedItemDocId) {
+        favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
+      }
+
+      const favs = await strapi.documents('api::fav.fav').findMany(favQuery);
+      if (favs && favs.length > 0) {
+        isLiked = true;
       }
     } catch (e) {}
 
@@ -1426,7 +1452,6 @@ CRITICAL: Return JSON ONLY in this format:
     const { slug, type, watchTimeSeconds = 0, userIdentifier = 'anonymous', userId } = payload;
     const today = new Date().toISOString().split('T')[0];
     const viewKey = `view:${slug}:${userIdentifier}:${today}`;
-    const likeKey = `like:${slug}:${userIdentifier}`;
 
     if (!slug) {
       return { success: false, error: 'Slug is required' };
@@ -1452,6 +1477,8 @@ CRITICAL: Return JSON ONLY in this format:
     const currentItem = videoMatches[0] || feedMatches[0];
     let currentViewsCount = Number(currentItem?.viewsCount || 0);
     let currentLikesCount = Number(currentItem?.likesCount || 0);
+    const targetVideoDocId = videoMatches[0]?.documentId || null;
+    const targetFeedItemDocId = feedMatches[0]?.documentId || null;
     const tags: string[] = currentItem?.tags || ['Community'];
 
     if (type === 'view') {
@@ -1487,6 +1514,7 @@ CRITICAL: Return JSON ONLY in this format:
           await strapi.documents('api::video.video').update({
             documentId: doc.documentId,
             locale: doc.locale || 'de',
+            status: 'published',
             data: { viewsCount: currentViewsCount } as any,
           });
         } catch (e) {}
@@ -1497,6 +1525,7 @@ CRITICAL: Return JSON ONLY in this format:
           await strapi.documents('api::feed-item.feed-item').update({
             documentId: doc.documentId,
             locale: doc.locale || 'de',
+            status: 'published',
             data: { viewsCount: currentViewsCount } as any,
           });
         } catch (e) {}
@@ -1519,44 +1548,68 @@ CRITICAL: Return JSON ONLY in this format:
     }
 
     if (type === 'like') {
-      if (likedItemsSet.has(likeKey)) {
-        return {
-          success: true,
-          isLiked: true,
-          viewsCount: currentViewsCount,
-          likesCount: currentLikesCount,
+      // 1. Check existing Fav relation
+      let existingFavs: any[] = [];
+      try {
+        const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
+        if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+
+        const favQuery: any = {
+          filters: {
+            $or: favFilters,
+          },
         };
-      }
+        if (targetVideoDocId) favQuery.filters.video = { documentId: { $eq: targetVideoDocId } };
+        else if (targetFeedItemDocId) favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
 
-      likedItemsSet.add(likeKey);
-      currentLikesCount += 1;
+        existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
+      } catch (e) {}
 
-      for (const doc of videoMatches) {
+      if (existingFavs.length === 0) {
+        // Create Fav relation
         try {
-          await strapi.documents('api::video.video').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            data: { likesCount: currentLikesCount } as any,
+          const favData: any = { userIdentifier };
+          if (userId) favData.user = userId;
+          if (targetVideoDocId) favData.video = targetVideoDocId;
+          if (targetFeedItemDocId) favData.feedItem = targetFeedItemDocId;
+
+          await strapi.documents('api::fav.fav').create({
+            data: favData,
           });
         } catch (e) {}
-      }
 
-      for (const doc of feedMatches) {
-        try {
-          await strapi.documents('api::feed-item.feed-item').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            data: { likesCount: currentLikesCount } as any,
-          });
-        } catch (e) {}
-      }
+        currentLikesCount += 1;
 
-      if (userId) {
-        try {
-          await strapi.service('api::tracking.tracking').processBatch(userId, [
-            { type: 'click', tags, mediaType: currentItem?.mediaType },
-          ]);
-        } catch (e) {}
+        // Update Published entities
+        for (const doc of videoMatches) {
+          try {
+            await strapi.documents('api::video.video').update({
+              documentId: doc.documentId,
+              locale: doc.locale || 'de',
+              status: 'published',
+              data: { likesCount: currentLikesCount } as any,
+            });
+          } catch (e) {}
+        }
+
+        for (const doc of feedMatches) {
+          try {
+            await strapi.documents('api::feed-item.feed-item').update({
+              documentId: doc.documentId,
+              locale: doc.locale || 'de',
+              status: 'published',
+              data: { likesCount: currentLikesCount } as any,
+            });
+          } catch (e) {}
+        }
+
+        if (userId) {
+          try {
+            await strapi.service('api::tracking.tracking').processBatch(userId, [
+              { type: 'like', tags, mediaType: currentItem?.mediaType },
+            ]);
+          } catch (e) {}
+        }
       }
 
       return {
@@ -1568,16 +1621,27 @@ CRITICAL: Return JSON ONLY in this format:
     }
 
     if (type === 'unlike') {
-      if (!likedItemsSet.has(likeKey)) {
-        return {
-          success: true,
-          isLiked: false,
-          viewsCount: currentViewsCount,
-          likesCount: currentLikesCount,
-        };
-      }
+      // Find & delete Fav relation
+      try {
+        const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
+        if (userId) favFilters.push({ user: { id: { $eq: userId } } });
 
-      likedItemsSet.delete(likeKey);
+        const favQuery: any = {
+          filters: {
+            $or: favFilters,
+          },
+        };
+        if (targetVideoDocId) favQuery.filters.video = { documentId: { $eq: targetVideoDocId } };
+        else if (targetFeedItemDocId) favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
+
+        const existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
+        for (const fav of existingFavs) {
+          await strapi.documents('api::fav.fav').delete({
+            documentId: fav.documentId,
+          });
+        }
+      } catch (e) {}
+
       currentLikesCount = Math.max(0, currentLikesCount - 1);
 
       for (const doc of videoMatches) {
@@ -1585,6 +1649,7 @@ CRITICAL: Return JSON ONLY in this format:
           await strapi.documents('api::video.video').update({
             documentId: doc.documentId,
             locale: doc.locale || 'de',
+            status: 'published',
             data: { likesCount: currentLikesCount } as any,
           });
         } catch (e) {}
@@ -1595,8 +1660,17 @@ CRITICAL: Return JSON ONLY in this format:
           await strapi.documents('api::feed-item.feed-item').update({
             documentId: doc.documentId,
             locale: doc.locale || 'de',
+            status: 'published',
             data: { likesCount: currentLikesCount } as any,
           });
+        } catch (e) {}
+      }
+
+      if (userId) {
+        try {
+          await strapi.service('api::tracking.tracking').processBatch(userId, [
+            { type: 'unlike', tags, mediaType: currentItem?.mediaType },
+          ]);
         } catch (e) {}
       }
 
@@ -1609,5 +1683,31 @@ CRITICAL: Return JSON ONLY in this format:
     }
 
     return { success: false, error: 'Invalid interaction type' };
+  },
+
+  async getUserFavorites(userIdentifier: string, userId?: number | string) {
+    try {
+      const favFilters: any[] = [];
+      if (userIdentifier) favFilters.push({ userIdentifier: { $eq: userIdentifier } });
+      if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+
+      if (favFilters.length === 0) {
+        return { success: false, error: 'userIdentifier or userId is required' };
+      }
+
+      const favs = await strapi.documents('api::fav.fav').findMany({
+        filters: {
+          $or: favFilters,
+        },
+        populate: ['video', 'feedItem'],
+      });
+
+      return {
+        success: true,
+        favorites: favs,
+      };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
   },
 });

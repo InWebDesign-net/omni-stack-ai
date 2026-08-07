@@ -88,5 +88,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/feed/user-favorites',
+      handler: 'feed.getUserFavorites',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "favs",
+  "info": {
+    "singularName": "fav",
+    "pluralName": "favs",
+    "displayName": "Fav",
+    "description": "User Likes and Favorite Relations"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "userIdentifier": {
+      "type": "string"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "video": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::video.video"
+    },
+    "feedItem": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::feed-item.feed-item"
+    }
+  }
+}
