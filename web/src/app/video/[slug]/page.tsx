@@ -131,7 +131,7 @@ export default function VideoDetailPage() {
       } catch (e) {}
 
       try {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
         const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`, {
           headers: jsonAuthHeaders(),
         });
@@ -154,7 +154,7 @@ export default function VideoDetailPage() {
     const video = e.currentTarget;
     if (!hasTrackedView.current && video.currentTime >= 5 && item?.slug) {
       hasTrackedView.current = true;
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
       fetch(`${strapiUrl}/api/feed/interaction`, {
         method: 'POST',
         headers: jsonAuthHeaders(),
@@ -206,7 +206,7 @@ export default function VideoDetailPage() {
     }
 
     try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
       const res = await fetch(`${strapiUrl}/api/feed/interaction`, {
         method: 'POST',
         headers: jsonAuthHeaders(),

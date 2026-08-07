@@ -423,7 +423,7 @@ function OmniAppContent() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
 
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
       const res = await fetch(`${strapiUrl}/api/feed/toggle-publish`, {
         method: 'POST',
         headers,

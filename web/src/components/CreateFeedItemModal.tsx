@@ -32,7 +32,7 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
 
     setIsSubmitting(true);
     try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
       const cleanSlug = form.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `post-${Date.now()}`;
       
       const payload: any = {
