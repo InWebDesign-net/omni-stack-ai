@@ -4,7 +4,7 @@
   "private": true,
   "description": "A Strapi application",
   "scripts": {
-    "build": "strapi build",
+    "build": "rm -rf dist && strapi build",
     "postbuild": "mkdir -p dist && ln -sfn ../.strapi/client dist/build && mkdir -p node_modules/@strapi/admin/dist/server/server && ln -sfn ../../../../../../.strapi/client node_modules/@strapi/admin/dist/server/server/build && ln -sfn .strapi/client build",
     "console": "strapi console",
     "deploy": "strapi deploy",
