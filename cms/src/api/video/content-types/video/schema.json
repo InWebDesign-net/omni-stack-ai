@@ -97,6 +97,19 @@
       "relation": "oneToMany",
       "target": "api::feed-item.feed-item",
       "mappedBy": "video"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "private",
+        "public"
+      ],
+      "default": "public",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     }
   }
 }

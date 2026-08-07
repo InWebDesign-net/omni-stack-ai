@@ -17,6 +17,47 @@ export default {
       }
       await next();
     });
+
+    // Centralized Document Service Middleware for default-deny visibility enforcement
+    strapi.documents.use(async (context: any, next: any) => {
+      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item'];
+      const action = context.action;
+
+      if (targetUIDs.includes(context.uid) && (action === 'findMany' || action === 'findOne' || action === 'findFirst')) {
+        const omniViewer = context.params?.omniViewer;
+        if (!context.params) context.params = {};
+
+        const uidNum = omniViewer?.userId ? Number(omniViewer.userId) : null;
+        const hasExistingFilters = context.params.filters && Object.keys(context.params.filters).length > 0;
+        const visibilityFilter = uidNum
+          ? {
+              $or: [
+                { visibility: { $eq: 'public' } },
+                { visibility: { $null: true } },
+                { creator: { id: { $eq: uidNum } } },
+                { creator: { id: { $in: [uidNum] } } },
+                { author: { id: { $eq: uidNum } } },
+                { author: { id: { $in: [uidNum] } } },
+              ],
+            }
+          : {
+              $or: [
+                { visibility: { $eq: 'public' } },
+                { visibility: { $null: true } },
+              ],
+            };
+
+        if (hasExistingFilters) {
+          context.params.filters = {
+            $and: [context.params.filters, visibilityFilter],
+          };
+        } else {
+          context.params.filters = visibilityFilter;
+        }
+      }
+
+      return await next();
+    });
   },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {

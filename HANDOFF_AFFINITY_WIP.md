@@ -196,6 +196,19 @@ anonyme Besucher schicken ihren localStorage-Graph mit (Legacy-Formate werden vi
       • Test mit Nicht-Eigentümer (astro auf demotech's Video): 403 Forbidden ("Forbidden:
       You are not the owner of this content") 🛑
       • Test mit Eigentümer (demotech auf eigenes Video): 200 OK ("published": true) ✅
+  4. test-i18n Cleanup:
+      • Die temporäre Entwickler-Testroute /feed/test-i18n wurde vollständig aus feed.ts und
+      dem Controller gelöscht.
+  5. demo-reset & seed-demo Secret-Schutz (SEED_SECRET):
+      • Beide Endpunkte verlangen ab sofort das Secret SEED_SECRET (Fallback:
+      'omni_seed_secret_2026') im Body oder Header (x-seed-secret).
+      • Test ohne Secret: 403 Forbidden ("Invalid seed secret") 🛑
+      • Test mit Secret: 200 OK ({"success": true, "count": 10}) ✅
+  6. users-permissions Action Scoping (user.update):
+      • Im bootstrap in index.ts wird die plugin::users-permissions.user.update-Berechtigung
+      für authenticated und public Rollen explizit entzogen.
+      • Benutzer können dadurch User-Einträge nicht direkt manipulieren; Profil-Updates
+      laufen sauber über den geschützten Endpunkt /feed/profile.
 
 ### Phase 4 — `visibility`-Enum mit zentraler Durchsetzung
 - Schema: `visibility` enum `['private','public']`, default `public`, NICHT lokalisiert,

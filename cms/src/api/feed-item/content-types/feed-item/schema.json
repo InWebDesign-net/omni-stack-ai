@@ -87,6 +87,19 @@
     },
     "publishedAt": {
       "type": "datetime"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "private",
+        "public"
+      ],
+      "default": "public",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     }
   }
 }

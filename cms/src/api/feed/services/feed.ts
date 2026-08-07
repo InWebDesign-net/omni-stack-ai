@@ -61,12 +61,15 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       },
     };
 
+    const omniViewer = viewerId ? { userId: viewerId } : undefined;
+
     try {
       const primaryItems = await strapi.documents('api::feed-item.feed-item').findMany({
         populate: populateConfig as any,
         status: 'published',
         locale: targetLocale,
-      });
+        ...(omniViewer ? { omniViewer } : {}),
+      } as any);
 
       let dbItems = [...primaryItems];
 
@@ -77,7 +80,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           populate: populateConfig as any,
           status: 'published',
           locale: altLocale,
-        });
+          ...(omniViewer ? { omniViewer } : {}),
+        } as any);
         dbItems = [...altItems];
       }
 
@@ -86,7 +90,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           populate: populateConfig as any,
           status: 'draft',
           locale: targetLocale,
-        });
+          ...(omniViewer ? { omniViewer } : {}),
+        } as any);
         dbItems = [...dbItems, ...draftItems];
       }
 
@@ -96,7 +101,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           populate: { creator: true } as any,
           status: (userProfileInput as any)?.includeDrafts ? undefined : 'published',
           locale: targetLocale,
-        });
+          ...(omniViewer ? { omniViewer } : {}),
+        } as any);
         const mappedVideos = videoItems.map((v: any) => ({
           ...v,
           author: v.creator || v.author,
@@ -131,7 +137,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale,
               status,
               populate: populateConfig as any,
-            });
+              ...(omniViewer ? { omniViewer } : {}),
+            } as any);
             if (matches && matches.length > 0) return matches[0];
           } catch (e) {}
 
@@ -142,7 +149,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale,
               status,
               populate: { creator: true } as any,
-            });
+              ...(omniViewer ? { omniViewer } : {}),
+            } as any);
             if (videoMatches && videoMatches.length > 0) {
               const v = videoMatches[0] as any;
               return {
@@ -164,7 +172,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale,
               status,
               populate: populateConfig as any,
-            });
+              ...(omniViewer ? { omniViewer } : {}),
+            } as any);
             if (doc) return doc;
           } catch (e) {}
 
@@ -175,7 +184,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale,
               status,
               populate: { creator: true } as any,
-            });
+              ...(omniViewer ? { omniViewer } : {}),
+            } as any);
             if (vDoc) {
               const v = vDoc as any;
               return {
@@ -197,14 +207,16 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale: '*',
               status,
               populate: populateConfig as any,
-            });
+              ...(omniViewer ? { omniViewer } : {}),
+            } as any);
             if (altMatches && altMatches.length > 0 && altMatches[0].documentId) {
               const localizedDoc = await strapi.documents('api::feed-item.feed-item').findOne({
                 documentId: altMatches[0].documentId,
                 locale,
                 status,
                 populate: populateConfig as any,
-              });
+                ...(omniViewer ? { omniViewer } : {}),
+              } as any);
               if (localizedDoc) return localizedDoc;
             }
           } catch (e) {}
@@ -216,14 +228,16 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale: '*',
               status,
               populate: { creator: true } as any,
-            });
+              ...(omniViewer ? { omniViewer } : {}),
+            } as any);
             if (altVideoMatches && altVideoMatches.length > 0 && altVideoMatches[0].documentId) {
               const localizedVDoc = await strapi.documents('api::video.video').findOne({
                 documentId: altVideoMatches[0].documentId,
                 locale,
                 status,
                 populate: { creator: true } as any,
-              });
+                ...(omniViewer ? { omniViewer } : {}),
+              } as any);
               if (localizedVDoc) {
                 const v = localizedVDoc as any;
                 return {
@@ -744,67 +758,55 @@ CRITICAL: Return JSON ONLY in this format:
         }
       }
     }
-    if (publish) {
+    const targetVisibility = publish ? 'public' : 'private';
+
+    let isVideoModel = false;
+    try {
+      const vCheck = await strapi.db.query('api::video.video').findOne({
+        where: { documentId },
+      });
+      if (vCheck) isVideoModel = true;
+    } catch (e) {}
+
+    if (isVideoModel) {
       try {
-        const pubDe = await strapi.documents('api::feed-item.feed-item').publish({
+        const vUpdated = await strapi.documents('api::video.video').update({
           documentId,
           locale: 'de',
+          status: 'published',
+          data: { visibility: targetVisibility } as any,
         });
         try {
-          await strapi.documents('api::feed-item.feed-item').publish({
+          await strapi.documents('api::video.video').update({
             documentId,
             locale: 'en',
+            status: 'published',
+            data: { visibility: targetVisibility } as any,
           });
         } catch (e) {}
-        return { success: true, documentId, published: true, data: pubDe };
-      } catch (e) {
-        // Fallback to standalone video model
-        try {
-          const vPub = await strapi.documents('api::video.video').publish({
-            documentId,
-            locale: 'de',
-          });
-          try {
-            await strapi.documents('api::video.video').publish({
-              documentId,
-              locale: 'en',
-            });
-          } catch (e) {}
-          return { success: true, documentId, published: true, data: vPub };
-        } catch (vErr: any) {
-          throw vErr;
-        }
+        return { success: true, documentId, published: publish, visibility: targetVisibility, data: vUpdated };
+      } catch (vErr: any) {
+        throw vErr;
       }
     } else {
       try {
-        const unpubDe = await strapi.documents('api::feed-item.feed-item').unpublish({
+        const updatedDe = await strapi.documents('api::feed-item.feed-item').update({
           documentId,
           locale: 'de',
+          status: 'published',
+          data: { visibility: targetVisibility } as any,
         });
         try {
-          await strapi.documents('api::feed-item.feed-item').unpublish({
+          await strapi.documents('api::feed-item.feed-item').update({
             documentId,
             locale: 'en',
+            status: 'published',
+            data: { visibility: targetVisibility } as any,
           });
         } catch (e) {}
-        return { success: true, documentId, published: false, data: unpubDe };
-      } catch (e) {
-        // Fallback to standalone video model
-        try {
-          const vUnpub = await strapi.documents('api::video.video').unpublish({
-            documentId,
-            locale: 'de',
-          });
-          try {
-            await strapi.documents('api::video.video').unpublish({
-              documentId,
-              locale: 'en',
-            });
-          } catch (e) {}
-          return { success: true, documentId, published: false, data: vUnpub };
-        } catch (vErr: any) {
-          throw vErr;
-        }
+        return { success: true, documentId, published: publish, visibility: targetVisibility, data: updatedDe };
+      } catch (e: any) {
+        throw e;
       }
     }
   },

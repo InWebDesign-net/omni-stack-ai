@@ -162,6 +162,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         isForSale: false,
         price: 0,
         creator: creatorId,
+        visibility: 'private',
       };
 
       // 1. Create EN (default locale) entry - published
