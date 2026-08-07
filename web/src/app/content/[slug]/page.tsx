@@ -136,7 +136,7 @@ export default function ContentDetailPage() {
       } catch (e) {}
 
       try {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
         const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`, {
           headers: jsonAuthHeaders(),
         });
@@ -158,7 +158,7 @@ export default function ContentDetailPage() {
     const timer = setTimeout(() => {
       if (!hasTrackedView.current) {
         hasTrackedView.current = true;
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
         fetch(`${strapiUrl}/api/feed/interaction`, {
           method: 'POST',
           headers: jsonAuthHeaders(),
@@ -213,7 +213,7 @@ export default function ContentDetailPage() {
     }
 
     try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://omni-cms.inwebdesign.net';
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
       const res = await fetch(`${strapiUrl}/api/feed/interaction`, {
         method: 'POST',
         headers: jsonAuthHeaders(),
