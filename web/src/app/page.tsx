@@ -419,10 +419,14 @@ function OmniAppContent() {
     const isCurrentlyPublished = !!item.publishedAt;
     const docId = (item as any).documentId || item.id;
     try {
+      const jwt = getStoredJwt();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
+
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       const res = await fetch(`${strapiUrl}/api/feed/toggle-publish`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           documentId: docId,
           publish: !isCurrentlyPublished,
@@ -450,7 +454,7 @@ function OmniAppContent() {
       await fetch(`${strapiUrl}/api/feed/seed-demo`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ force: true }),
+        body: JSON.stringify({ force: true, seedSecret: 'omni_seed_secret_2026' }),
       });
       await fetchFeed(profile, lang);
     } catch (e) {

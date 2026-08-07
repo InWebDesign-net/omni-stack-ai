@@ -349,9 +349,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       .filter((i) => i.isSubscribedAuthor || i.creatorAffinity * TOPIC_SCORE_MAX >= NETWORK_CREATOR_THRESHOLD)
       .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
     // Bucket 3: Exploration (Wildcard / lower score items to test new interests)
-    const explorationBucket = [...scoredItems].filter((i) => i.relevanceScore < 0.45 || i.tags.includes('Funny Cat Videos')).sort(() => 0.5 - Math.random());
+    const explorationBucket = [...scoredItems]
+      .filter((i) => i.relevanceScore > 0 && (i.relevanceScore < 0.45 || i.tags.includes('Funny Cat Videos')))
+      .sort(() => 0.5 - Math.random());
     // Bucket 4: Fresh / Trending (viewsCount + likesCount)
-    const trendingBucket = [...scoredItems].sort((a, b) => (b.viewsCount + b.likesCount * 2) - (a.viewsCount + a.likesCount * 2));
+    const trendingBucket = [...scoredItems]
+      .filter((i) => i.relevanceScore > 0)
+      .sort((a, b) => (b.viewsCount + b.likesCount * 2) - (a.viewsCount + a.likesCount * 2));
 
     // 4. Interleaving Slot Pattern Strategy
     const patternSlots = graph.activePattern === 'deep_dive'
@@ -377,9 +381,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         selectedItem = trendingBucket.find((i) => !usedIds.has(itemKey(i)));
       }
 
-      // Fallback if bucket empty
+      // Fallback if bucket empty (only include items with positive relevance score)
       if (!selectedItem) {
-        selectedItem = scoredItems.find((i) => !usedIds.has(itemKey(i)));
+        selectedItem = scoredItems.find((i) => !usedIds.has(itemKey(i)) && i.relevanceScore > 0);
         sourceBucket = `${slotType} (Fallback)`;
       }
 

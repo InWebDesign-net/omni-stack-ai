@@ -128,12 +128,16 @@ export function isCanonicalAffinityGraph(raw: any): boolean {
 
 /** Highest topic weight (0–1) that any of the item's tags reaches in the graph. */
 export function topicWeight(graph: AffinityGraph, tags: string[], baseline = 0.2): number {
-  let weight = baseline;
+  let hasExplicitMatch = false;
+  let maxWeight = 0;
   for (const tag of tags || []) {
     const entry = graph.topics[tag];
-    if (entry) weight = Math.max(weight, entry.score / TOPIC_SCORE_MAX);
+    if (entry !== undefined) {
+      hasExplicitMatch = true;
+      maxWeight = Math.max(maxWeight, entry.score / TOPIC_SCORE_MAX);
+    }
   }
-  return weight;
+  return hasExplicitMatch ? maxWeight : baseline;
 }
 
 /** Creator affinity weight (0–1) for a creator id, 0 when unknown. */
