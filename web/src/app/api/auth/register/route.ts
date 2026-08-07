@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { defaultAffinityGraph } from '@/lib/affinity';
 
 export async function POST(req: Request) {
   try {
@@ -40,18 +41,7 @@ export async function POST(req: Request) {
           bio: bio || 'Omni Community Mitglied',
           avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
           handle: `@${username.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
-          affinityGraph: {
-            interests: {
-              'Wissenschaft': { score: 0.90, last_interacted: new Date().toISOString() },
-              'Natur': { score: 0.85, last_interacted: new Date().toISOString() },
-              'Kochen': { score: 0.75, last_interacted: new Date().toISOString() },
-              'Tech': { score: 0.88, last_interacted: new Date().toISOString() },
-              'Finanzen': { score: 0.70, last_interacted: new Date().toISOString() },
-              'Funny Cat Videos': { score: 0.20, last_interacted: new Date().toISOString() },
-            },
-            contentTypes: { pdf: 0.8, video: 0.9, article: 0.7, short: 0.5 },
-            activePattern: 'discovery',
-          },
+          affinityGraph: defaultAffinityGraph(),
         }),
       });
     } catch (e) {

@@ -34,6 +34,15 @@ import {
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import { loadStoredAffinityGraph, getStoredJwt } from '@/lib/affinity';
+
+// JSON headers incl. the user's JWT so Strapi can attribute interactions
+const jsonAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const jwt = getStoredJwt();
+  if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
+  return headers;
+};
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -131,7 +140,9 @@ export default function VideoDetailPage() {
 
       try {
         const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-        const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`);
+        const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`, {
+          headers: jsonAuthHeaders(),
+        });
         if (res.ok) {
           const data = await res.json();
           setIsLiked(localLiked || Boolean(data.isLiked));
@@ -154,13 +165,12 @@ export default function VideoDetailPage() {
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       fetch(`${strapiUrl}/api/feed/interaction`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: jsonAuthHeaders(),
         body: JSON.stringify({
           slug: item.slug,
           type: 'view',
           watchTimeSeconds: video.currentTime,
           userIdentifier: userIdent,
-          userId: currentUser?.id || userData?.id,
         }),
       })
         .then((res) => res.json())
@@ -207,12 +217,11 @@ export default function VideoDetailPage() {
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       const res = await fetch(`${strapiUrl}/api/feed/interaction`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: jsonAuthHeaders(),
         body: JSON.stringify({
           slug: item.slug,
           type,
           userIdentifier: userIdent,
-          userId: currentUser?.id || userData?.id,
         }),
       });
       if (res.ok) {
@@ -260,21 +269,12 @@ export default function VideoDetailPage() {
       );
     };
     try {
-      let savedProfile = {};
-      try {
-        const stored = localStorage.getItem('omni_interest_profile');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed && parsed.interests) {
-            savedProfile = parsed;
-          }
-        }
-      } catch (e) {}
+      const savedProfile: any = loadStoredAffinityGraph() || {};
 
       const res = await fetch('/api/strapi-feed', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          ...jsonAuthHeaders(),
           'Cache-Control': 'no-cache, no-store',
         },
         cache: 'no-store',

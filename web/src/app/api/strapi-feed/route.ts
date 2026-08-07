@@ -11,12 +11,17 @@ export async function POST(req: Request) {
       locale: body.lang || body.locale || 'de',
     };
     
-    // Proxy request to Strapi custom controller
+    // Proxy request to Strapi custom controller.
+    // Forward the user's JWT so the feed engine ranks against their stored
+    // affinityGraph; fall back to the server API token for anonymous requests.
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     };
-    if (process.env.STRAPI_API_TOKEN) {
+    const clientAuth = req.headers.get('authorization');
+    if (clientAuth) {
+      headers['Authorization'] = clientAuth;
+    } else if (process.env.STRAPI_API_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 

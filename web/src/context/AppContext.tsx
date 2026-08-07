@@ -6,7 +6,14 @@ import ChannelProfileModal from '@/components/ChannelProfileModal';
 import UserSettingsModal from '@/components/UserSettingsModal';
 import AuthModal from '@/components/AuthModal';
 import CreateFeedItemModal from '@/components/CreateFeedItemModal';
-import { InterestProfile, DEFAULT_PROFILE, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import {
+  AffinityGraph,
+  defaultAffinityGraph,
+  loadStoredAffinityGraph,
+  storeAffinityGraph,
+  getStoredJwt,
+} from '@/lib/affinity';
 
 export interface UserProfileSession {
   id: number;
@@ -35,10 +42,10 @@ interface AppContextType {
   setLang: (lang: 'de' | 'en') => void;
   toggleLanguage: () => void;
 
-  // Interest Profile
-  profile: InterestProfile;
-  setProfile: React.Dispatch<React.SetStateAction<InterestProfile>>;
-  updateProfileState: (newProfile: InterestProfile) => void;
+  // Interest Profile (canonical AffinityGraph)
+  profile: AffinityGraph;
+  setProfile: React.Dispatch<React.SetStateAction<AffinityGraph>>;
+  updateProfileState: (newProfile: AffinityGraph) => Promise<void>;
 
   // Modals Control
   isVideoUploadOpen: boolean;
@@ -72,7 +79,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserProfileSession | null>(null);
   const [lang, setLangState] = useState<'de' | 'en'>('de');
-  const [profile, setProfile] = useState<InterestProfile>(DEFAULT_PROFILE);
+  const [profile, setProfile] = useState<AffinityGraph>(() => defaultAffinityGraph());
 
   // Modals State
   const [isVideoUploadOpen, setIsVideoUploadOpen] = useState(false);
@@ -99,15 +106,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (e) {}
 
-      try {
-        const storedProfile = localStorage.getItem('omni_user_interest_profile');
-        if (storedProfile) {
-          const parsed = JSON.parse(storedProfile);
-          if (parsed && parsed.interests) {
-            setProfile(parsed);
-          }
-        }
-      } catch (e) {}
+      const storedGraph = loadStoredAffinityGraph();
+      if (storedGraph) {
+        setProfile(storedGraph);
+      }
     }
   }, []);
 
@@ -123,11 +125,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLang(lang === 'de' ? 'en' : 'de');
   };
 
-  const updateProfileState = (newProfile: InterestProfile) => {
+  // Persists the graph locally and — for logged-in users — to their Strapi user.
+  // Await this before re-fetching the feed: the server ranks against the DB graph.
+  const updateProfileState = async (newProfile: AffinityGraph) => {
     setProfile(newProfile);
-    try {
-      localStorage.setItem('omni_user_interest_profile', JSON.stringify(newProfile));
-    } catch (e) {}
+    storeAffinityGraph(newProfile);
+
+    const jwt = getStoredJwt();
+    if (jwt) {
+      try {
+        await fetch('/api/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({ affinityGraph: newProfile }),
+        });
+      } catch (e) {
+        console.error('Failed to persist affinityGraph:', e);
+      }
+    }
   };
 
   const toggleSubscribeChannel = (handle: string) => {

@@ -5,13 +5,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
 
-    // Send batch events to Strapi custom controller
+    // Strapi derives the user from the JWT (ctx.state.user) — body userId is ignored.
+    // sendBeacon can't set headers, so the tracker puts the JWT into the body.
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const clientAuth = req.headers.get('authorization') || (body.jwt ? `Bearer ${body.jwt}` : null);
+    if (clientAuth) {
+      headers['Authorization'] = clientAuth;
+    }
+    delete body.jwt;
+
     const res = await fetch(`${strapiUrl}/api/tracking/batch`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`,
-      },
+      headers,
       body: JSON.stringify(body),
     });
 

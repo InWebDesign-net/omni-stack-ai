@@ -1,28 +1,34 @@
+/**
+ * Feed routes.
+ *
+ * Routes WITHOUT `auth: false` are governed by users-permissions role
+ * permissions (granted in src/index.ts bootstrap):
+ *   - public + authenticated: assembly, ai-intent, interaction, interaction-status, user-favorites
+ *   - authenticated only:     profile
+ * This way a JWT is verified when present (ctx.state.user is populated) while
+ * anonymous access keeps working through the public role.
+ */
 export default {
   routes: [
     {
       method: 'POST',
       path: '/feed/assembly',
       handler: 'feed.assembleFeed',
-      config: {
-        auth: false,
-      },
     },
     {
       method: 'GET',
       path: '/feed/assembly',
       handler: 'feed.assembleFeed',
-      config: {
-        auth: false,
-      },
     },
     {
       method: 'POST',
       path: '/feed/ai-intent',
       handler: 'feed.processAiIntent',
-      config: {
-        auth: false,
-      },
+    },
+    {
+      method: 'POST',
+      path: '/feed/profile',
+      handler: 'feed.updateProfile',
     },
     {
       method: 'POST',
@@ -76,25 +82,16 @@ export default {
       method: 'POST',
       path: '/feed/interaction',
       handler: 'feed.handleInteraction',
-      config: {
-        auth: false,
-      },
     },
     {
       method: 'GET',
       path: '/feed/interaction-status',
       handler: 'feed.getInteractionStatus',
-      config: {
-        auth: false,
-      },
     },
     {
       method: 'GET',
       path: '/feed/user-favorites',
       handler: 'feed.getUserFavorites',
-      config: {
-        auth: false,
-      },
     },
   ],
 };

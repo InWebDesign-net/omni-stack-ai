@@ -81,10 +81,23 @@ export default {
         } catch (e) {}
       };
 
+      // Feed & tracking actions available to everyone (JWT is verified when present)
+      const publicFeedActions = [
+        'api::feed.feed.assembleFeed',
+        'api::feed.feed.processAiIntent',
+        'api::feed.feed.handleInteraction',
+        'api::feed.feed.getInteractionStatus',
+        'api::feed.feed.getUserFavorites',
+        'api::tracking.tracking.processBatch',
+      ];
+
       if (publicRole) {
         await enablePermission(publicRole.id, 'api::comment.comment.find');
         await enablePermission(publicRole.id, 'api::comment.comment.findOne');
         await enablePermission(publicRole.id, 'api::comment.comment.create');
+        for (const action of publicFeedActions) {
+          await enablePermission(publicRole.id, action);
+        }
       }
 
       if (authRole) {
@@ -93,6 +106,33 @@ export default {
         await enablePermission(authRole.id, 'api::comment.comment.create');
         await enablePermission(authRole.id, 'api::comment.comment.update');
         await enablePermission(authRole.id, 'api::comment.comment.delete');
+        for (const action of publicFeedActions) {
+          await enablePermission(authRole.id, action);
+        }
+        // Own-profile graph updates require a logged-in user
+        await enablePermission(authRole.id, 'api::feed.feed.updateProfile');
+      }
+
+      // 3b. One-time migration: normalize every stored affinityGraph to the
+      // canonical shape (idempotent — skips users that are already canonical).
+      try {
+        const { normalizeAffinityGraph, isCanonicalAffinityGraph } = await import('./lib/affinity');
+        const users = await strapi.db.query('plugin::users-permissions.user').findMany({});
+        let migrated = 0;
+        for (const user of users) {
+          if (!isCanonicalAffinityGraph(user.affinityGraph)) {
+            await strapi.db.query('plugin::users-permissions.user').update({
+              where: { id: user.id },
+              data: { affinityGraph: normalizeAffinityGraph(user.affinityGraph) },
+            });
+            migrated += 1;
+          }
+        }
+        if (migrated > 0) {
+          console.log(`🔄 Normalized affinityGraph for ${migrated} user(s) to canonical shape.`);
+        }
+      } catch (e) {
+        console.error('affinityGraph normalization failed:', e);
       }
 
       // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)

@@ -1,171 +1,56 @@
 import { Core } from '@strapi/strapi';
+import {
+  AffinityGraph,
+  normalizeAffinityGraph,
+  topicWeight,
+  creatorWeight,
+  TOPIC_SCORE_MAX,
+} from '../../../lib/affinity';
 
 const dailyViewsSet = new Set<string>();
-const likedItemsSet = new Set<string>();
 
-export interface InterestProfile {
-  interests: Record<string, { score: number; last_interacted: string }>;
-  contentTypes: Record<string, number>;
-  activePattern: 'discovery' | 'deep_dive';
+/** Creator affinity (0–100) above which an author counts as "network" for the feed. */
+const NETWORK_CREATOR_THRESHOLD = 60;
+
+export interface FeedAssemblyInput {
+  locale?: string;
+  includeDrafts?: boolean;
+  targetSlug?: string;
+  activePattern?: 'discovery' | 'deep_dive';
+  // Anonymous visitors may send their local affinity graph (any legacy shape accepted):
+  topics?: any;
+  interests?: any;
+  contentTypes?: any;
+  creators?: any;
 }
-
-export const DEFAULT_USER_PROFILE: InterestProfile = {
-  interests: {
-    'PostgreSQL': { score: 0.95, last_interacted: new Date().toISOString() },
-    'Strapi': { score: 0.82, last_interacted: new Date().toISOString() },
-    'NextJS': { score: 0.90, last_interacted: new Date().toISOString() },
-    'Ollama': { score: 0.75, last_interacted: new Date().toISOString() },
-    'Funny Cat Videos': { score: 0.15, last_interacted: '2025-12-10T08:00:00Z' },
-  },
-  contentTypes: {
-    pdf: 0.8,
-    video: 0.6,
-    article: 0.7,
-    short: 0.4,
-  },
-  activePattern: 'discovery',
-};
-
-export const SAMPLE_SEED_ITEMS = [
-  {
-    id: 1,
-    title: 'High-Performance PostgreSQL Indexing for Hyper-Personalized Feeds',
-    slug: 'postgres-indexing-hyper-personalized-feeds',
-    summary: 'Comprehensive deep dive into B-Tree, GIN, and JSONB indexing in PostgreSQL 15 for real-time score retrieval.',
-    content: 'PostgreSQL provides JSONB queries with GIN indexes that enable sub-millisecond retrieval of user interest vectors...',
-    mediaType: 'pdf',
-    mediaUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&q=80',
-    authorName: 'Database Guru',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-    isSubscribedAuthor: true,
-    tags: ['PostgreSQL', 'Database', 'Performance', 'Tech-PDF'],
-    viewsCount: 14200,
-    likesCount: 1890,
-    publishedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    locale: 'de',
-  },
-  {
-    id: 2,
-    title: 'Building Hyper-Personalized Feed Assemblies with Strapi v5 & Turborepo',
-    slug: 'building-hyper-personalized-feed-strapi-v5',
-    summary: 'Learn how to construct custom controllers and slot interleaving patterns in Strapi to beat standard SQL relation bottlenecks.',
-    content: 'Standard relational queries break at scale. Bucket-based assembly decouples feed generation into parallel micro-queries...',
-    mediaType: 'article',
-    mediaUrl: '',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
-    authorName: 'Omni Architect',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-    isSubscribedAuthor: true,
-    tags: ['Strapi', 'NextJS', 'Monorepo', 'Architecture'],
-    viewsCount: 9800,
-    likesCount: 1240,
-    publishedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    locale: 'de',
-  },
-  {
-    id: 3,
-    title: 'NextJS 15 Server Actions & Real-Time Slot Pattern Interleaving',
-    slug: 'nextjs-15-server-actions-slot-interleaving',
-    summary: 'Video walkthrough demonstrating dynamic feed mutation when an Ollama agent shifts the user intent profile in real time.',
-    content: 'Watch how Next.js App Router seamlessly re-renders slot interleaving patterns without full page reloads...',
-    mediaType: 'video',
-    mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
-    authorName: 'Frontend Specialist',
-    authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
-    isSubscribedAuthor: false,
-    tags: ['NextJS', 'React', 'Frontend', 'Video Tutorial'],
-    viewsCount: 24500,
-    likesCount: 3890,
-    publishedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    locale: 'de',
-  },
-  {
-    id: 4,
-    title: 'Ollama CPU Inference: Running Llama 3 & DeepSeek Locally on LXC',
-    slug: 'ollama-cpu-inference-lxc-proxmox',
-    summary: 'Step-by-step guide to running local LLM intent classification on CPU without expensive GPU clusters.',
-    content: 'Ollama allows running small quantized models (e.g. 3B or 7B params) directly on server CPUs to parse user prompts...',
-    mediaType: 'pdf',
-    mediaUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
-    authorName: 'AI Systems Lab',
-    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
-    isSubscribedAuthor: true,
-    tags: ['Ollama', 'AI', 'LXC', 'Proxmox', 'Tech-PDF'],
-    viewsCount: 31200,
-    likesCount: 4500,
-    publishedAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-    locale: 'de',
-  },
-  {
-    id: 5,
-    title: 'Cutest Cats Compilation 2026: Epic Fails & Purrfect Moments',
-    slug: 'cutest-cats-compilation-2026',
-    summary: 'A fun wildcard video for exploration testing in the algorithm slot matrix.',
-    content: 'Hilarious compilation of kittens doing backflips and playing with keyboards...',
-    mediaType: 'short',
-    mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80',
-    authorName: 'Cat Mania',
-    authorAvatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
-    isSubscribedAuthor: false,
-    tags: ['Funny Cat Videos', 'Humor', 'Shorts'],
-    viewsCount: 154000,
-    likesCount: 23000,
-    publishedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    locale: 'de',
-  },
-  {
-    id: 6,
-    title: 'Advanced PostgreSQL Query Optimization Cheat Sheet (PDF)',
-    slug: 'advanced-postgresql-query-optimization-pdf',
-    summary: 'Direct reference manual for tuning EXPLAIN ANALYZE, vacuuming, and memory settings in PostgreSQL.',
-    content: 'Downloadable PDF covering index scans, sequential scans, work_mem tuning and partition pruning...',
-    mediaType: 'pdf',
-    mediaUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80',
-    authorName: 'Database Guru',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-    isSubscribedAuthor: true,
-    tags: ['PostgreSQL', 'Database', 'PDF Guide'],
-    viewsCount: 18900,
-    likesCount: 2900,
-    publishedAt: new Date(Date.now() - 3600000 * 30).toISOString(),
-    locale: 'de',
-  },
-  {
-    id: 7,
-    title: 'Microservices vs Monorepo: Why PM2 + Turborepo is the Ultimate Setup',
-    slug: 'microservices-vs-monorepo-pm2-turborepo',
-    summary: 'Architectural analysis showing how PM2 ecosystem management simplifies LXC deployment.',
-    content: 'Managing multiple Node processes under PM2 with shared Turborepo caching gives instant builds and zero-downtime reloads...',
-    mediaType: 'article',
-    mediaUrl: '',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
-    authorName: 'Omni Architect',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-    isSubscribedAuthor: true,
-    tags: ['Monorepo', 'PM2', 'Architecture', 'Strapi'],
-    viewsCount: 11200,
-    likesCount: 1430,
-    publishedAt: new Date(Date.now() - 3600000 * 40).toISOString(),
-    locale: 'de',
-  }
-];
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Bucketing and Interleaving Engine
    */
-  async assembleFeed(userProfileInput?: Partial<InterestProfile> & { locale?: string }) {
+  async assembleFeed(userProfileInput?: FeedAssemblyInput, viewerId?: number | string) {
     const targetLocale = userProfileInput?.locale || 'de';
-    const profile: InterestProfile = {
-      interests: { ...DEFAULT_USER_PROFILE.interests, ...(userProfileInput?.interests || {}) },
-      contentTypes: { ...DEFAULT_USER_PROFILE.contentTypes, ...(userProfileInput?.contentTypes || {}) },
-      activePattern: userProfileInput?.activePattern || DEFAULT_USER_PROFILE.activePattern,
-    };
+
+    // Ranking source of truth: the authenticated viewer's stored affinityGraph.
+    // Anonymous visitors rank against the (local) graph they send along.
+    let graph: AffinityGraph;
+    if (viewerId) {
+      let storedGraph: any = null;
+      try {
+        const viewer = await strapi.db.query('plugin::users-permissions.user').findOne({
+          where: { id: viewerId },
+        });
+        storedGraph = viewer?.affinityGraph || null;
+      } catch (e) {
+        console.error('assembleFeed: failed to load viewer affinityGraph:', e);
+      }
+      graph = normalizeAffinityGraph(storedGraph);
+    } else {
+      graph = normalizeAffinityGraph(userProfileInput);
+    }
+    if (userProfileInput?.activePattern === 'discovery' || userProfileInput?.activePattern === 'deep_dive') {
+      graph.activePattern = userProfileInput.activePattern;
+    }
 
     // Auto-check for any pending .done files in /root/media/out
     try {
@@ -444,21 +329,19 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         price: videoData?.price || 0,
       };
 
-      let topicScore = 0.2; // baseline
-      item.tags.forEach((tag: string) => {
-        if (profile.interests[tag]) {
-          topicScore = Math.max(topicScore, profile.interests[tag].score);
-        }
-      });
-
-      const mediaWeight = profile.contentTypes[item.mediaType] ?? 0.5;
+      const topicScore = topicWeight(graph, item.tags);
+      const mediaWeight = graph.contentTypes[item.mediaType] ?? 0.5;
       const recencyHours = (Date.now() - new Date(item.publishedAt).getTime()) / (1000 * 3600);
       const recencyDecay = Math.max(0.3, 1 - recencyHours / (24 * 30));
-
-      const relevanceScore = parseFloat((topicScore * mediaWeight * recencyDecay).toFixed(3));
+      // Creators the viewer interacts with often boost relevance by up to +30%
+      const creatorAffinity = creatorWeight(graph, item.author?.id);
+      const relevanceScore = parseFloat(
+        (topicScore * mediaWeight * recencyDecay * (1 + 0.3 * creatorAffinity)).toFixed(3)
+      );
 
       return {
         ...item,
+        creatorAffinity,
         relevanceScore,
       };
     });
@@ -466,43 +349,47 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // 3. Create Buckets
     // Bucket 1: High Intent (relevanceScore >= 0.45)
     const highIntentBucket = [...scoredItems].filter((i) => i.relevanceScore >= 0.45).sort((a, b) => b.relevanceScore - a.relevanceScore);
-    // Bucket 2: Network / Subs (isSubscribedAuthor == true)
-    const networkBucket = [...scoredItems].filter((i) => i.isSubscribedAuthor).sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    // Bucket 2: Network — creators the viewer is close to (high creator affinity or subscription)
+    const networkBucket = [...scoredItems]
+      .filter((i) => i.isSubscribedAuthor || i.creatorAffinity * TOPIC_SCORE_MAX >= NETWORK_CREATOR_THRESHOLD)
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
     // Bucket 3: Exploration (Wildcard / lower score items to test new interests)
     const explorationBucket = [...scoredItems].filter((i) => i.relevanceScore < 0.45 || i.tags.includes('Funny Cat Videos')).sort(() => 0.5 - Math.random());
     // Bucket 4: Fresh / Trending (viewsCount + likesCount)
     const trendingBucket = [...scoredItems].sort((a, b) => (b.viewsCount + b.likesCount * 2) - (a.viewsCount + a.likesCount * 2));
 
     // 4. Interleaving Slot Pattern Strategy
-    const patternSlots = profile.activePattern === 'deep_dive'
+    const patternSlots = graph.activePattern === 'deep_dive'
       ? ['HighIntent', 'HighIntent', 'HighIntent', 'HighIntent', 'Exploration', 'HighIntent', 'HighIntent', 'Trending']
       : ['HighIntent', 'Network', 'HighIntent', 'Exploration', 'Trending', 'HighIntent', 'Exploration', 'Network', 'Trending'];
 
     const assembledFeed: Array<any & { bucketSource: string; slotIndex: number }> = [];
-    const usedIds = new Set<number>();
+    // Key on documentId — numeric ids collide between feed-items and videos
+    const itemKey = (i: any) => i.documentId || i.slug || String(i.id);
+    const usedIds = new Set<string>();
 
     patternSlots.forEach((slotType, idx) => {
       let selectedItem: any = null;
       let sourceBucket = slotType;
 
       if (slotType === 'HighIntent') {
-        selectedItem = highIntentBucket.find((i) => !usedIds.has(i.id));
+        selectedItem = highIntentBucket.find((i) => !usedIds.has(itemKey(i)));
       } else if (slotType === 'Network') {
-        selectedItem = networkBucket.find((i) => !usedIds.has(i.id));
+        selectedItem = networkBucket.find((i) => !usedIds.has(itemKey(i)));
       } else if (slotType === 'Exploration') {
-        selectedItem = explorationBucket.find((i) => !usedIds.has(i.id));
+        selectedItem = explorationBucket.find((i) => !usedIds.has(itemKey(i)));
       } else if (slotType === 'Trending') {
-        selectedItem = trendingBucket.find((i) => !usedIds.has(i.id));
+        selectedItem = trendingBucket.find((i) => !usedIds.has(itemKey(i)));
       }
 
       // Fallback if bucket empty
       if (!selectedItem) {
-        selectedItem = scoredItems.find((i) => !usedIds.has(i.id));
+        selectedItem = scoredItems.find((i) => !usedIds.has(itemKey(i)));
         sourceBucket = `${slotType} (Fallback)`;
       }
 
       if (selectedItem) {
-        usedIds.add(selectedItem.id);
+        usedIds.add(itemKey(selectedItem));
         assembledFeed.push({
           ...selectedItem,
           bucketSource: sourceBucket,
@@ -542,9 +429,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     return {
       feed: assembledFeed,
       meta: {
-        activePattern: profile.activePattern,
+        activePattern: graph.activePattern,
         totalReturned: assembledFeed.length,
-        userProfile: profile,
+        userProfile: graph,
         bucketsCount: {
           highIntent: highIntentBucket.length,
           network: networkBucket.length,
@@ -558,12 +445,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Process Natural Language Intent Prompt via Ollama / Smart Parser
    */
-  async processAiIntent(prompt: string, currentProfile?: Partial<InterestProfile>) {
-    const updatedProfile: InterestProfile = {
-      interests: { ...DEFAULT_USER_PROFILE.interests, ...(currentProfile?.interests || {}) },
-      contentTypes: { ...DEFAULT_USER_PROFILE.contentTypes, ...(currentProfile?.contentTypes || {}) },
-      activePattern: currentProfile?.activePattern || 'discovery',
-    };
+  async processAiIntent(prompt: string, currentProfile?: any) {
+    // Accepts any legacy profile shape; works on and returns the canonical AffinityGraph.
+    const updatedProfile: AffinityGraph = normalizeAffinityGraph(currentProfile);
 
     let aiExplanation = '';
     let ollamaConnected = false;
@@ -617,15 +501,15 @@ CRITICAL: Return JSON ONLY in this format:
 
         if (parsed.vector) {
           if (parsed.vector.interests) {
+            // LLM contract returns 0–1 interest scores; convert to canonical 0–100 topics
             Object.keys(parsed.vector.interests).forEach((t) => {
               const item = parsed.vector.interests[t];
-              const scoreVal = typeof item === 'number' ? item : item.score;
-              if (updatedProfile.interests[t]) {
-                updatedProfile.interests[t].score = Math.min(1.0, Math.max(0.0, scoreVal));
-                updatedProfile.interests[t].last_interacted = new Date().toISOString();
-              } else {
-                updatedProfile.interests[t] = { score: scoreVal, last_interacted: new Date().toISOString() };
-              }
+              const scoreVal = typeof item === 'number' ? item : item?.score;
+              if (typeof scoreVal !== 'number' || Number.isNaN(scoreVal)) return;
+              updatedProfile.topics[t] = {
+                score: Math.min(TOPIC_SCORE_MAX, Math.max(0, scoreVal * TOPIC_SCORE_MAX)),
+                last_interacted: new Date().toISOString(),
+              };
             });
           }
 
@@ -650,12 +534,10 @@ CRITICAL: Return JSON ONLY in this format:
       const lowerPrompt = prompt.toLowerCase();
 
       const setScore = (topic: string, scoreVal: number) => {
-        if (updatedProfile.interests[topic]) {
-          updatedProfile.interests[topic].score = scoreVal;
-          updatedProfile.interests[topic].last_interacted = new Date().toISOString();
-        } else {
-          updatedProfile.interests[topic] = { score: scoreVal, last_interacted: new Date().toISOString() };
-        }
+        updatedProfile.topics[topic] = {
+          score: Math.min(TOPIC_SCORE_MAX, Math.max(0, scoreVal * TOPIC_SCORE_MAX)),
+          last_interacted: new Date().toISOString(),
+        };
       };
 
       if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('wissen') || lowerPrompt.includes('astro')) {

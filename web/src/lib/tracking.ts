@@ -39,6 +39,16 @@ class TrackingManager {
     });
   }
 
+  private getJwt(): string | null {
+    try {
+      const savedUser = localStorage.getItem('omni_user');
+      if (!savedUser) return null;
+      return JSON.parse(savedUser)?.jwt || null;
+    } catch {
+      return null;
+    }
+  }
+
   public async flush() {
     if (this.eventQueue.length === 0) return;
 
@@ -46,13 +56,14 @@ class TrackingManager {
     this.eventQueue = [];
 
     try {
+      const jwt = this.getJwt();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
+
       await fetch('/api/tracking/batch', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: this.userId,
-          events: eventsToSend,
-        }),
+        headers,
+        body: JSON.stringify({ events: eventsToSend }),
       });
     } catch (err) {
       console.error('Tracking batch flush failed:', err);
@@ -61,8 +72,9 @@ class TrackingManager {
 
   private flushBeacon() {
     if (this.eventQueue.length === 0) return;
+    // sendBeacon can't set headers — the proxy route lifts jwt into Authorization
     const payload = JSON.stringify({
-      userId: this.userId,
+      jwt: this.getJwt(),
       events: this.eventQueue,
     });
     this.eventQueue = [];

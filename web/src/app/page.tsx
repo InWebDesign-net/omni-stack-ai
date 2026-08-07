@@ -45,6 +45,13 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
+import {
+  AffinityGraph,
+  normalizeAffinityGraph,
+  loadStoredAffinityGraph,
+  getStoredJwt,
+  TOPIC_SCORE_MAX,
+} from '@/lib/affinity';
 
 interface UserProfileSession {
   id: number;
@@ -111,33 +118,6 @@ function getAuthorBio(item: FeedItem) {
 function getAuthorSubscribers(item: FeedItem) {
   return item.author?.subscribersCount || 12500;
 }
-
-interface InterestProfile {
-  interests: Record<string, { score: number; last_interacted: string }>;
-  contentTypes: Record<string, number>;
-  activePattern: 'discovery' | 'deep_dive';
-}
-
-const DEFAULT_PROFILE: InterestProfile = {
-  interests: {
-    'Wissenschaft': { score: 0.95, last_interacted: new Date().toISOString() },
-    'Natur': { score: 0.88, last_interacted: new Date().toISOString() },
-    'Kochen': { score: 0.75, last_interacted: new Date().toISOString() },
-    'Finanzen': { score: 0.80, last_interacted: new Date().toISOString() },
-    'PostgreSQL': { score: 0.90, last_interacted: new Date().toISOString() },
-    'Strapi': { score: 0.82, last_interacted: new Date().toISOString() },
-    'NextJS': { score: 0.85, last_interacted: new Date().toISOString() },
-    'Ollama': { score: 0.78, last_interacted: new Date().toISOString() },
-    'Funny Cat Videos': { score: 0.20, last_interacted: '2025-12-10T08:00:00Z' },
-  },
-  contentTypes: {
-    pdf: 0.8,
-    video: 0.9,
-    article: 0.7,
-    short: 0.5,
-  },
-  activePattern: 'discovery',
-};
 
 // ─── OmniLogo SVG Component ───────────────────────────────────────────────────
 function OmniLogo({ size = 36 }: { size?: number }) {
@@ -292,6 +272,7 @@ function OmniAppContent() {
     toggleLanguage,
     profile,
     setProfile,
+    updateProfileState,
     openChannelModal,
     openVideoUploadModal,
     openSettingsModal,
@@ -404,13 +385,19 @@ function OmniAppContent() {
     }
   }, [lang]);
 
-  // Fetch Feed from Strapi API Proxy with target locale
-  const fetchFeed = async (currentProfile: InterestProfile, currentLang = lang, includeDrafts = false) => {
+  // Fetch Feed from Strapi API Proxy with target locale.
+  // Logged-in users are ranked server-side against their stored affinityGraph
+  // (JWT forwarded); anonymous visitors send their local graph along.
+  const fetchFeed = async (currentProfile: AffinityGraph, currentLang = lang, includeDrafts = false) => {
     setIsLoading(true);
     try {
+      const jwt = getStoredJwt();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
+
       const res = await fetch('/api/strapi-feed', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ ...currentProfile, locale: currentLang, includeDrafts }),
       });
       if (res.ok) {
@@ -472,51 +459,25 @@ function OmniAppContent() {
     setIsLoading(false);
   };
 
-  // Helper to persist and sync updated profile state across sessions and database
-  const updateProfileState = (newProfile: InterestProfile) => {
-    setProfile(newProfile);
-    try {
-      localStorage.setItem('omni_user_interest_profile', JSON.stringify(newProfile));
-    } catch (e) {}
-
-    if (currentUser?.jwt) {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-      fetch(`${strapiUrl}/api/users/${currentUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || currentUser.jwt}`,
-        },
-        body: JSON.stringify({
-          affinityGraph: newProfile,
-        }),
-      }).catch(() => {});
-    }
-  };
-
   useEffect(() => {
     let initialProf = profile;
-    try {
-      const stored = localStorage.getItem('omni_user_interest_profile');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed && parsed.interests) {
-          initialProf = parsed;
-          setProfile(parsed);
-        }
-      }
-    } catch (e) {}
+    const storedGraph = loadStoredAffinityGraph();
+    if (storedGraph) {
+      initialProf = storedGraph;
+      setProfile(storedGraph);
+    }
 
     try {
       const savedUser = localStorage.getItem('omni_user');
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
         setCurrentUser(parsedUser);
-        if (parsedUser?.affinityGraph && parsedUser.affinityGraph.interests) {
-          initialProf = parsedUser.affinityGraph;
-          setProfile(parsedUser.affinityGraph);
+        if (parsedUser?.affinityGraph) {
+          const graph = normalizeAffinityGraph(parsedUser.affinityGraph);
+          initialProf = graph;
+          setProfile(graph);
           try {
-            localStorage.setItem('omni_user_interest_profile', JSON.stringify(parsedUser.affinityGraph));
+            localStorage.setItem('omni_user_interest_profile', JSON.stringify(graph));
           } catch (e) {}
         }
       }
@@ -611,8 +572,9 @@ function OmniAppContent() {
       if (res.ok) {
         const data = await res.json();
         if (data.updatedProfile) {
-          updateProfileState(data.updatedProfile);
-          fetchFeed(data.updatedProfile);
+          const graph = normalizeAffinityGraph(data.updatedProfile);
+          await updateProfileState(graph);
+          fetchFeed(graph);
         }
         if (data.aiExplanation) {
           setAiReasoning(data.aiExplanation);
@@ -629,18 +591,19 @@ function OmniAppContent() {
     }
   };
 
-  const updateInterestScore = (topic: string, newScore: number) => {
-    const updated = {
+  const updateInterestScore = async (topic: string, newScore: number) => {
+    const updated: AffinityGraph = {
       ...profile,
-      interests: {
-        ...profile.interests,
+      topics: {
+        ...profile.topics,
         [topic]: {
           score: newScore,
           last_interacted: new Date().toISOString(),
         },
       },
     };
-    updateProfileState(updated);
+    // Persist first — the server ranks logged-in users against the stored graph
+    await updateProfileState(updated);
     fetchFeed(updated);
   };
 
@@ -648,7 +611,7 @@ function OmniAppContent() {
   const dynamicTopics = Array.from(
     new Set([
       ...feedItems.flatMap((item) => item.tags || []),
-      ...Object.keys(profile.interests),
+      ...Object.keys(profile.topics),
     ])
   );
 
@@ -778,17 +741,17 @@ function OmniAppContent() {
                 <span className="text-[10px] text-[#5c657d] font-mono bg-[#192038] px-2 py-0.5 rounded-full">JSON Profile</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                {Object.entries(profile.interests).map(([topic, data]) => (
+                {Object.entries(profile.topics).map(([topic, data]) => (
                   <div key={topic} className="flex flex-col gap-1.5 text-[11px]">
                     <div className="flex justify-between text-[#9ba4bf]">
                       <span className="font-medium truncate mr-1">{topic}</span>
-                      <span className="font-mono text-[#44e2cd] font-bold shrink-0">{data.score.toFixed(2)}</span>
+                      <span className="font-mono text-[#44e2cd] font-bold shrink-0">{Math.round(data.score)}</span>
                     </div>
                     <input
                       type="range"
                       min="0"
-                      max="1"
-                      step="0.05"
+                      max={TOPIC_SCORE_MAX}
+                      step="5"
                       value={data.score}
                       onChange={(e) => updateInterestScore(topic, parseFloat(e.target.value))}
                       className="w-full"
@@ -806,9 +769,9 @@ function OmniAppContent() {
               </span>
               <div className="flex gap-2.5">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     const u = { ...profile, activePattern: 'discovery' as const };
-                    updateProfileState(u);
+                    await updateProfileState(u);
                     fetchFeed(u);
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
@@ -820,9 +783,9 @@ function OmniAppContent() {
                   🔍 Discovery
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     const u = { ...profile, activePattern: 'deep_dive' as const };
-                    updateProfileState(u);
+                    await updateProfileState(u);
                     fetchFeed(u);
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${

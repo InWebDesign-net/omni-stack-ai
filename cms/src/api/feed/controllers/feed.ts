@@ -1,10 +1,12 @@
 import { Core } from '@strapi/strapi';
+import { normalizeAffinityGraph } from '../../../lib/affinity';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
   async assembleFeed(ctx: any) {
     try {
       const userProfileInput = ctx.request.body || ctx.query;
-      const result = await strapi.service('api::feed.feed').assembleFeed(userProfileInput);
+      const viewerId = ctx.state?.user?.id;
+      const result = await strapi.service('api::feed.feed').assembleFeed(userProfileInput, viewerId);
       return ctx.send(result);
     } catch (err: any) {
       return ctx.badRequest('Feed Assembly Error', { error: err.message });
@@ -18,9 +20,45 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         return ctx.badRequest('Prompt parameter is required');
       }
       const result = await strapi.service('api::feed.feed').processAiIntent(prompt, currentProfile);
+
+      // Persist the adjusted graph for authenticated users right away
+      const viewerId = ctx.state?.user?.id;
+      if (viewerId && result?.updatedProfile) {
+        try {
+          await strapi.db.query('plugin::users-permissions.user').update({
+            where: { id: viewerId },
+            data: { affinityGraph: result.updatedProfile },
+          });
+        } catch (e) {
+          console.error('processAiIntent: failed to persist affinityGraph:', e);
+        }
+      }
+
       return ctx.send(result);
     } catch (err: any) {
       return ctx.badRequest('AI Intent Processing Error', { error: err.message });
+    }
+  },
+
+  /**
+   * Replace the authenticated user's affinityGraph (Algorithm panel, on-the-fly edits).
+   * Route requires authentication — users can only ever write their own graph.
+   */
+  async updateProfile(ctx: any) {
+    const viewer = ctx.state?.user;
+    if (!viewer) {
+      return ctx.unauthorized('Authentication required');
+    }
+    try {
+      const raw = ctx.request.body?.affinityGraph ?? ctx.request.body;
+      const graph = normalizeAffinityGraph(raw);
+      await strapi.db.query('plugin::users-permissions.user').update({
+        where: { id: viewer.id },
+        data: { affinityGraph: graph },
+      });
+      return ctx.send({ success: true, affinityGraph: graph });
+    } catch (err: any) {
+      return ctx.badRequest('Profile Update Error', { error: err.message });
     }
   },
 
@@ -192,7 +230,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async handleInteraction(ctx: any) {
     try {
-      const payload = ctx.request.body;
+      // Identity comes from the JWT only — a spoofed body userId must never
+      // write into someone else's affinityGraph.
+      const payload = {
+        ...ctx.request.body,
+        userId: ctx.state?.user?.id,
+      };
       const result = await strapi.service('api::feed.feed').handleInteraction(payload);
       return ctx.send(result);
     } catch (err: any) {
@@ -202,7 +245,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async getInteractionStatus(ctx: any) {
     try {
-      const { slug, userIdentifier, userId } = ctx.query;
+      const { slug, userIdentifier } = ctx.query;
+      const userId = ctx.state?.user?.id;
       const result = await strapi.service('api::feed.feed').getInteractionStatus(slug, userIdentifier, userId);
       return ctx.send(result);
     } catch (err: any) {
@@ -212,7 +256,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async getUserFavorites(ctx: any) {
     try {
-      const { userIdentifier, userId } = ctx.query;
+      const { userIdentifier } = ctx.query;
+      const userId = ctx.state?.user?.id;
       const result = await strapi.service('api::feed.feed').getUserFavorites(userIdentifier as string, userId);
       return ctx.send(result);
     } catch (err: any) {
