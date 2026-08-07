@@ -714,9 +714,35 @@ CRITICAL: Return JSON ONLY in this format:
     return { success: true, slug: base, isProcessing: false, duration: metaDuration };
   },
 
-  async togglePublish(documentId: string, publish: boolean) {
+  async togglePublish(documentId: string, publish: boolean, userId?: number | string) {
     if (!documentId) {
       throw new Error('Missing documentId');
+    }
+
+    if (userId) {
+      let doc: any = null;
+      try {
+        doc = await strapi.db.query('api::video.video').findOne({
+          where: { documentId },
+          populate: ['creator', 'author'],
+        });
+      } catch (e) {}
+
+      if (!doc) {
+        try {
+          doc = await strapi.db.query('api::feed-item.feed-item').findOne({
+            where: { documentId },
+            populate: ['author', 'creator'],
+          });
+        } catch (e) {}
+      }
+
+      if (doc) {
+        const ownerId = doc.creator?.id || doc.author?.id;
+        if (ownerId && String(ownerId) !== String(userId)) {
+          throw new Error('Forbidden: You are not the owner of this content');
+        }
+      }
     }
     if (publish) {
       try {

@@ -68,10 +68,13 @@ export async function POST(req: Request) {
       // This calls the feed controller's createVideo action which uses the Document Service API
       // to properly create EN + DE locale entries linked via documentId, both published.
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const authHeader = req.headers.get('authorization');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      if (process.env.STRAPI_API_TOKEN) {
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      } else if (process.env.STRAPI_API_TOKEN) {
         headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
       }
 

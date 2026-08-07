@@ -66,17 +66,11 @@ export default {
       method: 'POST',
       path: '/feed/toggle-publish',
       handler: 'feed.togglePublish',
-      config: {
-        auth: false,
-      },
     },
     {
       method: 'POST',
       path: '/feed/create-video',
       handler: 'feed.createVideo',
-      config: {
-        auth: false,
-      },
     },
     {
       method: 'POST',

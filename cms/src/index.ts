@@ -109,8 +109,10 @@ export default {
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }
-        // Own-profile graph updates require a logged-in user
+        // Own-profile graph updates and video management require a logged-in user
         await enablePermission(authRole.id, 'api::feed.feed.updateProfile');
+        await enablePermission(authRole.id, 'api::feed.feed.togglePublish');
+        await enablePermission(authRole.id, 'api::feed.feed.createVideo');
       }
 
       // 3b. One-time migration: normalize every stored affinityGraph to the
@@ -137,6 +139,7 @@ export default {
 
       // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)
       const outDir = '/root/media/out';
+      const workerSecret = process.env.INGEST_WORKER_SECRET || 'omni_ingest_worker_secret_2026';
       setInterval(async () => {
         try {
           const fs = require('fs');
@@ -146,7 +149,7 @@ export default {
             const doneFiles = outFiles.filter((f: string) => f.endsWith('.done'));
             for (const doneFile of doneFiles) {
               const base = path.basename(doneFile, '.done');
-              await strapi.service('api::feed.feed').ingestFinalizedVideo({ slug: base });
+              await strapi.service('api::feed.feed').ingestFinalizedVideo({ slug: base, workerSecret });
             }
           }
         } catch (e) {}

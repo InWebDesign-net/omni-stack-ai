@@ -150,16 +150,21 @@ export default function VideoUploadModal({
         formData.append('tags', JSON.stringify(task.tags && task.tags.length > 0 ? task.tags : ['Wissenschaft', 'Technologie', 'Video']));
         formData.append('file', chunk, file.name);
 
+        const uploadHeaders: Record<string, string> = {};
         try {
           const storedUserStr = typeof window !== 'undefined' ? localStorage.getItem('omni_user') : null;
           const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
           if (storedUser?.id) {
             formData.append('userId', storedUser.id.toString());
           }
+          if (storedUser?.jwt) {
+            uploadHeaders['Authorization'] = `Bearer ${storedUser.jwt}`;
+          }
         } catch (e) {}
 
         const res = await fetch('/api/upload/chunk', {
           method: 'POST',
+          headers: uploadHeaders,
           body: formData,
         });
 

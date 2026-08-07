@@ -147,7 +147,15 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async ingestFinalizedVideo(ctx: any) {
     try {
-      const payload = ctx.request.body;
+      const payload = ctx.request.body || {};
+      const secretHeader = ctx.request.headers['x-worker-secret'];
+      const providedSecret = payload.workerSecret || secretHeader;
+      const expectedSecret = process.env.INGEST_WORKER_SECRET || 'omni_ingest_worker_secret_2026';
+
+      if (!providedSecret || providedSecret !== expectedSecret) {
+        return ctx.forbidden('Invalid worker secret');
+      }
+
       const result = await strapi.service('api::feed.feed').ingestFinalizedVideo(payload);
       return ctx.send(result);
     } catch (err: any) {
@@ -156,22 +164,33 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async togglePublish(ctx: any) {
+    const userId = ctx.state?.user?.id;
+    if (!userId) {
+      return ctx.unauthorized('Authentication required');
+    }
     try {
-      const { documentId, publish } = ctx.request.body;
-      const result = await strapi.service('api::feed.feed').togglePublish(documentId, publish);
+      const { documentId, publish } = ctx.request.body || {};
+      const result = await strapi.service('api::feed.feed').togglePublish(documentId, publish, userId);
       return ctx.send(result);
     } catch (err: any) {
+      if (err.message?.includes('Forbidden')) {
+        return ctx.forbidden(err.message);
+      }
       return ctx.badRequest('Toggle Publish Error', { error: err.message });
     }
   },
 
   /**
    * Create bilingual Video entry (EN default + DE locale) via Document Service API.
-   * Both locales are linked via documentId and published immediately.
+   * Requires JWT authentication — creator is bound to the logged-in user.
    */
   async createVideo(ctx: any) {
+    const creatorId = ctx.state?.user?.id;
+    if (!creatorId) {
+      return ctx.unauthorized('Authentication required');
+    }
     try {
-      const { title, slug, tags, userId } = ctx.request.body;
+      const { title, slug, tags } = ctx.request.body || {};
       if (!title || !slug) {
         return ctx.badRequest('title and slug are required');
       }
@@ -190,10 +209,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         isProcessing: true,
         isForSale: false,
         price: 0,
+        creator: creatorId,
       };
-      if (userId) {
-        videoData.creator = userId;
-      }
 
       // 1. Create EN (default locale) entry - published
       const createdEn = await strapi.documents('api::video.video').create({
@@ -207,10 +224,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         await strapi.documents('api::video.video').update({
           documentId: createdEn.documentId,
           locale: 'de',
-          data: {
-            ...videoData,
-            // Strapi v5 i18n: update with locale 'de' on the same documentId creates the DE version
-          },
+          data: videoData,
           status: 'published',
         });
       } catch (deErr: any) {
