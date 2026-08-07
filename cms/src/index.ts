@@ -29,15 +29,18 @@ export default {
 
         const uidNum = omniViewer?.userId ? Number(omniViewer.userId) : null;
         const hasExistingFilters = context.params.filters && Object.keys(context.params.filters).length > 0;
-        const visibilityFilter = uidNum
+
+        const isVideo = context.uid === 'api::video.video';
+        const ownerFilter = uidNum
+          ? (isVideo ? { creator: { id: { $eq: uidNum } } } : { author: { id: { $eq: uidNum } } })
+          : null;
+
+        const visibilityFilter = ownerFilter
           ? {
               $or: [
                 { visibility: { $eq: 'public' } },
                 { visibility: { $null: true } },
-                { creator: { id: { $eq: uidNum } } },
-                { creator: { id: { $in: [uidNum] } } },
-                { author: { id: { $eq: uidNum } } },
-                { author: { id: { $in: [uidNum] } } },
+                ownerFilter,
               ],
             }
           : {
