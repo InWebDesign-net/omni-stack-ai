@@ -91,7 +91,16 @@ export default {
         'api::tracking.tracking.processBatch',
       ];
 
+      const disablePermission = async (roleId: number, action: string) => {
+        try {
+          await strapi.db.query('plugin::users-permissions.permission').deleteMany({
+            where: { role: roleId, action },
+          });
+        } catch (e) {}
+      };
+
       if (publicRole) {
+        await disablePermission(publicRole.id, 'plugin::users-permissions.user.update');
         await enablePermission(publicRole.id, 'api::comment.comment.find');
         await enablePermission(publicRole.id, 'api::comment.comment.findOne');
         await enablePermission(publicRole.id, 'api::comment.comment.create');
@@ -101,6 +110,8 @@ export default {
       }
 
       if (authRole) {
+        // Enforce: users cannot update full user fields directly (profile updates go through /feed/profile)
+        await disablePermission(authRole.id, 'plugin::users-permissions.user.update');
         await enablePermission(authRole.id, 'api::comment.comment.find');
         await enablePermission(authRole.id, 'api::comment.comment.findOne');
         await enablePermission(authRole.id, 'api::comment.comment.create');

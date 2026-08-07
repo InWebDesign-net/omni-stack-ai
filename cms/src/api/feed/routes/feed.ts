@@ -48,14 +48,6 @@ export default {
     },
     {
       method: 'POST',
-      path: '/feed/test-i18n',
-      handler: 'feed.testI18nLink',
-      config: {
-        auth: false,
-      },
-    },
-    {
-      method: 'POST',
       path: '/feed/ingest-finalized',
       handler: 'feed.ingestFinalizedVideo',
       config: {

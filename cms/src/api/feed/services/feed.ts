@@ -825,10 +825,23 @@ CRITICAL: Return JSON ONLY in this format:
       if (force) {
         console.log('🧹 Force re-seed requested. Deleting existing Feed Items & Video records...');
         try {
-          await strapi.db.query('api::feed-item.feed-item').deleteMany({});
+          const feedDocs = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });
+          const docIds = Array.from(new Set(feedDocs.map((d: any) => d.documentId)));
+          for (const docId of docIds) {
+            try {
+              await strapi.documents('api::feed-item.feed-item').delete({ documentId: docId });
+            } catch (e) {}
+          }
         } catch (e) {}
+
         try {
-          await strapi.db.query('api::video.video').deleteMany({});
+          const videoDocs = await strapi.documents('api::video.video').findMany({ locale: '*' });
+          const docIds = Array.from(new Set(videoDocs.map((d: any) => d.documentId)));
+          for (const docId of docIds) {
+            try {
+              await strapi.documents('api::video.video').delete({ documentId: docId });
+            } catch (e) {}
+          }
         } catch (e) {}
       }
 
@@ -849,46 +862,70 @@ CRITICAL: Return JSON ONLY in this format:
       }) => {
         try {
           let existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-            where: { handle: creator.handle },
+            where: { email: creator.email },
           });
-
           if (!existingUser) {
             existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-              where: { email: creator.email },
+              where: { handle: creator.handle },
+            });
+          }
+          if (!existingUser) {
+            existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+              where: { username: creator.username },
             });
           }
 
           if (existingUser) {
-            await strapi.db.query('plugin::users-permissions.user').update({
-              where: { id: existingUser.id },
-              data: {
-                handle: creator.handle,
-                avatarUrl: creator.avatarUrl,
-                bio: creator.bio,
-                subscribersCount: creator.subscribersCount,
-              },
-            });
+            try {
+              await strapi.db.query('plugin::users-permissions.user').update({
+                where: { id: existingUser.id },
+                data: {
+                  handle: creator.handle,
+                  avatarUrl: creator.avatarUrl,
+                  bio: creator.bio,
+                  subscribersCount: creator.subscribersCount,
+                },
+              });
+            } catch (e) {}
             return existingUser;
           }
 
-          const created = await strapi.service('plugin::users-permissions.user').add({
-            username: creator.username,
-            email: creator.email,
-            password: 'DemoUser2026!',
-            confirmed: true,
-            provider: 'local',
-            role: roleId,
-          });
+          let created: any = null;
+          try {
+            created = await strapi.service('plugin::users-permissions.user').add({
+              username: creator.username,
+              email: creator.email,
+              password: 'DemoUser2026!',
+              confirmed: true,
+              provider: 'local',
+              role: roleId,
+            });
+          } catch (createErr) {
+            try {
+              created = await strapi.db.query('plugin::users-permissions.user').findOne({
+                where: { email: creator.email },
+              });
+              if (!created) {
+                created = await strapi.db.query('plugin::users-permissions.user').findOne({
+                  where: { username: creator.username },
+                });
+              }
+            } catch (e) {}
+          }
 
-          await strapi.db.query('plugin::users-permissions.user').update({
-            where: { id: created.id },
-            data: {
-              handle: creator.handle,
-              avatarUrl: creator.avatarUrl,
-              bio: creator.bio,
-              subscribersCount: creator.subscribersCount,
-            },
-          });
+          if (created && created.id) {
+            try {
+              await strapi.db.query('plugin::users-permissions.user').update({
+                where: { id: created.id },
+                data: {
+                  handle: creator.handle,
+                  avatarUrl: creator.avatarUrl,
+                  bio: creator.bio,
+                  subscribersCount: creator.subscribersCount,
+                },
+              });
+            } catch (e) {}
+          }
           return created;
         } catch (e) {
           return null;
@@ -963,6 +1000,26 @@ CRITICAL: Return JSON ONLY in this format:
         creator: any;
       }) => {
         try {
+          const existing = await strapi.documents('api::video.video').findMany({
+            filters: { slug: { $eq: videoData.slug } },
+            locale: '*',
+          });
+          if (existing && existing.length > 0) {
+            const updated = await strapi.documents('api::video.video').update({
+              documentId: existing[0].documentId,
+              locale: existing[0].locale || 'de',
+              status: 'published',
+              data: {
+                title: videoData.title,
+                duration: videoData.duration,
+                mp4Url: videoData.mp4Url,
+                thumbnailUrl: videoData.thumbnailUrl,
+                creator: videoData.creator?.documentId || videoData.creator?.id,
+              } as any,
+            });
+            return updated;
+          }
+
           const created = await strapi.documents('api::video.video').create({
             data: {
               title: videoData.title,
@@ -1228,34 +1285,63 @@ CRITICAL: Return JSON ONLY in this format:
       for (const item of seedItems) {
         const authorId = item.creator?.documentId || item.creator?.id;
 
-        const createdEn = await strapi.documents('api::feed-item.feed-item').create({
-          data: {
-            ...item.en,
-            mediaType: item.mediaType,
-            thumbnailUrl: item.thumbnailUrl,
-            viewsCount: item.viewsCount,
-            likesCount: item.likesCount,
-            publishedAt: item.publishedAt,
-            author: authorId,
-          } as any,
-          locale: 'en',
-          status: 'published',
-        });
+        let createdEn: any = null;
+        try {
+          const existingEn = await strapi.documents('api::feed-item.feed-item').findMany({
+            filters: { slug: { $eq: item.en.slug } },
+            locale: '*',
+          });
 
-        await strapi.documents('api::feed-item.feed-item').update({
-          documentId: createdEn.documentId,
-          locale: 'de',
-          data: {
-            ...item.de,
-            mediaType: item.mediaType,
-            thumbnailUrl: item.thumbnailUrl,
-            viewsCount: item.viewsCount,
-            likesCount: item.likesCount,
-            publishedAt: item.publishedAt,
-            author: authorId,
-          } as any,
-          status: 'published',
-        });
+          if (existingEn && existingEn.length > 0) {
+            createdEn = await strapi.documents('api::feed-item.feed-item').update({
+              documentId: existingEn[0].documentId,
+              locale: existingEn[0].locale || 'en',
+              status: 'published',
+              data: {
+                ...item.en,
+                mediaType: item.mediaType,
+                thumbnailUrl: item.thumbnailUrl,
+                viewsCount: item.viewsCount,
+                likesCount: item.likesCount,
+                publishedAt: item.publishedAt,
+                author: authorId,
+              } as any,
+            });
+          } else {
+            createdEn = await strapi.documents('api::feed-item.feed-item').create({
+              data: {
+                ...item.en,
+                mediaType: item.mediaType,
+                thumbnailUrl: item.thumbnailUrl,
+                viewsCount: item.viewsCount,
+                likesCount: item.likesCount,
+                publishedAt: item.publishedAt,
+                author: authorId,
+              } as any,
+              locale: 'en',
+              status: 'published',
+            });
+          }
+        } catch (e) {}
+
+        if (createdEn?.documentId) {
+          try {
+            await strapi.documents('api::feed-item.feed-item').update({
+              documentId: createdEn.documentId,
+              locale: 'de',
+              data: {
+                ...item.de,
+                mediaType: item.mediaType,
+                thumbnailUrl: item.thumbnailUrl,
+                viewsCount: item.viewsCount,
+                likesCount: item.likesCount,
+                publishedAt: item.publishedAt,
+                author: authorId,
+              } as any,
+              status: 'published',
+            });
+          } catch (e) {}
+        }
       }
 
       console.log(`✅ Seed completed: ${seedItems.length * 2} bilingual items linked with Dynamic Zone components created!`);

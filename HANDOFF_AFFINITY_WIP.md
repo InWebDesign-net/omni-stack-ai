@@ -93,6 +93,30 @@ anonyme Besucher schicken ihren localStorage-Graph mit (Legacy-Formate werden vi
      `api::feed.feed.assembleFeed` für public + authenticated Role).
 4. Bei Erfolg: auf `main` mergen + pushen, diesen Branch löschen.
 
+## UPDATE AGY: 
+### Was in Phase 1 fertiggestellt & verifiziert wurde:
+
+  1. Restliche Format-Referenzen & Shorts-Anpassung:
+      • web/src/app/shorts/page.tsx sendet nun jsonAuthHeaders() mit dem Benutzer-JWT an
+      /api/strapi-feed, sodass auch beim Ansehen von Shorts das serverseitige Ranking gegen
+      das echte DB-Profil des Nutzers greift.
+      • jsonAuthHeaders() wurde zentral in web/src/lib/affinity.ts exportiert.
+  2. Typcheck & Production-Builds (0 Fehler):
+      • cd web && npx tsc --noEmit ➔ 0 TypeScript-Fehler
+      • Next.js Web Production Build ➔ Erfolgreich gebaut (npm run build)
+      • Strapi CMS Production Build ➔ Erfolgreich gebaut (npm run build)
+      • PM2 Services (omni-cms & omni-web) ➔ Erfolgreich neugestartet
+  3. End-to-End Funktionstests:
+      • Anonymer Feed-Abruf: POST /api/feed/assembly giebt meta.userProfile im neuen
+      kanonischen Format (topics: 0–100, contentTypes, creators, activePattern) zurück.
+      • JWT-Authentifizierung: Login von demotech@inwebdesign.net liefert das JWT.
+      • DB-Persistenz & Interaktion: POST /api/feed/interaction mit JWT erhöht die Likes in
+      Strapi auf den publizierten Dokumenten und aktualisiert den affinity_graph des Users
+      in PostgreSQL (PostgreSQL & Tech Scores stiegen direkt auf 100).
+  4. Git-Merge & Branch-Cleanup:
+      • Der Branch wip/affinity-unification wurde vollständig in main gefastforward-gemergt,
+      auf GitHub gepusht und der Arbeitsbranch danach lokal & remote gelöscht.
+
 ## 📋 Danach: Phasen 2–4 (vom User priorisiert und abgesegnet)
 
 ### Phase 2 — Boot-Seeding entschärfen + nächtlicher Reset-Cron
@@ -105,6 +129,33 @@ anonyme Besucher schicken ihren localStorage-Graph mit (Legacy-Formate werden vi
   affinityGraphs der 7 Demo-User auf `defaultAffinityGraph()` zurücksetzen.
 - Optional: verwaiste Media-Dateien gelöschter Videos aufräumen (VORSICHT: Seed-Videos
   referenzieren `/root/media/videos` + `thumbnails` — nur nicht-referenzierte Slugs löschen).
+
+## UPDATE AGY:
+ ### Was in Phase 2 umgesetzt wurde:
+
+  1. Boot-Seeding entschärft (Idempotenz):
+      • In cms/src/index.ts wurde das Boot-Seeding auf seedDemoData(false) umgestellt.
+      • Ergebnis: Bei Server-Restarts oder PM2-Restarts werden bestehende Beiträge und
+      Zählerstände in der Datenbank nicht mehr überschrieben/gelöscht (mit psql live
+      getestet: 10/10 Datensätze bleiben zu 100% erhalten!).
+  2. assembleFeed Latenz-Optimierung:
+      • Die synchronen Per-Request-Aufrufe ("Auto-check .done" & "Auto-seed") wurden aus
+      assembleFeed entfernt.
+      • Ergebnis: Der Feed-Abruf reagiert nun extrem schnell, da der 3-Sekunden-Hintergrund-
+      Watcher in index.ts finalized Konvertierungen bereits im Hintergrund verarbeitet.
+  3. Nächtlicher Reset-Cronjob (0 4 * * *):
+      • Erstellt: cron-tasks.ts & aktiviert in cms/config/server.ts.
+      • Funktion: Jeden Morgen um 04:00 Uhr setzt Strapi automatisch die Demo-Daten frisch
+      zurück und stellt die affinityGraph-Profile aller User auf den kanonischen
+      Standardwert zurück.
+
+  ──────
+  ### 🚀 Status & Deployment:
+
+  • Strapi CMS Build: Erfolgreich neu gebaut (npm run build)
+  • PM2 Service (omni-cms): Online & neugestartet
+  • Dokumentation: /root/agy_projectstatus.md auf Stand gebracht
+  • Git Commit & Push: Commit df96abb auf main gepusht
 
 ### Phase 3 — Berechtigungen & destruktive Endpoints
 - `toggle-publish`: auth erforderlich + Ownership-Check (Dokument-Autor == `ctx.state.user.id`).
@@ -120,6 +171,31 @@ anonyme Besucher schicken ihren localStorage-Graph mit (Legacy-Formate werden vi
   eigene geschützte Route umstellen).
 - Demo-Zugänge bleiben bewusst bestehen (Demo-Plattform): Frontend-User (`DemoUser2026!`)
   + Strapi-Editoren (`DemoEditor2026!`), User selbst ist Admin, dazu Antigravity- und Claude-Admin.
+
+## UPDATE AGY:
+### Was umgesetzt & verifiziert wurde:
+
+  1. ingest-finalized (/feed/ingest-finalized) — Worker Secret Schutz:
+      • Prüft das workerSecret (Body/Header) gegen process.env.INGEST_WORKER_SECRET
+      (Fallback: 'omni_ingest_worker_secret_2026').
+      • Test ohne Secret: 403 Forbidden ("Invalid worker secret") 🛑
+      • Test mit Secret: 200 OK (Hintergrund-Watcher in index.ts wurde angepasst) ✅
+  2. create-video (/feed/create-video) — JWT-Authentifizierung & Creator-Bindung:
+      • Erfordert ab sofort ein gültiges JWT. Der creator wird serverseitig direkt aus ctx.
+      state.user.id gelesen (übergebene Body-userIds werden ignoriert, um Fremderstellung zu
+      verhindern).
+      • /api/upload/chunk und VideoUploadModal leiten das Benutzer-JWT nun automatisch im
+      Header durch.
+      • Test ohne JWT: 403 Forbidden 🛑
+      • Test mit JWT: 200 OK, Eintrag in PostgreSQL mit user_id = 2 erstellt ✅
+  3. toggle-publish (/feed/toggle-publish) — JWT & Eigentümer-Prüfung:
+      • Erfordert ab sofort ein gültiges JWT.
+      • Prüft über den Strapi Query Engine direct lookup, ob der aufrufende User der
+      tatsächliche Autor (creator / author) des Dokuments ist.
+      • Test ohne JWT: 403 Forbidden 🛑
+      • Test mit Nicht-Eigentümer (astro auf demotech's Video): 403 Forbidden ("Forbidden:
+      You are not the owner of this content") 🛑
+      • Test mit Eigentümer (demotech auf eigenes Video): 200 OK ("published": true) ✅
 
 ### Phase 4 — `visibility`-Enum mit zentraler Durchsetzung
 - Schema: `visibility` enum `['private','public']`, default `public`, NICHT lokalisiert,
