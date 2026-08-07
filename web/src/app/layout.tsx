@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://omni.inwebdesign.net'),
+  metadataBase: new URL('https://omni-web.inwebdesign.net'),
   title: {
     default: 'Omni - Hyper-Personalized AI Media Network | BY INWEBDESIGN',
     template: '%s | Omni Network',
@@ -45,17 +45,17 @@ export const metadata: Metadata = {
   },
   manifest: '/site.webmanifest',
   alternates: {
-    canonical: 'https://omni.inwebdesign.net',
+    canonical: 'https://omni-web.inwebdesign.net',
     languages: {
-      'de-DE': 'https://omni.inwebdesign.net?lang=de',
-      'en-US': 'https://omni.inwebdesign.net?lang=en',
+      'de-DE': 'https://omni-web.inwebdesign.net?lang=de',
+      'en-US': 'https://omni-web.inwebdesign.net?lang=en',
     },
   },
   openGraph: {
     title: 'Omni - Hyper-Personalized AI Media Network | BY INWEBDESIGN',
     description:
       'Next-Gen KI-gestützte Content-Plattform mit Echtzeit-Vektor-Personalisierung, Kanal-Profilen und lokaler LLM-Intents-Steuerung.',
-    url: 'https://omni.inwebdesign.net',
+    url: 'https://omni-web.inwebdesign.net',
     siteName: 'Omni BY INWEBDESIGN',
     locale: 'de_DE',
     type: 'website',
@@ -93,7 +93,7 @@ const jsonLdWebsite = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Omni BY INWEBDESIGN',
-  url: 'https://omni.inwebdesign.net',
+  url: 'https://omni-web.inwebdesign.net',
   description: 'Hyper-Personalized AI Media Network powered by Strapi, Next.js & Ollama AI',
   publisher: {
     '@type': 'Organization',
@@ -102,7 +102,7 @@ const jsonLdWebsite = {
   },
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://omni.inwebdesign.net/?q={search_term_string}',
+    target: 'https://omni-web.inwebdesign.net/?q={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
 };
@@ -112,7 +112,7 @@ const jsonLdOrganization = {
   '@type': 'Organization',
   name: 'InWebDesign',
   url: 'https://inwebdesign.net',
-  logo: 'https://omni.inwebdesign.net/icon.png',
+  logo: 'https://omni-web.inwebdesign.net/icon.png',
   sameAs: ['https://inwebdesign.net'],
 };
 
