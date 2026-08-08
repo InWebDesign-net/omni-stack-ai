@@ -225,6 +225,37 @@ anonyme Besucher schicken ihren localStorage-Graph mit (Legacy-Formate werden vi
 - Frontend: Lock-Screen in `video/[slug]` auf visibility statt `!publishedAt` umstellen;
   Library zeigt eigene private Items (Feed-Query mit Viewer-Kontext).
 
+ ### Ursache des Fehlers bei eingeloggten Nutzern (@demotech):
+
+  In der Document Service Middleware (index.ts) wurde beim Hinzufügen der
+  Sichtbarkeitsprüfung für eingeloggte User pauschal ein $or-Filter auf beide Beziehungs-
+  Attribute angewandt:
+  { $or: [ { visibility: 'public' }, { creator: { id: userId } }, { author: { id: userId } }
+  ] }
+
+  • Das Modell FeedItem besitzt das User-Attribut author (aber kein creator).
+  • Das Modell Video besitzt das User-Attribut creator (aber kein author).
+
+  Strapi 5 hat bei der Abfrage von feed-item versucht, auf ein nicht-existierendes Attribut
+  creator zu filtern (und bei video auf author), was im ORM-Querybuilder zu einem ungültigen
+  JOIN führte und somit 0 Ergebnisse lieferte, sobald ein Nutzer eingeloggt war.
+  ──────
+  ### Behoben:
+
+  Die Middleware prüft nun den jeweiligen Content-Type (context.uid) exakt:
+
+  • Bei api::feed-item.feed-item wird ausschließlich auf author.id = userId geprüft.
+  • Bei api::video.video wird ausschließlich auf creator.id = userId geprüft.
+  ──────
+  ### 🧪 Verifikationstest (cURL mit User 2 @demotech JWT):
+
+  • Eingeloggt als @demotech (POST /api/feed/assembly):
+  Liefert nun wieder alle öffentlichen Beiträge sowie alle eigenen Uploads/Drafts
+  vollständig und sauber zurück ✅
+  • Next.js Proxy (/api/strapi-feed) mit JWT:
+  Liefert alle 5 Haupt-Feed-Items sowie Videos problemlos zurück ✅
+  • Git Commit & Push: Commit 90fe91a auf main gepusht.
+
 ## Wichtige Arbeitsregeln (aus agy_setup.md)
 - `web/AGENTS.md` beachten: Next 16 hat Breaking Changes — vor Next-Code
   `web/node_modules/next/dist/docs/` konsultieren.

@@ -1041,6 +1041,74 @@ CRITICAL: Return JSON ONLY in this format:
         }
       };
 
+      // Load & Seed the official 110 test video entries from seed_videos.json
+      const fs = require('fs');
+      const path = require('path');
+      const seedVideosPath = path.join(__dirname, '../../../src/data/seed_videos.json');
+      const seedVideosAltPath = path.join(process.cwd(), 'src/data/seed_videos.json');
+      const targetFixturePath = fs.existsSync(seedVideosPath) ? seedVideosPath : (fs.existsSync(seedVideosAltPath) ? seedVideosAltPath : null);
+
+      if (targetFixturePath) {
+        try {
+          const videoFixture = JSON.parse(fs.readFileSync(targetFixturePath, 'utf8'));
+          console.log(`🎬 Seeding ${videoFixture.length} official test videos from seed_videos.json...`);
+          const creatorsMap: Record<string, any> = creators;
+          for (const item of videoFixture) {
+            const creatorObj = creatorsMap[item.creatorHandle] || creators.astro;
+            const authorId = creatorObj?.documentId || creatorObj?.id || 1;
+
+            const existingVid = await strapi.documents('api::video.video').findMany({
+              filters: { slug: { $eq: item.slug } },
+              locale: '*',
+            });
+
+            if (!existingVid || existingVid.length === 0) {
+              const videoData = {
+                title: item.title_de || item.title_en,
+                slug: item.slug,
+                summary: item.summary_de || item.summary_en,
+                tags: item.tags || ['Video'],
+                viewsCount: item.viewsCount || 0,
+                likesCount: item.likesCount || 0,
+                mp4Url: item.mp4Url,
+                hlsUrl: item.hlsUrl,
+                thumbnailUrl: item.thumbnailUrl,
+                ogImageUrl: item.ogImageUrl,
+                isProcessing: false,
+                isForSale: false,
+                price: 0,
+                creator: authorId,
+                visibility: 'public',
+                duration: item.duration || 30,
+              };
+
+              const createdEn = await strapi.documents('api::video.video').create({
+                data: videoData as any,
+                locale: 'en',
+                status: 'published',
+              });
+
+              if (createdEn?.documentId) {
+                try {
+                  await strapi.documents('api::video.video').update({
+                    documentId: createdEn.documentId,
+                    locale: 'de',
+                    data: {
+                      ...videoData,
+                      title: item.title_de || item.title_en,
+                      summary: item.summary_de || item.summary_en,
+                    } as any,
+                    status: 'published',
+                  });
+                } catch (e) {}
+              }
+            }
+          }
+        } catch (fixtureErr) {
+          console.error('Error seeding 110 test videos from fixture:', fixtureErr);
+        }
+      }
+
       const pastaVideo = await createVideoRecord({
         title: 'Italienische Pastasoßen Masterclass',
         slug: 'kochen-wie-der-chefkoch-italienische-pasta',

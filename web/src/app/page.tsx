@@ -134,10 +134,10 @@ function OmniLogo({ size = 36 }: { size?: number }) {
           <stop offset="100%" stopColor="#44e2cd" />
         </linearGradient>
         <filter id="logo-glow">
-          <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+          <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
           <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
       </defs>
@@ -156,10 +156,10 @@ function OmniLogo({ size = 36 }: { size?: number }) {
       <line x1="4" y1="20" x2="8" y2="20" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
       <line x1="32" y1="20" x2="36" y2="20" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
       {/* Diagonal sparks */}
-      <line x1="8.4" y1="8.4" x2="11.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
-      <line x1="29.0" y1="29.0" x2="31.6" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
-      <line x1="31.6" y1="8.4" x2="29.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
-      <line x1="11.0" y1="29.0" x2="8.4" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
+      <line x1="8.4" y1="8.4" x2="11.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+      <line x1="29.0" y1="29.0" x2="31.6" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+      <line x1="31.6" y1="8.4" x2="29.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+      <line x1="11.0" y1="29.0" x2="8.4" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
     </svg>
   );
 }
@@ -184,10 +184,10 @@ function SkeletonCard() {
 // ─── MediaTypeBadge ───────────────────────────────────────────────────────────
 function MediaTypeBadge({ type }: { type: FeedItem['mediaType'] }) {
   const map = {
-    video:   { icon: Video,    label: 'Video',   color: 'text-[#ffb783]', bg: 'bg-[#ffb783]/15 border-[#ffb783]/25' },
-    pdf:     { icon: FileText, label: 'PDF',     color: 'text-red-400',   bg: 'bg-red-400/15 border-red-400/25' },
+    video: { icon: Video, label: 'Video', color: 'text-[#ffb783]', bg: 'bg-[#ffb783]/15 border-[#ffb783]/25' },
+    pdf: { icon: FileText, label: 'PDF', color: 'text-red-400', bg: 'bg-red-400/15 border-red-400/25' },
     article: { icon: BookOpen, label: 'Artikel', color: 'text-[#44e2cd]', bg: 'bg-[#44e2cd]/15 border-[#44e2cd]/25' },
-    short:   { icon: Play,     label: 'Short',   color: 'text-[#c0c1ff]', bg: 'bg-[#c0c1ff]/15 border-[#c0c1ff]/25' },
+    short: { icon: Play, label: 'Short', color: 'text-[#c0c1ff]', bg: 'bg-[#c0c1ff]/15 border-[#c0c1ff]/25' },
   } as const;
   const m = map[type];
   const Icon = m.icon;
@@ -213,12 +213,12 @@ function GermanFlag({ className = "w-4 h-3" }: { className?: string }) {
 function UKFlag({ className = "w-4 h-3" }: { className?: string }) {
   return (
     <svg className={`${className} rounded-[2px] overflow-hidden shrink-0 shadow-sm`} viewBox="0 0 60 30" aria-hidden="true">
-      <clipPath id="gb-s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
-      <clipPath id="gb-t"><path d="M30,15 H0 V0 z M30,15 V0 h30 z M30,15 h30 v15 z M30,15 v15 H0 z"/></clipPath>
+      <clipPath id="gb-s"><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+      <clipPath id="gb-t"><path d="M30,15 H0 V0 z M30,15 V0 h30 z M30,15 h30 v15 z M30,15 v15 H0 z" /></clipPath>
       <g clipPath="url(#gb-s)">
-        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6"/>
-        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="4" clipPath="url(#gb-t)"/>
-        <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6" />
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="4" clipPath="url(#gb-t)" />
+        <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10" />
       </g>
     </svg>
   );
@@ -447,22 +447,6 @@ function OmniAppContent() {
     }
   };
 
-  const handleReSeedStrapi = async () => {
-    setIsLoading(true);
-    try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
-      await fetch(`${strapiUrl}/api/feed/seed-demo`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ force: true, seedSecret: 'omni_seed_secret_2026' }),
-      });
-      await fetchFeed(profile, lang);
-    } catch (e) {
-      console.error('Seed error:', e);
-    }
-    setIsLoading(false);
-  };
-
   useEffect(() => {
     let initialProf = profile;
     const storedGraph = loadStoredAffinityGraph();
@@ -482,10 +466,10 @@ function OmniAppContent() {
           setProfile(graph);
           try {
             localStorage.setItem('omni_user_interest_profile', JSON.stringify(graph));
-          } catch (e) {}
+          } catch (e) { }
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     fetchFeed(initialProf, lang);
   }, []);
@@ -547,7 +531,7 @@ function OmniAppContent() {
     try {
       localStorage.removeItem('omni_user');
       localStorage.removeItem('omni_jwt');
-    } catch (e) {}
+    } catch (e) { }
   };
 
   // Handle Real AI Chat Prompt submission via Strapi & Ollama
@@ -643,7 +627,7 @@ function OmniAppContent() {
           const authorId = item.author?.id;
           const authorUsername = item.author?.username?.toLowerCase();
           const authorHandle = getAuthorHandle(item).toLowerCase();
-          
+
           const idMatch = authorId && currentUser.id && Number(authorId) === Number(currentUser.id);
           const usernameMatch = authorUsername && currentUser.username && authorUsername === currentUser.username.toLowerCase();
           const handleMatch = authorHandle === userHandle;
@@ -690,10 +674,10 @@ function OmniAppContent() {
   ];
 
   const sideNavItems = [
-    { id: 'home' as const,          icon: Home,     label: lang === 'de' ? 'Startseite' : 'Home',          active: activeNavTab === 'home' },
-    { id: 'trending' as const,      icon: Flame,    label: lang === 'de' ? 'Trending' : 'Trending',         active: activeNavTab === 'trending' },
-    { id: 'subscriptions' as const, icon: Tv,       label: lang === 'de' ? 'Abonnements' : 'Subscriptions', active: activeNavTab === 'subscriptions' },
-    { id: 'library' as const,       icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library',        active: activeNavTab === 'library' },
+    { id: 'home' as const, icon: Home, label: lang === 'de' ? 'Startseite' : 'Home', active: activeNavTab === 'home' },
+    { id: 'trending' as const, icon: Flame, label: lang === 'de' ? 'Trending' : 'Trending', active: activeNavTab === 'trending' },
+    { id: 'subscriptions' as const, icon: Tv, label: lang === 'de' ? 'Abonnements' : 'Subscriptions', active: activeNavTab === 'subscriptions' },
+    { id: 'library' as const, icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library', active: activeNavTab === 'library' },
   ];
 
   const sideTopics = dynamicTopics.slice(0, 8).map((tag) => ({
@@ -778,11 +762,10 @@ function OmniAppContent() {
                     await updateProfileState(u);
                     fetchFeed(u);
                   }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
-                    profile.activePattern === 'discovery'
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${profile.activePattern === 'discovery'
                       ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/30'
                       : 'bg-[#192038] text-[#9ba4bf] hover:text-white hover:bg-[#1e2740]'
-                  }`}
+                    }`}
                 >
                   🔍 Discovery
                 </button>
@@ -792,11 +775,10 @@ function OmniAppContent() {
                     await updateProfileState(u);
                     fetchFeed(u);
                   }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
-                    profile.activePattern === 'deep_dive'
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${profile.activePattern === 'deep_dive'
                       ? 'bg-[#44e2cd] text-[#003731] shadow-lg shadow-[#44e2cd]/25'
                       : 'bg-[#192038] text-[#9ba4bf] hover:text-white hover:bg-[#1e2740]'
-                  }`}
+                    }`}
                 >
                   🎯 Deep Dive
                 </button>
@@ -1115,11 +1097,10 @@ function OmniAppContent() {
                 <button
                   key={pill.label}
                   onClick={() => setSelectedTag(pill.label)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${
-                    selectedTag === pill.label
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${selectedTag === pill.label
                       ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
                       : 'bg-[#0d1528] text-[#9ba4bf] hover:bg-[#192038] hover:text-white border border-white/6 hover:border-white/15'
-                  }`}
+                    }`}
                 >
                   <span className="text-[11px]">{pill.emoji}</span>
                   <span>{pill.label}</span>
@@ -1214,11 +1195,10 @@ function OmniAppContent() {
                           e.stopPropagation();
                           handleTogglePublish(item);
                         }}
-                        className={`absolute top-2.5 right-2.5 z-20 px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all flex items-center gap-1.5 shadow-lg border backdrop-blur-md ${
-                          item.publishedAt
+                        className={`absolute top-2.5 right-2.5 z-20 px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all flex items-center gap-1.5 shadow-lg border backdrop-blur-md ${item.publishedAt
                             ? 'bg-[#44e2cd]/20 text-[#44e2cd] border-[#44e2cd]/40 hover:bg-[#44e2cd]/30'
                             : 'bg-amber-500/25 text-amber-300 border-amber-500/50 hover:bg-amber-500/40 animate-pulse'
-                        }`}
+                          }`}
                         title={item.publishedAt ? 'Klicken zum Deaktivieren (Entwurf)' : 'Klicken zum Freischalten (Veröffentlichen)'}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${item.publishedAt ? 'bg-[#44e2cd]' : 'bg-amber-400'}`} />
