@@ -65,6 +65,53 @@ const toTopicEntry = (raw: any, scale: number): TopicAffinity | null => {
 };
 
 /**
+ * Applies time-decay (2% per day of inactivity) and prunes low-score (< 5)
+ * or long-tail topics beyond top 50 to prevent unbounded memory growth.
+ */
+export function applyDecayAndPrune(
+  items: Record<string, TopicAffinity>,
+  maxCount = 50,
+  minScore = 5
+): Record<string, TopicAffinity> {
+  const now = Date.now();
+  const ONE_DAY_MS = 86400000;
+  const DECAY_PER_DAY = 0.02; // 2% per day
+
+  const entries: [string, TopicAffinity][] = [];
+
+  for (const [key, entry] of Object.entries(items)) {
+    const lastTime = new Date(entry.last_interacted || entry.last_decayed || Date.now()).getTime();
+    const daysPassed = Math.max(0, (now - lastTime) / ONE_DAY_MS);
+
+    // Apply exponential decay: score * (0.98 ^ days)
+    let newScore = entry.score * Math.pow(1 - DECAY_PER_DAY, daysPassed);
+    newScore = Math.round(newScore * 100) / 100;
+
+    // Prune entries below minimum threshold
+    if (newScore >= minScore) {
+      entries.push([
+        key,
+        {
+          ...entry,
+          score: clamp(newScore, 0, TOPIC_SCORE_MAX),
+          last_decayed: new Date().toISOString(),
+        },
+      ]);
+    }
+  }
+
+  // Sort by score descending and keep top N
+  entries.sort((a, b) => b[1].score - a[1].score);
+  const topEntries = entries.slice(0, maxCount);
+
+  const result: Record<string, TopicAffinity> = {};
+  for (const [key, value] of topEntries) {
+    result[key] = value;
+  }
+  return result;
+}
+
+/**
  * Converts any historical affinity shape into the canonical one.
  * Accepted legacy inputs:
  *  - tracking shape:   { topics: {score 0–100}, contentTypes, creators }        (no activePattern)
@@ -73,7 +120,11 @@ const toTopicEntry = (raw: any, scale: number): TopicAffinity | null => {
  */
 export function normalizeAffinityGraph(raw?: any): AffinityGraph {
   const graph = defaultAffinityGraph();
-  if (!raw || typeof raw !== 'object') return graph;
+  if (!raw || typeof raw !== 'object') {
+    graph.topics = applyDecayAndPrune(graph.topics, 50, 5);
+    graph.creators = applyDecayAndPrune(graph.creators, 50, 5);
+    return graph;
+  }
 
   if (raw.topics && typeof raw.topics === 'object') {
     for (const [topic, entry] of Object.entries(raw.topics)) {
@@ -109,6 +160,10 @@ export function normalizeAffinityGraph(raw?: any): AffinityGraph {
   if (raw.activePattern === 'discovery' || raw.activePattern === 'deep_dive') {
     graph.activePattern = raw.activePattern;
   }
+
+  // Apply time-decay and prune low-score / overflow topics & creators
+  graph.topics = applyDecayAndPrune(graph.topics, 50, 5);
+  graph.creators = applyDecayAndPrune(graph.creators, 50, 5);
 
   return graph;
 }
