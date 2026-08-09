@@ -65,7 +65,22 @@ export async function GET(req: Request) {
     }
 
     const data = await res.json();
-    return NextResponse.json(data);
+    const rawItems = data?.data || [];
+    const itemMap = new Map<string, any>();
+    for (const item of rawItems) {
+      const key = item.slug || item.documentId || item.id;
+      if (!itemMap.has(key)) {
+        itemMap.set(key, item);
+      } else if (!itemMap.get(key).creator && item.creator) {
+        itemMap.set(key, item);
+      }
+    }
+    const deduplicatedItems = Array.from(itemMap.values());
+
+    return NextResponse.json({
+      ...data,
+      data: deduplicatedItems,
+    });
   } catch (error: any) {
     console.error('Error fetching video list from Strapi:', error);
     return NextResponse.json(
