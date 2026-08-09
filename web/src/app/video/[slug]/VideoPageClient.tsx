@@ -138,7 +138,11 @@ export default function VideoPageClient({
   const creatorHandle = rawHandle ? (rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`) : fallbackCreator.handle;
   const creatorAvatar =
     creator?.avatarUrl || creator?.avatar || video?.authorAvatar || initialVideo?.authorAvatar || fallbackCreator.avatarUrl;
-  const isSubscribed = Boolean(rawHandle && subscribedChannels.includes(rawHandle.replace(/^@/, '')));
+  const isSubscribed = Boolean(
+    creatorHandle &&
+      (subscribedChannels.includes(creatorHandle) ||
+        subscribedChannels.includes(creatorHandle.replace(/^@/, '')))
+  );
 
   const userIdent = useMemo(() => {
     return currentUser?.id ? `user-${currentUser.id}` : 'anon-session';
@@ -488,7 +492,7 @@ export default function VideoPageClient({
                 </div>
 
                 <button
-                  onClick={() => toggleSubscribeChannel(creatorHandle.replace(/^@/, ''))}
+                  onClick={() => toggleSubscribeChannel(creatorHandle)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                     isSubscribed
                       ? 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'

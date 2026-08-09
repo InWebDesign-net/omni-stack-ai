@@ -150,10 +150,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const toggleSubscribeChannel = (handle: string) => {
-    setSubscribedChannels((prev) =>
-      prev.includes(handle) ? prev.filter((h) => h !== handle) : [...prev, handle]
-    );
+  const toggleSubscribeChannel = (rawHandle: string) => {
+    if (!rawHandle) return;
+    const normHandle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`;
+    const cleanHandle = rawHandle.replace(/^@/, '');
+    setSubscribedChannels((prev) => {
+      const exists = prev.includes(normHandle) || prev.includes(cleanHandle) || prev.includes(rawHandle);
+      if (exists) {
+        return prev.filter((h) => h !== normHandle && h !== cleanHandle && h !== rawHandle);
+      }
+      return [...prev, normHandle];
+    });
   };
 
   const openChannelModal = (creatorOrItem: any) => {
