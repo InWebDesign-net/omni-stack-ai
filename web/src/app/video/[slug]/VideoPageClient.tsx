@@ -441,7 +441,7 @@ export default function VideoPageClient({
               {/* Creator Channel Badge Bar */}
               <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/80 border border-slate-800">
                 <div
-                  onClick={() => creator?.handle && openChannelModal(creator.handle)}
+                  onClick={() => creator && openChannelModal(creator)}
                   className="flex items-center gap-3 cursor-pointer group"
                 >
                   <img

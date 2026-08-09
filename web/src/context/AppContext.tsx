@@ -156,9 +156,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  // Helper to open channel profile modal from item or profile object
   const openChannelModal = (creatorOrItem: any) => {
     if (!creatorOrItem) return;
+    if (typeof creatorOrItem === 'string') {
+      const creatorMap: Record<string, { name: string; avatar: string; bio: string }> = {
+        astro: { name: 'Astro-Wissen Magazin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80', bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.' },
+        demotech: { name: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'Tech, Datenbanken & AI Engineering.' },
+        demogourmet: { name: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80', bio: 'Italienische Küche, feine Rezepte & Kulinarik.' },
+        greenplanet: { name: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80', bio: 'Naturdokumentationen & Artenschutz.' },
+        finanzkompass: { name: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80', bio: 'Finanzwissen & Vermögensaufbau.' },
+      };
+      const normHandle = creatorOrItem.replace(/^@/, '').toLowerCase();
+      const match = creatorMap[normHandle];
+      setSelectedChannel({
+        username: match?.name || normHandle,
+        handle: `@${normHandle}`,
+        avatarUrl: match?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        bio: match?.bio || 'Creator & Content Publisher im Omni Network.',
+        subscribersCount: 15400,
+      });
+      return;
+    }
     if (creatorOrItem.username && creatorOrItem.handle && creatorOrItem.avatarUrl) {
       setSelectedChannel({
         username: creatorOrItem.username,
