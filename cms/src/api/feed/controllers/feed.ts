@@ -63,10 +63,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async resetDemoData(ctx: any) {
+    const expectedSecret = process.env.SEED_SECRET;
+    if (!expectedSecret) return ctx.forbidden('SEED_SECRET configuration missing');
     const payload = ctx.request.body || ctx.query || {};
     const secretHeader = ctx.request.headers['x-seed-secret'];
     const providedSecret = payload.seedSecret || secretHeader;
-    const expectedSecret = process.env.SEED_SECRET || 'omni_seed_secret_2026';
 
     if (!providedSecret || providedSecret !== expectedSecret) {
       return ctx.forbidden('Invalid seed secret');
@@ -80,10 +81,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async seedDemoData(ctx: any) {
+    const expectedSecret = process.env.SEED_SECRET;
+    if (!expectedSecret) return ctx.forbidden('SEED_SECRET configuration missing');
     const payload = ctx.request.body || ctx.query || {};
     const secretHeader = ctx.request.headers['x-seed-secret'];
     const providedSecret = payload.seedSecret || secretHeader;
-    const expectedSecret = process.env.SEED_SECRET || 'omni_seed_secret_2026';
 
     if (!providedSecret || providedSecret !== expectedSecret) {
       return ctx.forbidden('Invalid seed secret');
@@ -98,11 +100,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async ingestFinalizedVideo(ctx: any) {
+    const expectedSecret = process.env.INGEST_WORKER_SECRET;
+    if (!expectedSecret) return ctx.forbidden('INGEST_WORKER_SECRET configuration missing');
     try {
       const payload = ctx.request.body || {};
       const secretHeader = ctx.request.headers['x-worker-secret'];
       const providedSecret = payload.workerSecret || secretHeader;
-      const expectedSecret = process.env.INGEST_WORKER_SECRET || 'omni_ingest_worker_secret_2026';
 
       if (!providedSecret || providedSecret !== expectedSecret) {
         return ctx.forbidden('Invalid worker secret');

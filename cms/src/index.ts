@@ -211,21 +211,25 @@ export default {
 
       // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)
       const outDir = '/root/media/out';
-      const workerSecret = process.env.INGEST_WORKER_SECRET || 'omni_ingest_worker_secret_2026';
-      setInterval(async () => {
-        try {
-          const fs = require('fs');
-          const path = require('path');
-          if (fs.existsSync(outDir)) {
-            const outFiles = fs.readdirSync(outDir);
-            const doneFiles = outFiles.filter((f: string) => f.endsWith('.done'));
-            for (const doneFile of doneFiles) {
-              const base = path.basename(doneFile, '.done');
-              await strapi.service('api::feed.feed').ingestFinalizedVideo({ slug: base, workerSecret });
+      const workerSecret = process.env.INGEST_WORKER_SECRET;
+      if (!workerSecret) {
+        console.warn('⚠️ Warning: INGEST_WORKER_SECRET is missing from environment configuration.');
+      } else {
+        setInterval(async () => {
+          try {
+            const fs = require('fs');
+            const path = require('path');
+            if (fs.existsSync(outDir)) {
+              const outFiles = fs.readdirSync(outDir);
+              const doneFiles = outFiles.filter((f: string) => f.endsWith('.done'));
+              for (const doneFile of doneFiles) {
+                const base = path.basename(doneFile, '.done');
+                await strapi.service('api::feed.feed').ingestFinalizedVideo({ slug: base, workerSecret });
+              }
             }
-          }
-        } catch (e) {}
-      }, 3000);
+          } catch (e) {}
+        }, 3000);
+      }
     } catch (error) {
       console.error('Error during Strapi bootstrap:', error);
     }
