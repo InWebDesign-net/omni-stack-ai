@@ -85,7 +85,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
       setCurrentUser(userData);
       try {
         localStorage.setItem('omni_user', JSON.stringify(userData));
-        document.cookie = `omni_user_jwt=${data.jwt}; path=/; max-age=2592000`;
+        document.cookie = `omni_user_jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
       } catch (e) {}
 
       setIsAuthLoading(false);

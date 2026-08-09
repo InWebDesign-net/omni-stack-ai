@@ -157,6 +157,7 @@ export default function Header({
         localStorage.removeItem('omni_user');
         localStorage.removeItem('omni_jwt');
         document.cookie = 'omni_jwt=; path=/; max-age=0';
+        document.cookie = 'omni_user_jwt=; path=/; max-age=0';
       } catch (e) {}
       window.location.reload();
     }
