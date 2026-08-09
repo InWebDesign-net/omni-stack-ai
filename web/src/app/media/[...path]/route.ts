@@ -4,6 +4,8 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
+const MEDIA_ROOT = path.resolve('/root/media');
+
 function getMimeType(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
   switch (ext) {
@@ -29,6 +31,27 @@ function getMimeType(filePath: string): string {
   }
 }
 
+// Convert a Node.js ReadStream to a Web ReadableStream
+function nodeStreamToWebStream(nodeStream: fs.ReadStream): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      nodeStream.on('data', (chunk: Buffer | string) => {
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        controller.enqueue(new Uint8Array(buffer));
+      });
+      nodeStream.on('end', () => {
+        controller.close();
+      });
+      nodeStream.on('error', (err) => {
+        controller.error(err);
+      });
+    },
+    cancel() {
+      nodeStream.destroy();
+    },
+  });
+}
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ path: string[] }> }
@@ -38,27 +61,72 @@ export async function GET(
     const pathSegments = resolvedParams.path || [];
     const relativePath = pathSegments.join('/');
 
-    const filePath = path.join('/root/media', relativePath);
+    const resolvedPath = path.resolve(path.join(MEDIA_ROOT, relativePath));
 
-    // Prevent directory traversal attacks
-    if (!filePath.startsWith('/root/media')) {
+    // Security: Prevent directory traversal attack
+    if (!resolvedPath.startsWith(MEDIA_ROOT)) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      const contentType = getMimeType(filePath);
-      const fileBuffer = fs.readFileSync(filePath);
+    if (!fs.existsSync(resolvedPath)) {
+      return new NextResponse('File not found', { status: 404 });
+    }
 
-      return new NextResponse(fileBuffer, {
+    const stat = fs.statSync(resolvedPath);
+    if (!stat.isFile()) {
+      return new NextResponse('Not a file', { status: 404 });
+    }
+
+    const fileSize = stat.size;
+    const contentType = getMimeType(resolvedPath);
+    const rangeHeader = req.headers.get('range');
+
+    // Handle Range Requests (HTTP 206 Partial Content)
+    if (rangeHeader && rangeHeader.startsWith('bytes=')) {
+      const parts = rangeHeader.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      if (isNaN(start) || start >= fileSize || end >= fileSize || start > end) {
+        return new NextResponse('Requested range not satisfiable', {
+          status: 416,
+          headers: {
+            'Content-Range': `bytes */${fileSize}`,
+          },
+        });
+      }
+
+      const chunkSize = end - start + 1;
+      const nodeStream = fs.createReadStream(resolvedPath, { start, end });
+      const webStream = nodeStreamToWebStream(nodeStream);
+
+      return new NextResponse(webStream, {
+        status: 206,
         headers: {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunkSize.toString(),
           'Content-Type': contentType,
           'Cache-Control': 'public, max-age=86400',
         },
       });
     }
 
-    return new NextResponse('File not found', { status: 404 });
+    // Full File Request (HTTP 200 OK) using Streaming
+    const nodeStream = fs.createReadStream(resolvedPath);
+    const webStream = nodeStreamToWebStream(nodeStream);
+
+    return new NextResponse(webStream, {
+      status: 200,
+      headers: {
+        'Accept-Ranges': 'bytes',
+        'Content-Length': fileSize.toString(),
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
+      },
+    });
   } catch (error) {
+    console.error('Error serving media file stream:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
