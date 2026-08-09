@@ -974,6 +974,9 @@ CRITICAL: Return JSON ONLY in this format:
         thumbnailUrl: string;
         mp4Url: string;
         creator: any;
+        tags_de?: string[];
+        tags_en?: string[];
+        tags?: string[];
       }) => {
         try {
           const createdEn = await strapi.documents('api::video.video').create({
@@ -988,6 +991,7 @@ CRITICAL: Return JSON ONLY in this format:
               thumbnailUrl: videoData.thumbnailUrl,
               creator: videoData.creator?.documentId || videoData.creator?.id,
               visibility: 'public',
+              tags: videoData.tags_en || videoData.tags || ['Video'],
             } as any,
             locale: 'en',
             status: 'published',
@@ -1010,6 +1014,7 @@ CRITICAL: Return JSON ONLY in this format:
                   thumbnailUrl: videoData.thumbnailUrl,
                   creator: videoData.creator?.documentId || videoData.creator?.id,
                   visibility: 'public',
+                  tags: videoData.tags_de || videoData.tags || ['Video'],
                 } as any,
               });
             } catch (e) {}
@@ -1046,7 +1051,6 @@ CRITICAL: Return JSON ONLY in this format:
                 title: item.title_de || item.title_en,
                 slug: item.slug,
                 summary: item.summary_de || item.summary_en,
-                tags: item.tags || ['Video'],
                 viewsCount: item.viewsCount || 0,
                 likesCount: item.likesCount || 0,
                 mp4Url: item.mp4Url,
@@ -1062,7 +1066,10 @@ CRITICAL: Return JSON ONLY in this format:
               };
 
               const createdEn = await strapi.documents('api::video.video').create({
-                data: videoData as any,
+                data: {
+                  ...videoData,
+                  tags: item.tags_en || item.tags || ['Video'],
+                } as any,
                 locale: 'en',
                 status: 'published',
               });
@@ -1076,6 +1083,7 @@ CRITICAL: Return JSON ONLY in this format:
                       ...videoData,
                       title: item.title_de || item.title_en,
                       summary: item.summary_de || item.summary_en,
+                      tags: item.tags_de || item.tags || ['Video'],
                     } as any,
                     status: 'published',
                   });
