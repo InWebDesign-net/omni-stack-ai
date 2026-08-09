@@ -25,10 +25,12 @@ export default {
 
       if (targetUIDs.includes(context.uid) && (action === 'findMany' || action === 'findOne' || action === 'findFirst')) {
         const koaCtx = strapi.requestContext ? strapi.requestContext.get() : null;
+        const reqPath = koaCtx?.request?.path || '';
         const isAdminRequest =
           koaCtx?.state?.auth?.strategy?.name === 'admin' ||
           Boolean(koaCtx?.state?.user && ('roles' in koaCtx.state.user || 'registrationToken' in koaCtx.state.user)) ||
-          Boolean(koaCtx?.url && (koaCtx.url.includes('/content-manager') || koaCtx.url.includes('/admin')));
+          reqPath.startsWith('/content-manager') ||
+          reqPath.startsWith('/admin');
 
         // Admin users in Strapi Content Manager see ALL entries without default-deny restrictions
         if (isAdminRequest) {
