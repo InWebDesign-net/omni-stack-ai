@@ -10,6 +10,7 @@ import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
   AffinityGraph,
   defaultAffinityGraph,
+  normalizeAffinityGraph,
   loadStoredAffinityGraph,
   storeAffinityGraph,
   getStoredJwt,
@@ -25,6 +26,7 @@ export interface UserProfileSession {
   bio?: string;
   subscribersCount?: number;
   jwt?: string;
+  affinityGraph?: AffinityGraph;
 }
 
 export interface ChannelProfileData {
@@ -102,9 +104,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const savedUser = localStorage.getItem('omni_user');
-        if (savedUser) {
-          setCurrentUser(JSON.parse(savedUser));
+        const savedUserStr = localStorage.getItem('omni_user');
+        if (savedUserStr) {
+          const parsedUser = JSON.parse(savedUserStr);
+          setCurrentUser(parsedUser);
+          if (parsedUser.affinityGraph) {
+            const norm = normalizeAffinityGraph(parsedUser.affinityGraph);
+            setProfile(norm);
+            storeAffinityGraph(norm);
+          }
         }
       } catch (e) {}
 

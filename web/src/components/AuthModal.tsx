@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, UserPlus, LogIn, User, Mail, Lock, Sparkles, ChevronRight, ExternalLink, RefreshCw } from 'lucide-react';
 import { useApp, UserProfileSession } from '@/context/AppContext';
+import { normalizeAffinityGraph, storeAffinityGraph } from '@/lib/affinity';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ function OmniLogo({ size = 32 }: { size?: number }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'register' }: AuthModalProps) {
-  const { setCurrentUser, lang, t } = useApp();
+  const { setCurrentUser, setProfile, lang, t } = useApp();
   const [authMode, setAuthMode] = useState<'login' | 'register'>(initialMode);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -73,6 +74,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         subscribersCount: data.user.subscribersCount || 1280,
         jwt: data.jwt,
       };
+
+      if (data.user.affinityGraph) {
+        const normGraph = normalizeAffinityGraph(data.user.affinityGraph);
+        userData.affinityGraph = normGraph;
+        setProfile(normGraph);
+        storeAffinityGraph(normGraph);
+      }
 
       setCurrentUser(userData);
       try {
@@ -162,6 +170,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         subscribersCount: data.user.subscribersCount || 100,
         jwt: data.jwt,
       };
+
+      if (data.user.affinityGraph) {
+        const normGraph = normalizeAffinityGraph(data.user.affinityGraph);
+        userData.affinityGraph = normGraph;
+        setProfile(normGraph);
+        storeAffinityGraph(normGraph);
+      }
 
       setCurrentUser(userData);
       try {
