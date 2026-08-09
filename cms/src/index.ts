@@ -159,6 +159,8 @@ export default {
         await enablePermission(publicRole.id, 'api::comment.comment.find');
         await enablePermission(publicRole.id, 'api::comment.comment.findOne');
         await enablePermission(publicRole.id, 'api::comment.comment.create');
+        await enablePermission(publicRole.id, 'api::video.video.find');
+        await enablePermission(publicRole.id, 'api::video.video.findOne');
         for (const action of publicFeedActions) {
           await enablePermission(publicRole.id, action);
         }
@@ -172,6 +174,8 @@ export default {
         await enablePermission(authRole.id, 'api::comment.comment.create');
         await enablePermission(authRole.id, 'api::comment.comment.update');
         await enablePermission(authRole.id, 'api::comment.comment.delete');
+        await enablePermission(authRole.id, 'api::video.video.find');
+        await enablePermission(authRole.id, 'api::video.video.findOne');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }
