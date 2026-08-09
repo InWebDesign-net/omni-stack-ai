@@ -107,12 +107,12 @@ export default function VideosPageClient({
     router.push(pathname);
   };
 
-  // Boundary check: redirect to page 1 if page exceeds totalPages
+  // Boundary check: redirect to page 1 if page exceeds totalPages ONLY after data loading finishes
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
+    if (!isLoading && totalVideos > 0 && currentPage > totalPages) {
       updateURL({ page: "1" });
     }
-  }, [totalVideos, currentPage, totalPages]);
+  }, [isLoading, totalVideos, currentPage, totalPages]);
 
   const formatDuration = (seconds?: number) => {
     if (!seconds) return "0:00";
