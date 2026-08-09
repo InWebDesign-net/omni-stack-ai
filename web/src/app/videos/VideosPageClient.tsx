@@ -285,9 +285,9 @@ export default function VideosPageClient({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videos.map((video: VideoItem) => {
-              const creator = video.creator;
-              const creatorName = creator?.username || creator?.handle || "Omni Creator";
-              const creatorAvatar = creator?.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80";
+              const creator = video.creator || (video as any).author;
+              const creatorName = creator?.username || creator?.handle || (video as any).authorName || "Omni Creator";
+              const creatorAvatar = creator?.avatarUrl || (video as any).authorAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80";
 
               return (
                 <div

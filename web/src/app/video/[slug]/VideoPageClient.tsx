@@ -90,6 +90,12 @@ export default function VideoPageClient({
 
   const [video, setVideo] = useState(initialVideo);
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
+
+  useEffect(() => {
+    setVideo(initialVideo);
+    setRelatedItems(initialRelated || []);
+  }, [initialVideo, initialRelated]);
+
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(initialVideo?.likesCount || 0);
   const [viewsCount, setViewsCount] = useState(initialVideo?.viewsCount || 0);
@@ -106,12 +112,14 @@ export default function VideoPageClient({
   const [editCommentText, setEditCommentText] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const creator = video?.creator;
-  const creatorName = creator?.username || creator?.handle || 'Omni Creator';
-  const creatorHandle = creator?.handle ? `@${creator.handle}` : `@creator${creator?.id || ''}`;
+  const creator = video?.creator || video?.author || initialVideo?.creator || initialVideo?.author;
+  const rawHandle = creator?.handle || video?.authorHandle || initialVideo?.authorHandle;
+  const creatorName =
+    creator?.username || creator?.name || video?.authorName || initialVideo?.authorName || (rawHandle ? rawHandle.replace(/^@/, '') : 'Omni Creator');
+  const creatorHandle = rawHandle ? (rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`) : `@creator${creator?.id || ''}`;
   const creatorAvatar =
-    creator?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
-  const isSubscribed = Boolean(creator?.handle && subscribedChannels.includes(creator.handle));
+    creator?.avatarUrl || creator?.avatar || video?.authorAvatar || initialVideo?.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+  const isSubscribed = Boolean(rawHandle && subscribedChannels.includes(rawHandle.replace(/^@/, '')));
 
   const userIdent = useMemo(() => {
     return currentUser?.id ? `user-${currentUser.id}` : 'anon-session';
@@ -649,7 +657,7 @@ export default function VideoPageClient({
 
             <div className="space-y-4">
               {relatedItems.map((rel: any) => {
-                const relCreator = rel.creator?.username || rel.creator?.handle || 'Omni Creator';
+                const relCreator = rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
                 return (
                   <Link
                     key={rel.documentId || rel.id}

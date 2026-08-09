@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     strapiParams.set('pagination[pageSize]', pageSize);
     strapiParams.set('sort', strapiSort);
     strapiParams.set('populate', 'creator');
-    strapiParams.set('locale', 'de');
+    strapiParams.set('locale', '*');
 
     // Filter by visibility public
     strapiParams.set('filters[visibility][$eq]', 'public');
