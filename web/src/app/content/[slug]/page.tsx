@@ -340,7 +340,7 @@ export default function ContentDetailPage() {
         <Header lang={lang} onToggleLanguage={toggleLanguage} />
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
           <RefreshCw className="h-8 w-8 text-[#8083ff] animate-spin" />
-          <p className="text-sm font-mono text-[#9ba4bf]">Inhalte werden geladen...</p>
+          <p className="text-sm font-mono text-[#9ba4bf]">{t.content.loading}</p>
         </div>
       </div>
     );
@@ -468,7 +468,7 @@ export default function ContentDetailPage() {
                           ? 'bg-[#8083ff] border-[#8083ff] text-white'
                           : 'bg-[#121a30] border-white/8 text-[#9ba4bf] hover:text-white'
                       }`}
-                      title="Speichern"
+                      title={t.content.bookmarkSave}
                     >
                       <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                     </button>

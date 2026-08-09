@@ -394,7 +394,7 @@ export default function VideoUploadModal({
                         value={task.title}
                         onChange={(e) => updateTaskTitle(task.id, e.target.value)}
                         className="bg-transparent text-sm font-bold text-white focus:outline-none border-b border-transparent focus:border-[#8083ff] truncate"
-                        placeholder="Titel eingeben..."
+                        placeholder={t.upload.titlePlaceholder}
                       />
                       <span className="text-[10px] font-mono text-[#5c657d] truncate">
                         {(task.file.size / (1024 * 1024)).toFixed(1)} MB • {task.file.name}

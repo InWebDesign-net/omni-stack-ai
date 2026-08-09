@@ -28,7 +28,12 @@
     "loadingComments": "Loading comments from Strapi CMS...",
     "noCommentsYet": "No comments yet. Write the first one!",
     "justNow": "Just now",
-    "moreArticles": "More Articles & Posts"
+    "moreArticles": "More Articles & Posts",
+    "send": "Send",
+    "edited": "(edited)",
+    "commentEdit": "Edit comment",
+    "commentDelete": "Delete comment",
+    "share": "Share"
   },
   "header": {
     "searchPlaceholder": "What do you want to explore today?",
@@ -58,6 +63,12 @@
     "shortsReels": "Shorts & Reels",
     "trendingPopular": "Trending & Popular"
   },
+  "shorts": {
+    "draftModeActive": "⚡ Live Draft Mode Active (Strapi CMS Preview)",
+    "exitPreview": "Exit Preview",
+    "commentsLabel": "Comments",
+    "shortLinkCopied": "Short link copied!"
+  },
   "videos": {
     "title": "Video Library",
     "subtitle": "Search and sort all available videos directly without algorithmic filtering.",
@@ -84,7 +95,10 @@
     "commentPublishError": "Failed to publish comment",
     "commentCreateError": "Error creating comment",
     "commentEditError": "Edit error",
-    "commentDeleteError": "Delete error"
+    "commentDeleteError": "Delete error",
+    "privatePreview": "🔒 Private Preview",
+    "subscribedBtn": "Subscribed",
+    "subscribeBtn": "Subscribe"
   },
   "auth": {
     "googleQuickLoginError": "Google Quick Login failed.",
@@ -211,6 +225,8 @@
     "exitPreview": "Exit Preview",
     "aiRelevance": "AI Relevance: {score}% Match",
     "readTime": "4 min read",
-    "openProfileTitle": "Open profile of {name}"
+    "openProfileTitle": "Open profile of {name}",
+    "loading": "Loading content...",
+    "bookmarkSave": "Save"
   }
 }

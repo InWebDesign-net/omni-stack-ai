@@ -287,7 +287,7 @@ function OmniAppContent() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string>(t.feed.all);
+  const [selectedTag, setSelectedTag] = useState<string>('ALL_TAG');
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'trending' | 'subscriptions' | 'library'>('home');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -497,7 +497,7 @@ function OmniAppContent() {
     } else if (typeParam === 'article') {
       setSelectedTag('Programmierung');
     } else {
-      setSelectedTag(t.feed.all);
+      setSelectedTag('ALL_TAG');
     }
 
     const channelParam = searchParams.get('channel');
@@ -604,8 +604,8 @@ function OmniAppContent() {
 
   const filteredFeed = React.useMemo(() => {
     let items = feedItems.filter((item) => {
-      if (selectedTag === t.feed.all) return true;
-      return item.tags.includes(selectedTag);
+      if (selectedTag === 'ALL_TAG' || selectedTag === 'Alle' || selectedTag === 'All' || selectedTag === t.feed.all) return true;
+      return Array.isArray(item.tags) && item.tags.includes(selectedTag);
     });
 
     if (activeNavTab === 'trending') {
@@ -665,8 +665,9 @@ function OmniAppContent() {
   };
 
   const categoryPills = [
-    { label: t.feed.all, emoji: '✦' },
+    { id: 'ALL_TAG', label: t.feed.all, emoji: '✦' },
     ...dynamicTopics.map((tag) => ({
+      id: tag,
       label: tag,
       emoji: getTopicEmoji(tag),
     })),
@@ -1086,9 +1087,9 @@ function OmniAppContent() {
             >
               {categoryPills.map((pill) => (
                 <button
-                  key={pill.label}
-                  onClick={() => setSelectedTag(pill.label)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${selectedTag === pill.label
+                  key={pill.id}
+                  onClick={() => setSelectedTag(pill.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${selectedTag === pill.id
                       ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
                       : 'bg-[#0d1528] text-[#9ba4bf] hover:bg-[#192038] hover:text-white border border-white/6 hover:border-white/15'
                     }`}

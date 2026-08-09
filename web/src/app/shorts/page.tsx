@@ -291,13 +291,13 @@ export default function ShortsFeedPage() {
         <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
           <div className="flex items-center gap-2 font-bold tracking-wide">
             <Sparkles className="h-4 w-4 animate-spin-slow text-yellow-300 shrink-0" />
-            <span>⚡ Live-Entwurfsmodus aktiv (Vorschau aus Strapi CMS)</span>
+            <span>{t.shorts.draftModeActive}</span>
           </div>
           <a
             href={`/api/exit-preview?redirect=${encodeURIComponent(activeShort ? `/shorts/${activeShort.slug}` : '/shorts')}`}
             className="bg-black/50 hover:bg-black/80 text-white px-3 py-1 rounded-lg font-bold text-[11px] border border-white/20 transition-all shrink-0"
           >
-            Vorschau beenden
+            {t.shorts.exitPreview}
           </a>
         </div>
       )}
@@ -377,7 +377,7 @@ export default function ShortsFeedPage() {
                         ? 'bg-[#44e2cd] text-black'
                         : 'bg-[#8083ff] text-white hover:scale-110'
                     }`}
-                    title={isSubscribed ? 'Abonniert' : 'Abonnieren'}
+                    title={isSubscribed ? t.videoDetail.subscribedBtn : t.videoDetail.subscribeBtn}
                   >
                     {isSubscribed ? '✓' : '+'}
                   </button>
@@ -432,11 +432,11 @@ export default function ShortsFeedPage() {
                   onClick={() => {
                     if (navigator.clipboard) {
                       navigator.clipboard.writeText(window.location.origin + `/shorts/${short.slug}`);
-                      alert('Short Link kopiert!');
+                      alert(t.shorts.shortLinkCopied);
                     }
                   }}
                   className="p-3 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transition-all"
-                  title="Teilen"
+                  title={t.common.share}
                 >
                   <Share2 className="h-6 w-6" />
                 </button>
@@ -491,7 +491,7 @@ export default function ShortsFeedPage() {
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-[#8083ff]" />
-                <span>{lang === 'de' ? `Kommentare (${activeComments.length})` : `Comments (${activeComments.length})`}</span>
+                <span>{lang === 'de' ? `${t.shorts.commentsLabel} (${activeComments.length})` : `${t.shorts.commentsLabel} (${activeComments.length})`}</span>
               </h3>
               <button
                 type="button"
@@ -526,7 +526,7 @@ export default function ShortsFeedPage() {
                             <span className="text-xs font-bold text-white">{c.authorName}</span>
                             <span className="font-mono text-[#8083ff] text-[10px]">{c.authorHandle}</span>
                             {c.isEdited && (
-                              <span className="text-[9px] text-[#9ba4bf] italic font-mono">(bearbeitet)</span>
+                              <span className="text-[9px] text-[#9ba4bf] italic font-mono">{t.common.edited}</span>
                             )}
                           </div>
                           <div className="flex items-center gap-1.5">
@@ -536,7 +536,7 @@ export default function ShortsFeedPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleStartEdit(c)}
-                                  title="Kommentar bearbeiten"
+                                  title={t.common.commentEdit}
                                   className="p-1 text-[#9ba4bf] hover:text-[#8083ff] rounded hover:bg-white/5 transition-all"
                                 >
                                   <Pencil className="h-3 w-3" />
@@ -544,7 +544,7 @@ export default function ShortsFeedPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteComment(commentKey)}
-                                  title="Kommentar löschen"
+                                  title={t.common.commentDelete}
                                   className="p-1 text-[#9ba4bf] hover:text-red-400 rounded hover:bg-white/5 transition-all"
                                 >
                                   <Trash2 className="h-3 w-3" />

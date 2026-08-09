@@ -77,7 +77,7 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
           </div>
           <div>
             <h2 className="text-lg font-bold text-white leading-tight">{t.create.postTitle}</h2>
-            <p className="text-xs text-[#5c657d]">Erstelle neuen Content für deinen Kanal ({currentUser?.handle || '@community'})</p>
+            <p className="text-xs text-[#5c657d]">{t.create.subtitle.replace('{handle}', currentUser?.handle || '@community')}</p>
           </div>
         </div>
 

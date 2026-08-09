@@ -378,7 +378,7 @@ export default function VideoPageClient({
                 </h1>
                 {accessStatus?.isPrivate && accessStatus?.isOwner && (
                   <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-mono font-semibold">
-                    🔒 Private Vorschau
+                    {t.videoDetail.privatePreview}
                   </span>
                 )}
               </div>
@@ -472,12 +472,12 @@ export default function VideoPageClient({
                     {isSubscribed ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>Abonniert</span>
+                        <span>{t.videoDetail.subscribedBtn}</span>
                       </>
                     ) : (
                       <>
                         <UserPlus className="w-3.5 h-3.5" />
-                        <span>Abonnieren</span>
+                        <span>{t.videoDetail.subscribeBtn}</span>
                       </>
                     )}
                   </button>
@@ -552,7 +552,7 @@ export default function VideoPageClient({
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
-                  <span>Senden</span>
+                  <span>{t.common.send}</span>
                 </button>
               </form>
 
@@ -564,7 +564,7 @@ export default function VideoPageClient({
                 </div>
               ) : comments.length === 0 ? (
                 <p className="text-slate-500 text-xs py-4 text-center">
-                  Noch keine Kommentare vorhanden. Sei der Erste!
+                  {t.videoDetail.noComments}
                 </p>
               ) : (
                 <div className="space-y-4 pt-2 divide-y divide-slate-800/60">

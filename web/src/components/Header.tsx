@@ -392,7 +392,7 @@ export default function Header({
               <button
                 onClick={() => setUniversalNavOpen(false)}
                 className="p-2 rounded-xl text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-colors"
-                title="Schließen"
+                title={t.common.close}
               >
                 <X className="h-5 w-5" />
               </button>

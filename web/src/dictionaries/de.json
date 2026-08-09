@@ -28,7 +28,12 @@
     "loadingComments": "Lade Kommentare aus Strapi CMS...",
     "noCommentsYet": "Noch keine Kommentare vorhanden. Schreibe den ersten!",
     "justNow": "Gerade eben",
-    "moreArticles": "Weitere Artikel & Beiträge"
+    "moreArticles": "Weitere Artikel & Beiträge",
+    "send": "Senden",
+    "edited": "(bearbeitet)",
+    "commentEdit": "Kommentar bearbeiten",
+    "commentDelete": "Kommentar löschen",
+    "share": "Teilen"
   },
   "header": {
     "searchPlaceholder": "Was möchtest du heute entdecken?",
@@ -58,6 +63,12 @@
     "shortsReels": "Shorts & Reels",
     "trendingPopular": "Trending & Popular"
   },
+  "shorts": {
+    "draftModeActive": "⚡ Live-Entwurfsmodus aktiv (Vorschau aus Strapi CMS)",
+    "exitPreview": "Vorschau beenden",
+    "commentsLabel": "Kommentare",
+    "shortLinkCopied": "Short Link kopiert!"
+  },
   "videos": {
     "title": "Video-Bibliothek",
     "subtitle": "Durchsuche und sortiere alle verfügbaren Videos direkt ohne Algorithmus-Filterung.",
@@ -84,7 +95,10 @@
     "commentPublishError": "Fehler beim Veröffentlichen",
     "commentCreateError": "Fehler beim Erstellen",
     "commentEditError": "Fehler beim Bearbeiten",
-    "commentDeleteError": "Fehler beim Löschen"
+    "commentDeleteError": "Fehler beim Löschen",
+    "privatePreview": "🔒 Private Vorschau",
+    "subscribedBtn": "Abonniert",
+    "subscribeBtn": "Abonnieren"
   },
   "auth": {
     "googleQuickLoginError": "Google Schnell-Login fehlgeschlagen.",
@@ -211,6 +225,8 @@
     "exitPreview": "Vorschau beenden",
     "aiRelevance": "KI-Relevanz: {score}% Match",
     "readTime": "4 Min. Lesezeit",
-    "openProfileTitle": "Profil von {name} öffnen"
+    "openProfileTitle": "Profil von {name} öffnen",
+    "loading": "Inhalte werden geladen...",
+    "bookmarkSave": "Speichern"
   }
 }
