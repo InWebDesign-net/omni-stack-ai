@@ -46,7 +46,7 @@ async function getData(slug: string, jwt?: string | null) {
     const videoList = videoData?.data || [];
     if (videoList.length === 0) return null;
 
-    const video = videoList[0];
+    const video = videoList.find((v: any) => v.creator) || videoList[0];
 
     // Fetch related videos for sidebar
     const relatedRes = await fetch(

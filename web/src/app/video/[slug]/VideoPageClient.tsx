@@ -449,7 +449,7 @@ export default function VideoPageClient({
               {/* Creator Channel Badge Bar */}
               <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/80 border border-slate-800">
                 <div
-                  onClick={() => creator && openChannelModal(creator)}
+                  onClick={() => openChannelModal(creator || { username: creatorName, handle: creatorHandle, avatarUrl: creatorAvatar, bio: 'Creator im Omni Network.' })}
                   className="flex items-center gap-3 cursor-pointer group"
                 >
                   <img
@@ -468,15 +468,14 @@ export default function VideoPageClient({
                   </div>
                 </div>
 
-                {creator?.handle && (
-                  <button
-                    onClick={() => toggleSubscribeChannel(creator.handle)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                      isSubscribed
-                        ? 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'
-                        : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30'
-                    }`}
-                  >
+                <button
+                  onClick={() => toggleSubscribeChannel(creatorHandle.replace(/^@/, ''))}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    isSubscribed
+                      ? 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30'
+                  }`}
+                >
                     {isSubscribed ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-indigo-400" />
@@ -489,7 +488,6 @@ export default function VideoPageClient({
                       </>
                     )}
                   </button>
-                )}
               </div>
 
               {/* Expandable Video Description */}
