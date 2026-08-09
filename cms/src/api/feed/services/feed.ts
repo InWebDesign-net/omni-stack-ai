@@ -68,45 +68,24 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       const primaryItems = await strapi.documents('api::feed-item.feed-item').findMany({
         populate: populateConfig as any,
         status: 'published',
-        locale: targetLocale,
+        locale: '*',
         ...(omniViewer ? { omniViewer } : {}),
       } as any);
 
       let dbItems = [...primaryItems];
-
-      // If target locale has 0 items, check alternative locale as fallback
-      if (dbItems.length === 0) {
-        const altLocale = targetLocale === 'de' ? 'en' : 'de';
-        const altItems = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: populateConfig as any,
-          status: 'published',
-          locale: altLocale,
-          ...(omniViewer ? { omniViewer } : {}),
-        } as any);
-        dbItems = [...altItems];
-      }
-
-      if ((userProfileInput as any)?.includeDrafts) {
-        const draftItems = await strapi.documents('api::feed-item.feed-item').findMany({
-          populate: populateConfig as any,
-          status: 'draft',
-          locale: targetLocale,
-          ...(omniViewer ? { omniViewer } : {}),
-        } as any);
-        dbItems = [...dbItems, ...draftItems];
-      }
 
       // Fetch standalone video documents and unify into dbItems
       try {
         const videoItems = await strapi.documents('api::video.video').findMany({
           populate: { creator: true } as any,
           status: (userProfileInput as any)?.includeDrafts ? undefined : 'published',
-          locale: targetLocale,
+          locale: '*',
           ...(omniViewer ? { omniViewer } : {}),
         } as any);
         const mappedVideos = videoItems.map((v: any) => ({
           ...v,
           author: v.creator || v.author,
+          creator: v.creator || v.author,
           mediaType: 'video',
           mediaUrl: v.mp4Url || v.hlsUrl,
           tags: v.tags || ['Video'],
