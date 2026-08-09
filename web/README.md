@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📱 Omni Frontend – Next.js 16 Web Application
 
-## Getting Started
+This is the Next.js 16 App Router frontend for **Omni** – Hyper-Personalized Video Network & Media Hub by InWebDesign.
 
-First, run the development server:
+---
+
+## 🌐 Live Demo & Accounts
+
+* 📱 **Live App:** [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/)
+* ⚙️ **Backend CMS:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
+
+### 🔑 Demo Credentials
+* **Demo Tech User:** `demotech@inwebdesign.net` / `DemoUser2026!`
+* **Demo Gourmet User:** `demogourmet@inwebdesign.net` / `DemoUser2026!`
+
+---
+
+## 🛣️ Key Routes & Page Architecture
+
+* **`/` (Main Home Feed):** Hyper-personalized feed with real-time vector scoring, category pills, and search intent bar.
+* **`/videos` (Video Library Catalog):** Un-ranked, filterable, and paginated video catalog view (`page`, `sort`, `q`, `fav`).
+* **`/video/[slug]` (Video Detail & Player):** 16:9 widescreen cinema video theater player page with creator channel cards and comments.
+* **`/shorts` & `/shorts/[slug]` (Shorts Feed):** TikTok / Shorts style 9:16 vertical snap-scroll video feed.
+* **`/content/[slug]` (Universal Media Detail):** Unified detail page for Videos, Articles, and PDF Documents.
+
+---
+
+## 🚀 Development
 
 ```bash
+# Start development server on http://localhost:3000
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build production bundle
+npm run build
+
+# Start production server
+npm run start
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

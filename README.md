@@ -7,13 +7,38 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
 [![PM2](https://img.shields.io/badge/PM2-Managed-green?logo=pm2)](https://pm2.io/)
 
-**Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks and video streaming platforms. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, **Turborepo**, and **PM2**, Omni introduces **Stateful Preference Vectors** to replace traditional, expensive event-logging databases.
+**Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks, video streaming platforms, and media distribution hubs. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, **Turborepo**, and **PM2**, Omni introduces **Stateful Preference Vectors** to replace traditional, expensive event-logging databases.
+
+---
+
+## 🌐 Live Demo & Credentials
+
+You can test the running production deployment online:
+
+* 📱 **Live Web Application:** [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/)
+* ⚙️ **Strapi CMS Admin Panel:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
+
+### 🔑 Demo Login Credentials
+
+#### 1. Frontend Test User Accounts (Web App)
+You can log in directly via the Quick-Login buttons in the login modal or use these credentials:
+* **Demo Tech User (Tech & Science Focus):**
+  * **E-Mail / Identifier:** `demotech@inwebdesign.net`
+  * **Password:** `DemoUser2026!`
+* **Demo Gourmet User (Cooking & Nature Focus):**
+  * **E-Mail / Identifier:** `demogourmet@inwebdesign.net`
+  * **Password:** `DemoUser2026!`
+
+#### 2. Strapi CMS Admin Access
+* **Admin URL:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
+* **Identifier:** `admin@inwebdesign.net`
+* **Password:** `AdminSecret2026!`
 
 ---
 
 ## 📄 License & Premium AI Features
 
-The core boilerplate, standard feed assembly, batch tracking, content detail views, shorts feed, and authentication code in this repository are open-source and released under the **[MIT License](LICENSE)**. You are free to use, modify, and distribute this foundation for your own projects.
+The core boilerplate, standard feed assembly, video library catalog, batch tracking, content detail views, shorts feed, and authentication code in this repository are open-source and released under the **[MIT License](LICENSE)**. You are free to use, modify, and distribute this foundation for your own projects.
 
 ### 🌟 Unlock the Premium AI Engine
 The advanced local LLM orchestration (Ollama CPU/GPU inference), real-time intent classification, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
@@ -41,10 +66,11 @@ Instead of logging millions of individual click events in separate database rows
 ```
 
 ### 2. Dynamic Media-Type Routing & Views
-* 🎬 **YouTube-Style Widescreen Theater (`/content/[slug]`):** 16:9 cinema video player with expandable description, likes, share links, channel subscribe cards, and comments.
-* 📄 **PDF Document Viewer & Download Hub (`/content/[slug]`):** Clean document preview canvas with direct download links and fullscreen viewer toolbar.
-* 📰 **Article Reader (`/content/[slug]`):** Typography-optimized article reader with estimated reading time, callouts, and author bio.
-* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed (`/shorts/[slug]`):** TikTok / YouTube Shorts style vertical feed player with `snap-y snap-mandatory` smooth snapping, keyboard navigation (Up/Down arrows), floating action sidebar (Like, Comment Drawer, Share, Sound Toggle), and real-time URL synchronization.
+
+* 🎞️ **Direct Video Library Catalog ([`/videos`](https://omni-web.inwebdesign.net/videos)):** Dedicated, un-ranked video catalog view with full pagination, live title search (`q`), favorites filtering (`fav`), and multi-field sorting (`createdatasc`, `createdatdesc`, `titleasc`, `titledesc`, `durationasc`, `durationdesc`). All query parameters are synchronized to the URL as the Single Source of Truth.
+* 🎬 **Video Detail & Player Page ([`/video/[slug]`](https://omni-web.inwebdesign.net/video/sample-video)):** 16:9 cinema widescreen theater page featuring adaptive HLS streaming, video details, view counts, creator channel badges, like toggling, and interactive comment sections.
+* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed ([`/shorts`](https://omni-web.inwebdesign.net/shorts) & [`/shorts/[slug]`](https://omni-web.inwebdesign.net/shorts/sample-short)):** TikTok / YouTube Shorts style vertical feed player with `snap-y snap-mandatory` smooth snapping, keyboard navigation (Up/Down arrows), floating action sidebar (Like, Comment Drawer, Share, Sound Toggle), and real-time URL synchronization.
+* 📄 **Universal Content View ([`/content/[slug]`](https://omni-web.inwebdesign.net/content/sample-article)):** Unified detail router for Videos, PDF Documents (embedded viewer & download hub), and Typography-optimized Articles.
 
 ### 3. Hyper-Personalized Feed Assembly & Navigation Modes
 Feeds are assembled dynamically by querying **4 Parallel Buckets**:
@@ -67,8 +93,9 @@ omni-stack-ai/
 │   ├── config/              # PostgreSQL & Plugin configurations
 │   └── src/api/             # Custom Controllers & Services (feed, tracking, user-profile)
 ├── web/                     # Next.js 16 App Router Frontend
-│   ├── src/app/             # Pages, Content Detail (/content/[slug]), Shorts Feed (/shorts/[slug]), Auth & Modals
-│   └── src/lib/             # Batch Tracking & Shared Feed Dataset Helpers
+│   ├── src/app/             # Pages, Catalog (/videos), Detail View (/video/[slug]), Shorts Feed (/shorts/[slug]), Auth & Modals
+│   └── src/lib/             # SWR Hooks (useVideos), Batch Tracking & Feed Dataset Helpers
+├── converter_lxc/           # Automated Video Transcoding Worker (MP4, HLS, Thumbnails, OG Images)
 ├── ecosystem.config.js      # PM2 Process Manager setup
 ├── turbo.json               # Turborepo task pipeline (Turbo v2)
 ├── package.json             # Monorepo workspaces configuration
@@ -114,8 +141,8 @@ npm run start
 ```
 
 Services will be online:
-* **Frontend (Next.js):** `http://localhost:3000`
-* **CMS Backend (Strapi):** `http://localhost:1337`
+* **Frontend (Next.js):** `http://localhost:3000` (or [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/))
+* **CMS Backend (Strapi):** `http://localhost:1337` (or [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin))
 
 ---
 
