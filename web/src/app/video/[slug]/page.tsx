@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import VideoPageClient from '@/app/video/[slug]/VideoPageClient';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -19,16 +20,18 @@ function formatIsoDuration(seconds?: number): string {
   return res;
 }
 
-async function getData(slug: string) {
+async function getData(slug: string, jwt?: string | null) {
   try {
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
-    const token = process.env.STRAPI_API_TOKEN;
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+
+    if (jwt) {
+      headers['Authorization'] = `Bearer ${jwt}`;
+    } else if (process.env.STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
     // Fetch primary video by slug from Strapi
@@ -60,7 +63,6 @@ async function getData(slug: string) {
     return {
       video,
       relatedVideos,
-      accessStatus: { isAccessible: true },
     };
   } catch (error) {
     console.error('Error fetching video server-side:', error);
@@ -73,7 +75,8 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getData(slug);
+  const { user, jwt } = await getCurrentUserFromCookies();
+  const data = await getData(slug, jwt);
 
   if (!data || !data.video) {
     return {
@@ -83,6 +86,16 @@ export async function generateMetadata(
   }
 
   const video = data.video;
+  const isOwner = Boolean(user?.id && video.creator?.id === user.id);
+
+  // If video is private and user is not owner, return non-indexed notFound title
+  if (video.visibility === 'private' && !isOwner) {
+    return {
+      title: 'Privates Video | Omni Network',
+      robots: { index: false, follow: false },
+    };
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://omni-web.inwebdesign.net';
   const url = `${baseUrl}/video/${slug}`;
   const description =
@@ -99,9 +112,10 @@ export async function generateMetadata(
     : 'Omni, Video, Media Network, InWebDesign';
 
   return {
-    title: `${video.title} | Omni Network`,
+    title: `${video.title}${video.visibility === 'private' ? ' (Vorschau/Privat)' : ''} | Omni Network`,
     description,
     keywords: tags,
+    robots: video.visibility === 'private' ? { index: false, follow: false } : undefined,
     openGraph: {
       title: video.title,
       description,
@@ -129,13 +143,21 @@ export async function generateMetadata(
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
-  const data = await getData(slug);
+  const { user, jwt } = await getCurrentUserFromCookies();
+  const data = await getData(slug, jwt);
 
   if (!data || !data.video) {
     notFound();
   }
 
   const video = data.video;
+  const isOwner = Boolean(user?.id && video.creator?.id === user.id);
+
+  // Security & Privacy Check: If private and not owner, return 404
+  if (video.visibility === 'private' && !isOwner) {
+    notFound();
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://omni-web.inwebdesign.net';
   const videoUrl = `${baseUrl}/video/${slug}`;
   const thumbnailUrl = video.thumbnailUrl?.startsWith('http')
@@ -150,22 +172,25 @@ export default async function Page({ params }: Props) {
     video.summary || video.description || `Schaue "${video.title}" auf Omni BY INWEBDESIGN.`;
   const isoDuration = formatIsoDuration(video.duration);
 
-  const jsonLdVideo = {
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-    name: video.title,
-    description: description,
-    duration: isoDuration,
-    thumbnailUrl: [thumbnailUrl],
-    uploadDate: video.createdAt || new Date().toISOString(),
-    contentUrl: mp4ContentUrl,
-    embedUrl: videoUrl,
-    isAccessibleForFree: 'True',
-    author: {
-      '@type': 'Person',
-      name: video.creator?.username || video.creator?.handle || 'Omni Creator',
-    },
-  };
+  const jsonLdVideo =
+    video.visibility !== 'private'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'VideoObject',
+          name: video.title,
+          description: description,
+          duration: isoDuration,
+          thumbnailUrl: [thumbnailUrl],
+          uploadDate: video.createdAt || new Date().toISOString(),
+          contentUrl: mp4ContentUrl,
+          embedUrl: videoUrl,
+          isAccessibleForFree: 'True',
+          author: {
+            '@type': 'Person',
+            name: video.creator?.username || video.creator?.handle || 'Omni Creator',
+          },
+        }
+      : null;
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -192,12 +217,20 @@ export default async function Page({ params }: Props) {
     ],
   };
 
+  const accessStatus = {
+    isAccessible: true,
+    isOwner,
+    isPrivate: video.visibility === 'private',
+  };
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdVideo) }}
-      />
+      {jsonLdVideo && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdVideo) }}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
@@ -206,6 +239,7 @@ export default async function Page({ params }: Props) {
         initialVideo={video}
         initialRelated={data.relatedVideos}
         slug={slug}
+        accessStatus={accessStatus}
       />
     </>
   );

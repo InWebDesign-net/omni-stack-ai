@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const { jwt, user } = loginData;
 
     // All profile fields are now directly on the user object
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       jwt,
       user: {
@@ -42,6 +42,15 @@ export async function POST(req: Request) {
         affinityGraph: user.affinityGraph,
       },
     });
+
+    response.cookies.set('omni_jwt', jwt, {
+      httpOnly: false,
+      path: '/',
+      maxAge: 2592000, // 30 days
+      sameSite: 'lax',
+    });
+
+    return response;
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Serverfehler' }, { status: 500 });
   }

@@ -42,6 +42,11 @@ interface VideoPageClientProps {
   initialVideo: any;
   initialRelated?: any[];
   slug: string;
+  accessStatus?: {
+    isAccessible: boolean;
+    isOwner: boolean;
+    isPrivate: boolean;
+  };
 }
 
 function CardThumbnail({
@@ -78,6 +83,7 @@ export default function VideoPageClient({
   initialVideo,
   initialRelated = [],
   slug,
+  accessStatus,
 }: VideoPageClientProps) {
   const router = useRouter();
   const { lang, currentUser, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
@@ -366,9 +372,16 @@ export default function VideoPageClient({
 
             {/* Video Details Header */}
             <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                {video.title}
-              </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                  {video.title}
+                </h1>
+                {accessStatus?.isPrivate && accessStatus?.isOwner && (
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-mono font-semibold">
+                    🔒 Private Vorschau
+                  </span>
+                )}
+              </div>
 
               {/* Views, Date & Interactive Actions */}
               <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-800/60">
