@@ -554,7 +554,7 @@ export default function VideoPageClient({
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-indigo-400" />
                 <h2 className="text-lg font-bold text-white">
-                  {t.videoDetail.noComments.replace('!', '')} ({comments.length})
+                  {(t.videoDetail as any).comments || t.common.comments || 'Kommentare'} ({comments.length})
                 </h2>
               </div>
 

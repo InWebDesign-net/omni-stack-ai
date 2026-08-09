@@ -83,6 +83,7 @@
     "noVideosSub": "No video entries were found for your current search and filter criteria."
   },
   "videoDetail": {
+    "comments": "Comments",
     "relatedRecommendations": "More Recommendations",
     "noComments": "No comments yet. Be the first!",
     "writeCommentPlaceholder": "Write a comment...",
