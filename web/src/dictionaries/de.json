@@ -1,0 +1,58 @@
+{
+  "common": {
+    "back": "Zurück",
+    "backToHome": "Zurück zur Startseite",
+    "browseAllVideos": "Alle Videos durchsuchen",
+    "searchPlaceholder": "Titel durchsuchen...",
+    "favorites": "Favoriten",
+    "resetFilters": "Filter zurücksetzen",
+    "share": "Teilen",
+    "subscribe": "Abonnieren",
+    "subscribed": "Abonniert",
+    "comments": "Kommentare",
+    "send": "Senden",
+    "loading": "Wird geladen...",
+    "views": "Aufrufe",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen",
+    "linkCopied": "Link in Zwischenablage kopiert!",
+    "likeAdded": "Zu deinen Gefällt-mir-Angaben hinzugefügt",
+    "likeRemoved": "Gefällt-mir entfernt",
+    "bookmarkAdded": "Video gemerkt",
+    "bookmarkRemoved": "Bookmark entfernt"
+  },
+  "header": {
+    "searchPlaceholder": "Was möchtest du heute entdecken?",
+    "feed": "Mein Feed",
+    "videos": "Videos",
+    "shorts": "Shorts",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "upload": "Hochladen",
+    "myProfile": "Mein Profil",
+    "settings": "Einstellungen"
+  },
+  "videos": {
+    "title": "Video-Bibliothek",
+    "subtitle": "Durchsuche und sortiere alle verfügbaren Videos direkt ohne Algorithmus-Filterung.",
+    "clipsCount": "Clips",
+    "sortNewest": "Neueste zuerst",
+    "sortOldest": "Älteste zuerst",
+    "sortTitleAsc": "Titel (A - Z)",
+    "sortTitleDesc": "Titel (Z - A)",
+    "sortDurationAsc": "Dauer (Kürzeste)",
+    "sortDurationDesc": "Dauer (Längste)",
+    "noVideosFound": "Keine Videos gefunden",
+    "noVideosSub": "Für deine aktuellen Such- und Filterkriterien wurden leider keine Video-Einträge gefunden."
+  },
+  "videoDetail": {
+    "relatedRecommendations": "Weitere Empfehlungen",
+    "noComments": "Noch keine Kommentare vorhanden. Sei der Erste!",
+    "writeCommentPlaceholder": "Schreibe einen Kommentar...",
+    "writeCommentGuestPlaceholder": "Kommentieren (Als Gast oder jetzt anmelden)...",
+    "commentPublished": "Kommentar veröffentlicht!",
+    "commentUpdated": "Kommentar aktualisiert",
+    "commentDeleted": "Kommentar gelöscht"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "common": {
+    "back": "Back",
+    "backToHome": "Back to Home",
+    "browseAllVideos": "Browse All Videos",
+    "searchPlaceholder": "Search titles...",
+    "favorites": "Favorites",
+    "resetFilters": "Reset Filters",
+    "share": "Share",
+    "subscribe": "Subscribe",
+    "subscribed": "Subscribed",
+    "comments": "Comments",
+    "send": "Send",
+    "loading": "Loading...",
+    "views": "Views",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "linkCopied": "Link copied to clipboard!",
+    "likeAdded": "Added to your liked videos",
+    "likeRemoved": "Like removed",
+    "bookmarkAdded": "Video bookmarked",
+    "bookmarkRemoved": "Bookmark removed"
+  },
+  "header": {
+    "searchPlaceholder": "What do you want to explore today?",
+    "feed": "My Feed",
+    "videos": "Videos",
+    "shorts": "Shorts",
+    "login": "Sign In",
+    "register": "Register",
+    "logout": "Log Out",
+    "upload": "Upload",
+    "myProfile": "My Profile",
+    "settings": "Settings"
+  },
+  "videos": {
+    "title": "Video Library",
+    "subtitle": "Search and sort all available videos directly without algorithmic filtering.",
+    "clipsCount": "Clips",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "sortTitleAsc": "Title (A - Z)",
+    "sortTitleDesc": "Title (Z - A)",
+    "sortDurationAsc": "Duration (Shortest)",
+    "sortDurationDesc": "Duration (Longest)",
+    "noVideosFound": "No videos found",
+    "noVideosSub": "No video entries were found for your current search and filter criteria."
+  },
+  "videoDetail": {
+    "relatedRecommendations": "More Recommendations",
+    "noComments": "No comments yet. Be the first!",
+    "writeCommentPlaceholder": "Write a comment...",
+    "writeCommentGuestPlaceholder": "Comment (as guest or sign in now)...",
+    "commentPublished": "Comment published!",
+    "commentUpdated": "Comment updated",
+    "commentDeleted": "Comment deleted"
+  }
+}

@@ -14,6 +14,7 @@ import {
   storeAffinityGraph,
   getStoredJwt,
 } from '@/lib/affinity';
+import { getDictionary, Dictionary } from '@/lib/i18n';
 
 export interface UserProfileSession {
   id: number;
@@ -41,6 +42,7 @@ interface AppContextType {
   lang: 'de' | 'en';
   setLang: (lang: 'de' | 'en') => void;
   toggleLanguage: () => void;
+  t: Dictionary;
 
   // Interest Profile (canonical AffinityGraph)
   profile: AffinityGraph;
@@ -194,6 +196,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setIsAuthModalOpen(true);
   };
 
+  const t = getDictionary(lang);
+
   return (
     <AppContext.Provider
       value={{
@@ -202,6 +206,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         lang,
         setLang,
         toggleLanguage,
+        t,
         profile,
         setProfile,
         updateProfileState,

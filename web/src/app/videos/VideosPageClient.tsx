@@ -30,7 +30,7 @@ export default function VideosPageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { currentUser } = useApp();
+  const { currentUser, t } = useApp();
   const perPage = 24;
 
   // Single Source of Truth from SearchParams
@@ -138,14 +138,14 @@ export default function VideosPageClient({
                   <Film className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Video Library
+                  {t.videos.title}
                 </h1>
                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">
-                  {isLoading ? "..." : `${totalVideos} Clips`}
+                  {isLoading ? "..." : `${totalVideos} ${t.videos.clipsCount}`}
                 </span>
               </div>
               <p className="text-slate-400 text-sm mt-1">
-                Durchsuche und sortiere alle verfügbaren Videos direkt ohne Algorithmus-Filterung.
+                {t.videos.subtitle}
               </p>
             </div>
 
@@ -156,7 +156,7 @@ export default function VideosPageClient({
                 className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all shadow-sm shrink-0"
               >
                 <FilterX className="w-3.5 h-3.5 text-rose-400" />
-                <span>Filter zurücksetzen</span>
+                <span>{t.common.resetFilters}</span>
               </button>
             )}
           </div>
@@ -168,7 +168,7 @@ export default function VideosPageClient({
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Titel durchsuchen..."
+                placeholder={t.common.searchPlaceholder}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/80 transition-all"
@@ -206,7 +206,7 @@ export default function VideosPageClient({
                       filterFavorites === "true" ? "fill-rose-400 text-rose-400" : ""
                     }`}
                   />
-                  <span className="hidden sm:inline">Favoriten</span>
+                  <span className="hidden sm:inline">{t.common.favorites}</span>
                 </button>
               )}
 
@@ -219,22 +219,22 @@ export default function VideosPageClient({
                   className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
                 >
                   <option value="createdatasc" className="bg-slate-900 text-slate-200">
-                    Neueste zuerst
+                    {t.videos.sortNewest}
                   </option>
                   <option value="createdatdesc" className="bg-slate-900 text-slate-200">
-                    Älteste zuerst
+                    {t.videos.sortOldest}
                   </option>
                   <option value="titleasc" className="bg-slate-900 text-slate-200">
-                    Titel (A - Z)
+                    {t.videos.sortTitleAsc}
                   </option>
                   <option value="titledesc" className="bg-slate-900 text-slate-200">
-                    Titel (Z - A)
+                    {t.videos.sortTitleDesc}
                   </option>
                   <option value="durationasc" className="bg-slate-900 text-slate-200">
-                    Dauer (Kürzeste)
+                    {t.videos.sortDurationAsc}
                   </option>
                   <option value="durationdesc" className="bg-slate-900 text-slate-200">
-                    Dauer (Längste)
+                    {t.videos.sortDurationDesc}
                   </option>
                 </select>
               </div>
