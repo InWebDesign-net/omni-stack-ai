@@ -96,7 +96,7 @@ export default function ContentDetailPage() {
   const [userData, setUserData] = useState<{ id?: string | number; username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
-  const { lang, currentUser, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { lang, currentUser, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
   const userIdent = useMemo(() => {
     return currentUser?.id ? `user-${currentUser.id}` : ((userData as any)?.id ? `user-${(userData as any).id}` : 'anon-session');
@@ -197,7 +197,7 @@ export default function ContentDetailPage() {
     setLikesCount((prev) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
 
     if (nextIsLiked) {
-      showToast(lang === 'de' ? '❤️ Zu deinen Gefällt-mir-Angaben hinzugefügt' : '❤️ Added to your liked items');
+      showToast(t.content.likeAdded);
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (!storedLikes.includes(item.slug)) {
@@ -205,7 +205,7 @@ export default function ContentDetailPage() {
         }
       } catch (e) {}
     } else {
-      showToast(lang === 'de' ? '🤍 Gefällt-mir-Angabe entfernt' : '🤍 Removed from liked items');
+      showToast(t.content.likeRemoved);
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== item.slug)));
@@ -357,13 +357,13 @@ export default function ContentDetailPage() {
         <div className="bg-[#8083ff] text-white px-4 py-2 text-xs font-bold flex items-center justify-between shadow-lg z-50">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 animate-spin" />
-            <span>⚡ Live-Entwurfsmodus aktiv (Vorschau aus Strapi CMS)</span>
+            <span>{t.content.draftModeActive}</span>
           </div>
           <a
             href={`/api/exit-preview?redirect=${encodeURIComponent(`/content/${slug}`)}`}
             className="bg-black/50 hover:bg-black/80 text-white px-3 py-1 rounded-lg font-bold text-[11px] border border-white/20 transition-all shrink-0"
           >
-            Vorschau beenden
+            {t.content.exitPreview}
           </a>
         </div>
       )}
@@ -393,13 +393,13 @@ export default function ContentDetailPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d1528] hover:bg-[#121a30] text-xs font-semibold text-[#dae2fd] transition-all border border-white/8 hover:border-white/20 shadow-md group"
           >
             <ArrowLeft className="h-4 w-4 text-[#8083ff] group-hover:-translate-x-0.5 transition-transform" />
-            <span>{lang === 'de' ? 'Zurück zur Startseite' : 'Back to Home'}</span>
+            <span>{t.common.backToHome}</span>
           </Link>
 
           {item && (
             <span className="text-xs font-mono font-bold text-[#44e2cd] bg-[#44e2cd]/10 border border-[#44e2cd]/20 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>{lang === 'de' ? `KI-Relevanz: ${((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match` : `AI Relevance: ${((item.relevanceScore || 0.95) * 100).toFixed(0)}% Match`}</span>
+              <span>{t.content.aiRelevance.replace('{score}', ((item.relevanceScore || 0.95) * 100).toFixed(0))}</span>
             </span>
           )}
         </div>
@@ -420,7 +420,7 @@ export default function ContentDetailPage() {
                     <span>Dynamic Article</span>
                     <span>•</span>
                     <Clock className="h-3.5 w-3.5" />
-                    <span>{lang === 'de' ? '4 Min. Lesezeit' : '4 min read'}</span>
+                    <span>{t.content.readTime}</span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
                     {item.title}
@@ -436,7 +436,7 @@ export default function ContentDetailPage() {
                   <div
                     onClick={() => openChannelModal({ handle: authorHandle, username: authorName, avatarUrl: authorAvatar })}
                     className="flex items-center gap-3 cursor-pointer group/author transition-all"
-                    title={`Profil von ${authorName} öffnen`}
+                    title={t.content.openProfileTitle.replace('{name}', authorName)}
                   >
                     <img src={authorAvatar} alt={authorName} className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" />
                     <div>
@@ -548,7 +548,7 @@ export default function ContentDetailPage() {
                   <textarea
                     value={newCommentText}
                     onChange={(e) => setNewCommentText(e.target.value)}
-                    placeholder={lang === 'de' ? 'Einen Kommentar schreiben...' : 'Write a comment...'}
+                    placeholder={t.common.commentPlaceholder}
                     rows={2}
                     className="w-full bg-[#080e1e] border border-white/10 focus:border-[#8083ff]/60 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"
                   />
@@ -559,7 +559,7 @@ export default function ContentDetailPage() {
                       className="px-4 py-2 rounded-xl bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold text-xs transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-md shadow-[#8083ff]/20"
                     >
                       <Send className="h-3.5 w-3.5" />
-                      <span>{lang === 'de' ? 'Kommentieren' : 'Comment'}</span>
+                      <span>{t.common.comment}</span>
                     </button>
                   </div>
                 </div>
@@ -568,11 +568,11 @@ export default function ContentDetailPage() {
               {/* Comment List */}
               {loadingComments ? (
                 <div className="py-6 text-center text-xs text-[#9ba4bf]">
-                  {lang === 'de' ? 'Kommentare werden geladen...' : 'Loading comments...'}
+                  {t.common.loadingComments}
                 </div>
               ) : comments.length === 0 ? (
                 <div className="py-6 text-center text-xs text-[#9ba4bf]">
-                  {lang === 'de' ? 'Noch keine Kommentare vorhanden. Schreibe den ersten!' : 'No comments yet. Write the first one!'}
+                  {t.common.noCommentsYet}
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
@@ -586,7 +586,7 @@ export default function ContentDetailPage() {
                       <div className="flex-1 flex flex-col gap-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-white">{comment.authorName}</span>
-                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || (lang === 'de' ? 'Gerade eben' : 'Just now')}</span>
+                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || t.common.justNow}</span>
                         </div>
                         <p className="text-xs text-[#dae2fd] leading-relaxed mt-0.5">{comment.text}</p>
                       </div>
@@ -601,7 +601,7 @@ export default function ContentDetailPage() {
           <aside className="lg:col-span-4 flex flex-col gap-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Flame className="h-4 w-4 text-[#ffb783]" />
-              <span>{lang === 'de' ? 'Weitere Artikel & Beiträge' : 'More Articles & Posts'}</span>
+              <span>{t.common.moreArticles}</span>
             </h3>
 
             <div className="flex flex-col gap-3">

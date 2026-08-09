@@ -13,7 +13,7 @@ export default function ChannelProfileModal({
   selectedChannel,
   onClose,
 }: ChannelProfileModalProps) {
-  const { subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
   if (!selectedChannel) return null;
 
@@ -62,14 +62,14 @@ export default function ChannelProfileModal({
             }`}
           >
             <UserPlus className="h-4 w-4" />
-            <span>{isSubscribed ? 'Abonniert ✓' : 'Abonnieren'}</span>
+            <span>{isSubscribed ? t.channel.subscribed : t.common.subscribe}</span>
           </button>
 
           <button
             onClick={onClose}
             className="px-5 py-2.5 bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold text-xs rounded-xl shadow-md transition-all"
           >
-            Schließen
+            {t.common.close}
           </button>
         </div>
       </div>

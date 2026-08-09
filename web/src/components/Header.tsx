@@ -117,6 +117,7 @@ export default function Header({
     openSettingsModal,
     openAuthModal,
     openCreateItemModal,
+    t,
   } = useApp();
 
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -179,7 +180,7 @@ export default function Header({
             <button
               onClick={handleMenuClick}
               className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
-              title={activeLang === 'de' ? 'Navigation öffnen' : 'Open Navigation'}
+              title={t.header.openNav}
               aria-label="Toggle navigation drawer"
             >
               <Menu className="h-5 w-5" />
@@ -217,7 +218,7 @@ export default function Header({
             title="Algorithm Control"
           >
             <Sliders className="h-3.5 w-3.5 text-[#8083ff]" />
-            <span className="hidden sm:inline">{activeLang === 'de' ? 'Algorithmus' : 'Algorithm'}</span>
+            <span className="hidden sm:inline">{activeLang === 'de' ? t.header.algorithm : t.header.algorithm}</span>
           </button>
 
           {/* Language Switch */}
@@ -275,7 +276,7 @@ export default function Header({
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
                   >
                     <Tv className="h-4 w-4 text-[#8083ff]" />
-                    <span>{activeLang === 'de' ? 'Mein Kanal' : 'My Channel'}</span>
+                    <span>{t.header.myChannel}</span>
                   </button>
 
                   <button
@@ -291,7 +292,7 @@ export default function Header({
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
                   >
                     <User className="h-4 w-4 text-[#44e2cd]" />
-                    <span>{activeLang === 'de' ? 'Einstellungen' : 'Settings'}</span>
+                    <span>{t.header.settings}</span>
                   </button>
 
                   <button
@@ -307,7 +308,7 @@ export default function Header({
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-[#8083ff]/15 transition-all text-left"
                   >
                     <Upload className="h-4 w-4 text-[#8083ff]" />
-                    <span>{activeLang === 'de' ? 'Video hochladen' : 'Upload Video'}</span>
+                    <span>{activeLang === 'de' ? t.header.uploadVideo : t.header.uploadVideo}</span>
                   </button>
 
                   <button
@@ -323,7 +324,7 @@ export default function Header({
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
                   >
                     <Sparkles className="h-4 w-4 text-[#ffb783]" />
-                    <span>{activeLang === 'de' ? 'Neuen Beitrag erstellen' : 'Create Post'}</span>
+                    <span>{activeLang === 'de' ? t.header.createPost : t.header.createPost}</span>
                   </button>
 
                   <div className="my-1 border-t border-white/5" />
@@ -337,7 +338,7 @@ export default function Header({
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all text-left"
                   >
                     <LogOut className="h-4 w-4 text-red-400" />
-                    <span>{activeLang === 'de' ? 'Abmelden' : 'Log Out'}</span>
+                    <span>{t.header.logout}</span>
                   </button>
                 </div>
               )}
@@ -354,7 +355,7 @@ export default function Header({
               className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-[#8083ff]/25"
             >
               <User className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{activeLang === 'de' ? 'Anmelden' : 'Sign In'}</span>
+              <span className="hidden sm:inline">{activeLang === 'de' ? t.header.login : t.header.login}</span>
             </button>
           )}
         </div>
@@ -384,7 +385,7 @@ export default function Header({
                 <div className="flex flex-col leading-none">
                   <span className="font-extrabold text-base text-white">Omni Network</span>
                   <span className="text-[9px] font-mono text-[#8083ff] uppercase tracking-wider mt-0.5">
-                    {activeLang === 'de' ? 'Navigation' : 'Navigation'}
+                    {t.header.navigation}
                   </span>
                 </div>
               </Link>
@@ -400,7 +401,7 @@ export default function Header({
             {/* Section 1: Main Navigation Links */}
             <div className="flex flex-col gap-1">
               <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5c657d] mb-1">
-                {activeLang === 'de' ? 'Hauptnavigation' : 'Main Navigation'}
+                {t.header.mainNav}
               </p>
 
               <Link
@@ -409,7 +410,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <Home className="h-4.5 w-4.5 text-[#8083ff]" />
-                <span>{activeLang === 'de' ? 'Startseite / Feed' : 'Home / Feed'}</span>
+                <span>{t.header.homeFeed}</span>
               </Link>
 
               <Link
@@ -418,7 +419,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <Flame className="h-4.5 w-4.5 text-[#ffb783]" />
-                <span>{activeLang === 'de' ? 'Trending & Popular' : 'Trending & Popular'}</span>
+                <span>{t.header.trendingPopular}</span>
               </Link>
 
               <Link
@@ -427,7 +428,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <Tv className="h-4.5 w-4.5 text-[#44e2cd]" />
-                <span>{activeLang === 'de' ? 'Meine Abonnements' : 'My Subscriptions'}</span>
+                <span>{t.header.mySubscriptions}</span>
               </Link>
 
               <Link
@@ -436,7 +437,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <BookOpen className="h-4.5 w-4.5 text-[#c0c1ff]" />
-                <span>{activeLang === 'de' ? 'Meine Bibliothek' : 'My Library'}</span>
+                <span>{t.header.myLibrary}</span>
               </Link>
 
               <Link
@@ -445,7 +446,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <Film className="h-4.5 w-4.5 text-[#ff6b81]" />
-                <span>{activeLang === 'de' ? 'Shorts & Reels' : 'Shorts & Reels'}</span>
+                <span>{t.header.shorts}</span>
               </Link>
 
               <Link
@@ -454,7 +455,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <FileText className="h-4.5 w-4.5 text-red-400" />
-                <span>{activeLang === 'de' ? 'PDF Dokumentationen' : 'PDF Documentations'}</span>
+                <span>{t.header.pdfDocs}</span>
               </Link>
 
               <Link
@@ -463,7 +464,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <Play className="h-4.5 w-4.5 text-[#8083ff]" />
-                <span>{activeLang === 'de' ? 'Video Tutorials' : 'Video Tutorials'}</span>
+                <span>{t.header.videoTutorials}</span>
               </Link>
 
               <Link
@@ -472,7 +473,7 @@ export default function Header({
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
               >
                 <BookOpen className="h-4.5 w-4.5 text-[#44e2cd]" />
-                <span>{activeLang === 'de' ? 'Exklusive Artikel' : 'Exclusive Articles'}</span>
+                <span>{t.header.exclusiveArticles}</span>
               </Link>
             </div>
 
@@ -482,7 +483,7 @@ export default function Header({
             <div className="flex flex-col gap-1">
               <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5c657d] mb-1 flex items-center gap-1">
                 <Users className="h-3 w-3 text-[#8083ff]" />
-                <span>{activeLang === 'de' ? 'Kanäle & Creator' : 'Channels & Creators'}</span>
+                <span>{t.header.channelsCreators}</span>
               </p>
               {[
                 { handle: '@astro', label: 'Astro-Wissen', avatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&q=80' },

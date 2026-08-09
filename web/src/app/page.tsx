@@ -280,13 +280,14 @@ function OmniAppContent() {
     openCreateItemModal,
     subscribedChannels,
     toggleSubscribeChannel,
+    t,
   } = useApp();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [algoDrawerOpen, setAlgoDrawerOpen] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string>('Alle');
+  const [selectedTag, setSelectedTag] = useState<string>(t.feed.all);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'trending' | 'subscriptions' | 'library'>('home');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -496,7 +497,7 @@ function OmniAppContent() {
     } else if (typeParam === 'article') {
       setSelectedTag('Programmierung');
     } else {
-      setSelectedTag('Alle');
+      setSelectedTag(t.feed.all);
     }
 
     const channelParam = searchParams.get('channel');
@@ -542,9 +543,7 @@ function OmniAppContent() {
 
     setIsAiProcessing(true);
     setAiReasoning(
-      lang === 'de'
-        ? '🤖 Ollama LLM analysiert Intent & berechnet Vektoren...'
-        : '🤖 Ollama LLM analyzing intent & computing vectors...'
+      t.feed.aiAnalyzing
     );
 
     try {
@@ -568,11 +567,11 @@ function OmniAppContent() {
           setAiReasoning(data.aiExplanation);
         }
       } else {
-        setAiReasoning(lang === 'de' ? '⚠️ KI-Verbindungsfehler.' : '⚠️ AI connection error.');
+        setAiReasoning(t.feed.aiConnectionError);
       }
     } catch (err: any) {
       console.error('AI Intent submit error:', err);
-      setAiReasoning(lang === 'de' ? '⚠️ Fehler bei KI-Verarbeitung.' : '⚠️ Error in AI processing.');
+      setAiReasoning(t.feed.aiProcessingError);
     } finally {
       setIsAiProcessing(false);
       setChatInput('');
@@ -605,7 +604,7 @@ function OmniAppContent() {
 
   const filteredFeed = React.useMemo(() => {
     let items = feedItems.filter((item) => {
-      if (selectedTag === 'Alle' || selectedTag === 'All') return true;
+      if (selectedTag === t.feed.all) return true;
       return item.tags.includes(selectedTag);
     });
 
@@ -666,7 +665,7 @@ function OmniAppContent() {
   };
 
   const categoryPills = [
-    { label: lang === 'de' ? 'Alle' : 'All', emoji: '✦' },
+    { label: t.feed.all, emoji: '✦' },
     ...dynamicTopics.map((tag) => ({
       label: tag,
       emoji: getTopicEmoji(tag),
@@ -674,10 +673,10 @@ function OmniAppContent() {
   ];
 
   const sideNavItems = [
-    { id: 'home' as const, icon: Home, label: lang === 'de' ? 'Startseite' : 'Home', active: activeNavTab === 'home' },
-    { id: 'trending' as const, icon: Flame, label: lang === 'de' ? 'Trending' : 'Trending', active: activeNavTab === 'trending' },
-    { id: 'subscriptions' as const, icon: Tv, label: lang === 'de' ? 'Abonnements' : 'Subscriptions', active: activeNavTab === 'subscriptions' },
-    { id: 'library' as const, icon: BookOpen, label: lang === 'de' ? 'Bibliothek' : 'Library', active: activeNavTab === 'library' },
+    { id: 'home' as const, icon: Home, label: t.feed.navHome, active: activeNavTab === 'home' },
+    { id: 'trending' as const, icon: Flame, label: t.feed.navTrending, active: activeNavTab === 'trending' },
+    { id: 'subscriptions' as const, icon: Tv, label: t.feed.navSubscriptions, active: activeNavTab === 'subscriptions' },
+    { id: 'library' as const, icon: BookOpen, label: t.feed.navLibrary, active: activeNavTab === 'library' },
   ];
 
   const sideTopics = dynamicTopics.slice(0, 8).map((tag) => ({
@@ -723,8 +722,8 @@ function OmniAppContent() {
             <div className="md:col-span-7 flex flex-col gap-3 bg-[#0d1528] p-5 rounded-2xl border border-white/6">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-white flex items-center gap-2">
-                  <Zap className="h-3.5 w-3.5 text-[#8083ff]" />
-                  {lang === 'de' ? 'Interesse-Vektoren' : 'Interest Vectors'}
+                <Zap className="h-3.5 w-3.5 text-[#8083ff]" />
+                {t.feed.interestVectors}
                 </span>
                 <span className="text-[10px] text-[#5c657d] font-mono bg-[#192038] px-2 py-0.5 rounded-full">JSON Profile</span>
               </div>
@@ -752,8 +751,8 @@ function OmniAppContent() {
             {/* Pattern Selector */}
             <div className="md:col-span-5 flex flex-col gap-4 bg-[#0d1528] p-5 rounded-2xl border border-white/6">
               <span className="text-xs font-bold text-white flex items-center gap-2">
-                <TrendingUp className="h-3.5 w-3.5 text-[#44e2cd]" />
-                {lang === 'de' ? 'Slot Interleaving' : 'Slot Interleaving'}
+              <TrendingUp className="h-3.5 w-3.5 text-[#44e2cd]" />
+              {t.feed.slotInterleaving}
               </span>
               <div className="flex gap-2.5">
                 <button
@@ -767,7 +766,7 @@ function OmniAppContent() {
                       : 'bg-[#192038] text-[#9ba4bf] hover:text-white hover:bg-[#1e2740]'
                     }`}
                 >
-                  🔍 Discovery
+                  {t.feed.discovery}
                 </button>
                 <button
                   onClick={async () => {
@@ -780,14 +779,14 @@ function OmniAppContent() {
                       : 'bg-[#192038] text-[#9ba4bf] hover:text-white hover:bg-[#1e2740]'
                     }`}
                 >
-                  🎯 Deep Dive
+                  {t.feed.deepDive}
                 </button>
               </div>
               <button
                 onClick={() => setAlgoDrawerOpen(false)}
                 className="text-[11px] text-[#5c657d] hover:text-[#9ba4bf] transition-colors text-center py-1"
               >
-                {lang === 'de' ? '✕ Panel schließen' : '✕ Close Panel'}
+                {t.feed.closePanel}
               </button>
             </div>
           </div>
@@ -803,8 +802,8 @@ function OmniAppContent() {
 
           <h1 className="sr-only">
             {lang === 'de'
-              ? 'Omni - Hyper-Personalisiertes KI Mediennetzwerk BY INWEBDESIGN'
-              : 'Omni - Hyper-Personalized AI Media Network BY INWEBDESIGN'}
+              ? t.feed.srTitle
+              : t.feed.srTitle}
           </h1>
 
           {/* ─ Dynamic Hero Header according to activeNavTab ────────────────────────────── */}
@@ -823,7 +822,7 @@ function OmniAppContent() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-white leading-tight">
-                        {lang === 'de' ? 'Omni KI-Assistent' : 'Omni AI Assistant'}
+                        {t.feed.aiAssistant}
                       </p>
                       <p className="text-[10px] text-[#5c657d] leading-tight">Powered by InWebDesign</p>
                     </div>
@@ -842,9 +841,7 @@ function OmniAppContent() {
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       placeholder={
-                        lang === 'de'
-                          ? 'Worauf hast du heute Lust? z.B. "Wissenschafts-PDFs", "Kochen & Pasta"...'
-                          : 'What would you like to explore? e.g. "Science PDFs", "Cooking & Pasta"...'
+                        t.feed.aiPlaceholder
                       }
                       className="w-full bg-transparent px-5 py-4 text-sm text-[#dae2fd] placeholder-[#5c657d] focus:outline-none"
                     />
@@ -866,7 +863,7 @@ function OmniAppContent() {
                     {/* Static Pinned Label */}
                     <span className="text-[10px] font-bold text-[#8083ff] uppercase tracking-wider shrink-0 mr-2 flex items-center gap-1 select-none">
                       <Users className="h-3 w-3" />
-                      <span>Kanäle:</span>
+                      <span>{t.feed.channels}</span>
                     </span>
 
                     {/* Scroll Container with Faded Edges */}
@@ -877,7 +874,7 @@ function OmniAppContent() {
                           type="button"
                           onClick={() => scrollContainer(channelScrollRef, 'left')}
                           className="absolute left-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
-                          title="Zurück scrollen"
+                          title={t.feed.scrollLeft}
                         >
                           <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
@@ -927,7 +924,7 @@ function OmniAppContent() {
                           type="button"
                           onClick={() => scrollContainer(channelScrollRef, 'right')}
                           className="absolute right-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
-                          title="Weiter scrollen"
+                          title={t.feed.scrollRight}
                         >
                           <ChevronRight className="h-3.5 w-3.5" />
                         </button>
@@ -963,23 +960,21 @@ function OmniAppContent() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-xl font-extrabold text-white tracking-tight">
-                        {lang === 'de' ? '🔥 Trending im Network' : '🔥 Trending in Network'}
+                        {t.feed.trendingTitle}
                       </h2>
                       <span className="text-[10px] font-mono font-bold bg-[#ffb783]/20 text-[#ffb783] border border-[#ffb783]/40 px-2.5 py-0.5 rounded-full">
                         Ranked Feed
                       </span>
                     </div>
                     <p className="text-xs text-[#9ba4bf] mt-1 max-w-xl">
-                      {lang === 'de'
-                        ? 'Hier findest du die beliebtesten Beiträge mit den höchsten Aufrufzahlen, meisten Interaktionen & bester KI-Relevanz.'
-                        : 'Here you find the most popular posts with highest views, engagement & AI relevance score.'}
+                      {t.feed.trendingSubtitle}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-[#080e1e]/80 border border-white/10 px-3 py-2 rounded-2xl shrink-0">
                   <TrendingUp className="h-4 w-4 text-[#44e2cd]" />
                   <span className="text-xs font-mono font-bold text-[#dae2fd]">
-                    {filteredFeed.length} {lang === 'de' ? 'Beiträge sortiert' : 'posts ranked'}
+                    {filteredFeed.length} {t.feed.postsRanked}
                   </span>
                 </div>
               </div>
@@ -996,24 +991,22 @@ function OmniAppContent() {
                     </div>
                     <div>
                       <h2 className="text-xl font-extrabold text-white tracking-tight">
-                        {lang === 'de' ? '📺 Deine Abonnements' : '📺 Your Subscriptions'}
+                        {t.feed.subscriptionsTitle}
                       </h2>
                       <p className="text-xs text-[#9ba4bf] mt-0.5">
-                        {lang === 'de'
-                          ? 'Inhalte von allen Creator-Kanälen, denen du folgst.'
-                          : 'Exclusive posts from all creator channels you follow.'}
+                        {t.feed.subscriptionsSubtitle}
                       </p>
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold bg-[#44e2cd]/15 text-[#44e2cd] border border-[#44e2cd]/30 px-3 py-1 rounded-full">
-                    {subscribedChannels.length} {lang === 'de' ? 'Kanäle abonniert' : 'Channels Subscribed'}
+                    {subscribedChannels.length} {t.feed.channelsSubscribed}
                   </span>
                 </div>
 
                 {/* Subscribed Creators Strip */}
                 <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-2 border-t border-white/5">
                   <span className="text-[10px] font-bold text-[#5c657d] uppercase tracking-wider shrink-0 mr-1">
-                    {lang === 'de' ? 'Abonniert:' : 'Following:'}
+                    {t.feed.following}
                   </span>
                   {subscribedChannels.map((handle) => (
                     <div
@@ -1025,7 +1018,7 @@ function OmniAppContent() {
                         type="button"
                         onClick={() => toggleSubscribeChannel(handle)}
                         className="text-[10px] text-[#5c657d] hover:text-red-400 font-bold ml-1 transition-colors"
-                        title="Abonnement beenden"
+                        title={t.feed.unsubscribeTitle}
                       >
                         ✕
                       </button>
@@ -1046,12 +1039,10 @@ function OmniAppContent() {
                     </div>
                     <div>
                       <h2 className="text-xl font-extrabold text-white tracking-tight">
-                        {lang === 'de' ? '📚 Meine Bibliothek & eigene Beiträge' : '📚 My Library & Posts'}
+                        {t.feed.libraryTitle}
                       </h2>
                       <p className="text-xs text-[#9ba4bf] mt-0.5">
-                        {lang === 'de'
-                          ? 'Deine erstellten Videos, Artikel und gespeicherten Inhalte.'
-                          : 'Your published videos, articles and saved bookmarks.'}
+                        {t.feed.librarySubtitle}
                       </p>
                     </div>
                   </div>
@@ -1062,7 +1053,7 @@ function OmniAppContent() {
                       className="bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-[#8083ff]/25 flex items-center gap-2 shrink-0 transition-all"
                     >
                       <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
-                      <span>{lang === 'de' ? 'Neuen Beitrag erstellen' : 'Create New Post'}</span>
+                      <span>{t.create.submit}</span>
                     </button>
                   )}
                 </div>
@@ -1080,7 +1071,7 @@ function OmniAppContent() {
                   type="button"
                   onClick={() => scrollContainer(tagScrollRef, 'left')}
                   className="absolute left-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
-                  title="Zurück scrollen"
+                  title={t.feed.scrollLeft}
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
@@ -1116,7 +1107,7 @@ function OmniAppContent() {
                   type="button"
                   onClick={() => scrollContainer(tagScrollRef, 'right')}
                   className="absolute right-0 z-20 p-1.5 rounded-full bg-[#080e1e]/95 border border-white/15 text-[#9ba4bf] hover:text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
-                  title="Weiter scrollen"
+                  title={t.feed.scrollRight}
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
@@ -1135,12 +1126,10 @@ function OmniAppContent() {
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <p className="text-base font-bold text-white">
-                    {lang === 'de' ? 'Keine Beiträge im Strapi CMS vorhanden' : 'No posts found in Strapi CMS'}
+                    {t.feed.emptyTitle}
                   </p>
                   <p className="text-sm text-[#5c657d] max-w-md">
-                    {lang === 'de'
-                      ? 'Die Datenbank in Strapi ist aktuell leer. Du kannst im Strapi Admin CMS neue Inhalte und Übersetzungen anlegen.'
-                      : 'The database in Strapi is currently empty. You can create new content and translations in Strapi Admin CMS.'}
+                    {t.feed.emptySubtitle}
                   </p>
                 </div>
               </div>
@@ -1199,10 +1188,10 @@ function OmniAppContent() {
                             ? 'bg-[#44e2cd]/20 text-[#44e2cd] border-[#44e2cd]/40 hover:bg-[#44e2cd]/30'
                             : 'bg-amber-500/25 text-amber-300 border-amber-500/50 hover:bg-amber-500/40 animate-pulse'
                           }`}
-                        title={item.publishedAt ? 'Klicken zum Deaktivieren (Entwurf)' : 'Klicken zum Freischalten (Veröffentlichen)'}
+                        title={item.publishedAt ? t.feed.publishTitle : t.feed.unpublishTitle}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${item.publishedAt ? 'bg-[#44e2cd]' : 'bg-amber-400'}`} />
-                        <span>{item.publishedAt ? 'Veröffentlicht ✓' : 'Freischalten 🚀'}</span>
+                        <span>{item.publishedAt ? t.feed.published : t.feed.publishAction}</span>
                       </button>
                     )}
 
@@ -1318,7 +1307,7 @@ function OmniAppContent() {
                     <FileText className="h-8 w-8 text-[#ffb783]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-white mb-2">PDF Dokument</h3>
+                    <h3 className="font-bold text-base text-white mb-2">{t.feed.pdfDocument}</h3>
                     <p className="text-sm text-[#5c657d] max-w-md leading-relaxed">{selectedMedia.summary}</p>
                   </div>
                   <a
@@ -1328,7 +1317,7 @@ function OmniAppContent() {
                     className="bg-[#8083ff] hover:bg-[#6b6eff] text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-[#8083ff]/25 flex items-center gap-2"
                   >
                     <FileText className="h-4 w-4" />
-                    PDF öffnen
+                    {t.feed.openPdf}
                   </a>
                 </div>
               ) : (

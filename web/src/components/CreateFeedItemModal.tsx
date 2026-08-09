@@ -10,7 +10,7 @@ interface CreateFeedItemModalProps {
 }
 
 export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemModalProps) {
-  const { currentUser, openVideoUploadModal } = useApp();
+  const { currentUser, openVideoUploadModal, t } = useApp();
   const [form, setForm] = useState({
     title: '',
     summary: '',
@@ -76,69 +76,69 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
             <Sparkles className="h-5 w-5 text-[#ffb783]" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white leading-tight">Neuen Beitrag erstellen</h2>
+            <h2 className="text-lg font-bold text-white leading-tight">{t.create.postTitle}</h2>
             <p className="text-xs text-[#5c657d]">Erstelle neuen Content für deinen Kanal ({currentUser?.handle || '@community'})</p>
           </div>
         </div>
 
         <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Titel des Beitrags</label>
-            <input
-              type="text"
-              required
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="z.B. PostgreSQL Vektor-Suche in Next.js 15"
+            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.titleLabel}</label>
+              <input
+                type="text"
+                required
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder={t.create.titlePlaceholder}
               className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Medienform</label>
+              <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.mediaTypeLabel}</label>
               <select
                 value={form.mediaType}
                 onChange={(e) => setForm({ ...form, mediaType: e.target.value as any })}
                 className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none cursor-pointer"
               >
-                <option value="article">✍️ Artikel / Post</option>
-                <option value="video">📹 Video Upload (Drag & Drop)</option>
-                <option value="pdf">📄 PDF Dokument</option>
-                <option value="short">⚡ Short</option>
+                <option value="article">{t.create.mediaArticle}</option>
+                <option value="video">{t.create.mediaVideo}</option>
+                <option value="pdf">{t.create.mediaPdf}</option>
+                <option value="short">{t.create.mediaShort}</option>
               </select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Themen / Tags</label>
+              <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.tagsLabel}</label>
               <input
                 type="text"
                 value={form.tags}
                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                placeholder="PostgreSQL, Tech, NextJS"
+                placeholder={t.create.tagsPlaceholder}
                 className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Zusammenfassung (Teaser)</label>
+            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.summaryLabel}</label>
             <textarea
               rows={2}
               value={form.summary}
               onChange={(e) => setForm({ ...form, summary: e.target.value })}
-              placeholder="Kurzer Teaser für den Feed..."
+              placeholder={t.create.summaryPlaceholder}
               className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none resize-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">Inhalt / Text</label>
+            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.contentLabel}</label>
             <textarea
               rows={4}
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
-              placeholder="Vollständiger Artikeltext..."
+              placeholder={t.create.contentPlaceholder}
               className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none resize-none"
             />
           </div>
@@ -149,7 +149,7 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
             className="mt-2 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
           >
             <CheckCircle2 className="h-4 w-4" />
-            <span>Beitrag anlegen</span>
+            <span>{t.create.submit}</span>
           </button>
         </form>
       </div>

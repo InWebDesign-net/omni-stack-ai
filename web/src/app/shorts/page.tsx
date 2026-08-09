@@ -39,7 +39,7 @@ export default function ShortsFeedPage() {
   const router = useRouter();
   const params = useParams();
   const initialSlug = params?.slug as string;
-  const { lang } = useApp();
+  const { lang, t } = useApp();
 
   // Dynamic shorts list from Strapi with fallback
   const [shortsList, setShortsList] = useState<FeedItem[]>(() => {
@@ -505,11 +505,11 @@ export default function ShortsFeedPage() {
             <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-3">
               {loadingComments ? (
                 <div className="py-6 text-center text-xs text-[#9ba4bf] font-mono animate-pulse">
-                  {lang === 'de' ? 'Lade Kommentare aus Strapi CMS...' : 'Loading comments from Strapi CMS...'}
+                  {t.common.loadingComments}
                 </div>
               ) : activeComments.length === 0 ? (
                 <div className="py-6 text-center text-xs text-[#5c657d] font-mono">
-                  {lang === 'de' ? 'Noch keine Kommentare vorhanden. Schreibe den ersten!' : 'No comments yet. Write the first one!'}
+                  {t.common.noCommentsYet}
                 </div>
               ) : (
                 activeComments.map((c) => {
@@ -567,7 +567,7 @@ export default function ShortsFeedPage() {
                                 onClick={() => setEditingCommentId(null)}
                                 className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-[#9ba4bf] font-medium transition-all"
                               >
-                                {lang === 'de' ? 'Abbrechen' : 'Cancel'}
+                                {t.common.cancel}
                               </button>
                               <button
                                 type="button"
@@ -575,7 +575,7 @@ export default function ShortsFeedPage() {
                                 className="px-2.5 py-1 rounded bg-[#8083ff] hover:bg-[#6b6eff] text-[10px] text-white font-medium flex items-center gap-1 transition-all"
                               >
                                 <Check className="h-3 w-3" />
-                                <span>{lang === 'de' ? 'Speichern' : 'Save'}</span>
+                                <span>{t.common.save}</span>
                               </button>
                             </div>
                           </div>
@@ -597,7 +597,7 @@ export default function ShortsFeedPage() {
                 placeholder={
                   userData
                     ? (lang === 'de' ? `Als ${userData.username} kommentieren...` : `Comment as ${userData.username}...`)
-                    : (lang === 'de' ? 'Kommentar schreiben...' : 'Write a comment...')
+                    : (t.common.commentPlaceholder)
                 }
                 className="flex-1 bg-[#080e1e] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-[#5c657d] focus:outline-none"
                 disabled={isSubmittingComment}

@@ -15,6 +15,7 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 
 export interface VideoUploadTask {
   id: string;
@@ -46,6 +47,7 @@ export default function VideoUploadModal({
   lang = 'de',
   onUploadSuccess,
 }: VideoUploadModalProps) {
+  const { t } = useApp();
   const [tasks, setTasks] = useState<VideoUploadTask[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -284,11 +286,11 @@ export default function VideoUploadModal({
         <div className="flex flex-col">
           <span className="text-xs font-bold text-white">
             {activeTasks.length > 0
-              ? `${activeTasks.length} ${lang === 'de' ? 'Video(s) werden verarbeitet...' : 'Video(s) processing...'}`
-              : `${completedTasks.length} ${lang === 'de' ? 'Upload(s) fertiggestellt' : 'Upload(s) completed'}`}
+              ? `${activeTasks.length} ${t.upload.processing}`
+              : `${completedTasks.length} ${t.upload.completedMin}`}
           </span>
           <span className="text-[10px] text-[#9ba4bf]">
-            {lang === 'de' ? 'Klicken um Manager zu öffnen' : 'Click to open manager'}
+            {t.upload.clickToOpenManager}
           </span>
         </div>
         <Maximize2 className="h-4 w-4 text-[#8083ff] ml-2" />
@@ -316,12 +318,10 @@ export default function VideoUploadModal({
             </div>
             <div className="flex flex-col">
               <h3 className="text-lg font-extrabold text-white leading-tight">
-                {lang === 'de' ? 'Multi-Video Upload Manager' : 'Multi-Video Upload Manager'}
+                {t.upload.managerTitle}
               </h3>
               <p className="text-xs text-[#9ba4bf]">
-                {lang === 'de'
-                  ? 'Drag & Drop mehrere Videos für automatische Transkodierung'
-                  : 'Drag & drop videos for automated transcoding'}
+                {t.upload.managerSubtitle}
               </p>
             </div>
           </div>
@@ -359,12 +359,10 @@ export default function VideoUploadModal({
           </div>
 
           <h4 className="text-sm font-bold text-white mb-1">
-            {lang === 'de' ? 'Videos hierher ziehen' : 'Drop video files here'}
+            {t.upload.dropHere}
           </h4>
           <p className="text-xs text-[#9ba4bf] max-w-sm">
-            {lang === 'de'
-              ? 'Oder klicken, um Dateien auszuwählen. Unterstüzt MP4, MOV, MKV, WebM (Mehrfachauswahl möglich).'
-              : 'Or click to browse files. Supports MP4, MOV, MKV, WebM (Multiple files supported).'}
+            {t.upload.dropHint}
           </p>
         </div>
 
@@ -372,7 +370,7 @@ export default function VideoUploadModal({
         {tasks.length > 0 && (
           <div className="flex flex-col gap-3 overflow-y-auto pr-1 max-h-64 custom-scrollbar">
             <span className="text-xs font-bold text-[#9ba4bf] uppercase tracking-wider">
-              {lang === 'de' ? 'Upload-Warteschlange & Status' : 'Upload Queue & Status'} ({tasks.length})
+              {t.upload.queueLabel} ({tasks.length})
             </span>
 
             {tasks.map((task) => (
@@ -439,30 +437,30 @@ export default function VideoUploadModal({
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5 font-medium">
                       {task.status === 'queued' && (
-                        <span className="text-[#9ba4bf]">{lang === 'de' ? 'In Warteschlange...' : 'Queued...'}</span>
+                        <span className="text-[#9ba4bf]">{t.upload.queued}</span>
                       )}
                       {task.status === 'uploading' && (
                         <span className="text-[#8083ff] flex items-center gap-1.5">
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {lang === 'de' ? 'Wird hochgeladen...' : 'Uploading...'} {task.progress}%
+                          {t.upload.uploading} {task.progress}%
                         </span>
                       )}
                       {task.status === 'processing' && (
                         <span className="text-[#ffb783] flex items-center gap-1.5 font-semibold">
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {lang === 'de' ? '⚙️ LXC Transcoding (HLS/OG/Thumbnails)...' : '⚙️ LXC Transcoding...'}
+                          {t.upload.transcoding}
                         </span>
                       )}
                       {task.status === 'completed' && (
                         <span className="text-[#44e2cd] flex items-center gap-1.5 font-bold">
                           <CheckCircle2 className="h-3.5 w-3.5" />
-                          {lang === 'de' ? 'Fertiggestellt & im Feed live!' : 'Completed & live in feed!'}
+                          {t.upload.completed}
                         </span>
                       )}
                       {task.status === 'error' && (
                         <span className="text-red-400 flex items-center gap-1.5 font-semibold">
                           <AlertCircle className="h-3.5 w-3.5" />
-                          {task.errorMsg || 'Fehler'}
+                          {task.errorMsg || t.upload.error}
                         </span>
                       )}
                     </div>

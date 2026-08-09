@@ -80,7 +80,7 @@ export default function VideoPageClient({
   slug,
 }: VideoPageClientProps) {
   const router = useRouter();
-  const { lang, currentUser, openChannelModal, subscribedChannels, toggleSubscribeChannel } = useApp();
+  const { lang, currentUser, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
   const [video, setVideo] = useState(initialVideo);
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
@@ -198,7 +198,7 @@ export default function VideoPageClient({
     setLikesCount((prev: number) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
 
     if (nextIsLiked) {
-      showToast(lang === 'de' ? '❤️ Zu deinen Gefällt-mir-Angaben hinzugefügt' : '❤️ Added to your liked videos');
+      showToast(t.common.likeAdded);
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (!storedLikes.includes(video.slug)) {
@@ -206,7 +206,7 @@ export default function VideoPageClient({
         }
       } catch (e) {}
     } else {
-      showToast(lang === 'de' ? 'Gefällt-mir entfernt' : 'Like removed');
+      showToast(t.common.likeRemoved);
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         localStorage.setItem(
@@ -234,19 +234,15 @@ export default function VideoPageClient({
     setIsBookmarked(next);
     showToast(
       next
-        ? lang === 'de'
-          ? '🔖 Video gemerkt'
-          : '🔖 Video bookmarked'
-        : lang === 'de'
-        ? 'Bookmark entfernt'
-        : 'Bookmark removed'
+        ? t.common.bookmarkAdded
+        : t.common.bookmarkRemoved
     );
   };
 
   const handleShare = () => {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
-      showToast(lang === 'de' ? '🔗 Link in Zwischenablage kopiert!' : '🔗 Link copied to clipboard!');
+      showToast(t.common.linkCopied);
     }
   };
 
@@ -268,12 +264,12 @@ export default function VideoPageClient({
       if (created) {
         setComments((prev) => [created, ...prev]);
         setNewCommentText('');
-        showToast(lang === 'de' ? 'Kommentar veröffentlicht!' : 'Comment published!');
+        showToast(t.videoDetail.commentPublished);
       } else {
-        showToast(lang === 'de' ? 'Fehler beim Veröffentlichen' : 'Failed to publish comment');
+        showToast(t.videoDetail.commentPublishError);
       }
     } catch (err) {
-      showToast(lang === 'de' ? 'Fehler beim Erstellen' : 'Error creating comment');
+      showToast(t.videoDetail.commentCreateError);
     } finally {
       setIsSubmittingComment(false);
     }
@@ -289,10 +285,10 @@ export default function VideoPageClient({
         );
         setEditingCommentId(null);
         setEditCommentText('');
-        showToast(lang === 'de' ? 'Kommentar aktualisiert' : 'Comment updated');
+        showToast(t.videoDetail.commentUpdated);
       }
     } catch (e) {
-      showToast(lang === 'de' ? 'Fehler beim Bearbeiten' : 'Edit error');
+      showToast(t.videoDetail.commentEditError);
     }
   };
 
@@ -301,10 +297,10 @@ export default function VideoPageClient({
       const success = await deleteCommentFromStrapi(commentId);
       if (success) {
         setComments((prev) => prev.filter((c) => c.id !== commentId));
-        showToast(lang === 'de' ? 'Kommentar gelöscht' : 'Comment deleted');
+        showToast(t.videoDetail.commentDeleted);
       }
     } catch (e) {
-      showToast(lang === 'de' ? 'Fehler beim Löschen' : 'Delete error');
+      showToast(t.videoDetail.commentDeleteError);
     }
   };
 
@@ -335,7 +331,7 @@ export default function VideoPageClient({
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all text-xs font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{lang === 'de' ? 'Zurück' : 'Back'}</span>
+            <span>{t.common.back}</span>
           </button>
 
           <Link
@@ -343,7 +339,7 @@ export default function VideoPageClient({
             className="flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
           >
             <Film className="w-4 h-4" />
-            <span>{lang === 'de' ? 'Alle Videos durchsuchen' : 'Browse All Videos'}</span>
+            <span>{t.common.browseAllVideos}</span>
           </Link>
         </div>
 
@@ -364,7 +360,7 @@ export default function VideoPageClient({
               >
                 {video.hlsUrl && <source src={video.hlsUrl} type="application/x-mpegURL" />}
                 {video.mp4Url && <source src={video.mp4Url} type="video/mp4" />}
-                Dein Browser unterstützt das Abspielen von Videos leider nicht.
+                {t.videoDetail.browserNotSupported}
               </video>
             </div>
 
@@ -413,7 +409,7 @@ export default function VideoPageClient({
                     className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all"
                   >
                     <Share2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Teilen</span>
+                    <span className="hidden sm:inline">{t.common.share}</span>
                   </button>
 
                   <button
@@ -504,7 +500,7 @@ export default function VideoPageClient({
                     onClick={() => setDescExpanded(!descExpanded)}
                     className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 pt-1"
                   >
-                    <span>{descExpanded ? 'Weniger anzeigen' : 'Mehr anzeigen'}</span>
+                    <span>{t.common.showMore}</span>
                     {descExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -516,7 +512,7 @@ export default function VideoPageClient({
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-indigo-400" />
                 <h2 className="text-lg font-bold text-white">
-                  Kommentare ({comments.length})
+                  {t.videoDetail.noComments.replace('!', '')} ({comments.length})
                 </h2>
               </div>
 
@@ -526,8 +522,8 @@ export default function VideoPageClient({
                   type="text"
                   placeholder={
                     currentUser
-                      ? 'Schreibe einen Kommentar...'
-                      : 'Kommentieren (Als Gast oder jetzt anmelden)...'
+                      ? t.videoDetail.writeCommentPlaceholder
+                      : t.videoDetail.writeCommentGuestPlaceholder
                   }
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
@@ -635,7 +631,7 @@ export default function VideoPageClient({
           <div className="space-y-4">
             <h3 className="font-bold text-white text-base flex items-center gap-2">
               <Film className="w-4 h-4 text-indigo-400" />
-              <span>Weitere Empfehlungen</span>
+              <span>{t.videoDetail.relatedRecommendations}</span>
             </h3>
 
             <div className="space-y-4">

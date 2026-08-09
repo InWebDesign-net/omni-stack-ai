@@ -31,7 +31,7 @@ function OmniLogo({ size = 32 }: { size?: number }) {
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'register' }: AuthModalProps) {
-  const { setCurrentUser, lang } = useApp();
+  const { setCurrentUser, lang, t } = useApp();
   const [authMode, setAuthMode] = useState<'login' | 'register'>(initialMode);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       const data = await res.json();
       if (!res.ok) {
-        setAuthError(data.error || (lang === 'de' ? 'Google Schnell-Login fehlgeschlagen.' : 'Google Quick Login failed.'));
+        setAuthError(data.error || t.auth.googleQuickLoginError);
         setIsAuthLoading(false);
         return;
       }
@@ -69,7 +69,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         email: data.user.email,
         handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
         avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
-        bio: data.user.bio || (lang === 'de' ? 'Google Demo User · Tech & Content Explorer' : 'Google Demo User · Content Explorer'),
+        bio: data.user.bio || t.auth.demoUserBio,
         subscribersCount: data.user.subscribersCount || 1280,
         jwt: data.jwt,
       };
@@ -102,7 +102,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       const data = await res.json();
       if (!res.ok) {
-        setAuthError(data.error || 'Registrierung fehlgeschlagen.');
+        setAuthError(data.error || t.auth.registrationFailed);
         setIsAuthLoading(false);
         return;
       }
@@ -146,7 +146,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       const data = await res.json();
       if (!res.ok) {
-        setAuthError(data.error || 'Anmeldung fehlgeschlagen.');
+        setAuthError(data.error || t.auth.loginFailed);
         setIsAuthLoading(false);
         return;
       }
@@ -196,10 +196,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
           <div className="text-center">
             <h2 className="text-xl font-extrabold text-white tracking-tight">
-              {authMode === 'register' ? 'Werde Teil von Omni' : 'Willkommen zurück'}
+              {authMode === 'register' ? t.auth.registerTitle : t.auth.loginTitle}
             </h2>
             <p className="text-xs text-[#5c657d] mt-1">
-              {authMode === 'register' ? 'Dein KI-personalisierter Medien-Feed wartet' : 'Melde dich an, um fortzufahren'}
+              {authMode === 'register' ? t.auth.registerSubtitle : t.auth.loginSubtitle}
             </p>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               }`}
             >
               {mode === 'register' ? <UserPlus className="h-3.5 w-3.5" /> : <LogIn className="h-3.5 w-3.5" />}
-              <span>{mode === 'register' ? 'Registrieren' : 'Anmelden'}</span>
+              <span>{mode === 'register' ? t.header.register : t.header.login}</span>
             </button>
           ))}
         </div>
@@ -242,7 +242,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
-              <span>{lang === 'de' ? 'Mit Google anmelden (Test-Account)' : 'Sign in with Google (Test Account)'}</span>
+              <span>{t.auth.googleSignIn}</span>
             </button>
 
             <div className="relative my-0.5 flex items-center justify-center">
@@ -250,14 +250,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                 <div className="w-full border-t border-white/10" />
               </div>
               <span className="relative bg-[#0d1528] px-3 text-[10px] font-bold text-[#5c657d] uppercase tracking-wider">
-                {lang === 'de' ? 'oder manuell registrieren' : 'or register manually'}
+                {t.auth.orRegisterManually}
               </span>
             </div>
 
             {[
-              { key: 'username', label: 'Benutzername', type: 'text', placeholder: 'z.B. MaxMustermann', icon: User },
-              { key: 'email', label: 'E-Mail', type: 'email', placeholder: 'max@example.com', icon: Mail },
-              { key: 'password', label: 'Passwort', type: 'password', placeholder: '••••••••', icon: Lock },
+              { key: 'username', label: t.auth.username, type: 'text', placeholder: t.auth.usernamePlaceholder, icon: User },
+              { key: 'email', label: t.auth.email, type: 'email', placeholder: t.auth.emailPlaceholder, icon: Mail },
+              { key: 'password', label: t.auth.password, type: 'password', placeholder: '••••••••', icon: Lock },
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
@@ -279,7 +279,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
             >
               {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-              <span>Konto in Strapi erstellen</span>
+              <span>{t.auth.createStrapiAccount}</span>
             </button>
           </form>
         ) : (
@@ -296,7 +296,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
-              <span>{lang === 'de' ? 'Mit Google anmelden (Test-Account)' : 'Sign in with Google (Test Account)'}</span>
+              <span>{t.auth.googleSignIn}</span>
             </button>
 
             <div className="relative my-0.5 flex items-center justify-center">
@@ -304,7 +304,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                 <div className="w-full border-t border-white/10" />
               </div>
               <span className="relative bg-[#0d1528] px-3 text-[10px] font-bold text-[#5c657d] uppercase tracking-wider">
-                {lang === 'de' ? 'oder mit Demo / Passwort' : 'or with demo / password'}
+              {t.auth.orWithDemo}
               </span>
             </div>
 
@@ -358,7 +358,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
             >
               {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-              <span>Bei Strapi anmelden</span>
+              <span>{t.auth.loginStrapi}</span>
             </button>
           </form>
         )}

@@ -260,26 +260,26 @@ export default function VideosPageClient({
           </div>
         ) : isError ? (
           <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-8 text-center space-y-4">
-            <p className="text-rose-300 font-medium">Fehler beim Laden der Videoliste.</p>
+            <p className="text-rose-300 font-medium">{t.videos.noVideosFound}</p>
             <button
               onClick={() => refresh()}
               className="px-4 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-500 transition-all"
             >
-              Erneut versuchen
+              {t.common.loading === 'Wird geladen...' ? 'Erneut versuchen' : 'Try Again'}
             </button>
           </div>
         ) : videos.length === 0 ? (
           <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-12 text-center space-y-4">
             <Film className="w-12 h-12 text-slate-600 mx-auto" />
-            <h3 className="text-lg font-semibold text-slate-200">Keine Videos gefunden</h3>
+            <h3 className="text-lg font-semibold text-slate-200">{t.videos.noVideosFound}</h3>
             <p className="text-slate-400 text-sm max-w-md mx-auto">
-              Für deine aktuellen Such- und Filterkriterien wurden leider keine Video-Einträge gefunden.
+              {t.videos.noVideosSub}
             </p>
             <button
-              onClick={hardReset}
+              onClick={() => hardReset()}
               className="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-500 transition-all"
             >
-              Filter zurücksetzen
+              {t.common.resetFilters}
             </button>
           </div>
         ) : (
