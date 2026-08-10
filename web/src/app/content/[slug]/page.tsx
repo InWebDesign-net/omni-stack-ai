@@ -460,18 +460,6 @@ export default function ContentDetailPage() {
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                       <span>{likesCount}</span>
                     </button>
-
-                    <button
-                      onClick={() => setIsBookmarked(!isBookmarked)}
-                      className={`p-2.5 rounded-xl border transition-all ${
-                        isBookmarked
-                          ? 'bg-[#8083ff] border-[#8083ff] text-white'
-                          : 'bg-[#121a30] border-white/8 text-[#9ba4bf] hover:text-white'
-                      }`}
-                      title={t.content.bookmarkSave}
-                    >
-                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                    </button>
                   </div>
                 </div>
 

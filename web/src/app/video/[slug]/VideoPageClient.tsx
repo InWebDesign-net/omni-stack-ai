@@ -8,7 +8,6 @@ import {
   Play,
   Heart,
   Share2,
-  Bookmark,
   CheckCircle2,
   Sparkles,
   Send,
@@ -99,7 +98,6 @@ export default function VideoPageClient({
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(initialVideo?.likesCount || 0);
   const [viewsCount, setViewsCount] = useState(initialVideo?.viewsCount || 0);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const hasTrackedView = useRef(false);
 
@@ -264,16 +262,6 @@ export default function VideoPageClient({
         }),
       });
     } catch (e) {}
-  };
-
-  const handleBookmarkToggle = () => {
-    const next = !isBookmarked;
-    setIsBookmarked(next);
-    showToast(
-      next
-        ? t.common.bookmarkAdded
-        : t.common.bookmarkRemoved
-    );
   };
 
   const handleShare = () => {
@@ -454,17 +442,6 @@ export default function VideoPageClient({
                   >
                     <Share2 className="w-4 h-4" />
                     <span className="hidden sm:inline">{t.common.share}</span>
-                  </button>
-
-                  <button
-                    onClick={handleBookmarkToggle}
-                    className={`p-2.5 rounded-xl border transition-all ${
-                      isBookmarked
-                        ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                        : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-indigo-400 text-indigo-400' : ''}`} />
                   </button>
                 </div>
               </div>
