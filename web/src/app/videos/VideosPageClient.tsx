@@ -32,7 +32,7 @@ export default function VideosPageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { currentUser, t } = useApp();
+  const { currentUser, lang, t } = useApp();
   const perPage = 24;
 
   // Single Source of Truth from SearchParams
@@ -80,6 +80,7 @@ export default function VideosPageClient({
     includedTags,
     excludedTags,
     matchMode,
+    lang,
     enabled: true,
   });
 

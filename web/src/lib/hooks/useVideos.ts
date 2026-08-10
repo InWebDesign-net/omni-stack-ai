@@ -9,6 +9,7 @@ export interface UseVideosParams {
   includedTags?: string[];
   excludedTags?: string[];
   matchMode?: 'any' | 'all';
+  lang?: 'de' | 'en';
   enabled?: boolean;
   fallbackData?: any;
 }
@@ -72,6 +73,7 @@ export const useVideos = ({
   includedTags = [],
   excludedTags = [],
   matchMode = 'any',
+  lang = 'de',
   enabled = true,
   fallbackData,
 }: UseVideosParams): UseVideosResult => {
@@ -79,6 +81,7 @@ export const useVideos = ({
   queryParams.set('page', currentPage.toString());
   queryParams.set('pageSize', pageSize.toString());
   queryParams.set('sort', sort);
+  if (lang) queryParams.set('lang', lang);
 
   if (searchTerm) {
     queryParams.set('q', searchTerm);
