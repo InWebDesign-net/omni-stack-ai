@@ -79,6 +79,13 @@
     "sortTitleDesc": "Title (Z - A)",
     "sortDurationAsc": "Duration (Shortest)",
     "sortDurationDesc": "Duration (Longest)",
+    "includeLabel": "Included tags",
+    "excludeLabel": "Excluded tags",
+    "matchAny": "Any tag",
+    "matchAll": "All tags",
+    "resetTags": "Reset tags",
+    "activeTags": "Active tag filters",
+    "allTags": "All tags",
     "noVideosFound": "No videos found",
     "noVideosSub": "No video entries were found for your current search and filter criteria."
   },

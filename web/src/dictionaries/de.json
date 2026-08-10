@@ -79,6 +79,13 @@
     "sortTitleDesc": "Titel (Z - A)",
     "sortDurationAsc": "Dauer (Kürzeste)",
     "sortDurationDesc": "Dauer (Längste)",
+    "includeLabel": "Eingeschlossene Tags",
+    "excludeLabel": "Ausgeschlossene Tags",
+    "matchAny": "Irgendein Tag",
+    "matchAll": "Alle Tags",
+    "resetTags": "Tags zurücksetzen",
+    "activeTags": "Aktive Tag-Filter",
+    "allTags": "Alle Tags",
     "noVideosFound": "Keine Videos gefunden",
     "noVideosSub": "Für deine aktuellen Such- und Filterkriterien wurden leider keine Video-Einträge gefunden."
   },

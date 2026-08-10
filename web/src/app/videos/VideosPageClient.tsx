@@ -6,6 +6,8 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import { useApp } from "@/context/AppContext";
 import { useVideos, VideoItem } from "@/lib/hooks/useVideos";
+import { TagCount } from "@/lib/videoFilters";
+import useSWR from "swr";
 import {
   Search,
   FilterX,
@@ -46,9 +48,21 @@ export default function VideosPageClient({
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  // Tag filter placeholders for future phase (kept for component API stability)
-  const includedTags: string[] = [];
-  const excludedTags: string[] = [];
+  // Tag filter state (URL-synced)
+  const includedTags = (searchParams.get("includetag") || "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const excludedTags = (searchParams.get("excludetag") || "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const matchMode = (searchParams.get("matchmode") || "any") === "all" ? "all" : "any";
+
+  // All available tags (aggregated from Strapi, with counts) for the tag cloud
+  const { data: allTags = [] } = useSWR<TagCount[]>("/api/video/tags", (url: string) =>
+    fetch(url).then((r) => r.json())
+  );
 
   // Data fetching via SWR hook
   const {
@@ -107,6 +121,38 @@ export default function VideosPageClient({
     router.push(pathname);
   };
 
+  // --- Tag filter handlers (URL-synced) ---
+  const toggleTag = (tag: string) => {
+    const isIncluded = includedTags.includes(tag);
+    const isExcluded = excludedTags.includes(tag);
+    let nextIncluded = [...includedTags];
+    let nextExcluded = [...excludedTags];
+    if (isIncluded) {
+      // included -> excluded
+      nextIncluded = nextIncluded.filter((t) => t !== tag);
+      nextExcluded = [...nextExcluded, tag];
+    } else if (isExcluded) {
+      // excluded -> neutral
+      nextExcluded = nextExcluded.filter((t) => t !== tag);
+    } else {
+      // neutral -> included
+      nextIncluded = [...nextIncluded, tag];
+    }
+    updateURL({
+      includetag: nextIncluded.length ? nextIncluded.join(",") : null,
+      excludetag: nextExcluded.length ? nextExcluded.join(",") : null,
+      page: "1",
+    });
+  };
+
+  const setMatchMode = (mode: "any" | "all") => {
+    updateURL({ matchmode: mode === "all" ? "all" : null, page: "1" });
+  };
+
+  const resetTags = () => {
+    updateURL({ includetag: null, excludetag: null, matchmode: null, page: "1" });
+  };
+
   // Boundary check: redirect to page 1 if page exceeds totalPages ONLY after data loading finishes
   useEffect(() => {
     if (!isLoading && totalVideos > 0 && currentPage > totalPages) {
@@ -121,7 +167,15 @@ export default function VideosPageClient({
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  const hasActiveFilters = Boolean(searchTerm || sort !== "createdatasc" || filterFavorites === "true");
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+    sort !== "createdatasc" ||
+    filterFavorites === "true" ||
+    includedTags.length > 0 ||
+    excludedTags.length > 0
+  );
+
+  const hasTagFilters = includedTags.length > 0 || excludedTags.length > 0;
 
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
@@ -240,6 +294,104 @@ export default function VideosPageClient({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Tag Filter Panel */}
+        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-2xl space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
+              <span className="text-sm font-semibold text-slate-200">{t.videos.allTags}</span>
+              {hasTagFilters && (
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                  {t.videos.activeTags}
+                </span>
+              )}
+            </div>
+            {hasTagFilters && (
+              <button
+                onClick={resetTags}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all"
+              >
+                <FilterX className="w-3.5 h-3.5 text-rose-400" />
+                <span>{t.videos.resetTags}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Tag cloud */}
+          <div className="flex flex-wrap gap-2">
+            {allTags.length === 0 ? (
+              <span className="text-xs text-slate-500">{isLoading ? "…" : "Keine Tags verfügbar"}</span>
+            ) : (
+              allTags.map(({ tag, count }) => {
+                const state = includedTags.includes(tag)
+                  ? "include"
+                  : excludedTags.includes(tag)
+                  ? "exclude"
+                  : "neutral";
+                const base =
+                  "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer select-none flex items-center gap-1.5";
+                const tone =
+                  state === "include"
+                    ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                    : state === "exclude"
+                    ? "bg-rose-500/15 border-rose-500/40 text-rose-300"
+                    : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700";
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    title={
+                      state === "include"
+                        ? `${t.videos.includeLabel}: ${tag}`
+                        : state === "exclude"
+                        ? `${t.videos.excludeLabel}: ${tag}`
+                        : tag
+                    }
+                    className={`${base} ${tone}`}
+                  >
+                    <span>{tag}</span>
+                    <span className="text-[10px] font-mono opacity-60">{count}</span>
+                    {state === "include" && <span className="text-emerald-400">✓</span>}
+                    {state === "exclude" && <X className="w-3 h-3 text-rose-400" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Match mode toggle (only when ≥2 include tags) */}
+          {includedTags.length >= 2 && (
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-xs text-slate-400">{t.videos.includeLabel}:</span>
+              <div className="inline-flex rounded-lg border border-slate-800 overflow-hidden text-xs">
+                <button
+                  type="button"
+                  onClick={() => setMatchMode("any")}
+                  className={`px-3 py-1.5 transition-all ${
+                    matchMode === "any"
+                      ? "bg-indigo-500/20 text-indigo-300"
+                      : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {t.videos.matchAny}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMatchMode("all")}
+                  className={`px-3 py-1.5 transition-all border-l border-slate-800 ${
+                    matchMode === "all"
+                      ? "bg-indigo-500/20 text-indigo-300"
+                      : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {t.videos.matchAll}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Video Card Grid */}

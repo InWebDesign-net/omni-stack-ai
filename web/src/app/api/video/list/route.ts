@@ -1,15 +1,27 @@
 import { NextResponse } from 'next/server';
+import { matchesTagFilter, TagFilterSpec } from '@/lib/videoFilters';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const page = searchParams.get('page') || searchParams.get('pagination[page]') || '1';
-    const pageSize = searchParams.get('pageSize') || searchParams.get('pagination[pageSize]') || '24';
+    const page = parseInt(searchParams.get('page') || searchParams.get('pagination[page]') || '1', 10);
+    const requestedPageSize = parseInt(searchParams.get('pageSize') || searchParams.get('pagination[pageSize]') || '24', 10);
     const sort = searchParams.get('sort') || 'createdatasc';
     const searchTerm = searchParams.get('q') || searchParams.get('searchTerm') || '';
     const filterFavorites = searchParams.get('fav') || searchParams.get('filterFavorites') || 'false';
+
+    // Tag filters (applied locally, see K2 in FILTER_PLAN.md)
+    const includetag = searchParams.get('includetag') || '';
+    const excludetag = searchParams.get('excludetag') || '';
+    const matchmode = searchParams.get('matchmode') || 'any';
+    const tagSpec: TagFilterSpec = {
+      include: includetag ? includetag.split(',').map((t) => t.trim()).filter(Boolean) : [],
+      exclude: excludetag ? excludetag.split(',').map((t) => t.trim()).filter(Boolean) : [],
+      matchMode: matchmode === 'all' ? 'all' : 'any',
+    };
+    const hasTagFilter = tagSpec.include.length > 0 || tagSpec.exclude.length > 0;
 
     // Map sort parameter to Strapi sort format
     const sortMapping: Record<string, string> = {
@@ -23,8 +35,11 @@ export async function GET(req: Request) {
     const strapiSort = sortMapping[sort.toLowerCase()] || 'createdAt:desc';
 
     const strapiParams = new URLSearchParams();
-    strapiParams.set('pagination[page]', page);
-    strapiParams.set('pagination[pageSize]', pageSize);
+    // When tag filtering locally, we need the full candidate set so pagination
+    // reflects the filtered total. Fetch a large window (Strapi caps anyway).
+    const fetchPageSize = hasTagFilter ? 1000 : requestedPageSize;
+    strapiParams.set('pagination[page]', '1');
+    strapiParams.set('pagination[pageSize]', String(fetchPageSize));
     strapiParams.set('sort', strapiSort);
     strapiParams.set('populate', 'creator');
     strapiParams.set('locale', '*');
@@ -61,11 +76,13 @@ export async function GET(req: Request) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ data: [], meta: { pagination: { total: 0 } } }, { status: res.status });
+      return NextResponse.json({ data: [], meta: { pagination: { total: 0, page, pageSize: requestedPageSize, pageCount: 0 } } }, { status: res.status });
     }
 
     const data = await res.json();
     const rawItems = data?.data || [];
+
+    // (2) Multi-locale deduplication — MUST remain (K3 in FILTER_PLAN.md)
     const itemMap = new Map<string, any>();
     for (const item of rawItems) {
       const key = item.slug || item.documentId || item.id;
@@ -75,11 +92,31 @@ export async function GET(req: Request) {
         itemMap.set(key, item);
       }
     }
-    const deduplicatedItems = Array.from(itemMap.values());
+    let items = Array.from(itemMap.values());
+
+    // (3) Local tag filtering (database-independent, reliable)
+    if (hasTagFilter) {
+      items = items.filter((it: any) => matchesTagFilter({ tags: it.tags }, tagSpec));
+    }
+
+    // (4) Recompute pagination on the (possibly filtered) set
+    const total = items.length;
+    const pageSize = requestedPageSize;
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(Math.max(1, page), pageCount);
+    const start = (safePage - 1) * pageSize;
+    const pagedItems = items.slice(start, start + pageSize);
 
     return NextResponse.json({
-      ...data,
-      data: deduplicatedItems,
+      data: pagedItems,
+      meta: {
+        pagination: {
+          page: safePage,
+          pageSize,
+          total,
+          pageCount,
+        },
+      },
     });
   } catch (error: any) {
     console.error('Error fetching video list from Strapi:', error);

@@ -8,6 +8,7 @@ export interface UseVideosParams {
   filterFavorites?: string;
   includedTags?: string[];
   excludedTags?: string[];
+  matchMode?: 'any' | 'all';
   enabled?: boolean;
   fallbackData?: any;
 }
@@ -70,6 +71,7 @@ export const useVideos = ({
   filterFavorites = 'false',
   includedTags = [],
   excludedTags = [],
+  matchMode = 'any',
   enabled = true,
   fallbackData,
 }: UseVideosParams): UseVideosResult => {
@@ -89,6 +91,9 @@ export const useVideos = ({
   }
   if (excludedTags.length) {
     queryParams.set('excludetag', excludedTags.join(','));
+  }
+  if (matchMode && matchMode !== 'any') {
+    queryParams.set('matchmode', matchMode);
   }
 
   const url = `/api/video/list?${queryParams.toString()}`;
