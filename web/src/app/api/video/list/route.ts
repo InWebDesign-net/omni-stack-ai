@@ -35,11 +35,9 @@ export async function GET(req: Request) {
     const strapiSort = sortMapping[sort.toLowerCase()] || 'createdAt:desc';
 
     const strapiParams = new URLSearchParams();
-    // When tag filtering locally, we need the full candidate set so pagination
-    // reflects the filtered total. Fetch a large window (Strapi caps anyway).
-    const fetchPageSize = hasTagFilter ? 1000 : requestedPageSize;
+    // Fetch full candidate set so deduplication and tag filtering reflect true total
     strapiParams.set('pagination[page]', '1');
-    strapiParams.set('pagination[pageSize]', String(fetchPageSize));
+    strapiParams.set('pagination[pageSize]', '1000');
     strapiParams.set('sort', strapiSort);
     strapiParams.set('populate', 'creator');
     strapiParams.set('locale', '*');

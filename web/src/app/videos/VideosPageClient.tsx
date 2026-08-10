@@ -79,6 +79,7 @@ export default function VideosPageClient({
     filterFavorites,
     includedTags,
     excludedTags,
+    matchMode,
     enabled: true,
   });
 
