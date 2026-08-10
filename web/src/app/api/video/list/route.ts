@@ -80,21 +80,44 @@ export async function GET(req: Request) {
     const data = await res.json();
     const rawItems = data?.data || [];
 
-    // (2) Multi-locale deduplication — MUST remain (K3 in FILTER_PLAN.md)
+    const targetLocale = searchParams.get('lang') || searchParams.get('locale') || 'de';
+
+    // (2) Multi-locale deduplication & cross-locale tag aggregation
     const itemMap = new Map<string, any>();
+    const docTagsMap = new Map<string, Set<string>>();
+
     for (const item of rawItems) {
       const key = item.slug || item.documentId || item.id;
+
+      if (!docTagsMap.has(key)) {
+        docTagsMap.set(key, new Set<string>());
+      }
+      const tagSet = docTagsMap.get(key)!;
+      for (const t of item.tags || []) {
+        if (t && typeof t === 'string') tagSet.add(t);
+      }
+
       if (!itemMap.has(key)) {
         itemMap.set(key, item);
-      } else if (!itemMap.get(key).creator && item.creator) {
-        itemMap.set(key, item);
+      } else {
+        const existing = itemMap.get(key);
+        if (existing.locale !== targetLocale && item.locale === targetLocale) {
+          itemMap.set(key, item);
+        } else if (!existing.creator && item.creator) {
+          itemMap.set(key, item);
+        }
       }
     }
+
     let items = Array.from(itemMap.values());
 
-    // (3) Local tag filtering (database-independent, reliable)
+    // (3) Local tag filtering (database-independent, reliable across all localizations)
     if (hasTagFilter) {
-      items = items.filter((it: any) => matchesTagFilter({ tags: it.tags }, tagSpec));
+      items = items.filter((it: any) => {
+        const key = it.slug || it.documentId || it.id;
+        const allTags = Array.from(docTagsMap.get(key) || []);
+        return matchesTagFilter({ tags: allTags.length > 0 ? allTags : it.tags }, tagSpec);
+      });
     }
 
     // (4) Recompute pagination on the (possibly filtered) set
