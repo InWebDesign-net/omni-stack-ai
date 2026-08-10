@@ -37,19 +37,49 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
     const strapiSort = sortMapping[sortStr.toLowerCase()] || 'createdAt:desc';
 
     // Query published videos for the target locale
-    const filters: any = {
-      visibility: { $eq: 'public' },
-      isProcessing: { $ne: true },
-    };
+    const filters: any = {};
+
+    // Merge structured filters object if passed in params
+    if (params.filters && typeof params.filters === 'object') {
+      Object.assign(filters, params.filters);
+    }
+
+    // Handle flat query string keys (e.g. filters[slug][$eq], filters[slug][$ne])
+    for (const [key, value] of Object.entries(params)) {
+      if (typeof key === 'string' && key.startsWith('filters[')) {
+        const match = key.match(/^filters\[([^\]]+)\](?:\[([^\]]+)\])?$/);
+        if (match) {
+          const field = match[1];
+          const op = match[2];
+          if (field) {
+            if (op) {
+              if (!filters[field] || typeof filters[field] !== 'object') filters[field] = {};
+              filters[field][op] = value;
+            } else {
+              filters[field] = value;
+            }
+          }
+        }
+      }
+    }
+
+    if (!filters.visibility) {
+      filters.visibility = { $eq: 'public' };
+    }
+    if (!filters.isProcessing) {
+      filters.isProcessing = { $ne: true };
+    }
 
     if (searchTerm) {
       filters.title = { $containsi: searchTerm };
     }
 
+    // Determine target locale query (if targetLocale === '*', fetch all localizations)
+    const docQueryLocale = targetLocale === '*' ? '*' : targetLocale;
+
     // Fetch candidate document set for target locale
-    // In Strapi 5, fetching targetLocale returns exactly 1 item per document
     let items = await strapi.documents('api::video.video').findMany({
-      locale: targetLocale,
+      locale: docQueryLocale,
       status: 'published',
       filters,
       populate: ['creator'],
