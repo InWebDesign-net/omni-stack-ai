@@ -83,20 +83,6 @@ export default function VideoUploadModal({
     }
   };
 
-  const toggleTaskTag = (id: string, tag: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-        const currentTags = t.tags || [];
-        const hasTag = currentTags.includes(tag);
-        const nextTags = hasTag
-          ? currentTags.filter((tg) => tg !== tag)
-          : [...currentTags, tag];
-        return { ...t, tags: nextTags };
-      })
-    );
-  };
-
   // Drag and Drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -399,26 +385,6 @@ export default function VideoUploadModal({
                       <span className="text-[10px] font-mono text-[#5c657d] truncate">
                         {(task.file.size / (1024 * 1024)).toFixed(1)} MB • {task.file.name}
                       </span>
-                      {/* Tag Chips Selector */}
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                        {['Wissenschaft', 'Technologie', 'PostgreSQL', 'Kochen', 'Natur', 'AI/KI', 'Finanzen'].map((presetTag) => {
-                          const isSelected = (task.tags || []).includes(presetTag);
-                          return (
-                            <button
-                              key={presetTag}
-                              type="button"
-                              onClick={() => toggleTaskTag(task.id, presetTag)}
-                              className={`text-[10px] font-mono px-2 py-0.5 rounded-md border transition-all ${
-                                isSelected
-                                  ? 'bg-[#8083ff]/30 text-[#44e2cd] border-[#44e2cd]/40 font-bold shadow-sm'
-                                  : 'bg-[#121a30]/80 text-[#9ba4bf] border-white/8 hover:border-white/20'
-                              }`}
-                            >
-                              #{presetTag}
-                            </button>
-                          );
-                        })}
-                      </div>
                     </div>
                   </div>
 
