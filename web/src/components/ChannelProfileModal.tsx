@@ -58,6 +58,7 @@ export default function ChannelProfileModal({
             onClick={() => {
               const channelHandle = (selectedChannel.handle || '').replace(/^@/, '');
               if (channelHandle) {
+                onClose();
                 router.push(`/user/${encodeURIComponent(channelHandle)}`);
               }
             }}
