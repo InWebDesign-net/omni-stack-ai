@@ -168,6 +168,36 @@
   background: rgba(128, 131, 255, 0.40);
 }
 
+/* Global scrollbar styling (applies site-wide, incl. page + all scroll containers) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 131, 255, 0.30) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(128, 131, 255, 0.25);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 131, 255, 0.45);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  *::-webkit-scrollbar-thumb {
+    transition: background 0.2s ease;
+  }
+}
+
 /* ─── Animations ──────────────────────────────────────────────────────────── */
 
 @keyframes slideDown {
