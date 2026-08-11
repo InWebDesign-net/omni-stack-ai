@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { X, CheckCircle2, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, CheckCircle2, ArrowUpRight } from 'lucide-react';
 import { ChannelProfileData, useApp } from '@/context/AppContext';
 
 interface ChannelProfileModalProps {
@@ -13,11 +14,11 @@ export default function ChannelProfileModal({
   selectedChannel,
   onClose,
 }: ChannelProfileModalProps) {
-  const { subscribedChannels, toggleSubscribeChannel, t } = useApp();
+  const { t } = useApp();
+  const router = useRouter();
 
   if (!selectedChannel) return null;
 
-  const isSubscribed = subscribedChannels.includes(selectedChannel.handle);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -54,15 +55,16 @@ export default function ChannelProfileModal({
 
         <div className="flex items-center justify-between pt-2 border-t border-white/6">
           <button
-            onClick={() => toggleSubscribeChannel(selectedChannel.handle)}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-              isSubscribed
-                ? 'bg-[#121a30] border border-white/10 text-[#9ba4bf]'
-                : 'bg-[#44e2cd] text-[#003731] hover:bg-[#3bcbb8] shadow-lg shadow-[#44e2cd]/20'
-            }`}
+            onClick={() => {
+              const channelHandle = (selectedChannel.handle || '').replace(/^@/, '');
+              if (channelHandle) {
+                router.push(`/user/${encodeURIComponent(channelHandle)}`);
+              }
+            }}
+            className="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-[#44e2cd] text-[#003731] hover:bg-[#3bcbb8] shadow-lg shadow-[#44e2cd]/20"
           >
-            <UserPlus className="h-4 w-4" />
-            <span>{isSubscribed ? t.channel.subscribed : t.common.subscribe}</span>
+            <ArrowUpRight className="h-4 w-4" />
+            <span>{t.header.viewProfile}</span>
           </button>
 
           <button
