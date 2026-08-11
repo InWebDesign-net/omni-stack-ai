@@ -11,7 +11,6 @@ import useSWR from "swr";
 import {
   Search,
   FilterX,
-  Heart,
   ChevronLeft,
   ChevronRight,
   Play,
@@ -151,10 +150,6 @@ export default function VideosPageClient({
     updateURL({ matchmode: mode === "all" ? "all" : null, page: "1" });
   };
 
-  const resetTags = () => {
-    updateURL({ includetag: null, excludetag: null, matchmode: null, page: "1" });
-  };
-
   // Boundary check: redirect to page 1 if page exceeds totalPages ONLY after data loading finishes
   useEffect(() => {
     if (!isLoading && totalVideos > 0 && currentPage > totalPages) {
@@ -241,31 +236,6 @@ export default function VideosPageClient({
             </form>
 
             <div className="flex items-center gap-3">
-              {/* Favorites Filter Button (when logged in) */}
-              {currentUser && (
-                <button
-                  onClick={() =>
-                    updateURL({
-                      fav: filterFavorites === "true" ? null : "true",
-                      page: "1",
-                    })
-                  }
-                  title={filterFavorites === "true" ? "Alle Videos anzeigen" : "Nur Favoriten anzeigen"}
-                  className={`p-2.5 rounded-xl border text-sm font-medium flex items-center gap-2 transition-all ${
-                    filterFavorites === "true"
-                      ? "bg-rose-500/20 border-rose-500/40 text-rose-300"
-                      : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200"
-                  }`}
-                >
-                  <Heart
-                    className={`w-4 h-4 ${
-                      filterFavorites === "true" ? "fill-rose-400 text-rose-400" : ""
-                    }`}
-                  />
-                  <span className="hidden sm:inline">{t.common.favorites}</span>
-                </button>
-              )}
-
               {/* Sort Selector Dropdown */}
               <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5">
                 <SlidersHorizontal className="w-4 h-4 text-indigo-400 shrink-0" />
@@ -296,11 +266,9 @@ export default function VideosPageClient({
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Tag Filter Panel */}
-        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-2xl space-y-4">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Tag filter (same control panel as search/sort) */}
+          <div className="pt-4 border-t border-slate-800/60 space-y-3">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
               <span className="text-sm font-semibold text-slate-200">{t.videos.allTags}</span>
@@ -310,90 +278,81 @@ export default function VideosPageClient({
                 </span>
               )}
             </div>
-            {hasTagFilters && (
-              <button
-                onClick={resetTags}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all"
-              >
-                <FilterX className="w-3.5 h-3.5 text-rose-400" />
-                <span>{t.videos.resetTags}</span>
-              </button>
-            )}
-          </div>
 
-          {/* Tag cloud */}
-          <div className="flex flex-wrap gap-2 max-h-[110px] overflow-y-auto pr-1 tag-cloud-scroll">
-            {allTags.length === 0 ? (
-              <span className="text-xs text-slate-500">{isLoading ? "…" : "Keine Tags verfügbar"}</span>
-            ) : (
-              allTags.map(({ tag, count }) => {
-                const state = includedTags.includes(tag)
-                  ? "include"
-                  : excludedTags.includes(tag)
-                  ? "exclude"
-                  : "neutral";
-                const base =
-                  "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer select-none flex items-center gap-1.5";
-                const tone =
-                  state === "include"
-                    ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
-                    : state === "exclude"
-                    ? "bg-rose-500/15 border-rose-500/40 text-rose-300"
-                    : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700";
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    title={
-                      state === "include"
-                        ? `${t.videos.includeLabel}: ${tag}`
-                        : state === "exclude"
-                        ? `${t.videos.excludeLabel}: ${tag}`
-                        : tag
-                    }
-                    className={`${base} ${tone}`}
-                  >
-                    <span>{tag}</span>
-                    <span className="text-[10px] font-mono opacity-60">{count}</span>
-                    {state === "include" && <span className="text-emerald-400">✓</span>}
-                    {state === "exclude" && <X className="w-3 h-3 text-rose-400" />}
-                  </button>
-                );
-              })
-            )}
-          </div>
-
-          {/* Match mode toggle (only when ≥2 include tags) */}
-          {includedTags.length >= 2 && (
-            <div className="flex items-center gap-2 pt-1">
-              <span className="text-xs text-slate-400">{t.videos.includeLabel}:</span>
-              <div className="inline-flex rounded-lg border border-slate-800 overflow-hidden text-xs">
-                <button
-                  type="button"
-                  onClick={() => setMatchMode("any")}
-                  className={`px-3 py-1.5 transition-all ${
-                    matchMode === "any"
-                      ? "bg-indigo-500/20 text-indigo-300"
-                      : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
-                  }`}
-                >
-                  {t.videos.matchAny}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMatchMode("all")}
-                  className={`px-3 py-1.5 transition-all border-l border-slate-800 ${
-                    matchMode === "all"
-                      ? "bg-indigo-500/20 text-indigo-300"
-                      : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
-                  }`}
-                >
-                  {t.videos.matchAll}
-                </button>
-              </div>
+            {/* Tag cloud */}
+            <div className="flex flex-wrap gap-2 max-h-[110px] overflow-y-auto pr-1 tag-cloud-scroll">
+              {allTags.length === 0 ? (
+                <span className="text-xs text-slate-500">{isLoading ? "…" : "Keine Tags verfügbar"}</span>
+              ) : (
+                allTags.map(({ tag, count }) => {
+                  const state = includedTags.includes(tag)
+                    ? "include"
+                    : excludedTags.includes(tag)
+                    ? "exclude"
+                    : "neutral";
+                  const base =
+                    "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer select-none flex items-center gap-1.5";
+                  const tone =
+                    state === "include"
+                      ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                      : state === "exclude"
+                      ? "bg-rose-500/15 border-rose-500/40 text-rose-300"
+                      : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700";
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      title={
+                        state === "include"
+                          ? `${t.videos.includeLabel}: ${tag}`
+                          : state === "exclude"
+                          ? `${t.videos.excludeLabel}: ${tag}`
+                          : tag
+                      }
+                      className={`${base} ${tone}`}
+                    >
+                      <span>{tag}</span>
+                      <span className="text-[10px] font-mono opacity-60">{count}</span>
+                      {state === "include" && <span className="text-emerald-400">✓</span>}
+                      {state === "exclude" && <X className="w-3 h-3 text-rose-400" />}
+                    </button>
+                  );
+                })
+              )}
             </div>
-          )}
+
+            {/* Match mode toggle (only when ≥2 include tags) */}
+            {includedTags.length >= 2 && (
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs text-slate-400">{t.videos.includeLabel}:</span>
+                <div className="inline-flex rounded-lg border border-slate-800 overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setMatchMode("any")}
+                    className={`px-3 py-1.5 transition-all ${
+                      matchMode === "any"
+                        ? "bg-indigo-500/20 text-indigo-300"
+                        : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    {t.videos.matchAny}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMatchMode("all")}
+                    className={`px-3 py-1.5 transition-all border-l border-slate-800 ${
+                      matchMode === "all"
+                        ? "bg-indigo-500/20 text-indigo-300"
+                        : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    {t.videos.matchAll}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Video Card Grid */}
