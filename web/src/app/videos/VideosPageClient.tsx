@@ -322,7 +322,7 @@ export default function VideosPageClient({
           </div>
 
           {/* Tag cloud */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 max-h-[110px] overflow-y-auto pr-1 tag-cloud-scroll">
             {allTags.length === 0 ? (
               <span className="text-xs text-slate-500">{isLoading ? "…" : "Keine Tags verfügbar"}</span>
             ) : (
