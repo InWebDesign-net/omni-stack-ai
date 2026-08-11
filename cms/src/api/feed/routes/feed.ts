@@ -76,6 +76,14 @@ export default {
     },
     {
       method: 'GET',
+      path: '/feed/user-by-handle',
+      handler: 'feed.getUserByHandle',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'GET',
       path: '/feed/user-favorites',
       handler: 'feed.getUserFavorites',
     },

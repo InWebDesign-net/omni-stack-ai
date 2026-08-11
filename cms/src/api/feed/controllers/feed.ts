@@ -62,6 +62,24 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
+  /**
+   * Public profile resolution by unique handle (e.g. "demotech").
+   * Returns the canonical user record so the /user/[slug] page can render
+   * any profile, independent of uploaded videos.
+   */
+  async getUserByHandle(ctx: any) {
+    try {
+      const handle = ctx.query?.handle || ctx.query?.slug || '';
+      const user = await strapi.service('api::feed.feed').getUserByHandle(handle);
+      if (!user) {
+        return ctx.notFound('User not found');
+      }
+      return ctx.send({ data: user });
+    } catch (err: any) {
+      return ctx.badRequest('User lookup error', { error: err.message });
+    }
+  },
+
   async resetDemoData(ctx: any) {
     const expectedSecret = process.env.SEED_SECRET;
     if (!expectedSecret) return ctx.forbidden('SEED_SECRET configuration missing');

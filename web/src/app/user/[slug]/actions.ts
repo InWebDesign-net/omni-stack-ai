@@ -42,65 +42,37 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
-    // 1. Query candidate videos & creator users from Strapi to match profile
-    const videosRes = await fetch(
-      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*`,
+    // 1. Resolve the target user profile by its unique handle (server-side, public)
+    const handleRes = await fetch(
+      `${strapiUrl}/api/feed/user-by-handle?handle=${encodeURIComponent(rawSlug)}`,
       { headers, cache: 'no-store' }
     );
 
-    if (!videosRes.ok) {
-      console.error('Failed to fetch videos for profile resolution');
-      return null;
-    }
-
-    const videosData = await videosRes.json();
-    const allVideos = videosData?.data || [];
-
-    // Extract unique creators from videos
-    const creatorsMap = new Map<string | number, any>();
-    for (const v of allVideos) {
-      if (v.creator) {
-        const key = v.creator.id || v.creator.documentId;
-        if (!creatorsMap.has(key)) {
-          creatorsMap.set(key, v.creator);
-        }
-      }
-    }
-
-    const creatorsList = Array.from(creatorsMap.values());
-
-    // Find target creator matching slug by handle, username, or ID
-    const normSlug = rawSlug.toLowerCase();
-    let targetProfile = creatorsList.find((c) => {
-      const handle = (c.handle || '').toLowerCase().replace(/^@/, '');
-      const username = (c.username || '').toLowerCase();
-      const slugifiedUser = username.replace(/[^a-z0-9]+/g, '-');
-      const idStr = String(c.id);
-      const docId = (c.documentId || '').toLowerCase();
-
-      return (
-        handle === normSlug ||
-        username === normSlug ||
-        slugifiedUser === normSlug ||
-        idStr === normSlug ||
-        docId === normSlug
-      );
-    });
-
-    // Fallback: If viewer is logged in and visiting their own profile slug/username
-    if (!targetProfile && viewer) {
-      const viewerHandle = (viewer.handle || '').toLowerCase().replace(/^@/, '');
-      const viewerName = (viewer.username || '').toLowerCase();
-      if (viewerHandle === normSlug || viewerName === normSlug || String(viewer.id) === normSlug) {
-        targetProfile = viewer;
-      }
+    let targetProfile: any = null;
+    if (handleRes.ok) {
+      const handleData = await handleRes.json();
+      targetProfile = handleData?.data || null;
     }
 
     if (!targetProfile) {
       return null;
     }
 
-    // 2. Determine Ownership
+    // 2. Load videos to populate this profile's feed (filter by creator below)
+    const videosRes = await fetch(
+      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*`,
+      { headers, cache: 'no-store' }
+    );
+
+    if (!videosRes.ok) {
+      console.error('Failed to fetch videos for profile');
+      return null;
+    }
+
+    const videosData = await videosRes.json();
+    const allVideos = videosData?.data || [];
+
+    // 3. Determine ownership
     const isOwner = Boolean(
       viewer &&
         (viewer.id === targetProfile.id ||

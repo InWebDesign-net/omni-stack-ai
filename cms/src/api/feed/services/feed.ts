@@ -1723,4 +1723,33 @@ CRITICAL: Return JSON ONLY in this format:
       return { success: false, error: e.message };
     }
   },
+
+  /**
+   * Resolve a user profile by its unique handle (e.g. "demotech").
+   * Used by the public /user/[slug] page so any profile is reachable
+   * regardless of whether it has uploaded videos. Runs server-side with
+   * the API token, so it is not bound by the public role's user permissions.
+   */
+  async getUserByHandle(handle: string) {
+    if (!handle) return null;
+    const clean = String(handle).trim().replace(/^@/, '');
+    if (!clean) return null;
+
+    const user = await strapi.db.query('plugin::users-permissions.user').findOne({
+      where: { handle: clean },
+    });
+
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      documentId: user.documentId || String(user.id),
+      username: user.username || clean,
+      handle: user.handle,
+      avatarUrl: user.avatarUrl || null,
+      bio: user.bio || null,
+      subscribersCount: user.subscribersCount || 0,
+      createdAt: user.createdAt || null,
+    };
+  },
 });
