@@ -14,5 +14,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/videos/filtered',
+      handler: 'api::video.video.filtered',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

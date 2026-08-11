@@ -172,14 +172,33 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
    */
   async getAllTags() {
     const items = await strapi.db.query('api::video.video').findMany({
-      select: ['tags' as any],
+      select: ['documentId', 'tags' as any],
+      where: {
+        visibility: 'public',
+        isProcessing: false,
+        publishedAt: { $notNull: true },
+      },
     });
 
-    const counts: Record<string, number> = {};
-    for (const it of items as Array<{ tags?: string[] | null }>) {
+    // Deduplicate tags per document to avoid counting multiple localizations
+    const docTagsMap = new Map<string, Set<string>>();
+
+    for (const it of items as Array<{ documentId?: string; tags?: string[] | null }>) {
+      const docId = it.documentId || Math.random().toString(); // fallback for items without documentId
+      if (!docTagsMap.has(docId)) {
+        docTagsMap.set(docId, new Set());
+      }
+      const tagSet = docTagsMap.get(docId)!;
       for (const raw of it.tags || []) {
         const t = (raw || '').trim();
-        if (t) counts[t] = (counts[t] || 0) + 1;
+        if (t) tagSet.add(t);
+      }
+    }
+
+    const counts: Record<string, number> = {};
+    for (const tagSet of docTagsMap.values()) {
+      for (const t of tagSet) {
+        counts[t] = (counts[t] || 0) + 1;
       }
     }
 
