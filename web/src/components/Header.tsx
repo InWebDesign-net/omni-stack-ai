@@ -267,10 +267,9 @@ export default function Header({
                     type="button"
                     onClick={() => {
                       setUserDropdownOpen(false);
-                      if (onOpenProfileModal) {
-                        onOpenProfileModal();
-                      } else if (activeUser) {
-                        openChannelModal(activeUser);
+                      const channelHandle = (activeUser?.handle || activeUser?.username || '').replace(/^@/, '');
+                      if (channelHandle) {
+                        router.push(`/user/${encodeURIComponent(channelHandle)}`);
                       }
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
