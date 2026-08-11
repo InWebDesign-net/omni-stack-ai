@@ -111,23 +111,8 @@ export default function VideoPageClient({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const fallbackCreator = useMemo(() => {
-    const tags = (video?.tags || initialVideo?.tags || []).map((t: string) => String(t).toLowerCase());
-    const slugStr = (video?.slug || initialVideo?.slug || slug || '').toLowerCase();
-
-    if (tags.some((t: string) => t.includes('natur') || t.includes('umwelt') || t.includes('doku')) || slugStr.includes('berlin') || slugStr.includes('cathedral') || slugStr.includes('nature') || slugStr.includes('garden') || slugStr.includes('flower')) {
-      return { username: 'Green Planet Doku', handle: '@greenplanet', avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80', bio: 'Naturdokumentationen, Artenvielfalt, Artenschutz & Ökosysteme.' };
-    }
-    if (tags.some((t: string) => t.includes('astro') || t.includes('wissens') || t.includes('weltall')) || slugStr.includes('space') || slugStr.includes('star')) {
-      return { username: 'Astro-Wissen Magazin', handle: '@astro', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80', bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.' };
-    }
-    if (tags.some((t: string) => t.includes('koch') || t.includes('rezept') || t.includes('kulinar')) || slugStr.includes('pasta') || slugStr.includes('food')) {
-      return { username: 'Culinary Masterclass', handle: '@demogourmet', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80', bio: 'Italienische Küche, feine Rezepte & Kulinarik-Tutorials aus Leidenschaft.' };
-    }
-    if (tags.some((t: string) => t.includes('tier') || t.includes('humor') || t.includes('katz')) || slugStr.includes('katze') || slugStr.includes('dog') || slugStr.includes('cat')) {
-      return { username: 'Familie & Tiere', handle: '@catmania', avatarUrl: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80', bio: 'Lustige Tier-Shorts, Katzenwelpen & Unterhaltung für die ganze Familie.' };
-    }
-    return { username: 'Database Guru', handle: '@demotech', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'High-Performance Databases, PostgreSQL Indizes, Vector Search & Code Architecture.' };
-  }, [video, initialVideo, slug]);
+    return { username: 'Omni Creator', handle: '@omni', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'Creator im Omni Network.' };
+  }, []);
 
   const creator = video?.creator || video?.author || initialVideo?.creator || initialVideo?.author;
   const rawHandle = creator?.handle || video?.authorHandle || initialVideo?.authorHandle;

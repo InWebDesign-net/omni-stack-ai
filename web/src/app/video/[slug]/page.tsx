@@ -36,7 +36,7 @@ async function getData(slug: string, jwt?: string | null) {
 
     // Fetch primary video by slug from Strapi
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator`,
       { headers, cache: 'no-store' }
     );
 
