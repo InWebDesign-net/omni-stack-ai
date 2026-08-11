@@ -64,13 +64,13 @@ export function GermanFlag({ className = "w-4 h-3" }: { className?: string }) {
 export function UKFlag({ className = "w-4 h-3" }: { className?: string }) {
   return (
     <svg className={`${className} rounded-[2px] overflow-hidden shrink-0 shadow-sm`} viewBox="0 0 60 30" aria-hidden="true">
-      <clipPath id="gb-s-hdr"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
-      <clipPath id="gb-t-hdr"><path d="M30,15 H0 V0 z M30,15 V0 h30 z M30,15 h30 v15 z M30,15 v15 H0 z"/></clipPath>
+      <clipPath id="gb-s-hdr"><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+      <clipPath id="gb-t-hdr"><path d="M30,15 H0 V0 z M30,15 V0 h30 z M30,15 h30 v15 z M30,15 v15 H0 z" /></clipPath>
       <g clipPath="url(#gb-s-hdr)">
-        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6"/>
-        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="4" clipPath="url(#gb-t-hdr)"/>
-        <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10"/>
-        <path d="M30,0 v30 M0,15 h60" stroke="#cf142b" strokeWidth="6"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6" />
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="4" clipPath="url(#gb-t-hdr)" />
+        <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10" />
+        <path d="M30,0 v30 M0,15 h60" stroke="#cf142b" strokeWidth="6" />
       </g>
     </svg>
   );
@@ -158,7 +158,7 @@ export default function Header({
         localStorage.removeItem('omni_jwt');
         document.cookie = 'omni_jwt=; path=/; max-age=0';
         document.cookie = 'omni_user_jwt=; path=/; max-age=0';
-      } catch (e) {}
+      } catch (e) { }
       window.location.reload();
     }
   };
@@ -211,11 +211,10 @@ export default function Header({
           {/* Algorithm Control */}
           <button
             onClick={handleAlgoClick}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${
-              algoDrawerOpen
-                ? 'bg-[#8083ff] text-white border-[#8083ff] shadow-lg shadow-[#8083ff]/25'
-                : 'glass-surface hover:bg-white/6 text-[#dae2fd] border-white/8 hover:border-white/20'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${algoDrawerOpen
+              ? 'bg-[#8083ff] text-white border-[#8083ff] shadow-lg shadow-[#8083ff]/25'
+              : 'glass-surface hover:bg-white/6 text-[#dae2fd] border-white/8 hover:border-white/20'
+              }`}
             title="Algorithm Control"
           >
             <Sliders className="h-3.5 w-3.5 text-[#8083ff]" />
@@ -415,6 +414,15 @@ export default function Header({
               </Link>
 
               <Link
+                href="/videos"
+                onClick={() => setUniversalNavOpen(false)}
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+              >
+                <Play className="h-4.5 w-4.5 text-[#8083ff]" />
+                <span>{t.header.videos}</span>
+              </Link>
+
+              <Link
                 href="/?tab=trending"
                 onClick={() => setUniversalNavOpen(false)}
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
@@ -457,15 +465,6 @@ export default function Header({
               >
                 <FileText className="h-4.5 w-4.5 text-red-400" />
                 <span>{t.header.pdfDocs}</span>
-              </Link>
-
-              <Link
-                href="/?type=video"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <Play className="h-4.5 w-4.5 text-[#8083ff]" />
-                <span>{t.header.videoTutorials}</span>
               </Link>
 
               <Link
