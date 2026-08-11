@@ -28,9 +28,11 @@ async function getData(slug: string, jwt?: string | null) {
       'Content-Type': 'application/json',
     };
 
-    if (jwt) {
-      headers['Authorization'] = `Bearer ${jwt}`;
-    } else if (process.env.STRAPI_API_TOKEN) {
+    // Server-side data fetching uses the API token so relations like
+    // `creator` (user data) are visible regardless of the viewer's role.
+    // The user JWT is only needed for user-specific writes (likes/favs),
+    // not for reading public video/profile data.
+    if (process.env.STRAPI_API_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 

@@ -36,9 +36,11 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (jwt) {
-      headers['Authorization'] = `Bearer ${jwt}`;
-    } else if (process.env.STRAPI_API_TOKEN) {
+    // Server-side reads use the API token so public data (incl. the
+    // creator relation and other users' profiles) is always visible,
+    // independent of the viewer's role. The user JWT is only needed for
+    // user-specific writes, not for reading profile/video data.
+    if (process.env.STRAPI_API_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
