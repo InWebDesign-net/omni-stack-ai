@@ -109,6 +109,26 @@
     "subscribedBtn": "Abonniert",
     "subscribeBtn": "Abonnieren"
   },
+  "videoSettings": {
+    "title": "Video-Einstellungen",
+    "generalSettings": "Allgemeine Einstellungen",
+    "noTags": "Keine Tags",
+    "visibility": {
+      "public": "Öffentlich",
+      "unlisted": "Nicht gelistet",
+      "private": "Privat"
+    },
+    "saved": "Gespeichert",
+    "save": "Speichern",
+    "loading": "Wird geladen…",
+    "visibilityLabel": "Sichtbarkeit",
+    "readOnlyHint": "— nur Anzeige",
+    "languageGerman": "Deutsch",
+    "languageEnglish": "Englisch",
+    "titleLabel": "Titel",
+    "descriptionLabel": "Beschreibung",
+    "tagsLabel": "Tags"
+  },
   "auth": {
     "googleQuickLoginError": "Google Schnell-Login fehlgeschlagen.",
     "demoUserBio": "Google Demo User · Tech & Content Explorer",

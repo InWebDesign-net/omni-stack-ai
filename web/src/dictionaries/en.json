@@ -109,6 +109,26 @@
     "subscribedBtn": "Subscribed",
     "subscribeBtn": "Subscribe"
   },
+  "videoSettings": {
+    "title": "Video Settings",
+    "generalSettings": "General Settings",
+    "noTags": "No Tags",
+    "visibility": {
+      "public": "Public",
+      "unlisted": "Unlisted",
+      "private": "Private"
+    },
+    "saved": "Saved",
+    "save": "Save",
+    "loading": "Loading…",
+    "visibilityLabel": "Visibility",
+    "readOnlyHint": "— display only",
+    "languageGerman": "German",
+    "languageEnglish": "English",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "tagsLabel": "Tags"
+  },
   "auth": {
     "googleQuickLoginError": "Google Quick Login failed.",
     "demoUserBio": "Google Demo User · Content Explorer",

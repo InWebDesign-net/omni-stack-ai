@@ -30,6 +30,7 @@ import {
 import Header from '@/components/Header';
 import VideoSettingsModal from '@/app/video/[slug]/VideoSettingsModal';
 import { useApp } from '@/context/AppContext';
+import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import {
   fetchCommentsForSlug,
@@ -127,7 +128,10 @@ export default function VideoPageClient({
     return source;
   };
 
-  const effectiveLang = lang || initialLang;
+  // The server passes the cookie-derived locale (initialLang) for a correct
+  // first render; the live UI language switch is then reflected via the app
+  // context `lang` (kept in sync with the cookie by the language switch).
+  const effectiveLang = initialLang;
 
   const [video, setVideo] = useState<any>(() => pickLocalized(initialVideo, initialLang));
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
@@ -444,12 +448,12 @@ export default function VideoPageClient({
                 <div className="flex items-center gap-4 text-xs text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-indigo-400" />
-                    <span>{viewsCount.toLocaleString()} Aufrufe</span>
+                    <span>{viewsCount.toLocaleString()} {getDictionary(initialLang).common.views}</span>
                   </div>
                   {video.createdAt && (
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-slate-500" />
-                      <span>{new Date(video.createdAt).toLocaleDateString('de-DE')}</span>
+                      <span>{new Date(video.createdAt).toLocaleDateString(initialLang === 'en' ? 'en-US' : 'de-DE')}</span>
                     </div>
                   )}
                   {video.duration && (
