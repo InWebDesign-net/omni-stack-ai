@@ -343,7 +343,7 @@ export default function ContentPageClient({
   return (
     <div className="min-h-screen bg-[#060a16] text-[#dae2fd] font-sans selection:bg-[#8083ff]/30 selection:text-white">
       <Header />
-      <main className="max-w-6xl mx-auto px-4 py-8 mt-24 pb-32">
+      <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
         {/* Action Bar */}
         <div className="flex items-center justify-between mb-6">
