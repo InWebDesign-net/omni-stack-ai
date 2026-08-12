@@ -1,0 +1,58 @@
+[
+  {
+    "handle": "astro",
+    "username": "Astro-Wissen Magazin",
+    "email": "astro@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    "bio": "Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.",
+    "subscribersCount": 14800
+  },
+  {
+    "handle": "demotech",
+    "username": "Database Guru",
+    "email": "demotech@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80",
+    "bio": "High-Performance Databases, PostgreSQL Indizes, Vector Search & Code Architecture.",
+    "subscribersCount": 28900
+  },
+  {
+    "handle": "demogourmet",
+    "username": "Culinary Masterclass",
+    "email": "demogourmet@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
+    "bio": "Italienische Küche, feine Rezepte & Kulinarik-Tutorials aus Leidenschaft.",
+    "subscribersCount": 54100
+  },
+  {
+    "handle": "greenplanet",
+    "username": "Green Planet Doku",
+    "email": "greenplanet@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80",
+    "bio": "Naturdokumentationen, Artenvielfalt, Artenschutz & Ökosysteme.",
+    "subscribersCount": 31200
+  },
+  {
+    "handle": "omniarchitect",
+    "username": "Omni Architect",
+    "email": "omniarchitect@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80",
+    "bio": "NextJS 15, Strapi v5, Monorepo Turborepo Architecture & Microservices.",
+    "subscribersCount": 42000
+  },
+  {
+    "handle": "catmania",
+    "username": "Familie & Tiere",
+    "email": "catmania@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80",
+    "bio": "Lustige Tier-Shorts, Katzenwelpen & Unterhaltung für die ganze Familie.",
+    "subscribersCount": 189000
+  },
+  {
+    "handle": "finanzkompass",
+    "username": "FinanzKompass",
+    "email": "finanzkompass@inwebdesign.net",
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    "bio": "Finanzwissen, ETF-Sparpläne, Vermögensaufbau & Zinseszins für Einsteiger.",
+    "subscribersCount": 27500
+  }
+]

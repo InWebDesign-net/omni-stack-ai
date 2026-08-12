@@ -908,64 +908,29 @@ CRITICAL: Return JSON ONLY in this format:
         }
       };
 
-      const creators = {
-        astro: await getOrCreateCreator({
-          username: 'Astro-Wissen Magazin',
-          handle: 'astro',
-          email: 'astro@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-          bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.',
-          subscribersCount: 14800,
-        }),
-        demotech: await getOrCreateCreator({
-          username: 'Database Guru',
-          handle: 'demotech',
-          email: 'demotech@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-          bio: 'High-Performance Databases, PostgreSQL Indizes, Vector Search & Code Architecture.',
-          subscribersCount: 28900,
-        }),
-        demogourmet: await getOrCreateCreator({
-          username: 'Culinary Masterclass',
-          handle: 'demogourmet',
-          email: 'demogourmet@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
-          bio: 'Italienische Küche, feine Rezepte & Kulinarik-Tutorials aus Leidenschaft.',
-          subscribersCount: 54100,
-        }),
-        greenplanet: await getOrCreateCreator({
-          username: 'Green Planet Doku',
-          handle: 'greenplanet',
-          email: 'greenplanet@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
-          bio: 'Naturdokumentationen, Artenvielfalt, Artenschutz & Ökosysteme.',
-          subscribersCount: 31200,
-        }),
-        omniarchitect: await getOrCreateCreator({
-          username: 'Omni Architect',
-          handle: 'omniarchitect',
-          email: 'omniarchitect@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-          bio: 'NextJS 15, Strapi v5, Monorepo Turborepo Architecture & Microservices.',
-          subscribersCount: 42000,
-        }),
-        catmania: await getOrCreateCreator({
-          username: 'Familie & Tiere',
-          handle: 'catmania',
-          email: 'catmania@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
-          bio: 'Lustige Tier-Shorts, Katzenwelpen & Unterhaltung für die ganze Familie.',
-          subscribersCount: 189000,
-        }),
-        finanzkompass: await getOrCreateCreator({
-          username: 'FinanzKompass',
-          handle: 'finanzkompass',
-          email: 'finanzkompass@inwebdesign.net',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-          bio: 'Finanzwissen, ETF-Sparpläne, Vermögensaufbau & Zinseszins für Einsteiger.',
-          subscribersCount: 27500,
-        }),
-      };
+      const fs = require('fs');
+      const path = require('path');
+
+      // Load Creators dynamically from seed_creators.json fixture
+      const seedCreatorsPath = path.join(__dirname, '../../../src/data/seed_creators.json');
+      const seedCreatorsAltPath = path.join(process.cwd(), 'src/data/seed_creators.json');
+      const targetCreatorsPath = fs.existsSync(seedCreatorsPath)
+        ? seedCreatorsPath
+        : fs.existsSync(seedCreatorsAltPath)
+        ? seedCreatorsAltPath
+        : null;
+
+      const creators: Record<string, any> = {};
+      if (targetCreatorsPath) {
+        try {
+          const creatorList = JSON.parse(fs.readFileSync(targetCreatorsPath, 'utf8'));
+          for (const c of creatorList) {
+            creators[c.handle] = await getOrCreateCreator(c);
+          }
+        } catch (e) {
+          console.error('Error loading seed_creators.json:', e);
+        }
+      }
 
       const createVideoRecord = async (videoData: {
         title: string;
@@ -1025,9 +990,7 @@ CRITICAL: Return JSON ONLY in this format:
         }
       };
 
-      // Load & Seed the official 110 test video entries from seed_videos.json
-      const fs = require('fs');
-      const path = require('path');
+      // Load & Seed the official test video entries from seed_videos.json
       const seedVideosPath = path.join(__dirname, '../../../src/data/seed_videos.json');
       const seedVideosAltPath = path.join(process.cwd(), 'src/data/seed_videos.json');
       const targetFixturePath = fs.existsSync(seedVideosPath) ? seedVideosPath : (fs.existsSync(seedVideosAltPath) ? seedVideosAltPath : null);
