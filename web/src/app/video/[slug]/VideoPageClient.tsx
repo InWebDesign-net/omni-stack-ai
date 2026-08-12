@@ -25,6 +25,7 @@ import {
   UserPlus,
   Users,
   Film,
+  Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
@@ -109,6 +110,7 @@ export default function VideoPageClient({
   const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const fallbackCreator = useMemo(() => {
     return { username: 'Omni Creator', handle: '@omni', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'Creator im Omni Network.' };
@@ -333,6 +335,27 @@ export default function VideoPageClient({
         </div>
       )}
 
+      {/* Video Settings Modal (placeholder — content added in next step) */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-slate-800">
+              <h2 className="text-lg font-bold text-white">{t.header.settings}</h2>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 text-sm text-slate-400">
+              {/* Placeholder content — wired up in the next step */}
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Navigation Top Bar */}
         <div className="flex items-center justify-between">
@@ -420,6 +443,16 @@ export default function VideoPageClient({
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-400 text-rose-400' : ''}`} />
                     <span>{likesCount}</span>
                   </button>
+
+                  {accessStatus?.isOwner && (
+                    <button
+                      onClick={() => setShowSettingsModal(true)}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="hidden sm:inline">{t.header.settings}</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={handleShare}

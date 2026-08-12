@@ -2,6 +2,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import VideoPageClient from '@/app/video/[slug]/VideoPageClient';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
+import { getVideoOwnerStatus } from '@/app/video/[slug]/actions';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -88,7 +89,7 @@ export async function generateMetadata(
   }
 
   const video = data.video;
-  const isOwner = Boolean(user?.id && video.creator?.id === user.id);
+  const { isOwner } = await getVideoOwnerStatus(slug);
 
   // If video is private and user is not owner, return non-indexed notFound title
   if (video.visibility === 'private' && !isOwner) {
@@ -153,7 +154,7 @@ export default async function Page({ params }: Props) {
   }
 
   const video = data.video;
-  const isOwner = Boolean(user?.id && video.creator?.id === user.id);
+  const { isOwner } = await getVideoOwnerStatus(slug);
 
   // Security & Privacy Check: If private and not owner, return 404
   if (video.visibility === 'private' && !isOwner) {
