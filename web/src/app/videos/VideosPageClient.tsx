@@ -179,7 +179,7 @@ export default function VideosPageClient({
       {/* Top Header */}
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Page Title & Controls Header */}
         <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -357,7 +357,7 @@ export default function VideosPageClient({
 
         {/* Video Card Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-6">
             {Array.from({ length: 12 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
@@ -396,7 +396,7 @@ export default function VideosPageClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-6">
             {videos.map((video: VideoItem) => {
               const creator = video.creator || (video as any).author;
               const creatorName = creator?.username || creator?.handle || (video as any).authorName || "Omni Creator";

@@ -52,7 +52,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
         <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
             <Header />
 
-            <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
                 {/* Profile Header Hero Section */}
                 <div className="relative rounded-3xl overflow-hidden bg-slate-900/60 border border-slate-800 backdrop-blur-xl shadow-2xl p-6 sm:p-10">
                     {/* Subtle Background Glow Accent */}

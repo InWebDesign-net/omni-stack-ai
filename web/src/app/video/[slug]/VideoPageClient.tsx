@@ -333,7 +333,7 @@ export default function VideoPageClient({
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+      <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Navigation Top Bar */}
         <div className="flex items-center justify-between">
           <button

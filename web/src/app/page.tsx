@@ -717,7 +717,7 @@ function OmniAppContent() {
       {algoDrawerOpen && (
         <aside className="glass-surface border-b border-white/6 px-6 py-5 shadow-2xl animate-slideDown z-30"
           style={{ boxShadow: '0 8px 32px -8px rgba(8,14,30,0.90), 0 1px 0 rgba(128,131,255,0.12)' }}>
-          <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+          <div className="w-full max-w-content mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
 
             {/* Interest Sliders */}
             <div className="md:col-span-7 flex flex-col gap-3 bg-[#0d1528] p-5 rounded-2xl border border-white/6">

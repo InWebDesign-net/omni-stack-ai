@@ -1,6 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* ─── Custom theme tokens (Tailwind v4) ───────────────────────────────────
+   Wider layout for modern large monitors (28" / multi-monitor setups):
+   - 3xl breakpoint unlocks ultra-wide column counts
+   - container-content caps page containers at 2560px (full-width on 28" displays)
+*/
+@theme {
+  --breakpoint-3xl: 1920px;
+  --container-content: 2560px;
+}
+
 @layer base {
   :root {
     --background: #080e1e;
