@@ -28,6 +28,7 @@ import {
   Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
+import VideoSettingsModal from '@/app/video/[slug]/VideoSettingsModal';
 import { useApp } from '@/context/AppContext';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import {
@@ -335,25 +336,13 @@ export default function VideoPageClient({
         </div>
       )}
 
-      {/* Video Settings Modal (placeholder — content added in next step) */}
+      {/* Video Settings Modal */}
       {showSettingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-slate-800">
-              <h2 className="text-lg font-bold text-white">{t.header.settings}</h2>
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 text-sm text-slate-400">
-              {/* Placeholder content — wired up in the next step */}
-            </div>
-          </div>
-        </div>
+        <VideoSettingsModal
+          documentId={video.documentId || initialVideo?.documentId || ''}
+          slug={slug}
+          onClose={() => setShowSettingsModal(false)}
+        />
       )}
 
       <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">

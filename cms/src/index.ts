@@ -178,6 +178,7 @@ export default {
         await enablePermission(authRole.id, 'api::comment.comment.delete');
         await enablePermission(authRole.id, 'api::video.video.find');
         await enablePermission(authRole.id, 'api::video.video.findOne');
+        await enablePermission(authRole.id, 'api::video.video.update');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }
