@@ -72,16 +72,28 @@ Instead of logging millions of individual click events in separate database rows
 * 📱 **Vertical 9:16 Snap-Scroll Shorts Feed ([`/shorts`](https://omni-web.inwebdesign.net/shorts) & [`/shorts/[slug]`](https://omni-web.inwebdesign.net/shorts/sample-short)):** TikTok / YouTube Shorts style vertical feed player with `snap-y snap-mandatory` smooth snapping, keyboard navigation (Up/Down arrows), floating action sidebar (Like, Comment Drawer, Share, Sound Toggle), and real-time URL synchronization.
 * 📄 **Universal Content View ([`/content/[slug]`](https://omni-web.inwebdesign.net/content/sample-article)):** Unified detail router for Videos, PDF Documents (embedded viewer & download hub), and Typography-optimized Articles.
 
-### 3. Hyper-Personalized Feed Assembly & Navigation Modes
+### 3. High-Performance Multilingual Tag Filtering & Catalog Engine ([`/videos`](https://omni-web.inwebdesign.net/videos))
+Omni features a powerful, enterprise-grade video catalog and tag-filtering architecture powered natively by Strapi v5 and PostgreSQL:
+
+* ⚡ **Native Strapi v5 & PostgreSQL Service (`/api/videos/filtered`):** High-efficiency database filtering and pagination executed directly at the backend level, eliminating heavy client/proxy array manipulations.
+* 🔗 **URL Parametrized Single Source of Truth:** All filter states (`?q=...&includetag=...&excludetag=...&matchmode=any|all&sort=...&lang=...&page=1`) are bidirectionally synchronized with the URL. Deep-linking, shareable catalog views, and browser back/forward navigation work seamlessly.
+* 🏷️ **Dynamic Tag Cloud with Deduplicated Frequency Counts:** Live tag frequency cloud (`/api/video/tags`) automatically filtered to public, non-processing items (`visibility: 'public'`, `isProcessing: false`). Tag frequencies are deduplicated per `documentId` across bilingual (`de`/`en`) localizations.
+* 🎛️ **Flexible Multi-Mode Tag Selection Engine:**
+  * **Include Tags (`includetag`):** Select single or multiple tags to filter content.
+  * **Match Modes (`matchmode`):** Toggle between `any` (OR-logic: matches any selected tag) and `all` (AND-logic: strictly requires all selected tags).
+  * **Exclude Tags (`excludetag`):** Negative tag filtering to hide unwanted genres or topics.
+* 🔍 **Live Title Search & Multi-Field Sorting:** Full-text instant title search (`q`) combined with multi-field sorting cases (`createdatdesc`, `createdatasc`, `titleasc`, `titledesc`, `durationasc`, `durationdesc`).
+
+### 4. Hyper-Personalized Feed Assembly & Navigation Modes
 Feeds are assembled dynamically by querying **4 Parallel Buckets**:
 * 🎯 **High Intent:** Content matching user affinities (Score > 0.45).
 * 👥 **Network & Subs:** Subscribed authors & followed channels.
 * 🧭 **Exploration:** Wildcard / novelty content for filter bubble breakout.
 * 🔥 **Fresh & Trending:** High view/like velocity across the platform (featuring `🔥 HOT #1`, `#2`, `#3` rank badges).
 
-### 4. Fullstack Authentication, User Profiles & Creator Channels
+### 5. Fullstack Authentication, User Profiles & Creator Channels
 * **Strapi Users-Permissions Integration:** JWT authentication, registration, and login tabs.
-* **1:1 User Profiles & Channel Management:** Edit profile modal (Username, Handle `@name`, Avatar URL, Bio), Creator Channel View with follower toggling, and user post publication.
+* **1:1 User Profiles & Channel Management (`/user/[slug]`):** Server-rendered profile pages with JWT ownership validation (`isOwner`), owner control banners (instant upload modal, draft visibility), visitor subscription toggles, and channel info tabs.
 
 ---
 
