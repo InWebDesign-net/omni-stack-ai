@@ -10,6 +10,30 @@ interface LocaleData {
   tags: string[];
 }
 
+// Flatten a Strapi `blocks` field into plain text (mirrors VideoPageClient helper)
+function flattenBlocks(value: any): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((block: any) => {
+        if (typeof block === 'string') return block;
+        if (block && Array.isArray(block.children)) {
+          return block.children.map((c: any) => (typeof c === 'string' ? c : c?.text || '')).join('');
+        }
+        return block?.text || '';
+      })
+      .filter(Boolean)
+      .join('\n\n');
+  }
+  return '';
+}
+
+// Convert plain text back into a Strapi `blocks` array (single paragraph)
+function textToBlocks(text: string): any[] {
+  return [{ type: 'paragraph', children: [{ text: text || '', type: 'text' }] }];
+}
+
 interface VideoSettingsModalProps {
   documentId: string;
   slug: string;
@@ -52,12 +76,12 @@ export default function VideoSettingsModal({
         setForm({
           de: {
             title: de.title || '',
-            summary: typeof de.summary === 'string' ? de.summary : (de.summary?.toString?.() || ''),
+            summary: flattenBlocks(de.summary),
             tags: Array.isArray(de.tags) ? de.tags : [],
           },
           en: {
             title: en.title || '',
-            summary: typeof en.summary === 'string' ? en.summary : (en.summary?.toString?.() || ''),
+            summary: flattenBlocks(en.summary),
             tags: Array.isArray(en.tags) ? en.tags : [],
           },
         });
@@ -82,9 +106,10 @@ export default function VideoSettingsModal({
       const headers = { ...jsonAuthHeaders(), 'Content-Type': 'application/json' };
 
       // Update localized fields per locale (only title + summary; tags read-only for now)
+      // summary is a Strapi `blocks` field, so convert plain text back to blocks array
       const localeUpdates = [
-        { locale: 'de', data: { title: form.de.title, summary: form.de.summary } },
-        { locale: 'en', data: { title: form.en.title, summary: form.en.summary } },
+        { locale: 'de', data: { title: form.de.title, summary: textToBlocks(form.de.summary) } },
+        { locale: 'en', data: { title: form.en.title, summary: textToBlocks(form.en.summary) } },
       ];
       const saveRes = await fetch(`/api/video/settings`, {
         method: 'PUT',

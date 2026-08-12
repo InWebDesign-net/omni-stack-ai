@@ -39,6 +39,31 @@ import {
   CommentItem,
 } from '@/lib/comments';
 
+// Flatten a Strapi `blocks` field (array of {type, children}) into plain text.
+// Falls back to the raw value when it is already a string.
+function flattenBlocks(value: any): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((block: any) => {
+        if (typeof block === 'string') return block;
+        if (block && Array.isArray(block.children)) {
+          return block.children
+            .map((c: any) => (typeof c === 'string' ? c : c?.text || ''))
+            .join('');
+        }
+        return block?.text || '';
+      })
+      .filter(Boolean)
+      .join('\n\n');
+  }
+  if (value && typeof value === 'object' && Array.isArray((value as any).children)) {
+    return (value as any).children.map((c: any) => c?.text || '').join('');
+  }
+  return '';
+}
+
 interface VideoPageClientProps {
   initialVideo: any;
   initialRelated?: any[];
@@ -505,7 +530,7 @@ export default function VideoPageClient({
                       !descExpanded ? 'line-clamp-3' : ''
                     }`}
                   >
-                    {video.summary || video.description}
+                    {flattenBlocks(video.summary) || video.description || ''}
                   </p>
 
                   {/* Tags */}
