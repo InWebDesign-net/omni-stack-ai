@@ -334,26 +334,34 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {favorites.map((item: any) => {
                                     const thumb = item.thumbnailUrl || '/media/thumbnails/default.png';
+                                    const itemHref = item.mediaType === 'content' ? `/content/${item.slug}` : `/video/${item.slug}`;
 
                                     return (
                                         <div
-                                            key={item.slug || item.id}
+                                            key={(item.slug || item.id) + (item.mediaType || 'video')}
                                             className="group relative bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden hover:border-rose-500/50 transition-all duration-300 shadow-lg flex flex-col"
                                         >
-                                            <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
+                                            <Link href={itemHref} className="relative aspect-video bg-slate-950 overflow-hidden block">
                                                 <img
                                                     src={thumb}
                                                     alt={item.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
-                                                <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
-                                                    {formatDuration(item.duration)}
-                                                </div>
+                                                {item.mediaType === 'video' && (
+                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
+                                                        {formatDuration(item.duration)}
+                                                    </div>
+                                                )}
+                                                {item.mediaType === 'content' && (
+                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
+                                                        Content
+                                                    </div>
+                                                )}
                                             </Link>
 
                                             <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                                                <Link href={`/video/${item.slug}`} className="block group-hover:text-rose-400 transition-colors">
+                                                <Link href={itemHref} className="block group-hover:text-rose-400 transition-colors">
                                                     <h3 className="font-bold text-sm text-slate-100 line-clamp-2 leading-snug">
                                                         {item.title}
                                                     </h3>

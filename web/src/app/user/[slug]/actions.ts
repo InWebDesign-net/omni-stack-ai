@@ -108,16 +108,34 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       totalLikes += Number(v.likesCount || 0);
     }
 
-    // 5. Fetch Favorites for this profile
+    // 5. Fetch Favorites for this profile (videos AND feed-items / content)
     let favorites: any[] = [];
     try {
       const favRes = await fetch(
-        `${strapiUrl}/api/favs?filters[user][id][$eq]=${targetProfile.id}&populate=video&pagination[pageSize]=50`,
+        `${strapiUrl}/api/favs?filters[user][id][$eq]=${targetProfile.id}&populate=video,feedItem&pagination[pageSize]=50`,
         { headers, cache: 'no-store' }
       );
       if (favRes.ok) {
         const favData = await favRes.json();
-        favorites = (favData?.data || []).map((f: any) => f.video).filter(Boolean);
+        const rawFavs = favData?.data || [];
+        for (const f of rawFavs) {
+          if (f.video) {
+            favorites.push({ ...f.video, mediaType: 'video' });
+          } else if (f.feedItem) {
+            // Normalize feed-item shape to the card format expected by the UI
+            const fi = f.feedItem;
+            favorites.push({
+              documentId: fi.documentId,
+              slug: fi.slug,
+              title: fi.title,
+              thumbnailUrl: fi.thumbnailUrl,
+              summary: fi.summary,
+              viewsCount: fi.viewsCount || 0,
+              likesCount: fi.likesCount || 0,
+              mediaType: 'content',
+            });
+          }
+        }
       }
     } catch (e) {
       console.error('Error fetching favorites for profile:', e);
