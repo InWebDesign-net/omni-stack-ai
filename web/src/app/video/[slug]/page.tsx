@@ -1,5 +1,6 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import VideoPageClient from '@/app/video/[slug]/VideoPageClient';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
 import { getVideoOwnerStatus } from '@/app/video/[slug]/actions';
@@ -21,7 +22,7 @@ function formatIsoDuration(seconds?: number): string {
   return res;
 }
 
-async function getData(slug: string, jwt?: string | null) {
+async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
   try {
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
@@ -37,9 +38,9 @@ async function getData(slug: string, jwt?: string | null) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
-    // Fetch primary video by slug from Strapi
+    // Fetch primary video by slug from Strapi (all localizations)
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator`,
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
       { headers, cache: 'no-store' }
     );
 
@@ -49,11 +50,12 @@ async function getData(slug: string, jwt?: string | null) {
     const videoList = videoData?.data || [];
     if (videoList.length === 0) return null;
 
-    const video = videoList.find((v: any) => v.creator) || videoList[0];
+    // Pick the requested localization for server-side metadata/SEO
+    const video = videoList.find((v: any) => v.locale === lang) || videoList[0];
 
     // Fetch related videos for sidebar
     const relatedRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$ne]=${encodeURIComponent(slug)}&filters[visibility][$eq]=public&populate=creator&pagination[pageSize]=6&sort=createdAt:desc`,
+      `${strapiUrl}/api/videos?filters[slug][$ne]=${encodeURIComponent(slug)}&filters[visibility][$eq]=public&populate=creator&pagination[pageSize]=6&sort=createdAt:desc&locale=${lang}`,
       { headers, cache: 'no-store' }
     );
 
@@ -64,6 +66,7 @@ async function getData(slug: string, jwt?: string | null) {
     }
 
     return {
+      videoList,
       video,
       relatedVideos,
     };
@@ -79,7 +82,8 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const { user, jwt } = await getCurrentUserFromCookies();
-  const data = await getData(slug, jwt);
+  const lang = (await cookies()).get('omni_lang')?.value === 'en' ? 'en' : 'de';
+  const data = await getData(slug, jwt, lang);
 
   if (!data || !data.video) {
     return {
@@ -147,7 +151,8 @@ export async function generateMetadata(
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   const { user, jwt } = await getCurrentUserFromCookies();
-  const data = await getData(slug, jwt);
+  const lang = (await cookies()).get('omni_lang')?.value === 'en' ? 'en' : 'de';
+  const data = await getData(slug, jwt, lang);
 
   if (!data || !data.video) {
     notFound();
@@ -239,9 +244,10 @@ export default async function Page({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <VideoPageClient
-        initialVideo={video}
+        initialVideo={data.videoList}
         initialRelated={data.relatedVideos}
         slug={slug}
+        initialLang={lang}
         accessStatus={accessStatus}
       />
     </>

@@ -73,6 +73,7 @@ interface VideoPageClientProps {
     isOwner: boolean;
     isPrivate: boolean;
   };
+  initialLang?: 'de' | 'en';
 }
 
 function CardThumbnail({
@@ -110,17 +111,31 @@ export default function VideoPageClient({
   initialRelated = [],
   slug,
   accessStatus,
+  initialLang = 'de',
 }: VideoPageClientProps) {
   const router = useRouter();
   const { lang, currentUser, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
-  const [video, setVideo] = useState(initialVideo);
+  // initialVideo is the full array of localizations (locale=*). Select the one
+  // matching the active UI language. On first render (SSR) we honor the server's
+  // chosen locale (initialLang, derived from the omni_lang cookie) to avoid a
+  // hydration mismatch; afterwards we follow the live UI language switch.
+  const pickLocalized = (source: any, useLang: string): any => {
+    if (Array.isArray(source)) {
+      return source.find((v: any) => v.locale === useLang) || source[0] || null;
+    }
+    return source;
+  };
+
+  const effectiveLang = lang || initialLang;
+
+  const [video, setVideo] = useState<any>(() => pickLocalized(initialVideo, initialLang));
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
 
   useEffect(() => {
-    setVideo(initialVideo);
+    setVideo(pickLocalized(initialVideo, effectiveLang));
     setRelatedItems(initialRelated || []);
-  }, [initialVideo, initialRelated]);
+  }, [initialVideo, initialRelated, effectiveLang]);
 
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(initialVideo?.likesCount || 0);

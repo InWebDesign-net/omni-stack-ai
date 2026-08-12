@@ -101,6 +101,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
       if (savedLang === 'de' || savedLang === 'en') {
         setLangState(savedLang);
+      } else {
+        // Fall back to the omni_lang cookie (set by the language switch / server)
+        const m = document.cookie.match(/(?:^|;\s*)omni_lang=([^;]+)/);
+        const cookieLang = m?.[1];
+        if (cookieLang === 'de' || cookieLang === 'en') {
+          setLangState(cookieLang);
+        }
       }
 
       try {
