@@ -38,11 +38,9 @@ export default function VideoSettingsModal({
     let cancelled = false;
     const load = async () => {
       try {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
+        const strapiUrl = '';
         const res = await fetch(
-          `${strapiUrl}/api/videos?filters[documentId][$eq]=${encodeURIComponent(
-            documentId
-          )}&locale=*&populate=creator`,
+          `/api/video/settings?documentId=${encodeURIComponent(documentId)}`,
           { headers: jsonAuthHeaders(), cache: 'no-store' }
         );
         if (!res.ok) throw new Error(`Load failed (${res.status})`);
@@ -81,7 +79,6 @@ export default function VideoSettingsModal({
     setError(null);
     setSaved(false);
     try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
       const headers = { ...jsonAuthHeaders(), 'Content-Type': 'application/json' };
 
       // Update localized fields per locale (only title + summary; tags read-only for now)
@@ -89,26 +86,12 @@ export default function VideoSettingsModal({
         { locale: 'de', data: { title: form.de.title, summary: form.de.summary } },
         { locale: 'en', data: { title: form.en.title, summary: form.en.summary } },
       ];
-      for (const { locale, data } of localeUpdates) {
-        const res = await fetch(
-          `${strapiUrl}/api/videos/${documentId}?locale=${locale}`,
-          {
-            method: 'PUT',
-            headers,
-            body: JSON.stringify({ data }),
-          }
-        );
-        if (!res.ok) throw new Error(`Save ${locale} failed (${res.status})`);
-      }
-
-      // Update global visibility (non-localized field)
-      const visRes = await fetch(`${strapiUrl}/api/videos/${documentId}`, {
+      const saveRes = await fetch(`/api/video/settings`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ data: { visibility } }),
+        body: JSON.stringify({ documentId, localeUpdates, visibility }),
       });
-      if (!visRes.ok) throw new Error(`Save visibility failed (${visRes.status})`);
-
+      if (!saveRes.ok) throw new Error(`Save failed (${saveRes.status})`);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e: any) {
