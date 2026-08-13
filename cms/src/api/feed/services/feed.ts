@@ -1013,7 +1013,17 @@ CRITICAL: Return JSON ONLY in this format:
               const videoData = {
                 title: item.title_de || item.title_en,
                 slug: item.slug,
-                summary: item.summary_de || item.summary_en,
+                summary: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      {
+                        type: 'text',
+                        text: String(item.summary_de || item.summary_en || '').trim(),
+                      },
+                    ],
+                  },
+                ],
                 viewsCount: item.viewsCount || 0,
                 likesCount: item.likesCount || 0,
                 mp4Url: item.mp4Url,
@@ -1045,7 +1055,17 @@ CRITICAL: Return JSON ONLY in this format:
                     data: {
                       ...videoData,
                       title: item.title_de || item.title_en,
-                      summary: item.summary_de || item.summary_en,
+                      summary: [
+                        {
+                          type: 'paragraph',
+                          children: [
+                            {
+                              type: 'text',
+                              text: String(item.summary_de || item.summary_en || '').trim(),
+                            },
+                          ],
+                        },
+                      ],
                       tags: item.tags_de || item.tags || ['Video'],
                     } as any,
                     status: 'published',
@@ -1058,33 +1078,6 @@ CRITICAL: Return JSON ONLY in this format:
           console.error('Error seeding 110 test videos from fixture:', fixtureErr);
         }
       }
-
-      const pastaVideo = await createVideoRecord({
-        title: 'Italienische Pastasoßen Masterclass',
-        slug: 'kochen-wie-der-chefkoch-italienische-pasta',
-        duration: 840,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
-        mp4Url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        creator: creators.demogourmet,
-      });
-
-      const beesVideo = await createVideoRecord({
-        title: 'Faszination Wildbienen Dokumentation',
-        slug: 'natur-artenvielfalt-wildbienen-doku',
-        duration: 1620,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?w=800&q=80',
-        mp4Url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        creator: creators.greenplanet,
-      });
-
-      const catShortVideo = await createVideoRecord({
-        title: 'Lustige Katzenwelpen 2026',
-        slug: 'suesse-katzenwelpen-lustige-momente',
-        duration: 45,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80',
-        mp4Url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        creator: creators.catmania,
-      });
 
       const seedItems = [
         {
@@ -1186,118 +1179,6 @@ CRITICAL: Return JSON ONLY in this format:
           viewsCount: 18900,
           likesCount: 2300,
           publishedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-        },
-        {
-          creator: creators.demogourmet,
-          de: {
-            title: 'Kochen wie der Chefkoch: Italienische Pastasoßen von Grund auf',
-            slug: 'kochen-wie-der-chefkoch-italienische-pasta',
-            summary: 'Das Geheimnis hinter der perfekten Carbonara und Cacio e Pepe in 15 Minuten.',
-            content: 'In diesem Video-Tutorial zeigt Küchenmeister Marco, wie mit nur 4 Zutaten unvergessliche Pasta entsteht...',
-            tags: ['Kochen', 'Rezepte', 'Kulinarik', 'Video Tutorial'],
-            blocks: [
-              {
-                __component: 'shared.video',
-                video: pastaVideo?.documentId || pastaVideo?.id,
-              },
-              {
-                __component: 'shared.headline',
-                title: 'Die Kunst der echten römischen Carbonara',
-                level: 'h2',
-              },
-            ],
-          },
-          en: {
-            title: 'Cook Like a Chef: Italian Pasta Sauces From Scratch',
-            slug: 'cook-like-a-chef-italian-pasta-sauces',
-            summary: 'The secret behind the perfect Carbonara and Cacio e Pepe in 15 minutes.',
-            content: 'In this video tutorial, master chef Marco shows how to craft unforgettable pasta...',
-            tags: ['Cooking', 'Recipes', 'Culinary', 'Video Tutorial'],
-            blocks: [
-              {
-                __component: 'shared.video',
-                video: pastaVideo?.documentId || pastaVideo?.id,
-              },
-              {
-                __component: 'shared.headline',
-                title: 'The Art of Authentic Roman Carbonara',
-                level: 'h2',
-              },
-            ],
-          },
-          mediaType: 'video',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
-          viewsCount: 92400,
-          likesCount: 14200,
-          publishedAt: new Date(Date.now() - 3600000 * 10).toISOString(),
-        },
-        {
-          creator: creators.greenplanet,
-          de: {
-            title: 'Natur & Artenvielfalt: Die faszinierende Welt der Wildbienen',
-            slug: 'natur-artenvielfalt-wildbienen-doku',
-            summary: 'Ein Dokumentarfilm über den Schutz unserer heimischen Insekten und Ökosysteme.',
-            content: 'Entdecke die überraschenden Fähigkeiten von Wildbienen...',
-            tags: ['Natur', 'Umwelt', 'Dokumentation', 'Tiere'],
-            blocks: [
-              {
-                __component: 'shared.video',
-                video: beesVideo?.documentId || beesVideo?.id,
-              },
-            ],
-          },
-          en: {
-            title: 'Nature & Biodiversity: The Fascinating World of Wild Bees',
-            slug: 'nature-biodiversity-wild-bees-doc',
-            summary: 'A documentary on protecting native insects and local ecosystems.',
-            content: 'Discover the surprising capabilities of wild bees...',
-            tags: ['Nature', 'Environment', 'Documentary', 'Animals'],
-            blocks: [
-              {
-                __component: 'shared.video',
-                video: beesVideo?.documentId || beesVideo?.id,
-              },
-            ],
-          },
-          mediaType: 'video',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?w=800&q=80',
-          viewsCount: 65100,
-          likesCount: 8900,
-          publishedAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-        },
-        {
-          creator: creators.catmania,
-          de: {
-            title: 'Süße Katzenwelpen & Ihre Lustigsten Momente 2026',
-            slug: 'suesse-katzenwelpen-lustige-momente',
-            summary: 'Lachen garantiert: Die niedlichsten Katzen beim Spielen und Toben im Familienalltag.',
-            content: 'Eine herzerwärmende Zusammenstellung für die ganze Familie...',
-            tags: ['Funny Cat Videos', 'Humor', 'Familie', 'Tiere'],
-            blocks: [
-              {
-                __component: 'shared.video',
-                video: catShortVideo?.documentId || catShortVideo?.id,
-              },
-            ],
-          },
-          en: {
-            title: 'Cute Kittens & Their Funniest Moments 2026',
-            slug: 'cute-kittens-funniest-moments-2026',
-            summary: 'Guaranteed laughs: The cutest cats playing and jumping in everyday family life.',
-            content: 'A heartwarming compilation for the entire family...',
-            tags: ['Funny Cat Videos', 'Humor', 'Family', 'Animals'],
-            blocks: [
-              {
-                __component: 'shared.video',
-                video: catShortVideo?.documentId || catShortVideo?.id,
-              },
-            ],
-          },
-          mediaType: 'short',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80',
-          viewsCount: 230000,
-          likesCount: 35000,
-          publishedAt: new Date(Date.now() - 3600000 * 30).toISOString(),
         },
       ];
 
