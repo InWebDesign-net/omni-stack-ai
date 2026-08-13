@@ -130,7 +130,12 @@
     "tagsLabel": "Tags",
     "addTag": "Add",
     "addTagPlaceholder": "Enter new tag…",
-    "removeTag": "Remove tag"
+    "removeTag": "Remove tag",
+    "cancel": "Cancel",
+    "discardChanges": "Discard changes",
+    "discardConfirmTitle": "Discard changes?",
+    "discardConfirmText": "You have unsaved changes. Do you really want to discard them?",
+    "keepEditing": "Keep editing"
   },
   "auth": {
     "googleQuickLoginError": "Google Quick Login failed.",

@@ -130,7 +130,12 @@
     "tagsLabel": "Tags",
     "addTag": "Hinzufügen",
     "addTagPlaceholder": "Neues Tag eingeben…",
-    "removeTag": "Tag entfernen"
+    "removeTag": "Tag entfernen",
+    "cancel": "Abbrechen",
+    "discardChanges": "Änderungen verwerfen",
+    "discardConfirmTitle": "Änderungen verwerfen?",
+    "discardConfirmText": "Du hast ungespeicherte Änderungen. Möchtest du diese wirklich verwerfen?",
+    "keepEditing": "Weiter bearbeiten"
   },
   "auth": {
     "googleQuickLoginError": "Google Schnell-Login fehlgeschlagen.",

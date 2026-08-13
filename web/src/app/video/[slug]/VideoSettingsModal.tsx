@@ -60,6 +60,10 @@ export default function VideoSettingsModal({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [showDiscard, setShowDiscard] = useState(false);
+
+  // Snapshot of the loaded values, used to detect unsaved changes.
+  const [snapshot, setSnapshot] = useState<{ form: { de: LocaleData; en: LocaleData }; visibility: string } | null>(null);
 
   const addTag = () => {
     const tag = newTag.trim();
@@ -95,19 +99,25 @@ export default function VideoSettingsModal({
         const de = items.find((i) => i.locale === 'de') || items[0] || {};
         const en = items.find((i) => i.locale === 'en') || {};
         if (cancelled) return;
-        setForm({
-          de: {
-            title: de.title || '',
-            summary: flattenBlocks(de.summary),
-            tags: Array.isArray(de.tags) ? de.tags : [],
-          },
-          en: {
-            title: en.title || '',
-            summary: flattenBlocks(en.summary),
-            tags: Array.isArray(en.tags) ? en.tags : [],
-          },
+        const loadedDe = {
+          title: de.title || '',
+          summary: flattenBlocks(de.summary),
+          tags: Array.isArray(de.tags) ? de.tags : [],
+        };
+        const loadedEn = {
+          title: en.title || '',
+          summary: flattenBlocks(en.summary),
+          tags: Array.isArray(en.tags) ? en.tags : [],
+        };
+        const loadedVisibility = de.visibility || en.visibility || 'public';
+        if (cancelled) return;
+        setForm({ de: loadedDe, en: loadedEn });
+        setVisibility(loadedVisibility);
+        // Capture snapshot for dirty detection
+        setSnapshot({
+          form: { de: loadedDe, en: loadedEn },
+          visibility: loadedVisibility,
         });
-        setVisibility(de.visibility || en.visibility || 'public');
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Fehler beim Laden');
       } finally {
@@ -140,7 +150,9 @@ export default function VideoSettingsModal({
       });
       if (!saveRes.ok) throw new Error(`Save failed (${saveRes.status})`);
       setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      // Update snapshot so the form is no longer dirty, then close the modal.
+      setSnapshot({ form, visibility });
+      onClose();
     } catch (e: any) {
       setError(e?.message || 'Fehler beim Speichern');
     } finally {
@@ -148,7 +160,22 @@ export default function VideoSettingsModal({
     }
   };
 
+  // Close request: if there are unsaved changes, ask for confirmation first.
+  const requestClose = () => {
+    if (isDirty) {
+      setShowDiscard(true);
+    } else {
+      onClose();
+    }
+  };
+
   const current = form[activeLocale];
+
+  // Compare current form + visibility against the loaded snapshot.
+  const isDirty =
+    !!snapshot &&
+    (snapshot.visibility !== visibility ||
+      JSON.stringify(snapshot.form) !== JSON.stringify(form));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -157,7 +184,7 @@ export default function VideoSettingsModal({
         <div className="flex items-center justify-between p-5 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
           <h2 className="text-lg font-bold text-white">{t.videoSettings.title}</h2>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
             aria-label="Close"
           >
@@ -321,6 +348,15 @@ export default function VideoSettingsModal({
                 {saved && (
                   <span className="text-xs text-emerald-300 font-medium">{t.videoSettings.saved} ✓</span>
                 )}
+                {isDirty && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDiscard(true)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-all"
+                  >
+                    {t.videoSettings.cancel}
+                  </button>
+                )}
                 <button
                   onClick={handleSave}
                   disabled={saving}
@@ -335,6 +371,35 @@ export default function VideoSettingsModal({
                 </button>
               </div>
             </>
+          )}
+
+          {/* Discard confirmation */}
+          {showDiscard && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4">
+                <h3 className="text-base font-bold text-white">{t.videoSettings.discardConfirmTitle}</h3>
+                <p className="text-sm text-slate-400">{t.videoSettings.discardConfirmText}</p>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDiscard(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-all"
+                  >
+                    {t.videoSettings.keepEditing}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDiscard(false);
+                      onClose();
+                    }}
+                    className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-sm font-bold transition-all"
+                  >
+                    {t.videoSettings.discardChanges}
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
