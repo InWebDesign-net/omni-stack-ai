@@ -135,14 +135,20 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             language: r.language || 'de',
             isAiEnabled: r.isAiEnabled || r.type === 'ai',
             unreadCount: 0,
-            messages: [],
+            messages: Array.isArray(r.messages)
+              ? r.messages.map((m: any) => ({
+                  id: m.documentId || String(m.id),
+                  senderType: m.senderType || 'user',
+                  senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'User'),
+                  content: m.content || '',
+                  timestamp: m.createdAt || new Date().toISOString(),
+                }))
+              : [],
           }));
 
           setRooms((prev) => {
             const map = new Map<string, ChatRoom>();
-            // Add server rooms first
             for (const item of loadedRooms) map.set(item.id, item);
-            // Preserve local rooms and their message histories
             for (const item of prev) {
               const existing = map.get(item.id);
               if (existing) {
@@ -188,7 +194,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   };
 
   const searchEligibleUsers = async (query: string): Promise<SearchableUser[]> => {
-    if (!query.trim()) return [];
     try {
       const res = await fetch(`/api/chat?searchUser=${encodeURIComponent(query.trim())}`, {
         headers: jsonAuthHeaders(),
@@ -215,7 +220,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     participantIds?: string[];
     language?: string;
   }): Promise<{ roomId: string | null; error?: string }> => {
-    // Instant local room creation so UI responds instantly!
     const localId = `room-${Date.now()}`;
     const localRoom: ChatRoom = {
       id: localId,
@@ -346,6 +350,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       playMessageChime();
     }
 
+    // Persist user message to Strapi 5 database
     try {
       await fetch('/api/chat', {
         method: 'POST',
@@ -356,11 +361,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           action: 'send_message',
           roomId,
+          senderType: 'user',
           content: content.trim(),
         }),
       });
     } catch (e) {
-      console.error('Failed to persist message:', e);
+      console.error('Failed to persist user message:', e);
     }
 
     // Trigger AI response if room is AI enabled
@@ -374,11 +380,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({ prompt: content, history: targetRoom.messages }),
           });
 
-          let replyText = 'Ich habe deine Nachricht im Chat verarbeitet!';
+          let replyText = 'Ich bin dein Omni KI-Assistent. Wie kann ich dir weiterhelfen?';
           if (res.ok) {
             const data = await res.json();
-            if (data.explanation || data.reply) {
-              replyText = data.explanation || data.reply;
+            if (data.response || data.explanation || data.reply || data.answer) {
+              replyText = data.response || data.explanation || data.reply || data.answer;
             }
           }
 
@@ -405,6 +411,25 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
           if (soundEnabled) {
             playMessageChime();
+          }
+
+          // Persist AI message to Strapi 5 database
+          try {
+            await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                ...jsonAuthHeaders(),
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                action: 'send_message',
+                roomId,
+                senderType: 'ai',
+                content: replyText,
+              }),
+            });
+          } catch (e) {
+            console.error('Failed to persist AI message:', e);
           }
         } catch (err) {
           console.error('Error generating AI response:', err);
