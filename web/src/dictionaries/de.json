@@ -127,7 +127,10 @@
     "languageEnglish": "Englisch",
     "titleLabel": "Titel",
     "descriptionLabel": "Beschreibung",
-    "tagsLabel": "Tags"
+    "tagsLabel": "Tags",
+    "addTag": "Hinzufügen",
+    "addTagPlaceholder": "Neues Tag eingeben…",
+    "removeTag": "Tag entfernen"
   },
   "auth": {
     "googleQuickLoginError": "Google Schnell-Login fehlgeschlagen.",

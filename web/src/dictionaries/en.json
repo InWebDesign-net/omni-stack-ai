@@ -127,7 +127,10 @@
     "languageEnglish": "English",
     "titleLabel": "Title",
     "descriptionLabel": "Description",
-    "tagsLabel": "Tags"
+    "tagsLabel": "Tags",
+    "addTag": "Add",
+    "addTagPlaceholder": "Enter new tag…",
+    "removeTag": "Remove tag"
   },
   "auth": {
     "googleQuickLoginError": "Google Quick Login failed.",

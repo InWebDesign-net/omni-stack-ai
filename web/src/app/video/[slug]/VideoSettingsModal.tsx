@@ -59,6 +59,26 @@ export default function VideoSettingsModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [newTag, setNewTag] = useState('');
+
+  const addTag = () => {
+    const tag = newTag.trim();
+    if (!tag) return;
+    setForm((prev) => {
+      const existing = prev[activeLocale].tags;
+      if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) {
+        return prev; // duplicate, ignore
+      }
+      return {
+        ...prev,
+        [activeLocale]: {
+          ...prev[activeLocale],
+          tags: [...existing, tag],
+        },
+      };
+    });
+    setNewTag('');
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -107,11 +127,11 @@ export default function VideoSettingsModal({
     try {
       const headers = { ...jsonAuthHeaders(), 'Content-Type': 'application/json' };
 
-      // Update localized fields per locale (only title + summary; tags read-only for now)
+      // Update localized fields per locale (title, summary, tags)
       // summary is a Strapi `blocks` field, so convert plain text back to blocks array
       const localeUpdates = [
-        { locale: 'de', data: { title: form.de.title, summary: textToBlocks(form.de.summary) } },
-        { locale: 'en', data: { title: form.en.title, summary: textToBlocks(form.en.summary) } },
+        { locale: 'de', data: { title: form.de.title, summary: textToBlocks(form.de.summary), tags: form.de.tags } },
+        { locale: 'en', data: { title: form.en.title, summary: textToBlocks(form.en.summary), tags: form.en.tags } },
       ];
       const saveRes = await fetch(`/api/video/settings`, {
         method: 'PUT',
@@ -214,25 +234,65 @@ export default function VideoSettingsModal({
                     />
                   </div>
 
-                  {/* Tags: display only (read-only for now) */}
+                  {/* Tags: editable per locale */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                      {t.videoSettings.tagsLabel} ({activeLocale === 'de' ? 'DE' : 'EN'}) {t.videoSettings.readOnlyHint}
+                      {t.videoSettings.tagsLabel} ({activeLocale === 'de' ? 'DE' : 'EN'})
                     </label>
+
                     {current.tags.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {current.tags.map((tag, i) => (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {current.tags.map((tag: string, i: number) => (
                           <span
-                            key={i}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-xs font-mono text-slate-300"
+                            key={`${tag}-${i}`}
+                            className="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-xs font-mono text-slate-300"
                           >
                             {tag}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  [activeLocale]: {
+                                    ...prev[activeLocale],
+                                    tags: prev[activeLocale].tags.filter((_, idx) => idx !== i),
+                                  },
+                                }))
+                              }
+                              className="text-slate-500 hover:text-rose-400 transition-all"
+                              aria-label={`${t.videoSettings.removeTag || 'Remove'} ${tag}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-500">{t.videoSettings.noTags}</span>
+                      <span className="text-xs text-slate-500 block mb-2">{t.videoSettings.noTags}</span>
                     )}
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addTag();
+                          }
+                        }}
+                        placeholder={t.videoSettings.addTagPlaceholder}
+                        className="flex-1 px-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-500 focus:border-indigo-500 outline-none transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={addTag}
+                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all"
+                      >
+                        {t.videoSettings.addTag}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
