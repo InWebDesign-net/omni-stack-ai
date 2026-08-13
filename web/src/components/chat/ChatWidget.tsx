@@ -3,47 +3,72 @@
 import React, { useState } from 'react';
 import { 
   MessageCircle, X, Maximize2, Minimize2, Settings, 
-  Search, Edit, Send, Paperclip, Smile
+  Search, Send, Sparkles, Check, CheckCheck, AlertCircle, Bot
 } from 'lucide-react';
 import ChatSettingsModal from './ChatSettingsModal';
 import { useApp } from '@/context/AppContext';
+import { useChat } from '@/context/ChatContext';
 
 export default function ChatWidget() {
   const { currentUser } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const {
+    isOpen,
+    isExpanded,
+    activeRoomId,
+    rooms,
+    activeRoom,
+    totalUnreadCount,
+    showOnlineStatus,
+    showReadReceipts,
+    openChat,
+    closeChat,
+    toggleExpand,
+    setActiveRoomId,
+    sendMessage,
+  } = useChat();
+
+  const [inputMessage, setInputMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
-
-  // Mock data for UI presentation
-  const mockRooms = [
-    { id: '1', name: 'AI Assistant', type: 'ai', lastMessage: 'How can I help you today?', time: '10:42 AM', unread: 0 },
-    { id: '2', name: 'Tech Talk', type: 'group', lastMessage: 'Did anyone see the new release?', time: '09:15 AM', unread: 3 },
-    { id: '3', name: 'Alex Johnson', type: 'direct', lastMessage: 'Sure, I can send that over.', time: 'Yesterday', unread: 0 },
-  ];
-
-  const mockMessages = [
-    { id: '1', sender: 'Alex Johnson', content: 'Hey, are we still on for the meeting?', time: '10:00 AM', isMe: false },
-    { id: '2', sender: 'Me', content: 'Yes! Just finishing up another call.', time: '10:05 AM', isMe: true },
-    { id: '3', sender: 'Alex Johnson', content: 'Great, see you in 10 mins.', time: '10:06 AM', isMe: false },
-  ];
+  const [privacyError, setPrivacyError] = useState<string | null>(null);
 
   if (!currentUser) return null;
 
-  const toggleOpen = () => setIsOpen(!isOpen);
-  const toggleExpand = () => setIsExpanded(!isExpanded);
+  const handleSend = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inputMessage.trim() || !activeRoomId) return;
+    const text = inputMessage;
+    setInputMessage('');
+    setPrivacyError(null);
 
-  // 1. Floating Support Button (Closed State)
+    await sendMessage(activeRoomId, text);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const filteredRooms = rooms.filter((r) =>
+    r.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // 1. Floating Support Button (Collapsed / Floating Launcher)
   if (!isOpen) {
     return (
       <button
-        onClick={toggleOpen}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-2xl transition-transform hover:scale-105 active:scale-95 flex items-center justify-center"
+        onClick={() => openChat()}
+        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30"
+        title="Chat & Support öffnen"
       >
         <MessageCircle className="w-6 h-6" />
-        <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-[#0f0f0f]">
-          3
-        </span>
+        {totalUnreadCount > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white border-2 border-[#080e1e]">
+            {totalUnreadCount}
+          </span>
+        )}
       </button>
     );
   }
@@ -51,141 +76,192 @@ export default function ChatWidget() {
   // 2. Full-Screen 2-Column View (WhatsApp / Telegram Style)
   if (isExpanded) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#0f0f0f] flex flex-col md:flex-row">
-        {/* Left Column - Sidebar */}
-        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-white/10 ${activeRoomId ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
-            <h2 className="font-semibold text-lg">Chats</h2>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-white/10 rounded-full">
-                <Settings className="w-5 h-5 text-white/70" />
+      <div className="fixed inset-0 z-50 bg-[#080e1e] text-[#dae2fd] flex flex-col md:flex-row font-sans">
+        {/* Left Column - Rooms Sidebar */}
+        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-800 bg-slate-900/60 ${activeRoomId ? 'hidden md:flex' : 'flex'}`}>
+          <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+            <h2 className="font-bold text-lg text-white flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-indigo-400" />
+              Omni Chat
+            </h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
+                title="Privatsphäre & Einstellungen"
+              >
+                <Settings className="w-5 h-5" />
               </button>
-              <button className="p-2 hover:bg-white/10 rounded-full">
-                <Edit className="w-5 h-5 text-white/70" />
-              </button>
-              <button onClick={toggleOpen} className="p-2 hover:bg-white/10 rounded-full md:hidden">
-                <X className="w-5 h-5 text-white/70" />
+              <button
+                onClick={closeChat}
+                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all md:hidden"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
-          <div className="p-3">
+
+          {/* Search bar */}
+          <div className="p-3 border-b border-slate-800">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Räume & Kontakte suchen..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {mockRooms.map((room) => (
-              <div 
-                key={room.id}
-                onClick={() => setActiveRoomId(room.id)}
-                className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-white/5 border-b border-white/5 ${activeRoomId === room.id ? 'bg-white/10' : ''}`}
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 flex items-center justify-center font-bold">
-                  {room.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-medium truncate">{room.name}</h3>
-                    <span className="text-xs text-white/50">{room.time}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-white/60 truncate">{room.lastMessage}</p>
-                    {room.unread > 0 && (
-                      <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
-                        {room.unread}
-                      </span>
+
+          {/* Room List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
+            {filteredRooms.map((room) => {
+              const isActive = activeRoomId === room.id || activeRoomId === room.slug;
+              return (
+                <div 
+                  key={room.id}
+                  onClick={() => setActiveRoomId(room.id)}
+                  className={`flex items-center gap-3 p-3.5 cursor-pointer transition-all ${
+                    isActive ? 'bg-indigo-600/15 border-l-4 border-indigo-500' : 'hover:bg-slate-800/50'
+                  }`}
+                >
+                  <div className="relative">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-md">
+                      {room.type === 'ai' ? <Bot className="w-5 h-5" /> : room.name.charAt(0)}
+                    </div>
+                    {showOnlineStatus && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
                     )}
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="font-semibold text-sm text-white truncate">{room.name}</h3>
+                      <span className="text-[11px] font-mono text-slate-500">
+                        {room.messages.length > 0
+                          ? new Date(room.messages[room.messages.length - 1].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : ''}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-slate-400 truncate">
+                        {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
+                      </p>
+                      {(room.unreadCount || 0) > 0 && (
+                        <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
+                          {room.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Column - Main Chat Area */}
-        <div className={`flex-1 flex flex-col bg-[#0f0f0f] ${!activeRoomId ? 'hidden md:flex' : 'flex'}`}>
-          {activeRoomId ? (
+        {/* Right Column - Active Main Chat Conversation */}
+        <div className={`flex-1 flex flex-col bg-[#080e1e] ${!activeRoomId ? 'hidden md:flex' : 'flex'}`}>
+          {activeRoom ? (
             <>
-              {/* Chat Header */}
-              <div className="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
+              {/* Chat Room Header */}
+              <div className="p-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setActiveRoomId(null)} className="md:hidden p-2 -ml-2 hover:bg-white/10 rounded-full">
-                    <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                  <button onClick={() => setActiveRoomId('')} className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white rounded-xl">
+                    <X className="w-5 h-5" />
                   </button>
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold">
-                    {mockRooms.find(r => r.id === activeRoomId)?.name.charAt(0)}
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-md">
+                      {activeRoom.type === 'ai' ? <Bot className="w-5 h-5" /> : activeRoom.name.charAt(0)}
+                    </div>
+                    {showOnlineStatus && (
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
+                    )}
                   </div>
                   <div>
-                    <h3 className="font-medium">{mockRooms.find(r => r.id === activeRoomId)?.name}</h3>
-                    <p className="text-xs text-white/50">Online</p>
+                    <h3 className="font-bold text-sm text-white flex items-center gap-2">
+                      {activeRoom.name}
+                      {activeRoom.type === 'ai' && (
+                        <span className="px-2 py-0.5 text-[10px] font-mono bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 rounded-full">
+                          Ollama AI
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {showOnlineStatus ? 'Aktiv • Live-Verschlüsselung' : 'Live-Verschlüsselung'}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={toggleExpand} className="p-2 hover:bg-white/10 rounded-full">
-                    <Minimize2 className="w-5 h-5 text-white/70" />
+                <div className="flex items-center gap-1">
+                  <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Verkleinern">
+                    <Minimize2 className="w-5 h-5" />
                   </button>
-                  <button onClick={toggleOpen} className="p-2 hover:bg-white/10 rounded-full">
-                    <X className="w-5 h-5 text-white/70" />
+                  <button onClick={closeChat} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Schließen">
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              {/* Chat Messages */}
+              {/* Privacy / Error notification banner */}
+              {privacyError && (
+                <div className="m-4 p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{privacyError}</span>
+                </div>
+              )}
+
+              {/* Chat Message History */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {mockMessages.map(msg => (
-                  <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${msg.isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white/10 text-white/90 rounded-bl-none'}`}>
-                      <p>{msg.content}</p>
-                      <span className={`text-[10px] block mt-1 ${msg.isMe ? 'text-blue-200 text-right' : 'text-white/50'}`}>
-                        {msg.time}
-                      </span>
+                {activeRoom.messages.map((msg) => {
+                  const isMe = msg.senderType === 'user' && msg.senderName === 'Du';
+                  return (
+                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-md ${
+                        isMe 
+                          ? 'bg-indigo-600 text-white rounded-br-none' 
+                          : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'
+                      }`}>
+                        {!isMe && <div className="text-[11px] font-bold text-indigo-400 mb-1">{msg.senderName}</div>}
+                        <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                        <div className="flex items-center justify-end gap-1.5 mt-1.5">
+                          <span className={`text-[10px] font-mono ${isMe ? 'text-indigo-200' : 'text-slate-500'}`}>
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {isMe && showReadReceipts && (
+                            <CheckCheck className="w-3.5 h-3.5 text-indigo-200" />
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
-              {/* Chat Input */}
-              <div className="p-4 bg-white/5 border-t border-white/10">
-                <div className="flex items-end gap-2 bg-[#0f0f0f] border border-white/10 rounded-xl p-2">
-                  <button className="p-2 text-white/50 hover:text-white/90 transition-colors">
-                    <Smile className="w-5 h-5" />
-                  </button>
-                  <button className="p-2 text-white/50 hover:text-white/90 transition-colors">
-                    <Paperclip className="w-5 h-5" />
-                  </button>
+              {/* Chat Input Field */}
+              <form onSubmit={handleSend} className="p-4 bg-slate-900/60 border-t border-slate-800">
+                <div className="flex items-end gap-2 bg-slate-950 border border-slate-800 rounded-2xl p-2 focus-within:border-indigo-500 transition-colors">
                   <textarea
-                    placeholder="Type a message..."
-                    className="flex-1 max-h-32 min-h-[40px] bg-transparent resize-none focus:outline-none py-2 text-sm"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Nachricht schreiben..."
+                    className="flex-1 max-h-32 min-h-[40px] bg-transparent resize-none focus:outline-none py-2 px-3 text-sm text-slate-100"
                     rows={1}
                   />
-                  <button className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex-shrink-0">
+                  <button
+                    type="submit"
+                    className="p-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md flex-shrink-0"
+                  >
                     <Send className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
+              </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-white/50">
-              <div className="flex items-center justify-between w-full absolute top-0 p-4">
-                <div />
-                <div className="flex items-center gap-2">
-                  <button onClick={toggleExpand} className="p-2 hover:bg-white/10 rounded-full">
-                    <Minimize2 className="w-5 h-5 text-white/70" />
-                  </button>
-                  <button onClick={toggleOpen} className="p-2 hover:bg-white/10 rounded-full">
-                    <X className="w-5 h-5 text-white/70" />
-                  </button>
-                </div>
-              </div>
-              <MessageCircle className="w-16 h-16 mb-4 opacity-20" />
-              <p>Select a chat to start messaging</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
+              <Sparkles className="w-12 h-12 mb-3 opacity-30 text-indigo-400 animate-pulse" />
+              <p className="text-sm">Wähle einen Chatraum aus, um zu schreiben.</p>
             </div>
           )}
         </div>
@@ -194,91 +270,124 @@ export default function ChatWidget() {
     );
   }
 
-  // 3. Compact Overlay Card Modal (400x580px)
+  // 3. Compact Support Overlay Card Modal (400x580px)
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col w-[400px] h-[580px] bg-[#0f0f0f] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col w-[400px] h-[580px] bg-[#080e1e] border border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-white/10 bg-white/5">
-        {activeRoomId ? (
+      <div className="flex items-center justify-between p-3.5 border-b border-slate-800 bg-slate-900/80">
+        {activeRoom ? (
           <div className="flex items-center gap-2">
-            <button onClick={() => setActiveRoomId(null)} className="p-1 hover:bg-white/10 rounded-full">
-              <svg className="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+            <button onClick={() => setActiveRoomId('')} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white">
+              <X className="w-4 h-4" />
             </button>
-            <h3 className="font-medium text-sm truncate max-w-[150px]">
-              {mockRooms.find(r => r.id === activeRoomId)?.name}
+            <h3 className="font-bold text-sm text-white truncate max-w-[170px]">
+              {activeRoom.name}
             </h3>
           </div>
         ) : (
-          <h2 className="font-semibold px-2">Messages</h2>
+          <h2 className="font-bold text-sm text-white px-1">Omni Chat</h2>
         )}
         
         <div className="flex items-center gap-1">
-          <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 hover:bg-white/10 rounded-full transition-colors" title="Settings">
-            <Settings className="w-4 h-4 text-white/70" />
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
+            title="Einstellungen"
+          >
+            <Settings className="w-4 h-4" />
           </button>
-          <button onClick={toggleExpand} className="p-1.5 hover:bg-white/10 rounded-full transition-colors" title="Expand">
-            <Maximize2 className="w-4 h-4 text-white/70" />
+          <button
+            onClick={toggleExpand}
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
+            title="Maximieren"
+          >
+            <Maximize2 className="w-4 h-4" />
           </button>
-          <button onClick={toggleOpen} className="p-1.5 hover:bg-white/10 rounded-full transition-colors" title="Close">
-            <X className="w-4 h-4 text-white/70" />
+          <button
+            onClick={closeChat}
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
+            title="Schließen"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {activeRoomId ? (
-          // Active Chat View (Compact)
+      {/* Body Content */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#080e1e]">
+        {activeRoom ? (
           <>
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {mockMessages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${msg.isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white/10 text-white/90 rounded-bl-none'}`}>
-                    <p>{msg.content}</p>
-                    <span className={`text-[9px] block mt-1 ${msg.isMe ? 'text-blue-200 text-right' : 'text-white/50'}`}>
-                      {msg.time}
-                    </span>
+              {activeRoom.messages.map((msg) => {
+                const isMe = msg.senderType === 'user' && msg.senderName === 'Du';
+                return (
+                  <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs shadow-md ${
+                      isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'
+                    }`}>
+                      {!isMe && <div className="text-[10px] font-bold text-indigo-400 mb-1">{msg.senderName}</div>}
+                      <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      <div className="flex items-center justify-end gap-1 mt-1">
+                        <span className={`text-[9px] font-mono ${isMe ? 'text-indigo-200' : 'text-slate-500'}`}>
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {isMe && showReadReceipts && (
+                          <CheckCheck className="w-3 h-3 text-indigo-200" />
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-            <div className="p-3 bg-white/5 border-t border-white/10">
-              <div className="flex items-end gap-2 bg-[#0f0f0f] border border-white/10 rounded-xl p-1.5">
+            <form onSubmit={handleSend} className="p-3 bg-slate-900/60 border-t border-slate-800">
+              <div className="flex items-end gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1.5 focus-within:border-indigo-500 transition-colors">
                 <textarea
-                  placeholder="Message..."
-                  className="flex-1 max-h-24 min-h-[32px] bg-transparent resize-none focus:outline-none py-1.5 px-2 text-sm"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Nachricht schreiben..."
+                  className="flex-1 max-h-24 min-h-[36px] bg-transparent resize-none focus:outline-none py-1.5 px-2 text-xs text-slate-100"
                   rows={1}
                 />
-                <button className="p-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex-shrink-0">
-                  <Send className="w-4 h-4" />
+                <button type="submit" className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors flex-shrink-0">
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               </div>
-            </div>
+            </form>
           </>
         ) : (
-          // Room List View (Compact)
-          <div className="flex-1 overflow-y-auto">
-            {mockRooms.map((room) => (
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
+            {rooms.map((room) => (
               <div 
                 key={room.id}
                 onClick={() => setActiveRoomId(room.id)}
-                className="flex items-center gap-3 p-3 cursor-pointer hover:bg-white/5 border-b border-white/5"
+                className="flex items-center gap-3 p-3.5 cursor-pointer hover:bg-slate-800/50 transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 flex items-center justify-center font-bold text-sm">
-                  {room.name.charAt(0)}
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white text-sm shadow-md">
+                    {room.type === 'ai' ? <Bot className="w-4 h-4" /> : room.name.charAt(0)}
+                  </div>
+                  {showOnlineStatus && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
-                    <h3 className="font-medium text-sm truncate">{room.name}</h3>
-                    <span className="text-[10px] text-white/50">{room.time}</span>
+                    <h3 className="font-semibold text-xs text-white truncate">{room.name}</h3>
+                    <span className="text-[9px] font-mono text-slate-500">
+                      {room.messages.length > 0
+                        ? new Date(room.messages[room.messages.length - 1].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : ''}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center mt-0.5">
-                    <p className="text-xs text-white/60 truncate">{room.lastMessage}</p>
-                    {room.unread > 0 && (
-                      <span className="bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-2">
-                        {room.unread}
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
+                    </p>
+                    {(room.unreadCount || 0) > 0 && (
+                      <span className="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-2">
+                        {room.unreadCount}
                       </span>
                     )}
                   </div>

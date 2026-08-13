@@ -163,6 +163,10 @@ export default {
         await enablePermission(publicRole.id, 'api::comment.comment.create');
         await enablePermission(publicRole.id, 'api::video.video.find');
         await enablePermission(publicRole.id, 'api::video.video.findOne');
+        await enablePermission(publicRole.id, 'api::chat-room.chat-room.find');
+        await enablePermission(publicRole.id, 'api::chat-room.chat-room.findOne');
+        await enablePermission(publicRole.id, 'api::chat-message.chat-message.find');
+        await enablePermission(publicRole.id, 'api::chat-message.chat-message.findOne');
         for (const action of publicFeedActions) {
           await enablePermission(publicRole.id, action);
         }
@@ -179,6 +183,13 @@ export default {
         await enablePermission(authRole.id, 'api::video.video.find');
         await enablePermission(authRole.id, 'api::video.video.findOne');
         await enablePermission(authRole.id, 'api::video.video.update');
+        await enablePermission(authRole.id, 'api::chat-room.chat-room.find');
+        await enablePermission(authRole.id, 'api::chat-room.chat-room.findOne');
+        await enablePermission(authRole.id, 'api::chat-room.chat-room.create');
+        await enablePermission(authRole.id, 'api::chat-room.chat-room.update');
+        await enablePermission(authRole.id, 'api::chat-message.chat-message.find');
+        await enablePermission(authRole.id, 'api::chat-message.chat-message.findOne');
+        await enablePermission(authRole.id, 'api::chat-message.chat-message.create');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }
