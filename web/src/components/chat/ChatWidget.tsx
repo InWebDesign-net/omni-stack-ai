@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   MessageCircle, X, Maximize2, Minimize2, Settings, 
   Search, Send, Sparkles, AlertCircle, Bot, ArrowLeft,
@@ -40,6 +40,16 @@ export default function ChatWidget() {
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
 
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeRoom?.messages?.length, isOpen, isExpanded, activeRoomId]);
+
   useEffect(() => {
     if (isNewChatOpen) {
       handleUserSearchChange(userSearchQuery || 'a');
@@ -56,6 +66,7 @@ export default function ChatWidget() {
     setPrivacyError(null);
 
     await sendMessage(activeRoomId, text);
+    setTimeout(scrollToBottom, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -335,6 +346,7 @@ export default function ChatWidget() {
                     </div>
                   );
                 })}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Chat Input Field */}
@@ -462,6 +474,7 @@ export default function ChatWidget() {
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} />
             </div>
             <form onSubmit={handleSend} className="p-3 bg-slate-900/60 border-t border-slate-800">
               <div className="flex items-end gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1.5 focus-within:border-indigo-500 transition-colors">
