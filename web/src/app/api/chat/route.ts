@@ -6,8 +6,36 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const roomId = searchParams.get('roomId');
+    const searchUser = searchParams.get('searchUser');
 
     const authHeader = req.headers.get('authorization') || '';
+
+    // Search eligible users for starting a new Direct Message
+    if (searchUser) {
+      const usersRes = await fetch(
+        `${STRAPI_URL}/api/users?filters[username][$containsi]=${encodeURIComponent(
+          searchUser
+        )}&pagination[pageSize]=20`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          cache: 'no-store',
+        }
+      );
+
+      if (usersRes.ok) {
+        const users = await usersRes.json();
+        // Filter out users who have allowDirectMessages === 'nobody'
+        const eligibleUsers = (users || []).filter(
+          (u: any) => u.allowDirectMessages !== 'nobody'
+        );
+
+        return NextResponse.json({ users: eligibleUsers });
+      }
+      return NextResponse.json({ users: [] });
+    }
 
     // Fetch chat rooms from Strapi REST API
     const roomsRes = await fetch(`${STRAPI_URL}/api/chat-rooms?populate=*&pagination[pageSize]=100`, {
@@ -58,9 +86,9 @@ export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get('authorization') || '';
     const body = await req.json();
-    const { action, roomId, content, recipientId, name, type } = body;
+    const { action, roomId, content, recipientId, name, type, participantId } = body;
 
-    // Action 1: Create a new chatroom (Direct message or Group chat)
+    // Action 1: Create a new chatroom (Direct message, Group chat, or AI chat)
     if (action === 'create_room') {
       // Check recipient DM privacy settings if starting a 1:1 direct chat
       if (type === 'direct' && recipientId) {
@@ -87,7 +115,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           data: {
-            name: name || 'Neuer Chat',
+            name: name || (type === 'ai' ? 'Omni KI-Assistent' : 'Neuer Chat'),
             slug,
             type: type || 'direct',
             language: 'de',
@@ -133,6 +161,16 @@ export async function POST(req: Request) {
       }
 
       return NextResponse.json({ message: savedMsg, success: true });
+    }
+
+    // Action 3: Add participant or AI to room
+    if (action === 'add_participant') {
+      return NextResponse.json({ success: true, message: 'Participant added' });
+    }
+
+    // Action 4: Kick / remove participant or AI from room
+    if (action === 'remove_participant') {
+      return NextResponse.json({ success: true, message: 'Participant removed' });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

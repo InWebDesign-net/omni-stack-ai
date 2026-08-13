@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Shield } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
@@ -11,7 +12,7 @@ interface ChatSettingsModalProps {
 }
 
 export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModalProps) {
-  const { currentUser, setCurrentUser, t } = useApp();
+  const { currentUser, setCurrentUser } = useApp();
   const {
     userPrivacySetting,
     updateUserPrivacySetting,
@@ -41,7 +42,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
     });
   }, [userPrivacySetting, soundEnabled, showOnlineStatus, showReadReceipts, isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof window === 'undefined') return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,26 +69,26 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
     }, 1200);
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
       <div 
-        className="bg-[#0b0f19] border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col"
+        className="bg-[#0b0f19] border border-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/60">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/80">
+          <div className="flex items-center gap-2.5">
             <Shield className="w-5 h-5 text-indigo-400" />
             <h2 className="font-bold text-lg text-white">Chat-Einstellungen & Privatsphäre</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-6 overflow-y-auto max-h-[80vh]">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[80vh]">
           {successMsg && (
             <div className="flex items-center gap-2 p-3 bg-emerald-500/20 text-emerald-400 rounded-xl text-sm border border-emerald-500/20">
               <CheckCircle2 className="w-4 h-4" />
@@ -98,7 +99,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
           <div className="space-y-3">
             <label className="block text-sm font-bold text-slate-200">Wer darf mir Direktnachrichten senden?</label>
             <div className="space-y-2">
-              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
+              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
                 <input
                   type="radio"
                   name="allowDirectMessages"
@@ -113,7 +114,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
+              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
                 <input
                   type="radio"
                   name="allowDirectMessages"
@@ -128,7 +129,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
+              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
                 <input
                   type="radio"
                   name="allowDirectMessages"
@@ -212,6 +213,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

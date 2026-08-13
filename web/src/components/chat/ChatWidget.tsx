@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import { 
   MessageCircle, X, Maximize2, Minimize2, Settings, 
-  Search, Send, Sparkles, Check, CheckCheck, AlertCircle, Bot
+  Search, Send, Sparkles, AlertCircle, Bot, ArrowLeft,
+  Plus, UserPlus, UserCheck, CheckCheck
 } from 'lucide-react';
 import ChatSettingsModal from './ChatSettingsModal';
 import { useApp } from '@/context/AppContext';
-import { useChat } from '@/context/ChatContext';
+import { useChat, SearchableUser } from '@/context/ChatContext';
 
 export default function ChatWidget() {
   const { currentUser } = useApp();
@@ -25,11 +26,18 @@ export default function ChatWidget() {
     toggleExpand,
     setActiveRoomId,
     sendMessage,
+    createRoom,
+    searchEligibleUsers,
+    addParticipantToRoom,
   } = useChat();
 
   const [inputMessage, setInputMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
 
   if (!currentUser) return null;
@@ -51,11 +59,47 @@ export default function ChatWidget() {
     }
   };
 
+  const handleUserSearchChange = async (query: string) => {
+    setUserSearchQuery(query);
+    if (!query.trim()) {
+      setUserSearchResults([]);
+      return;
+    }
+    setIsSearchingUsers(true);
+    const results = await searchEligibleUsers(query);
+    setUserSearchResults(results);
+    setIsSearchingUsers(false);
+  };
+
+  const handleStartAiChat = async () => {
+    setIsNewChatOpen(false);
+    const res = await createRoom({
+      name: 'Omni KI-Assistent',
+      type: 'ai',
+    });
+    if (res.error) {
+      setPrivacyError(res.error);
+    }
+  };
+
+  const handleStartDirectUserChat = async (targetUser: SearchableUser) => {
+    setIsNewChatOpen(false);
+    const res = await createRoom({
+      name: targetUser.username,
+      type: 'direct',
+      recipientId: targetUser.id,
+      participantIds: [targetUser.id],
+    });
+    if (res.error) {
+      setPrivacyError(res.error);
+    }
+  };
+
   const filteredRooms = rooms.filter((r) =>
     r.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // 1. Floating Support Button (Collapsed / Floating Launcher)
+  // 1. Floating Support Button (Collapsed / Launcher State)
   if (!isOpen) {
     return (
       <button
@@ -86,6 +130,13 @@ export default function ChatWidget() {
             </h2>
             <div className="flex items-center gap-1">
               <button
+                onClick={() => setIsNewChatOpen(true)}
+                className="p-2 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-all"
+                title="Neuen Chat erstellen"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+              <button
                 onClick={() => setIsSettingsOpen(true)}
                 className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
                 title="Privatsphäre & Einstellungen"
@@ -115,49 +166,75 @@ export default function ChatWidget() {
             </div>
           </div>
 
-          {/* Room List */}
+          {/* Room List or Empty State */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
-            {filteredRooms.map((room) => {
-              const isActive = activeRoomId === room.id || activeRoomId === room.slug;
-              return (
-                <div 
-                  key={room.id}
-                  onClick={() => setActiveRoomId(room.id)}
-                  className={`flex items-center gap-3 p-3.5 cursor-pointer transition-all ${
-                    isActive ? 'bg-indigo-600/15 border-l-4 border-indigo-500' : 'hover:bg-slate-800/50'
-                  }`}
-                >
-                  <div className="relative">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-md">
-                      {room.type === 'ai' ? <Bot className="w-5 h-5" /> : room.name.charAt(0)}
-                    </div>
-                    {showOnlineStatus && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline">
-                      <h3 className="font-semibold text-sm text-white truncate">{room.name}</h3>
-                      <span className="text-[11px] font-mono text-slate-500">
-                        {room.messages.length > 0
-                          ? new Date(room.messages[room.messages.length - 1].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                          : ''}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <p className="text-xs text-slate-400 truncate">
-                        {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
-                      </p>
-                      {(room.unreadCount || 0) > 0 && (
-                        <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
-                          {room.unreadCount}
-                        </span>
+            {filteredRooms.length === 0 ? (
+              <div className="p-6 text-center space-y-4">
+                <Sparkles className="w-10 h-10 mx-auto text-indigo-400 opacity-40 animate-pulse" />
+                <div>
+                  <h4 className="font-bold text-sm text-white mb-1">Keine Konversationen</h4>
+                  <p className="text-xs text-slate-400">Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.</p>
+                </div>
+                <div className="space-y-2 pt-2">
+                  <button
+                    onClick={handleStartAiChat}
+                    className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                  >
+                    <Bot className="w-4 h-4" />
+                    <span>KI-Assistenten starten</span>
+                  </button>
+                  <button
+                    onClick={() => setIsNewChatOpen(true)}
+                    className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700"
+                  >
+                    <UserPlus className="w-4 h-4 text-teal-400" />
+                    <span>Nutzer anschreiben</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              filteredRooms.map((room) => {
+                const isActive = activeRoomId === room.id || activeRoomId === room.slug;
+                return (
+                  <div 
+                    key={room.id}
+                    onClick={() => setActiveRoomId(room.id)}
+                    className={`flex items-center gap-3 p-3.5 cursor-pointer transition-all ${
+                      isActive ? 'bg-indigo-600/15 border-l-4 border-indigo-500' : 'hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <div className="relative">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-md">
+                        {room.type === 'ai' ? <Bot className="w-5 h-5" /> : room.name.charAt(0)}
+                      </div>
+                      {showOnlineStatus && (
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
                       )}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline">
+                        <h3 className="font-semibold text-sm text-white truncate">{room.name}</h3>
+                        <span className="text-[11px] font-mono text-slate-500">
+                          {room.messages.length > 0
+                            ? new Date(room.messages[room.messages.length - 1].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : ''}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-xs text-slate-400 truncate">
+                          {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
+                        </p>
+                        {(room.unreadCount || 0) > 0 && (
+                          <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
+                            {room.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -168,8 +245,8 @@ export default function ChatWidget() {
               {/* Chat Room Header */}
               <div className="p-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setActiveRoomId('')} className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white rounded-xl">
-                    <X className="w-5 h-5" />
+                  <button onClick={() => setActiveRoomId(null)} className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white rounded-xl">
+                    <ArrowLeft className="w-5 h-5" />
                   </button>
                   <div className="relative">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-md">
@@ -194,6 +271,14 @@ export default function ChatWidget() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => addParticipantToRoom(activeRoom.id, { name: 'Omni AI Agent', type: 'ai' })}
+                    className="p-2 hover:bg-slate-800 text-teal-400 hover:text-teal-300 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold"
+                    title="KI-Agent zum Gespräch einladen"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span className="hidden sm:inline">KI einladen</span>
+                  </button>
                   <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Verkleinern">
                     <Minimize2 className="w-5 h-5" />
                   </button>
@@ -215,6 +300,18 @@ export default function ChatWidget() {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {activeRoom.messages.map((msg) => {
                   const isMe = msg.senderType === 'user' && msg.senderName === 'Du';
+                  const isSystem = msg.senderType === 'system';
+
+                  if (isSystem) {
+                    return (
+                      <div key={msg.id} className="flex justify-center my-2">
+                        <span className="px-3 py-1 bg-slate-900 border border-slate-800 text-slate-400 rounded-full text-[11px] font-mono">
+                          {msg.content}
+                        </span>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-md ${
@@ -259,13 +356,15 @@ export default function ChatWidget() {
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center">
               <Sparkles className="w-12 h-12 mb-3 opacity-30 text-indigo-400 animate-pulse" />
-              <p className="text-sm">Wähle einen Chatraum aus, um zu schreiben.</p>
+              <h3 className="font-bold text-base text-white mb-1">Kein Chat gewählt</h3>
+              <p className="text-xs text-slate-400 max-w-sm">Wähle einen Raum aus der linken Spalte oder starte einen neuen Chat mit der KI oder einem Nutzer.</p>
             </div>
           )}
         </div>
         <ChatSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+        {renderNewChatModal()}
       </div>
     );
   }
@@ -277,18 +376,28 @@ export default function ChatWidget() {
       <div className="flex items-center justify-between p-3.5 border-b border-slate-800 bg-slate-900/80">
         {activeRoom ? (
           <div className="flex items-center gap-2">
-            <button onClick={() => setActiveRoomId('')} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white">
-              <X className="w-4 h-4" />
+            <button onClick={() => setActiveRoomId(null)} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white" title="Zurück zur Raumliste">
+              <ArrowLeft className="w-4 h-4" />
             </button>
             <h3 className="font-bold text-sm text-white truncate max-w-[170px]">
               {activeRoom.name}
             </h3>
           </div>
         ) : (
-          <h2 className="font-bold text-sm text-white px-1">Omni Chat</h2>
+          <h2 className="font-bold text-sm text-white px-1 flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-indigo-400" />
+            Omni Chat
+          </h2>
         )}
         
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setIsNewChatOpen(true)}
+            className="p-1.5 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-colors"
+            title="Neuen Chat erstellen"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
@@ -320,6 +429,18 @@ export default function ChatWidget() {
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {activeRoom.messages.map((msg) => {
                 const isMe = msg.senderType === 'user' && msg.senderName === 'Du';
+                const isSystem = msg.senderType === 'system';
+
+                if (isSystem) {
+                  return (
+                    <div key={msg.id} className="flex justify-center my-1.5">
+                      <span className="px-2.5 py-0.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-full text-[10px] font-mono">
+                        {msg.content}
+                      </span>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs shadow-md ${
@@ -358,46 +479,152 @@ export default function ChatWidget() {
           </>
         ) : (
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
-            {rooms.map((room) => (
-              <div 
-                key={room.id}
-                onClick={() => setActiveRoomId(room.id)}
-                className="flex items-center gap-3 p-3.5 cursor-pointer hover:bg-slate-800/50 transition-colors"
-              >
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white text-sm shadow-md">
-                    {room.type === 'ai' ? <Bot className="w-4 h-4" /> : room.name.charAt(0)}
-                  </div>
-                  {showOnlineStatus && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
-                  )}
+            {rooms.length === 0 ? (
+              <div className="p-6 text-center space-y-4">
+                <Sparkles className="w-10 h-10 mx-auto text-indigo-400 opacity-40 animate-pulse" />
+                <div>
+                  <h4 className="font-bold text-sm text-white mb-1">Keine Konversationen</h4>
+                  <p className="text-xs text-slate-400">Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.</p>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-semibold text-xs text-white truncate">{room.name}</h3>
-                    <span className="text-[9px] font-mono text-slate-500">
-                      {room.messages.length > 0
-                        ? new Date(room.messages[room.messages.length - 1].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : ''}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center mt-0.5">
-                    <p className="text-[11px] text-slate-400 truncate">
-                      {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
-                    </p>
-                    {(room.unreadCount || 0) > 0 && (
-                      <span className="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-2">
-                        {room.unreadCount}
-                      </span>
-                    )}
-                  </div>
+                <div className="space-y-2 pt-2">
+                  <button
+                    onClick={handleStartAiChat}
+                    className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                  >
+                    <Bot className="w-4 h-4" />
+                    <span>KI-Assistenten starten</span>
+                  </button>
+                  <button
+                    onClick={() => setIsNewChatOpen(true)}
+                    className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700"
+                  >
+                    <UserPlus className="w-4 h-4 text-teal-400" />
+                    <span>Nutzer anschreiben</span>
+                  </button>
                 </div>
               </div>
-            ))}
+            ) : (
+              rooms.map((room) => (
+                <div 
+                  key={room.id}
+                  onClick={() => setActiveRoomId(room.id)}
+                  className="flex items-center gap-3 p-3.5 cursor-pointer hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-white text-sm shadow-md">
+                      {room.type === 'ai' ? <Bot className="w-4 h-4" /> : room.name.charAt(0)}
+                    </div>
+                    {showOnlineStatus && (
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="font-semibold text-xs text-white truncate">{room.name}</h3>
+                      <span className="text-[9px] font-mono text-slate-500">
+                        {room.messages.length > 0
+                          ? new Date(room.messages[room.messages.length - 1].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : ''}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-0.5">
+                      <p className="text-[11px] text-slate-400 truncate">
+                        {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
+                      </p>
+                      {(room.unreadCount || 0) > 0 && (
+                        <span className="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-2">
+                          {room.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
       <ChatSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      {renderNewChatModal()}
     </div>
   );
+
+  function renderNewChatModal() {
+    if (!isNewChatOpen) return null;
+    return (
+      <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div className="bg-[#0b0f19] border border-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/80">
+            <h3 className="font-bold text-white text-sm flex items-center gap-2">
+              <UserPlus className="w-4 h-4 text-indigo-400" />
+              Neuen Chat starten
+            </h3>
+            <button onClick={() => setIsNewChatOpen(false)} className="p-1 text-slate-400 hover:text-white rounded-lg">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="p-5 space-y-4">
+            {/* Quick Option 1: AI Assistant */}
+            <button
+              onClick={handleStartAiChat}
+              className="w-full p-4 bg-indigo-600/15 border border-indigo-500/30 hover:border-indigo-500 rounded-2xl text-left transition-all flex items-center gap-3.5 group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <Bot className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-white">Mit KI-Assistent sprechen</h4>
+                <p className="text-xs text-slate-400">Frage den Assistenten nach Videos, Inhalten oder Navigation.</p>
+              </div>
+            </button>
+
+            {/* Quick Option 2: Search User */}
+            <div className="space-y-2 pt-2 border-t border-slate-800">
+              <label className="block text-xs font-bold text-slate-300">Nutzer suchen & anschreiben</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={userSearchQuery}
+                  onChange={(e) => handleUserSearchChange(e.target.value)}
+                  placeholder="Nutzername suchen..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              {isSearchingUsers && (
+                <div className="p-3 text-center text-xs text-slate-400">Suche Nutzer...</div>
+              )}
+
+              {userSearchResults.length > 0 && (
+                <div className="max-h-48 overflow-y-auto border border-slate-800 rounded-xl divide-y divide-slate-800/40 bg-slate-950">
+                  {userSearchResults.map((u) => (
+                    <div
+                      key={u.id}
+                      onClick={() => handleStartDirectUserChat(u)}
+                      className="p-3 flex items-center justify-between hover:bg-slate-900 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-xs text-white">
+                          {u.username.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-xs text-white">{u.username}</div>
+                          {u.handle && <div className="text-[10px] font-mono text-indigo-400">@{u.handle}</div>}
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold bg-indigo-600/20 text-indigo-300 px-2 py-1 rounded-full">
+                        Chat starten
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }

@@ -25,6 +25,7 @@ export interface ChatRoom {
   aiSystemPrompt?: string;
   lastMessageAt?: string;
   unreadCount?: number;
+  ownerId?: string;
   participants?: Array<{
     id: string;
     username: string;
@@ -32,6 +33,14 @@ export interface ChatRoom {
     allowDirectMessages?: 'everyone' | 'subscribers_only' | 'nobody';
   }>;
   messages: ChatMessage[];
+}
+
+export interface SearchableUser {
+  id: string;
+  username: string;
+  handle?: string;
+  avatarUrl?: string;
+  allowDirectMessages?: 'everyone' | 'subscribers_only' | 'nobody';
 }
 
 interface ChatContextType {
@@ -48,7 +57,7 @@ interface ChatContextType {
   openChat: (roomId?: string) => void;
   closeChat: () => void;
   toggleExpand: () => void;
-  setActiveRoomId: (roomId: string) => void;
+  setActiveRoomId: (roomId: string | null) => void;
   createRoom: (params: {
     name: string;
     type: 'direct' | 'group' | 'ai' | 'global';
@@ -58,6 +67,9 @@ interface ChatContextType {
   }) => Promise<{ roomId: string | null; error?: string }>;
   sendMessage: (roomId: string, content: string) => Promise<void>;
   updateUserPrivacySetting: (setting: 'everyone' | 'subscribers_only' | 'nobody') => Promise<void>;
+  searchEligibleUsers: (query: string) => Promise<SearchableUser[]>;
+  addParticipantToRoom: (roomId: string, userOrAi: { name: string; type: 'user' | 'ai' }) => Promise<void>;
+  removeParticipantFromRoom: (roomId: string, participantId: string) => Promise<void>;
   setSoundEnabled: (enabled: boolean) => void;
   setShowOnlineStatus: (enabled: boolean) => void;
   setShowReadReceipts: (enabled: boolean) => void;
@@ -65,7 +77,7 @@ interface ChatContextType {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-// Web Audio API Sound Chime (0 asset dependencies)
+// Web Audio API Sound Chime
 function playMessageChime() {
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -75,8 +87,8 @@ function playMessageChime() {
     const gain = ctx.createGain();
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 note
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5 note
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
 
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
@@ -92,52 +104,16 @@ function playMessageChime() {
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeRoomId, setActiveRoomId] = useState<string | null>('ai-assistant');
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [userPrivacySetting, setUserPrivacySetting] = useState<'everyone' | 'subscribers_only' | 'nobody'>('everyone');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [showReadReceipts, setShowReadReceipts] = useState(true);
 
-  // Initial Rooms List (Merged with server data)
-  const [rooms, setRooms] = useState<ChatRoom[]>([
-    {
-      id: 'ai-assistant',
-      slug: 'ai-assistant',
-      name: 'Omni KI-Assistent',
-      type: 'ai',
-      language: 'de',
-      isAiEnabled: true,
-      unreadCount: 0,
-      messages: [
-        {
-          id: 'm1',
-          senderType: 'ai',
-          senderName: 'Omni AI',
-          content: 'Hallo! Ich bin dein Omni KI-Assistent. Wie kann ich dir heute mit Videos, Dokumenten oder Navigation helfen?',
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    },
-    {
-      id: 'global-lounge',
-      slug: 'global-lounge',
-      name: 'Allgemeiner Tech-Lounge',
-      type: 'global',
-      language: 'de',
-      unreadCount: 1,
-      messages: [
-        {
-          id: 'm2',
-          senderType: 'user',
-          senderName: 'Database Guru',
-          content: 'Willkommen in der Omni Lounge! Habt ihr schon die neuen Vektor-Personalisierten Videos gesehen?',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-        },
-      ],
-    },
-  ]);
+  // Zero Hardcoded Fallback Rooms - Empty initial state!
+  const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
-  // Load real rooms and active room messages from backend
+  // Load real rooms from Strapi
   useEffect(() => {
     let active = true;
     const fetchRooms = async () => {
@@ -164,8 +140,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
           setRooms((prev) => {
             const map = new Map<string, ChatRoom>();
-            for (const item of prev) map.set(item.id, item);
-            for (const item of loadedRooms) {
+            for (const item of loadedRooms) map.set(item.id, item);
+            for (const item of prev) {
               if (!map.has(item.id)) map.set(item.id, item);
             }
             return Array.from(map.values());
@@ -182,7 +158,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
   }, [activeRoomId]);
 
-  const activeRoom = rooms.find((r) => r.id === activeRoomId || r.slug === activeRoomId) || rooms[0] || null;
+  const activeRoom = rooms.find((r) => r.id === activeRoomId || r.slug === activeRoomId) || null;
 
   const totalUnreadCount = rooms.reduce((sum, r) => sum + (r.unreadCount || 0), 0);
 
@@ -199,6 +175,27 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const toggleExpand = () => {
     setIsExpanded((prev) => !prev);
+  };
+
+  const searchEligibleUsers = async (query: string): Promise<SearchableUser[]> => {
+    if (!query.trim()) return [];
+    try {
+      const res = await fetch(`/api/chat?searchUser=${encodeURIComponent(query.trim())}`, {
+        headers: jsonAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.users || []).map((u: any) => ({
+        id: String(u.id),
+        username: u.username,
+        handle: u.handle,
+        avatarUrl: u.avatarUrl,
+        allowDirectMessages: u.allowDirectMessages || 'everyone',
+      }));
+    } catch (e) {
+      console.error('Failed to search eligible users:', e);
+      return [];
+    }
   };
 
   const createRoom = async (params: {
@@ -237,7 +234,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         language: params.language || 'de',
         isAiEnabled: params.type === 'ai',
         unreadCount: 0,
-        messages: [],
+        messages: params.type === 'ai' ? [
+          {
+            id: `msg-ai-welcome`,
+            senderType: 'ai',
+            senderName: 'Omni AI',
+            content: `Hallo! Ich bin dein Omni KI-Assistent in diesem Raum. Wie kann ich dir helfen?`,
+            timestamp: new Date().toISOString(),
+          }
+        ] : [],
       };
 
       setRooms((prev) => [newRoom, ...prev]);
@@ -247,6 +252,49 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       return { roomId: null, error: err?.message || 'Netzwerkfehler' };
     }
+  };
+
+  const addParticipantToRoom = async (roomId: string, userOrAi: { name: string; type: 'user' | 'ai' }) => {
+    const sysMsg: ChatMessage = {
+      id: `sys-${Date.now()}`,
+      senderType: 'system',
+      content: `${userOrAi.name} (${userOrAi.type === 'ai' ? 'KI-Agent' : 'Nutzer'}) wurde zum Chat hinzugefügt.`,
+      timestamp: new Date().toISOString(),
+    };
+
+    setRooms((prev) =>
+      prev.map((r) => {
+        if (r.id === roomId || r.slug === roomId) {
+          return {
+            ...r,
+            isAiEnabled: userOrAi.type === 'ai' ? true : r.isAiEnabled,
+            messages: [...r.messages, sysMsg],
+          };
+        }
+        return r;
+      })
+    );
+  };
+
+  const removeParticipantFromRoom = async (roomId: string, participantId: string) => {
+    const sysMsg: ChatMessage = {
+      id: `sys-${Date.now()}`,
+      senderType: 'system',
+      content: `Teilnehmer wurde aus dem Chat entfernt.`,
+      timestamp: new Date().toISOString(),
+    };
+
+    setRooms((prev) =>
+      prev.map((r) => {
+        if (r.id === roomId || r.slug === roomId) {
+          return {
+            ...r,
+            messages: [...r.messages, sysMsg],
+          };
+        }
+        return r;
+      })
+    );
   };
 
   const sendMessage = async (roomId: string, content: string) => {
@@ -273,12 +321,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       })
     );
 
-    // Play chime sound if enabled
     if (soundEnabled) {
       playMessageChime();
     }
 
-    // Persist user message to Strapi
     try {
       await fetch('/api/chat', {
         method: 'POST',
@@ -296,9 +342,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to persist message:', e);
     }
 
-    // AI Chat Handler: Trigger automated LLM response for 'ai' type rooms
+    // Trigger AI response if room is AI enabled
     const targetRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
-    if (targetRoom && targetRoom.type === 'ai') {
+    if (targetRoom && (targetRoom.type === 'ai' || targetRoom.isAiEnabled)) {
       setTimeout(async () => {
         try {
           const res = await fetch('/api/ai-intent', {
@@ -307,7 +353,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({ prompt: content, history: targetRoom.messages }),
           });
 
-          let replyText = 'Ich habe deine Anfrage analysiert und den Inhalt im Feed für dich aktualisiert!';
+          let replyText = 'Ich habe deine Nachricht im Chat verarbeitet!';
           if (res.ok) {
             const data = await res.json();
             if (data.explanation || data.reply) {
@@ -382,6 +428,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         createRoom,
         sendMessage,
         updateUserPrivacySetting,
+        searchEligibleUsers,
+        addParticipantToRoom,
+        removeParticipantFromRoom,
         setSoundEnabled,
         setShowOnlineStatus,
         setShowReadReceipts,
