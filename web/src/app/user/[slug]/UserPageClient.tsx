@@ -22,6 +22,7 @@ import {
 import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
 import Header from '@/components/Header';
+import VideoSettingsModal from '@/components/VideoSettingsModal';
 
 interface UserPageClientProps {
     profileDataInit: ProfileData;
@@ -34,6 +35,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const [activeTab, setActiveTab] = useState<'videos' | 'favorites' | 'about'>('videos');
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscriberCount, setSubscriberCount] = useState(profile.subscribersCount || 0);
+    const [editingVideo, setEditingVideo] = useState<any | null>(null);
 
     const handleSubscribeToggle = () => {
         const next = !isSubscribed;
@@ -304,6 +306,17 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                         <span>{(item.viewsCount || 0).toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
+                                                        {isOwner && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditingVideo(item)}
+                                                                aria-label={t.header.settings}
+                                                                title={t.header.settings}
+                                                                className="p-1 rounded-md text-slate-500 hover:text-indigo-400 hover:bg-slate-800 transition-all"
+                                                            >
+                                                                <Settings className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
                                                         <Heart className="w-3.5 h-3.5 text-rose-500/80" />
                                                         <span>{(item.likesCount || 0).toLocaleString()}</span>
                                                     </div>
@@ -409,7 +422,16 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         </div>
                     </div>
                 )}
-            </main>
+
+            {/* Video Settings Modal (opened from "Mein Kanal" video cards) */}
+            {editingVideo && (
+                <VideoSettingsModal
+                    documentId={editingVideo.documentId}
+                    slug={editingVideo.slug}
+                    onClose={() => setEditingVideo(null)}
+                />
+            )}
+        </main>
         </div>
     );
 }

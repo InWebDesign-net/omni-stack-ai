@@ -28,7 +28,7 @@ import {
   Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
-import VideoSettingsModal from '@/app/video/[slug]/VideoSettingsModal';
+import VideoSettingsModal from '@/components/VideoSettingsModal';
 import { useApp } from '@/context/AppContext';
 import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
