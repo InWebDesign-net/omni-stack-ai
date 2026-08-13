@@ -334,6 +334,12 @@ export default function ChatWidget() {
                       }`}>
                         {!isMe && <div className="text-[11px] font-bold text-indigo-400 mb-1">{msg.senderName}</div>}
                         <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                        {msg.meta?.vectorSummary && (
+                          <div className="mt-2 pt-2 border-t border-indigo-500/20 text-[11px] font-mono text-indigo-300 flex items-center gap-1.5 bg-indigo-950/40 px-2.5 py-1.5 rounded-xl border border-indigo-500/20">
+                            <Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                            <span>{msg.meta.vectorSummary}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-end gap-1.5 mt-1.5">
                           <span className={`text-[10px] font-mono ${isMe ? 'text-indigo-200' : 'text-slate-500'}`}>
                             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

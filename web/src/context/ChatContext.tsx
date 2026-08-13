@@ -150,6 +150,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                   senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'User'),
                   content: m.content || '',
                   timestamp: m.createdAt || new Date().toISOString(),
+                  meta: m.meta,
                 }))
               : [],
           }));
@@ -244,7 +245,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           id: `msg-ai-welcome`,
           senderType: 'ai',
           senderName: 'Omni AI',
-          content: 'Hallo! Ich bin dein Omni KI-Assistent. Wie kann ich dir heute mit Videos, Dokumenten oder Navigation helfen?',
+          content: 'Hallo! Schön, dass du da bist. Ich bin dein Omni KI-Assistent von InWebDesign.net. Hast du schon eine eigene Website oder Fragen zu unseren Hosting & KI-Lösungen?',
           timestamp: new Date().toISOString(),
         }
       ] : [],
@@ -389,12 +390,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({ prompt: content, history: targetRoom.messages }),
           });
 
-          let replyText = 'Ich bin dein Omni KI-Assistent. Wie kann ich dir weiterhelfen?';
+          let replyText = 'Hallo! Wie kann ich dir heute mit Omni und InWebDesign.net weiterhelfen?';
+          let vectorSummary: string | undefined = undefined;
+
           if (res.ok) {
             const data = await res.json();
             const text = data.aiExplanation || data.response || data.explanation || data.reply || data.answer;
             if (text) {
               replyText = text.replace(/^🤖\s*Ollama\s*\([^)]*\):\s*/i, '');
+            }
+            if (data.vectorSummary) {
+              vectorSummary = data.vectorSummary;
             }
           }
 
@@ -404,6 +410,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             senderName: 'Omni AI',
             content: replyText,
             timestamp: new Date().toISOString(),
+            meta: vectorSummary ? { vectorSummary } : undefined,
           };
 
           setRooms((prev) =>

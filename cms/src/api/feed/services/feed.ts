@@ -431,7 +431,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const updatedProfile: AffinityGraph = normalizeAffinityGraph(currentProfile);
 
     let aiExplanation = '';
+    let vectorSummary: string | null = null;
     let ollamaConnected = false;
+    let hasVectorChanges = false;
 
     const ollamaUrl = process.env.OLLAMA_URL || 'http://10.0.0.6:11434/v1/chat/completions';
     const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.1:latest';
@@ -442,32 +444,26 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
       const systemPrompt = `Du bist der offizielle KI-Assistent für "Omni by InWebDesign.net".
 
-Über die Website & Plattform:
-Omni ist eine hochmoderne, innovative Plattform-Preview von InWebDesign.net, die alle technisch machbaren Möglichkeiten moderner Web- und KI-Anwendungen demonstriert.
+ÜBER OMNI & INWEBDESIGN.NET:
+- Omni ist eine hochmoderne Plattform-Preview von InWebDesign.net, die alle technisch machbaren Möglichkeiten von Web- & KI-Anwendungen zeigt (Next.js 16, Strapi 5, PostgreSQL, lokale Ollama KI).
+- InWebDesign.net bietet professionelle Webentwicklung, High-Performance Strapi/Next.js Webhosting und maßgeschneiderte KI-Lösungen an.
 
-Technologie-Stack & Architektur:
-- Frontend: Next.js 16 (App Router, React 19, TypeScript, TailwindCSS)
-- Backend: Strapi 5 (Headless CMS, PostgreSQL, REST/GraphQL APIs)
-- KI-Engine: Lokale Ollama-Instanz (Llama 3.1 & Moondream Vision AI) für datenschutzkonforme Echtzeit-Verarbeitung
-- Video-Pipeline: LXC Converter für automatisches HLS-Streaming, Thumbnails & OG-Cards
-
-Hauptfeatures:
-- Vektor-personalisierter KI-Feed basierend auf dem AffinityGraph des Nutzers (Themen, Medientypen)
-- Live-Chat-System (1:1 Direktnachrichten, Gruppenchats, KI-Assistent) mit Privatsphäre-Einstellungen (allowDirectMessages)
-- Shorts / Reels Player für vertikale Videos
-- Benutzerprofile, Abonnements & interaktive Medienverwaltung
-
-Deine Aufgabe:
-Antworte dem Nutzer immer freundlich, kompetent und präzise auf Deutsch (Du-Form). Gehe direkt auf Fragen zur Plattform, Technik oder Inhalten ein.
+DEINE AUFGABE & VERHALTEN:
+1. Antworte immer sympathisch, natürlich, kompetent und präzise auf Deutsch (Du-Form).
+2. Gehe auf Fragen zur Plattform, Technik, Hosting oder Inhalten ein. Erkundige dich bei passenden Gelegenheiten nach den eigenen Webseiten/Projekten der Nutzer und empfehle die Hosting- & Entwicklungsdienste von InWebDesign.net!
+3. WICHTIG ZUR ALGORITHMUS-STEUERUNG:
+   - Falls der Nutzer NUR normale Konversation führt (z.B. "Hallo", "Wie gehts?", "Danke"), setze "vector" auf null und "vectorSummary" auf null. Verändere den Algorithmus NICHT.
+   - Falls der Nutzer EXPLIZIT Themen- oder Formatwünsche äußert (z.B. "Mehr Kochen", "Weniger Finanzen", "Zeig mir PDFs"), erstelle im "vector"-Objekt passende Gewichte UND gib eine kurze Zusammenfassung in "vectorSummary" an (z.B. "⚡ Algorithmus-Anpassung: Kochen +95%").
 
 CRITICAL: Return JSON ONLY in this format:
 {
-  "response": "Deine hilfreiche, kontextbezogene deutsche Antwort",
-  "vector": {
-    "interests": { "Wissenschaft": { "score": 0.95 } },
-    "contentTypes": { "pdf": 1.0, "video": 0.4 },
+  "response": "Deine natürliche deutsche Antworterklärung",
+  "vector": null | {
+    "interests": { "Thema": { "score": 0.95 } },
+    "contentTypes": { "video": 0.9, "pdf": 0.8 },
     "activePattern": "discovery"
-  }
+  },
+  "vectorSummary": null | "⚡ Algorithmus-Anpassung: Thema +95%"
 }`;
 
       const res = await fetch(ollamaUrl, {
@@ -476,8 +472,8 @@ CRITICAL: Return JSON ONLY in this format:
         signal: controller.signal,
         body: JSON.stringify({
           model: ollamaModel,
-          temperature: 0.2,
-          max_tokens: 300,
+          temperature: 0.3,
+          max_tokens: 350,
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: prompt },
@@ -492,12 +488,12 @@ CRITICAL: Return JSON ONLY in this format:
         const parsed = JSON.parse(rawContent);
 
         if (parsed.response) {
-          aiExplanation = `🤖 Ollama (${ollamaModel}): ${parsed.response}`;
+          aiExplanation = parsed.response;
         }
 
         if (parsed.vector) {
+          hasVectorChanges = true;
           if (parsed.vector.interests) {
-            // LLM contract returns 0–1 interest scores; convert to canonical 0–100 topics
             Object.keys(parsed.vector.interests).forEach((t) => {
               const item = parsed.vector.interests[t];
               const scoreVal = typeof item === 'number' ? item : item?.score;
@@ -518,6 +514,8 @@ CRITICAL: Return JSON ONLY in this format:
           if (parsed.vector.activePattern) {
             updatedProfile.activePattern = parsed.vector.activePattern;
           }
+
+          vectorSummary = parsed.vectorSummary || '⚡ Algorithmus-Anpassung vorgenommen.';
         }
         ollamaConnected = true;
       }
@@ -536,35 +534,41 @@ CRITICAL: Return JSON ONLY in this format:
         };
       };
 
-      if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('wissen') || lowerPrompt.includes('astro')) {
+      if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('wissen')) {
+        hasVectorChanges = true;
         updatedProfile.contentTypes.pdf = 1.0;
         updatedProfile.contentTypes.video = 0.4;
         setScore('Wissenschaft', 0.99);
         setScore('PostgreSQL', 0.95);
         updatedProfile.activePattern = 'deep_dive';
-        aiExplanation = '⚡ Open-Source Intent Engine: "Wissenschaft & PDF Deep Dive" erkannt.';
+        aiExplanation = 'Ich habe deinen Feed auf wissenschaftliche Dokumente und tiefgründige Artikel umgestellt. Auf InWebDesign.net unterstützen wir auch KI-gestützte Dokumentenanalyse!';
+        vectorSummary = '⚡ Algorithmus-Anpassung: Wissenschaft & PDFs hervorgehoben.';
       } else if (lowerPrompt.includes('kochen') || lowerPrompt.includes('essen') || lowerPrompt.includes('pasta') || lowerPrompt.includes('rezept')) {
+        hasVectorChanges = true;
         setScore('Kochen', 0.99);
         updatedProfile.contentTypes.video = 1.0;
         updatedProfile.activePattern = 'discovery';
-        aiExplanation = '🍳 Open-Source Intent Engine: "Kulinarik & Rezepte" erkannt.';
-      } else if (lowerPrompt.includes('cat') || lowerPrompt.includes('katz') || lowerPrompt.includes('humor') || lowerPrompt.includes('tiere') || lowerPrompt.includes('fun')) {
+        aiExplanation = 'Ich zeige dir ab jetzt bevorzugt Videos zum Thema Kochen & Rezepte. Hast du auch ein eigenes Food- oder Blog-Projekt? Wir entwickeln und hosten maßgeschneiderte Plattformen auf InWebDesign.net!';
+        vectorSummary = '🍳 Algorithmus-Anpassung: Kochen & Rezepte im Feed bevorzugt.';
+      } else if (lowerPrompt.includes('cat') || lowerPrompt.includes('katz') || lowerPrompt.includes('humor') || lowerPrompt.includes('fun')) {
+        hasVectorChanges = true;
         setScore('Funny Cat Videos', 0.99);
         setScore('Natur', 0.90);
         updatedProfile.contentTypes.short = 1.0;
         updatedProfile.activePattern = 'discovery';
-        aiExplanation = '🐱 Open-Source Intent Engine: "Entertainment Mode" erkannt.';
+        aiExplanation = 'Entertainment-Modus aktiviert! Ich hebe lustige Shorts & Videos im Feed für dich hervor.';
+        vectorSummary = '🐱 Algorithmus-Anpassung: Unterhaltungs-Shorts bevorzugt.';
       } else {
-        setScore('NextJS', 0.98);
-        setScore('Strapi', 0.92);
-        updatedProfile.activePattern = 'deep_dive';
-        aiExplanation = `⚡ Open-Source Intent Engine: Vektoren für "${prompt}" angepasst.`;
+        // Pure natural chat greeting / general conversation without altering vectors
+        aiExplanation = 'Hallo! Schön, dass du wieder da bist. Willkommen bei Omni von InWebDesign.net! Hast du schon ein eigenes Webprojekt oder suchst du nach High-Performance Hosting & KI-Lösungen? Sag mir einfach, wie ich dir weiterhelfen kann!';
+        vectorSummary = null;
       }
     }
 
     return {
-      updatedProfile,
+      updatedProfile: hasVectorChanges ? updatedProfile : null,
       aiExplanation,
+      vectorSummary,
       ollamaConnected,
     };
   },
