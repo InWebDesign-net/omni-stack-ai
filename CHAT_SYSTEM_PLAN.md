@@ -44,7 +44,30 @@ Ein Chatraum ist immer einsprachig und kann für **1:1 Direktnachrichten**, **Gr
 
 ---
 
-## 3. Frontend-Architektur (Globaler `ChatProvider` & Floating/Fullscreen Widget)
+## 3. Privatsphäre & Chat-Einstellungen (User Privacy & Policy)
+
+Damit Nutzer die Kontrolle darüber haben, wer sie anschreiben darf, erweitern wir das Nutzerprofil/User-Modell um Privatsphäre-Einstellungen.
+
+### A. User-Einstellungen im Backend (`User` / `Profile` Model)
+- `allowDirectMessages`: enum (`'everyone'`, `'subscribers_only'`, `'nobody'`) — Default: `'everyone'`
+  - `'everyone'`: Jeder angemeldete Nutzer darf einen 1:1 Chat starten.
+  - `'subscribers_only'`: Nur Nutzer, die den Kanal des Empfängers abonniert haben, dürfen ihn anschreiben.
+  - `'nobody'`: Der Nutzer möchte von niemandem direkt angeschrieben werden.
+- `soundNotifications`: boolean — Default: `true` (Sound bei neuen Nachrichten an/aus)
+- `showOnlineStatus`: boolean — Default: `true` (Online-Status für andere sichtbar/unsichtbar)
+- `showReadReceipts`: boolean — Default: `true` (Lesebestätigungen senden an/aus)
+
+### B. Auswirkungen auf die Benutzeroberfläche & Profilseite (`/user/[slug]`)
+1. **Button "Nachricht" / "Chatte mit mir" auf der Profilseite**:
+   - Vor dem Rendern des Nachricht-Buttons prüft das Frontend die Einstellung `allowDirectMessages` des Ziel-Nutzers sowie den Abonnenten-Status des Besuchers.
+   - **Bei `'nobody'`**: Der "Nachricht"-Button wird ausgeblendet oder deaktiviert mit Tooltip: *"Dieser Nutzer akzeptiert aktuell keine Direktnachrichten."*
+   - **Bei `'subscribers_only'` & Nicht-Abonnent**: Der Button zeigt: *"Nur für Abonnenten"* und fordert zum Abonnieren auf.
+2. **Serverseitige Validierung vor Chat-Erstellung**:
+   - Wenn ein Nutzer versucht, per API/Action einen 1:1 Chatraum zu erstellen, prüft das Backend die Einstellung des Empfängers und blockiert unbefugte Anfragen mit `403 Privacy Restricted`.
+
+---
+
+## 4. Frontend-Architektur (Globaler `ChatProvider` & Floating/Fullscreen Widget)
 
 Das Chat-System wird über einen **globalen React Context (`ChatProvider`)** in `layout.tsx` eingebunden. Dadurch bleibt der Zustand (geöffnete Räume, Ungelesen-Badge, Nachrichtenverlauf) bei der Navigation über die gesamte Website hinweg nahtlos erhalten.
 
@@ -61,6 +84,7 @@ Der Provider verwaltet den globalen Zustand:
   - `toggleExpand()`
   - `createRoom({ name, type, participants })`
   - `sendMessage(roomId, text)`
+  - `updateChatSettings(settings)`
 
 ### B. `ChatWidget.tsx` (`src/components/chat/ChatWidget.tsx`)
 Stellt das visuelle Interface im Frontend bereit:
@@ -73,7 +97,7 @@ Stellt das visuelle Interface im Frontend bereit:
 2. **Kompaktes Modales Fenster (Support-Style Overlay)**:
    - Größe: ca. `400px × 580px`.
    - Schwebender Card-Look mit Header, Raum-Auswahl-Dropdown und Nachrichtenfenster.
-   - Buttons im Header: **Maximieren** (Großansicht), **Minimieren**, **Schließen**.
+   - Buttons im Header: **Einstellungen (Zahnrad)**, **Maximieren** (Großansicht), **Minimieren**, **Schließen**.
 
 3. **Erweiterter Vollbild-Modus (WhatsApp / Telegram Style)**:
    - Füllt bei Klick auf "Maximieren" das gesamte Fenster oder das große Desktop-Layout.
@@ -86,7 +110,7 @@ Stellt das visuelle Interface im Frontend bereit:
 
 ---
 
-## 4. KI-Integration im Chatraum (`type: 'ai'`)
+## 5. KI-Integration im Chatraum (`type: 'ai'`)
 
 Wenn ein Nutzer in einem Chatraum vom Typ `'ai'` eine Nachricht schreibt:
 1. Die Nutzereingabe wird im Raum gerendert und via Strapi/WebSocket gespeichert.
@@ -95,18 +119,19 @@ Wenn ein Nutzer in einem Chatraum vom Typ `'ai'` eine Nachricht schreibt:
 
 ---
 
-## 5. Umsetzungs-Schritte für die Implementierung
+## 6. Umsetzungs-Schritte für die Implementierung
 
 1. **Schritt 1 (Strapi Backend)**:
-   - Erstellen der Content-Types `chat-room` & `chat-message` in Strapi.
+   - Erstellen der Content-Types `chat-room` & `chat-message` sowie Erweiterung des User-Modells um `allowDirectMessages` & Privatsphäre-Felder in Strapi.
    - Anbinden von `socket.io` am Strapi HTTP Server für Realtime-Broadcasting.
-   - REST API Endpunkte für Raum-Erstellung & Verlauf-Laden.
+   - REST API Endpunkte für Raum-Erstellung & Verlauf-Laden mit Privatsphäre-Prüfung.
 
 2. **Schritt 2 (Next.js Frontend)**:
    - Erstellen von `ChatProvider.tsx` mit Socket.io Client & SWR Fallback.
    - Bau von `ChatWidget.tsx` (Schwebend + Vollbild WhatsApp-Style).
+   - Anpassen der Profilseite (`/user/[slug]`) bzgl. "Nachricht"-Button Sichtbarkeit.
    - Einbindung im User-Menü & Header.
 
 3. **Schritt 3 (KI-Anbindung & Polish)**:
    - KI-Antwort-Logik für AI-Chaträume verknüpfen.
-   - Testen von 1:1, Gruppen- & KI-Chats.
+   - Testen von 1:1, Gruppen- & KI-Chats inklusive Privatsphäre-Sperren.
