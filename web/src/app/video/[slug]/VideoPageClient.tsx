@@ -32,6 +32,7 @@ import VideoSettingsModal from '@/components/VideoSettingsModal';
 import { useApp } from '@/context/AppContext';
 import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
+import { formatRelativeDate } from '@/lib/date';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -455,7 +456,7 @@ export default function VideoPageClient({
                   {video.createdAt && (
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-slate-500" />
-                      <span>{new Date(video.createdAt).toLocaleDateString(effectiveLang === 'en' ? 'en-US' : 'de-DE')}</span>
+                      <span>{formatRelativeDate(video.createdAt, effectiveLang)}</span>
                     </div>
                   )}
                 </div>
