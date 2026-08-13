@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "chat_rooms",
+  "info": {
+    "singularName": "chat-room",
+    "pluralName": "chat-rooms",
+    "displayName": "Chat Room"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "direct",
+        "group",
+        "ai",
+        "global"
+      ],
+      "required": true
+    },
+    "language": {
+      "type": "string"
+    },
+    "participants": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "chatRooms"
+    },
+    "isAiEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "aiSystemPrompt": {
+      "type": "text"
+    },
+    "lastMessageAt": {
+      "type": "datetime"
+    },
+    "messages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::chat-message.chat-message",
+      "mappedBy": "room"
+    }
+  }
+}

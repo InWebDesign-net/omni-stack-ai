@@ -87,6 +87,21 @@
     },
     "affinityGraph": {
       "type": "json"
+    },
+    "allowDirectMessages": {
+      "type": "enumeration",
+      "enum": [
+        "everyone",
+        "subscribers_only",
+        "nobody"
+      ],
+      "default": "everyone"
+    },
+    "chatRooms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::chat-room.chat-room",
+      "mappedBy": "participants"
     }
   }
 }
