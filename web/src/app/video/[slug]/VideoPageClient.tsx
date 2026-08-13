@@ -190,7 +190,7 @@ export default function VideoPageClient({
   const loadComments = async () => {
     setLoadingComments(true);
     try {
-      const items = await fetchCommentsForSlug(slug);
+      const items = await fetchCommentsForSlug(slug, effectiveLang);
       setComments(items);
     } catch (e) {
       console.error('Failed to load comments:', e);

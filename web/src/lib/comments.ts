@@ -1,3 +1,5 @@
+import { formatRelativeDate } from '@/lib/date';
+
 export interface CommentItem {
   id: number | string;
   documentId?: string;
@@ -11,7 +13,10 @@ export interface CommentItem {
   isCurrentUser?: boolean;
 }
 
-export async function fetchCommentsForSlug(slug: string): Promise<CommentItem[]> {
+export async function fetchCommentsForSlug(
+  slug: string,
+  lang: 'de' | 'en' = 'de'
+): Promise<CommentItem[]> {
   try {
     const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`, {
       cache: 'no-store',
@@ -29,9 +34,7 @@ export async function fetchCommentsForSlug(slug: string): Promise<CommentItem[]>
       authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
       isEdited: item.isEdited || false,
       feedSlug: item.feedSlug,
-      createdAt: item.createdAt
-        ? new Date(item.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-        : 'Gerade eben',
+      createdAt: formatRelativeDate(item.createdAt, lang) || 'Gerade eben',
     }));
   } catch (error) {
     console.error('Error in fetchCommentsForSlug:', error);

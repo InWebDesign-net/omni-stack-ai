@@ -23,6 +23,7 @@ import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
 import Header from '@/components/Header';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
+import { formatAbsoluteDate } from '@/lib/date';
 
 interface UserPageClientProps {
     profileDataInit: ProfileData;
@@ -30,7 +31,7 @@ interface UserPageClientProps {
 
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const { profile, isOwner, videos, favorites, stats } = profileDataInit;
-    const { t, openVideoUploadModal } = useApp();
+    const { t, lang, openVideoUploadModal } = useApp();
 
     const [activeTab, setActiveTab] = useState<'videos' | 'favorites' | 'about'>('videos');
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -411,11 +412,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 <span className="text-xs text-slate-500 block mb-1">Mitglied seit</span>
                                 <span className="text-slate-300 font-mono">
                                     {profile.createdAt
-                                        ? new Date(profile.createdAt).toLocaleDateString('de-DE', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                        })
+                                        ? formatAbsoluteDate(profile.createdAt, lang)
                                         : '2026'}
                                 </span>
                             </div>

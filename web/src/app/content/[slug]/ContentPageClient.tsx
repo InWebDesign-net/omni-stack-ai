@@ -142,7 +142,7 @@ export default function ContentPageClient({
   const loadComments = async () => {
     if (!slug) return;
     setLoadingComments(true);
-    const fetched = await fetchCommentsForSlug(slug);
+    const fetched = await fetchCommentsForSlug(slug, lang);
     setComments(fetched);
     setLoadingComments(false);
   };

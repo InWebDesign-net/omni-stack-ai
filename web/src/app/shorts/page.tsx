@@ -183,7 +183,7 @@ export default function ShortsFeedPage() {
     
     const loadComments = async () => {
       setLoadingComments(true);
-      const fetched = await fetchCommentsForSlug(slug);
+      const fetched = await fetchCommentsForSlug(slug, lang);
       setCommentsMap((prev) => ({ ...prev, [slug]: fetched }));
       setLoadingComments(false);
     };
