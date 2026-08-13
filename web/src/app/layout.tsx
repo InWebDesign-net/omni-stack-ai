@@ -116,6 +116,7 @@ const jsonLdOrganization = {
 };
 
 import { AppProvider } from '@/context/AppContext';
+import { ChatProvider } from '@/context/ChatContext';
 
 export default function RootLayout({
   children,
@@ -141,7 +142,9 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#080e1e] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white">
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          <ChatProvider>{children}</ChatProvider>
+        </AppProvider>
       </body>
     </html>
   );
