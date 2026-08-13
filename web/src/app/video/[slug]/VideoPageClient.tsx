@@ -458,11 +458,6 @@ export default function VideoPageClient({
                       <span>{new Date(video.createdAt).toLocaleDateString(effectiveLang === 'en' ? 'en-US' : 'de-DE')}</span>
                     </div>
                   )}
-                  {video.duration && (
-                    <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300">
-                      {formatDuration(video.duration)}
-                    </span>
-                  )}
                 </div>
 
                 {/* Like, Share, Bookmark Actions */}
