@@ -392,8 +392,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           let replyText = 'Ich bin dein Omni KI-Assistent. Wie kann ich dir weiterhelfen?';
           if (res.ok) {
             const data = await res.json();
-            if (data.response || data.explanation || data.reply || data.answer) {
-              replyText = data.response || data.explanation || data.reply || data.answer;
+            const text = data.aiExplanation || data.response || data.explanation || data.reply || data.answer;
+            if (text) {
+              replyText = text.replace(/^🤖\s*Ollama\s*\([^)]*\):\s*/i, '');
             }
           }
 
