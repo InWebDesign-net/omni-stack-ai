@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
 
-async function getOrCreateRoomBySlug(slug: string, name: string = 'Omni Chat', type: string = 'direct', authHeader: string = '') {
+async function getOrCreateRoomBySlug(
+  slug: string,
+  name: string = 'Omni Chat',
+  type: string = 'direct',
+  participantIds: (number | string)[] = [],
+  authHeader: string = ''
+) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -10,10 +17,13 @@ async function getOrCreateRoomBySlug(slug: string, name: string = 'Omni Chat', t
   if (process.env.STRAPI_API_TOKEN) headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
 
   // 1. Try finding room by slug
-  const findRes = await fetch(`${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`, {
-    headers,
-    cache: 'no-store',
-  });
+  const findRes = await fetch(
+    `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(slug)}&populate[participants][populate]=*&populate[messages][populate]=*`,
+    {
+      headers,
+      cache: 'no-store',
+    }
+  );
 
   if (findRes.ok) {
     const data = await findRes.json();
@@ -21,6 +31,9 @@ async function getOrCreateRoomBySlug(slug: string, name: string = 'Omni Chat', t
       return data.data[0];
     }
   }
+
+  // Deduplicate participant IDs
+  const cleanParticipants = Array.from(new Set(participantIds.filter(Boolean)));
 
   // 2. Create room if it doesn't exist
   const createRes = await fetch(`${STRAPI_URL}/api/chat-rooms`, {
@@ -33,6 +46,7 @@ async function getOrCreateRoomBySlug(slug: string, name: string = 'Omni Chat', t
         type,
         language: 'de',
         isAiEnabled: type === 'ai',
+        ...(cleanParticipants.length > 0 ? { participants: cleanParticipants } : {}),
       },
     }),
   });
@@ -51,7 +65,8 @@ export async function GET(req: Request) {
     const roomId = searchParams.get('roomId');
     const searchUser = searchParams.get('searchUser');
 
-    const authHeader = req.headers.get('authorization') || '';
+    const { user, jwt } = await getCurrentUserFromCookies();
+    const authHeader = req.headers.get('authorization') || (jwt ? `Bearer ${jwt}` : '');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -69,6 +84,7 @@ export async function GET(req: Request) {
       if (usersRes.ok) {
         const allUsers = await usersRes.json();
         const eligibleUsers = (allUsers || []).filter((u: any) => {
+          if (user && u.id === user.id) return false; // Don't show current logged in user
           if (u.allowDirectMessages === 'nobody') return false;
           const matchUsername = u.username && u.username.toLowerCase().includes(q);
           const matchHandle = u.handle && u.handle.toLowerCase().includes(q);
@@ -80,11 +96,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ users: [] });
     }
 
-    // Fetch chat rooms from Strapi REST API
-    const roomsRes = await fetch(`${STRAPI_URL}/api/chat-rooms?populate=*&sort=updatedAt:desc&pagination[pageSize]=100`, {
-      headers,
-      cache: 'no-store',
-    });
+    // Fetch chat rooms from Strapi REST API with populated participants
+    const roomsRes = await fetch(
+      `${STRAPI_URL}/api/chat-rooms?populate[participants][populate]=*&populate[messages][populate]=*&sort=updatedAt:desc&pagination[pageSize]=100`,
+      {
+        headers,
+        cache: 'no-store',
+      }
+    );
 
     let rooms: any[] = [];
     if (roomsRes.ok) {
@@ -111,6 +130,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({
+      currentUser: user,
       rooms,
       messages,
     });
@@ -121,7 +141,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization') || '';
+    const { user, jwt } = await getCurrentUserFromCookies();
+    const authHeader = req.headers.get('authorization') || (jwt ? `Bearer ${jwt}` : '');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -129,12 +150,39 @@ export async function POST(req: Request) {
     if (process.env.STRAPI_API_TOKEN) headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
 
     const body = await req.json();
-    const { action, roomId, content, recipientId, name, type, senderType } = body;
+    const { action, roomId, content, recipientId, participantIds, name, type, senderType } = body;
 
     // Action 1: Create a new chatroom (Direct message, Group chat, or AI chat)
     if (action === 'create_room') {
       const slug = `room-${Date.now()}`;
-      const room = await getOrCreateRoomBySlug(slug, name || (type === 'ai' ? 'Omni KI-Assistent' : 'Neuer Chat'), type || 'direct', authHeader);
+
+      // Assemble participants
+      const participantsToConnect: (number | string)[] = [];
+      if (user?.id) participantsToConnect.push(user.id);
+      if (recipientId) participantsToConnect.push(recipientId);
+      if (Array.isArray(participantIds)) participantsToConnect.push(...participantIds);
+
+      // Check recipient DM privacy settings if starting a 1:1 direct chat
+      if (type === 'direct' && recipientId) {
+        const userRes = await fetch(`${STRAPI_URL}/api/users/${recipientId}`, { headers });
+        if (userRes.ok) {
+          const recipient = await userRes.json();
+          if (recipient?.allowDirectMessages === 'nobody') {
+            return NextResponse.json(
+              { error: 'Dieser Nutzer akzeptiert aktuell keine Direktnachrichten.' },
+              { status: 403 }
+            );
+          }
+        }
+      }
+
+      const room = await getOrCreateRoomBySlug(
+        slug,
+        name || (type === 'ai' ? 'Omni KI-Assistent' : 'Neuer Chat'),
+        type || 'direct',
+        participantsToConnect,
+        authHeader
+      );
       return NextResponse.json({ room, success: true });
     }
 
@@ -144,8 +192,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'roomId and content required' }, { status: 400 });
       }
 
-      // Ensure room exists in Strapi database
-      const room = await getOrCreateRoomBySlug(roomId, 'Omni Chat', 'ai', authHeader);
+      const initialParticipants = user?.id ? [user.id] : [];
+      const room = await getOrCreateRoomBySlug(roomId, 'Omni Chat', 'ai', initialParticipants, authHeader);
       const roomTarget = room?.documentId || room?.id || roomId;
 
       // Save message into Strapi
@@ -157,6 +205,7 @@ export async function POST(req: Request) {
             content,
             senderType: senderType || 'user',
             room: roomTarget,
+            ...(user?.id && senderType === 'user' ? { sender: user.id } : {}),
           },
         }),
       });

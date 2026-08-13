@@ -135,6 +135,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             language: r.language || 'de',
             isAiEnabled: r.isAiEnabled || r.type === 'ai',
             unreadCount: 0,
+            participants: Array.isArray(r.participants)
+              ? r.participants.map((p: any) => ({
+                  id: String(p.id),
+                  username: p.username || 'Nutzer',
+                  avatarUrl: p.avatarUrl,
+                  allowDirectMessages: p.allowDirectMessages || 'everyone',
+                }))
+              : [],
             messages: Array.isArray(r.messages)
               ? r.messages.map((m: any) => ({
                   id: m.documentId || String(m.id),
@@ -155,6 +163,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 map.set(item.id, {
                   ...existing,
                   messages: item.messages.length > 0 ? item.messages : existing.messages,
+                  participants: item.participants && item.participants.length > 0 ? item.participants : existing.participants,
                 });
               } else {
                 map.set(item.id, item);
@@ -229,6 +238,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       language: params.language || 'de',
       isAiEnabled: params.type === 'ai',
       unreadCount: 0,
+      participants: params.recipientId ? [{ id: params.recipientId, username: params.name }] : [],
       messages: params.type === 'ai' ? [
         {
           id: `msg-ai-welcome`,
@@ -350,7 +360,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       playMessageChime();
     }
 
-    // Persist user message to Strapi 5 database
     try {
       await fetch('/api/chat', {
         method: 'POST',
@@ -413,7 +422,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             playMessageChime();
           }
 
-          // Persist AI message to Strapi 5 database
           try {
             await fetch('/api/chat', {
               method: 'POST',
