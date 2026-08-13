@@ -110,7 +110,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [showReadReceipts, setShowReadReceipts] = useState(true);
 
-  // Zero Hardcoded Fallback Rooms - Empty initial state!
+  // Initial Rooms List
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
   // Load real rooms from Strapi
@@ -140,9 +140,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
           setRooms((prev) => {
             const map = new Map<string, ChatRoom>();
+            // Add server rooms first
             for (const item of loadedRooms) map.set(item.id, item);
+            // Preserve local rooms and their message histories
             for (const item of prev) {
-              if (!map.has(item.id)) map.set(item.id, item);
+              const existing = map.get(item.id);
+              if (existing) {
+                map.set(item.id, {
+                  ...existing,
+                  messages: item.messages.length > 0 ? item.messages : existing.messages,
+                });
+              } else {
+                map.set(item.id, item);
+              }
             }
             return Array.from(map.values());
           });
@@ -187,8 +197,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       return (data.users || []).map((u: any) => ({
         id: String(u.id),
-        username: u.username,
-        handle: u.handle,
+        username: u.username || u.handle || 'Nutzer',
+        handle: u.handle || u.username,
         avatarUrl: u.avatarUrl,
         allowDirectMessages: u.allowDirectMessages || 'everyone',
       }));
@@ -205,6 +215,31 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     participantIds?: string[];
     language?: string;
   }): Promise<{ roomId: string | null; error?: string }> => {
+    // Instant local room creation so UI responds instantly!
+    const localId = `room-${Date.now()}`;
+    const localRoom: ChatRoom = {
+      id: localId,
+      slug: localId,
+      name: params.name,
+      type: params.type,
+      language: params.language || 'de',
+      isAiEnabled: params.type === 'ai',
+      unreadCount: 0,
+      messages: params.type === 'ai' ? [
+        {
+          id: `msg-ai-welcome`,
+          senderType: 'ai',
+          senderName: 'Omni AI',
+          content: 'Hallo! Ich bin dein Omni KI-Assistent. Wie kann ich dir heute mit Videos, Dokumenten oder Navigation helfen?',
+          timestamp: new Date().toISOString(),
+        }
+      ] : [],
+    };
+
+    setRooms((prev) => [localRoom, ...prev.filter(r => r.id !== localId)]);
+    setActiveRoomId(localId);
+    setIsOpen(true);
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -220,38 +255,24 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
       const data = await res.json();
       if (!res.ok) {
-        return { roomId: null, error: data.error || 'Chatraum konnte nicht erstellt werden.' };
+        return { roomId: localId, error: data.error };
       }
 
       const newRoomData = data.room;
-      const newId = newRoomData?.slug || `room-${Date.now()}`;
-      const newRoom: ChatRoom = {
-        id: newId,
-        slug: newId,
-        documentId: newRoomData?.documentId,
-        name: params.name,
-        type: params.type,
-        language: params.language || 'de',
-        isAiEnabled: params.type === 'ai',
-        unreadCount: 0,
-        messages: params.type === 'ai' ? [
-          {
-            id: `msg-ai-welcome`,
-            senderType: 'ai',
-            senderName: 'Omni AI',
-            content: `Hallo! Ich bin dein Omni KI-Assistent in diesem Raum. Wie kann ich dir helfen?`,
-            timestamp: new Date().toISOString(),
-          }
-        ] : [],
-      };
-
-      setRooms((prev) => [newRoom, ...prev]);
-      setActiveRoomId(newId);
-      setIsOpen(true);
-      return { roomId: newId };
+      if (newRoomData) {
+        const realSlug = newRoomData.slug || localId;
+        const realDocId = newRoomData.documentId;
+        setRooms((prev) =>
+          prev.map((r) => (r.id === localId ? { ...r, id: realSlug, slug: realSlug, documentId: realDocId } : r))
+        );
+        setActiveRoomId(realSlug);
+        return { roomId: realSlug };
+      }
     } catch (err: any) {
-      return { roomId: null, error: err?.message || 'Netzwerkfehler' };
+      console.error('Failed to persist room to backend:', err);
     }
+
+    return { roomId: localId };
   };
 
   const addParticipantToRoom = async (roomId: string, userOrAi: { name: string; type: 'user' | 'ai' }) => {

@@ -158,6 +158,8 @@ export default {
 
       if (publicRole) {
         await disablePermission(publicRole.id, 'plugin::users-permissions.user.update');
+        await enablePermission(publicRole.id, 'plugin::users-permissions.user.find');
+        await enablePermission(publicRole.id, 'plugin::users-permissions.user.findOne');
         await enablePermission(publicRole.id, 'api::comment.comment.find');
         await enablePermission(publicRole.id, 'api::comment.comment.findOne');
         await enablePermission(publicRole.id, 'api::comment.comment.create');
@@ -175,6 +177,8 @@ export default {
       if (authRole) {
         // Enforce: users cannot update full user fields directly (profile updates go through /feed/profile)
         await disablePermission(authRole.id, 'plugin::users-permissions.user.update');
+        await enablePermission(authRole.id, 'plugin::users-permissions.user.find');
+        await enablePermission(authRole.id, 'plugin::users-permissions.user.findOne');
         await enablePermission(authRole.id, 'api::comment.comment.find');
         await enablePermission(authRole.id, 'api::comment.comment.findOne');
         await enablePermission(authRole.id, 'api::comment.comment.create');

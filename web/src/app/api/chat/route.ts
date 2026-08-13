@@ -12,10 +12,9 @@ export async function GET(req: Request) {
 
     // Search eligible users for starting a new Direct Message
     if (searchUser) {
+      const q = searchUser.trim().toLowerCase();
       const usersRes = await fetch(
-        `${STRAPI_URL}/api/users?filters[username][$containsi]=${encodeURIComponent(
-          searchUser
-        )}&pagination[pageSize]=20`,
+        `${STRAPI_URL}/api/users?pagination[pageSize]=100`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -26,11 +25,13 @@ export async function GET(req: Request) {
       );
 
       if (usersRes.ok) {
-        const users = await usersRes.json();
-        // Filter out users who have allowDirectMessages === 'nobody'
-        const eligibleUsers = (users || []).filter(
-          (u: any) => u.allowDirectMessages !== 'nobody'
-        );
+        const allUsers = await usersRes.json();
+        const eligibleUsers = (allUsers || []).filter((u: any) => {
+          if (u.allowDirectMessages === 'nobody') return false;
+          const matchUsername = u.username && u.username.toLowerCase().includes(q);
+          const matchHandle = u.handle && u.handle.toLowerCase().includes(q);
+          return matchUsername || matchHandle;
+        });
 
         return NextResponse.json({ users: eligibleUsers });
       }

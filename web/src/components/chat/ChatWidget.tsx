@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MessageCircle, X, Maximize2, Minimize2, Settings, 
   Search, Send, Sparkles, AlertCircle, Bot, ArrowLeft,
-  Plus, UserPlus, UserCheck, CheckCheck
+  Plus, UserPlus, CheckCheck
 } from 'lucide-react';
 import ChatSettingsModal from './ChatSettingsModal';
 import { useApp } from '@/context/AppContext';
@@ -40,6 +40,12 @@ export default function ChatWidget() {
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isNewChatOpen) {
+      handleUserSearchChange(userSearchQuery || 'a');
+    }
+  }, [isNewChatOpen]);
+
   if (!currentUser) return null;
 
   const handleSend = async (e?: React.FormEvent) => {
@@ -61,10 +67,6 @@ export default function ChatWidget() {
 
   const handleUserSearchChange = async (query: string) => {
     setUserSearchQuery(query);
-    if (!query.trim()) {
-      setUserSearchResults([]);
-      return;
-    }
     setIsSearchingUsers(true);
     const results = await searchEligibleUsers(query);
     setUserSearchResults(results);
@@ -99,7 +101,7 @@ export default function ChatWidget() {
     r.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // 1. Floating Support Button (Collapsed / Launcher State)
+  // 1. Floating Support Button (Collapsed Launcher)
   if (!isOpen) {
     return (
       <button
@@ -597,7 +599,7 @@ export default function ChatWidget() {
                 <div className="p-3 text-center text-xs text-slate-400">Suche Nutzer...</div>
               )}
 
-              {userSearchResults.length > 0 && (
+              {userSearchResults.length > 0 ? (
                 <div className="max-h-48 overflow-y-auto border border-slate-800 rounded-xl divide-y divide-slate-800/40 bg-slate-950">
                   {userSearchResults.map((u) => (
                     <div
@@ -620,6 +622,12 @@ export default function ChatWidget() {
                     </div>
                   ))}
                 </div>
+              ) : (
+                !isSearchingUsers && (
+                  <div className="p-3 text-center text-xs text-slate-500">
+                    Keine Nutzer gefunden.
+                  </div>
+                )
               )}
             </div>
           </div>
