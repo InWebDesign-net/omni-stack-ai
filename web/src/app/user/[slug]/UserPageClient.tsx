@@ -111,7 +111,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                         {isOwner ? (
                                             <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500/20 to-indigo-500/20 border border-amber-500/40 text-amber-300 flex items-center gap-1.5">
                                                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                                                Dein Profil (Eigentümer)
+                                                {(t as any).channel?.ownerBadge || 'Dein Profil (Eigentümer)'}
                                             </span>
                                         ) : (
                                             <span className="px-2.5 py-0.5 rounded-md text-[11px] font-mono bg-slate-800 border border-slate-700 text-slate-300">
@@ -133,7 +133,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-teal-500 hover:from-indigo-600 hover:to-teal-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-95"
                                             >
                                                 <Upload className="w-4 h-4" />
-                                                <span>Neues Video</span>
+                                                <span>{(t as any).channel?.newVideo || 'Neues Video'}</span>
                                             </button>
                                         </>
                                     ) : (
@@ -146,7 +146,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                     }`}
                                             >
                                                 {isSubscribed ? <UserCheck className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                                                <span>{isSubscribed ? 'Abonniert' : 'Abonnieren'}</span>
+                                                <span>{isSubscribed ? t.common.subscribed : t.common.subscribe}</span>
                                             </button>
 
                                             {canSendDM && (
@@ -155,7 +155,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                     className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
                                                 >
                                                     <MessageSquare className="w-4 h-4" />
-                                                    <span>Nachricht</span>
+                                                    <span>{(t as any).channel?.messageBtn || (t as any).common?.message || 'Nachricht'}</span>
                                                 </button>
                                             )}
                                         </>

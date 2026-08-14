@@ -30,6 +30,8 @@
     "justNow": "Gerade eben",
     "moreArticles": "Weitere Artikel & Beiträge",
     "send": "Senden",
+    "message": "Nachricht",
+    "sendMessage": "Nachricht senden",
     "edited": "(bearbeitet)",
     "commentEdit": "Kommentar bearbeiten",
     "commentDelete": "Kommentar löschen",
@@ -193,7 +195,10 @@
   "channel": {
     "subscribed": "Abonniert ✓",
     "kSubscribers": "k Abonnenten",
-    "defaultBio": "Creator & Content Publisher im Omni Network."
+    "defaultBio": "Creator & Content Publisher im Omni Network.",
+    "messageBtn": "Nachricht",
+    "ownerBadge": "Dein Profil (Eigentümer)",
+    "newVideo": "Neues Video"
   },
   "create": {
     "postTitle": "Neuen Beitrag erstellen",

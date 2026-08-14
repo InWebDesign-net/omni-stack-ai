@@ -30,6 +30,8 @@
     "justNow": "Just now",
     "moreArticles": "More Articles & Posts",
     "send": "Send",
+    "message": "Message",
+    "sendMessage": "Send Message",
     "edited": "(edited)",
     "commentEdit": "Edit comment",
     "commentDelete": "Delete comment",
@@ -192,8 +194,11 @@
   },
   "channel": {
     "subscribed": "Subscribed ✓",
-    "kSubscribers": "k Subscribers",
-    "defaultBio": "Creator & Content Publisher in the Omni Network."
+    "kSubscribers": "k subscribers",
+    "defaultBio": "Creator & Content Publisher on Omni Network.",
+    "messageBtn": "Message",
+    "ownerBadge": "Your Profile (Owner)",
+    "newVideo": "New Video"
   },
   "create": {
     "postTitle": "Create New Post",

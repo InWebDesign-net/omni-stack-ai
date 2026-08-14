@@ -116,7 +116,7 @@ export default function ChannelProfileModal({
                 className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
               >
                 <MessageSquare className="h-4 w-4" />
-                <span>Nachricht</span>
+                <span>{(t as any).channel?.messageBtn || (t as any).common?.message || 'Nachricht'}</span>
               </button>
             )}
           </div>
