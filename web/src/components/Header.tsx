@@ -405,60 +405,6 @@ export default function Header({
                 <Play className="h-4.5 w-4.5 text-[#8083ff]" />
                 <span>{t.header.videos}</span>
               </Link>
-
-              <Link
-                href="/?tab=trending"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <Flame className="h-4.5 w-4.5 text-[#ffb783]" />
-                <span>{t.header.trendingPopular}</span>
-              </Link>
-
-              <Link
-                href="/?tab=subscriptions"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <Tv className="h-4.5 w-4.5 text-[#44e2cd]" />
-                <span>{t.header.mySubscriptions}</span>
-              </Link>
-
-              <Link
-                href="/?tab=library"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <BookOpen className="h-4.5 w-4.5 text-[#c0c1ff]" />
-                <span>{t.header.myLibrary}</span>
-              </Link>
-
-              <Link
-                href="/shorts"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <Film className="h-4.5 w-4.5 text-[#ff6b81]" />
-                <span>{t.header.shorts}</span>
-              </Link>
-
-              <Link
-                href="/?type=pdf"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <FileText className="h-4.5 w-4.5 text-red-400" />
-                <span>{t.header.pdfDocs}</span>
-              </Link>
-
-              <Link
-                href="/?type=article"
-                onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
-              >
-                <BookOpen className="h-4.5 w-4.5 text-[#44e2cd]" />
-                <span>{t.header.exclusiveArticles}</span>
-              </Link>
             </div>
 
             <div className="border-t border-white/5 my-1" />
