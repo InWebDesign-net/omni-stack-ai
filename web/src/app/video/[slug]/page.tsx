@@ -108,6 +108,11 @@ export async function generateMetadata(
   const description =
     video.summary || video.description || `Schaue "${video.title}" auf Omni BY INWEBDESIGN.`;
 
+  const rawOgImage = video.ogImageUrl || video.thumbnailUrl || '/media/og/default.jpg';
+  const ogImageUrl = rawOgImage.startsWith('http')
+    ? rawOgImage
+    : `${baseUrl}${rawOgImage}`;
+
   const thumbnailUrl = video.thumbnailUrl?.startsWith('http')
     ? video.thumbnailUrl
     : `${baseUrl}${video.thumbnailUrl || '/media/thumbnails/default.png'}`;
@@ -131,7 +136,7 @@ export async function generateMetadata(
       type: 'video.other',
       images: [
         {
-          url: thumbnailUrl,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: video.title,
@@ -142,7 +147,7 @@ export async function generateMetadata(
       card: 'summary_large_image',
       title: video.title,
       description,
-      images: [thumbnailUrl],
+      images: [ogImageUrl],
     },
     alternates: { canonical: url },
   };
