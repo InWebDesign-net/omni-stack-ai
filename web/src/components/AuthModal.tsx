@@ -13,21 +13,13 @@ interface AuthModalProps {
 
 function OmniLogo({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="18" stroke="url(#logo_grad)" strokeWidth="2.5" strokeDasharray="4 2" />
-      <circle cx="20" cy="20" r="10" fill="url(#logo_inner)" />
-      <path d="M20 6L23 14L31 15L25 21L27 29L20 25L13 29L15 21L9 15L17 14L20 6Z" fill="#ffffff" opacity="0.9" />
-      <defs>
-        <linearGradient id="logo_grad" x1="0" y1="0" x2="40" y2="40">
-          <stop stopColor="#8083ff" />
-          <stop offset="1" stopColor="#44e2cd" />
-        </linearGradient>
-        <linearGradient id="logo_inner" x1="10" y1="10" x2="30" y2="30">
-          <stop stopColor="#8083ff" />
-          <stop offset="1" stopColor="#251f42" />
-        </linearGradient>
-      </defs>
-    </svg>
+    <img
+      src="/android-chrome-192x192.png"
+      alt="Omni Logo"
+      width={size}
+      height={size}
+      className="object-contain rounded-xl shrink-0"
+    />
   );
 }
 

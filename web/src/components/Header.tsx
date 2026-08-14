@@ -24,30 +24,15 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-export function OmniLogo({ size = 22 }: { size?: number }) {
+export function OmniLogo({ size = 24 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logo-outer-hdr" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8083ff" />
-          <stop offset="50%" stopColor="#44e2cd" />
-          <stop offset="100%" stopColor="#ffb783" />
-        </linearGradient>
-        <linearGradient id="logo-inner-hdr" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#c0c1ff" />
-          <stop offset="100%" stopColor="#44e2cd" />
-        </linearGradient>
-      </defs>
-      <circle cx="20" cy="20" r="18" stroke="url(#logo-outer-hdr)" strokeWidth="1.5" fill="none" opacity="0.6" />
-      <circle cx="20" cy="20" r="13" stroke="url(#logo-inner-hdr)" strokeWidth="1" fill="none" opacity="0.4" strokeDasharray="2 3" />
-      <circle cx="20" cy="20" r="8" fill="url(#logo-outer-hdr)" opacity="0.15" />
-      <circle cx="20" cy="20" r="5.5" fill="url(#logo-outer-hdr)" opacity="0.25" />
-      <circle cx="20" cy="20" r="2.5" fill="url(#logo-inner-hdr)" />
-      <line x1="20" y1="4" x2="20" y2="8" stroke="url(#logo-outer-hdr)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="20" y1="32" x2="20" y2="36" stroke="url(#logo-outer-hdr)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="4" y1="20" x2="8" y2="20" stroke="url(#logo-outer-hdr)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="32" y1="20" x2="36" y2="20" stroke="url(#logo-outer-hdr)" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img
+      src="/android-chrome-192x192.png"
+      alt="Omni Logo"
+      width={size}
+      height={size}
+      className="object-contain rounded-lg shrink-0"
+    />
   );
 }
 

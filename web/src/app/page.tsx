@@ -119,48 +119,16 @@ function getAuthorSubscribers(item: FeedItem) {
   return item.author?.subscribersCount || 12500;
 }
 
-// ─── OmniLogo SVG Component ───────────────────────────────────────────────────
+// ─── OmniLogo Component ───────────────────────────────────────────────────
 function OmniLogo({ size = 36 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logo-outer" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8083ff" />
-          <stop offset="50%" stopColor="#44e2cd" />
-          <stop offset="100%" stopColor="#ffb783" />
-        </linearGradient>
-        <linearGradient id="logo-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#c0c1ff" />
-          <stop offset="100%" stopColor="#44e2cd" />
-        </linearGradient>
-        <filter id="logo-glow">
-          <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      {/* Outer ring */}
-      <circle cx="20" cy="20" r="18" stroke="url(#logo-outer)" strokeWidth="1.5" fill="none" opacity="0.6" />
-      {/* Middle ring */}
-      <circle cx="20" cy="20" r="13" stroke="url(#logo-inner)" strokeWidth="1" fill="none" opacity="0.4" strokeDasharray="2 3" />
-      {/* Core shape – O with inner spark */}
-      <circle cx="20" cy="20" r="8" fill="url(#logo-outer)" opacity="0.15" />
-      <circle cx="20" cy="20" r="5.5" fill="url(#logo-outer)" opacity="0.25" />
-      {/* Central dot */}
-      <circle cx="20" cy="20" r="2.5" fill="url(#logo-inner)" filter="url(#logo-glow)" />
-      {/* Spark lines */}
-      <line x1="20" y1="4" x2="20" y2="8" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="20" y1="32" x2="20" y2="36" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="4" y1="20" x2="8" y2="20" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="32" y1="20" x2="36" y2="20" stroke="url(#logo-outer)" strokeWidth="1.5" strokeLinecap="round" />
-      {/* Diagonal sparks */}
-      <line x1="8.4" y1="8.4" x2="11.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-      <line x1="29.0" y1="29.0" x2="31.6" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-      <line x1="31.6" y1="8.4" x2="29.0" y2="11.0" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-      <line x1="11.0" y1="29.0" x2="8.4" y2="31.6" stroke="url(#logo-inner)" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-    </svg>
+    <img
+      src="/android-chrome-192x192.png"
+      alt="Omni Logo"
+      width={size}
+      height={size}
+      className="object-contain rounded-xl shrink-0"
+    />
   );
 }
 
