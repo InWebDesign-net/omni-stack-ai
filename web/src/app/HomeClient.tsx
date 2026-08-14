@@ -182,15 +182,15 @@ export default function HomeClient() {
           
           <div className="relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
-            <span>Hyper-Personalisiertes KI Mediennetzwerk</span>
+            <span>{t.home?.heroBadge || 'Hyper-Personalisiertes KI Mediennetzwerk'}</span>
           </div>
 
           <h1 className="relative text-3xl sm:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight">
-            Was möchtest du heute entdecken?
+            {t.home?.heroTitle || 'Was möchtest du heute entdecken?'}
           </h1>
 
           <p className="relative text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Nutze die KI-Suche oder stöbere in un-gefiltertem Content direkt aus dem Omni Network.
+            {t.home?.heroSubtitle || 'Nutze die KI-Suche oder stöbere in un-gefiltertem Content direkt aus dem Omni Network.'}
           </p>
 
           {/* Search Box Form */}
@@ -201,23 +201,23 @@ export default function HomeClient() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t.header?.searchPlaceholder || 'Titel, Themen oder KI-Intents suchen...'}
+                placeholder={t.home?.searchPlaceholder || 'Titel, Themen oder KI-Intents suchen...'}
                 className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleAiSearchOpen}
                 className="px-3.5 py-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 font-semibold text-xs border border-indigo-500/30 flex items-center gap-1.5 transition-colors shrink-0 mr-1"
-                title="KI-Assistenten fragen"
+                title={t.home?.askAiTitle || 'KI-Assistenten fragen'}
               >
                 <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-                <span className="hidden sm:inline">KI-Chat</span>
+                <span className="hidden sm:inline">{t.home?.askAiChat || 'KI-Chat'}</span>
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 flex items-center gap-1.5 transition-all shrink-0 active:scale-95"
               >
-                <span>Suchen</span>
+                <span>{t.home?.searchBtn || 'Suchen'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -225,10 +225,10 @@ export default function HomeClient() {
             {/* Quick Topic Suggestion Badges */}
             <div className="mt-4 flex items-center justify-center flex-wrap gap-2 text-xs">
               {[
-                { tag: 'Wissenschaft', label: '🔬 Wissenschaft & Tech' },
-                { tag: 'Kochen', label: '🍝 Kulinarik & Rezepte' },
-                { tag: 'Natur', label: '🌿 Naturdokumentationen' },
-                { tag: 'Finanzen', label: '📈 Finanzwissen' },
+                { tag: 'Wissenschaft', label: t.home?.tags?.science || '🔬 Wissenschaft & Tech' },
+                { tag: 'Kochen', label: t.home?.tags?.cooking || '🍝 Kulinarik & Rezepte' },
+                { tag: 'Natur', label: t.home?.tags?.nature || '🌿 Naturdokumentationen' },
+                { tag: 'Finanzen', label: t.home?.tags?.finance || '📈 Finanzwissen' },
               ].map(({ tag, label }) => (
                 <Link
                   key={tag}
@@ -250,8 +250,8 @@ export default function HomeClient() {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-extrabold text-lg text-white">Empfohlene Creator & Kanäle</h2>
-                <p className="text-xs text-slate-400">Kanäle mit frischem Content werden bevorzugt dargestellt</p>
+                <h2 className="font-extrabold text-lg text-white">{t.home?.creatorsTitle || 'Empfohlene Creator & Kanäle'}</h2>
+                <p className="text-xs text-slate-400">{t.home?.creatorsSubtitle || 'Kanäle mit frischem Content werden bevorzugt dargestellt'}</p>
               </div>
             </div>
 
@@ -292,7 +292,7 @@ export default function HomeClient() {
                       className="w-12 h-12 rounded-xl object-cover border border-slate-700 group-hover:scale-105 transition-transform"
                     />
                     {channel.hasNewContent && (
-                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-[#080e1e]" title="Neue Inhalte veröffentlich!" />
+                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-[#080e1e]" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -310,8 +310,8 @@ export default function HomeClient() {
                 </p>
 
                 <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                  <span>{(channel.subscribersCount || 15400).toLocaleString()} Abonnenten</span>
-                  <span className="text-indigo-400 font-semibold group-hover:underline">Kanal ansehen →</span>
+                  <span>{(channel.subscribersCount || 15400).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
+                  <span className="text-indigo-400 font-semibold group-hover:underline">{t.home?.viewChannel || 'Kanal ansehen →'}</span>
                 </div>
               </div>
             ))}
@@ -326,8 +326,8 @@ export default function HomeClient() {
                 <Film className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-extrabold text-lg text-white">Aktuelle Videos im Network</h2>
-                <p className="text-xs text-slate-400">Entdecke die neusten Veröffentlichungen im Katalog</p>
+                <h2 className="font-extrabold text-lg text-white">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
+                <p className="text-xs text-slate-400">{t.home?.videosSubtitle || 'Entdecke die neusten Veröffentlichungen im Katalog'}</p>
               </div>
             </div>
 
@@ -335,7 +335,7 @@ export default function HomeClient() {
               href="/videos"
               className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
             >
-              <span>Alle Videos ansehen</span>
+              <span>{t.home?.viewAllVideos || 'Alle Videos ansehen'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -401,8 +401,8 @@ export default function HomeClient() {
 
       {/* Footer */}
       <footer className="w-full border-t border-slate-800/80 py-8 bg-[#050914] text-xs text-slate-500 text-center space-y-2">
-        <p>Omni Network – Hyper-Personalisiertes KI Mediennetzwerk</p>
-        <p>© 2026 InWebDesign. Alle Rechte vorbehalten.</p>
+        <p>{t.home?.footer?.subtitle || 'Omni Network – Hyper-Personalisiertes KI Mediennetzwerk'}</p>
+        <p>{t.home?.footer?.rights || '© 2026 InWebDesign. Alle Rechte vorbehalten.'}</p>
       </footer>
     </div>
   );

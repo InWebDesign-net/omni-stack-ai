@@ -351,5 +351,32 @@
       "privateDraft": "Private / Draft",
       "public": "Public"
     }
+  },
+  "home": {
+    "heroBadge": "Hyper-Personalized AI Media Network",
+    "heroTitle": "What would you like to discover today?",
+    "heroSubtitle": "Use AI search or browse un-filtered content directly from Omni Network.",
+    "searchPlaceholder": "Search titles, topics or AI intents...",
+    "askAiChat": "AI Chat",
+    "askAiTitle": "Ask AI Assistant",
+    "searchBtn": "Search",
+    "tags": {
+      "science": "🔬 Science & Tech",
+      "cooking": "🍝 Culinary & Recipes",
+      "nature": "🌿 Nature Documentaries",
+      "finance": "📈 Financial Knowledge"
+    },
+    "creatorsTitle": "Recommended Creators & Channels",
+    "creatorsSubtitle": "Channels with fresh content are prioritized",
+    "subscribers": "Subscribers",
+    "viewChannel": "View channel →",
+    "newContentBadge": "New content published!",
+    "videosTitle": "Recent Videos in Network",
+    "videosSubtitle": "Discover the latest releases in the catalog",
+    "viewAllVideos": "View all videos",
+    "footer": {
+      "subtitle": "Omni Network – Hyper-Personalized AI Media Network",
+      "rights": "© 2026 InWebDesign. All rights reserved."
+    }
   }
 }

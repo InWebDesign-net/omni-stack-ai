@@ -351,5 +351,32 @@
       "privateDraft": "Privat / Entwurf",
       "public": "Öffentlich"
     }
+  },
+  "home": {
+    "heroBadge": "Hyper-Personalisiertes KI Mediennetzwerk",
+    "heroTitle": "Was möchtest du heute entdecken?",
+    "heroSubtitle": "Nutze die KI-Suche oder stöbere in un-gefiltertem Content direkt aus dem Omni Network.",
+    "searchPlaceholder": "Titel, Themen oder KI-Intents suchen...",
+    "askAiChat": "KI-Chat",
+    "askAiTitle": "KI-Assistenten fragen",
+    "searchBtn": "Suchen",
+    "tags": {
+      "science": "🔬 Wissenschaft & Tech",
+      "cooking": "🍝 Kulinarik & Rezepte",
+      "nature": "🌿 Naturdokumentationen",
+      "finance": "📈 Finanzwissen"
+    },
+    "creatorsTitle": "Empfohlene Creator & Kanäle",
+    "creatorsSubtitle": "Kanäle mit frischem Content werden bevorzugt dargestellt",
+    "subscribers": "Abonnenten",
+    "viewChannel": "Kanal ansehen →",
+    "newContentBadge": "Neue Inhalte veröffentlicht!",
+    "videosTitle": "Aktuelle Videos im Network",
+    "videosSubtitle": "Entdecke die neusten Veröffentlichungen im Katalog",
+    "viewAllVideos": "Alle Videos ansehen",
+    "footer": {
+      "subtitle": "Omni Network – Hyper-Personalisiertes KI Mediennetzwerk",
+      "rights": "© 2026 InWebDesign. Alle Rechte vorbehalten."
+    }
   }
 }
