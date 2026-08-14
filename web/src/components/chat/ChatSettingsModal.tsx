@@ -12,7 +12,7 @@ interface ChatSettingsModalProps {
 }
 
 export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModalProps) {
-  const { currentUser, setCurrentUser } = useApp();
+  const { currentUser, setCurrentUser, t } = useApp();
   const {
     userPrivacySetting,
     updateUserPrivacySetting,
@@ -62,7 +62,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
     };
 
     setCurrentUser(updatedUser);
-    setSuccessMsg('Einstellungen erfolgreich gespeichert!');
+    setSuccessMsg(t.common.save + ' ✓');
     setTimeout(() => {
       setSuccessMsg('');
       onClose();
@@ -78,7 +78,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
         <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/80">
           <div className="flex items-center gap-2.5">
             <Shield className="w-5 h-5 text-indigo-400" />
-            <h2 className="font-bold text-lg text-white">Chat-Einstellungen & Privatsphäre</h2>
+            <h2 className="font-bold text-lg text-white">{t.chat?.settingsTitle || 'Chat-Einstellungen & Privatsphäre'}</h2>
           </div>
           <button
             onClick={onClose}
@@ -97,7 +97,9 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
           )}
 
           <div className="space-y-3">
-            <label className="block text-sm font-bold text-slate-200">Wer darf mir Direktnachrichten senden?</label>
+            <label className="block text-sm font-bold text-slate-200">
+              {t.chat?.allowDirectMessages || 'Wer darf mir Direktnachrichten senden?'}
+            </label>
             <div className="space-y-2">
               <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
                 <input
@@ -109,8 +111,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
                   className="w-4 h-4 text-indigo-500 bg-slate-950 border-slate-700 focus:ring-indigo-500"
                 />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">Jeder</span>
-                  <span className="text-xs text-slate-400">Jeder angemeldete Nutzer kann einen Chat mit dir starten.</span>
+                  <span className="text-sm font-semibold text-white">{t.chat?.everyone || 'Alle Nutzer'}</span>
                 </div>
               </label>
 
@@ -124,8 +125,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
                   className="w-4 h-4 text-indigo-500 bg-slate-950 border-slate-700 focus:ring-indigo-500"
                 />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">Nur Abonnenten</span>
-                  <span className="text-xs text-slate-400">Nur Personen, die deinen Kanal abonniert haben.</span>
+                  <span className="text-sm font-semibold text-white">{t.chat?.subscribersOnly || 'Nur Abonnenten'}</span>
                 </div>
               </label>
 
@@ -139,8 +139,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
                   className="w-4 h-4 text-indigo-500 bg-slate-950 border-slate-700 focus:ring-indigo-500"
                 />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">Niemand</span>
-                  <span className="text-xs text-slate-400">Niemand kann neue Direktnachrichten mit dir beginnen.</span>
+                  <span className="text-sm font-semibold text-white">{t.chat?.nobody || 'Niemand (Chats deaktiviert)'}</span>
                 </div>
               </label>
             </div>
@@ -149,8 +148,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
           <div className="space-y-4 pt-4 border-t border-slate-800">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-white block">Benachrichtigungssound</span>
-                <span className="text-xs text-slate-400">Spielt einen Akustik-Ping bei neuen Nachrichten ab.</span>
+                <span className="text-sm font-semibold text-white block">{t.chat?.soundNotifications || 'Sound-Benachrichtigungen'}</span>
               </div>
               <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.soundNotifications ? 'bg-indigo-600' : 'bg-slate-800'}`}>
                 <input
@@ -165,8 +163,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-white block">Online-Status anzeigen</span>
-                <span className="text-xs text-slate-400">Zeigt einen grünen Online-Indikator an deinem Profil.</span>
+                <span className="text-sm font-semibold text-white block">{t.chat?.onlineStatus || 'Online-Status anzeigen'}</span>
               </div>
               <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.showOnlineStatus ? 'bg-indigo-600' : 'bg-slate-800'}`}>
                 <input
@@ -181,8 +178,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-white block">Lesebestätigungen (Häkchen)</span>
-                <span className="text-xs text-slate-400">Zeigt blaue Häkchen (✓✓) bei gelesenen Nachrichten an.</span>
+                <span className="text-sm font-semibold text-white block">{t.chat?.readReceipts || 'Lesebestätigungen anzeigen'}</span>
               </div>
               <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.showReadReceipts ? 'bg-indigo-600' : 'bg-slate-800'}`}>
                 <input
@@ -202,13 +198,13 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition-colors"
             >
-              Abbrechen
+              {t.common.cancel}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-colors shadow-lg shadow-indigo-600/20"
             >
-              Speichern
+              {t.common.save}
             </button>
           </div>
         </form>

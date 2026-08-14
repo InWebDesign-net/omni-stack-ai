@@ -15,11 +15,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async processAiIntent(ctx: any) {
     try {
-      const { prompt, currentProfile, history } = ctx.request.body;
+      const { prompt, currentProfile, history, locale } = ctx.request.body;
       if (!prompt) {
         return ctx.badRequest('Prompt parameter is required');
       }
-      const result = await strapi.service('api::feed.feed').processAiIntent(prompt, currentProfile, history);
+      const result = await strapi.service('api::feed.feed').processAiIntent(prompt, currentProfile, history, locale);
 
       // Persist the adjusted graph for authenticated users right away
       const viewerId = ctx.state?.user?.id;

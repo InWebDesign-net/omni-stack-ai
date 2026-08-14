@@ -426,7 +426,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Process Natural Language Intent Prompt via Ollama / Smart Parser
    */
-  async processAiIntent(prompt: string, currentProfile?: any, history?: any[]) {
+  async processAiIntent(prompt: string, currentProfile?: any, history?: any[], locale?: string) {
     // Accepts any legacy profile shape; works on and returns the canonical AffinityGraph.
     const updatedProfile: AffinityGraph = normalizeAffinityGraph(currentProfile);
 
@@ -434,6 +434,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     let vectorSummary: string | null = null;
     let ollamaConnected = false;
     let hasVectorChanges = false;
+
+    const isEnglish = (locale && locale.toLowerCase() === 'en') || /^[a-zA-Z0-9\s?,.!']{5,}$/.test(prompt) && (prompt.toLowerCase().includes('what') || prompt.toLowerCase().includes('how') || prompt.toLowerCase().includes('can') || prompt.toLowerCase().includes('hello') || prompt.toLowerCase().includes('hi'));
+    const targetLang = isEnglish ? 'English' : 'German';
 
     const ollamaUrl = process.env.OLLAMA_URL || 'http://10.0.0.6:11434/v1/chat/completions';
     const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.1:latest';
@@ -454,16 +457,19 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   4. Video-Pipeline: LXC Converter für HLS-Streaming, Thumbnails & OG-Preview Cards
   5. Hosting: Managed High-Performance Linux/PostgreSQL/Node.js Webhosting auf InWebDesign.net
 
-DEINE AUFGABE & VERHALTEN:
-1. Antworte immer sympathisch, natürlich, kompetent und präzise auf Deutsch (Du-Form).
-2. Gehe direkt und ausführlich auf Fragen zur Plattform, Technik (Next.js, Strapi, PostgreSQL), Hosting oder Inhalten ein. Berücksichtige dabei stets den bisherigen Chatverlauf.
-3. ALGORITHMUS-STEUERUNG:
-   - Falls der Nutzer NUR normale Konversation führt oder Fragen stellt, setze "vector" auf null und "vectorSummary" auf null. Verändere den Algorithmus NICHT.
-   - Nur wenn der Nutzer EXPLIZIT Themen- oder Formatwünsche äußert (z.B. "Mehr Kochen", "Weniger Finanzen", "Zeig mir PDFs"), erstelle im "vector"-Objekt passende Gewichte UND gib "vectorSummary" an (z.B. "⚡ Algorithmus-Anpassung: Kochen +95%").
+SPRACHE & VERHALTEN (CRITICAL):
+- TARGET LANGUAGE: Respond ONLY in ${targetLang}!
+- If target language is English or if user writes in English, reply entirely in English.
+- If target language is German or if user writes in German, reply in German (Du-Form).
+- Answer user questions directly, friendly and helpfully.
+
+ALGORITHMUS-STEUERUNG:
+- Falls der Nutzer NUR normale Konversation führt oder Fragen stellt, setze "vector" auf null und "vectorSummary" auf null. Verändere den Algorithmus NICHT.
+- Nur wenn der Nutzer EXPLIZIT Themen- oder Formatwünsche äußert (z.B. "Mehr Kochen", "Weniger Finanzen"), erstelle im "vector"-Objekt passende Gewichte UND gib "vectorSummary" an (z.B. "⚡ Algorithmus-Anpassung: Kochen +95%").
 
 WICHTIG: Antworte im folgenden JSON-Format:
 {
-  "response": "Deine ausführliche, kontextbezogene deutsche Antworterklärung",
+  "response": "Deine Antworterklärung in ${targetLang}",
   "vector": null | {
     "interests": { "Thema": { "score": 0.95 } },
     "contentTypes": { "video": 0.9, "pdf": 0.8 },

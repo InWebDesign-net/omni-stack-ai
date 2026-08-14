@@ -11,7 +11,7 @@ import { useApp } from '@/context/AppContext';
 import { useChat, SearchableUser } from '@/context/ChatContext';
 
 export default function ChatWidget() {
-  const { currentUser } = useApp();
+  const { currentUser, t } = useApp();
   const {
     isOpen,
     isExpanded,
@@ -87,7 +87,7 @@ export default function ChatWidget() {
   const handleStartAiChat = async () => {
     setIsNewChatOpen(false);
     const res = await createRoom({
-      name: 'Omni KI-Assistent',
+      name: t.feed?.aiAssistant || 'Omni KI-Assistent',
       type: 'ai',
     });
     if (res.error) {
@@ -118,7 +118,7 @@ export default function ChatWidget() {
       <button
         onClick={() => openChat()}
         className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30"
-        title="Chat & Support öffnen"
+        title={t.chat?.title || 'Omni Chat'}
       >
         <MessageCircle className="w-6 h-6" />
         {totalUnreadCount > 0 && (
@@ -139,20 +139,20 @@ export default function ChatWidget() {
           <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
             <h2 className="font-bold text-lg text-white flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-indigo-400" />
-              Omni Chat
+              {t.chat?.title || 'Omni Chat'}
             </h2>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsNewChatOpen(true)}
                 className="p-2 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-all"
-                title="Neuen Chat erstellen"
+                title={t.chat?.newChatTitle || 'Neuen Chat erstellen'}
               >
                 <Plus className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setIsSettingsOpen(true)}
                 className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
-                title="Privatsphäre & Einstellungen"
+                title={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'}
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -173,7 +173,7 @@ export default function ChatWidget() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Räume & Kontakte suchen..."
+                placeholder={t.chat?.searchPlaceholder || 'Räume & Kontakte suchen...'}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
               />
             </div>
@@ -185,8 +185,8 @@ export default function ChatWidget() {
               <div className="p-6 text-center space-y-4">
                 <Sparkles className="w-10 h-10 mx-auto text-indigo-400 opacity-40 animate-pulse" />
                 <div>
-                  <h4 className="font-bold text-sm text-white mb-1">Keine Konversationen</h4>
-                  <p className="text-xs text-slate-400">Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.</p>
+                  <h4 className="font-bold text-sm text-white mb-1">{t.chat?.noConversations || 'Keine Konversationen'}</h4>
+                  <p className="text-xs text-slate-400">{t.chat?.noConversationsSub || 'Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.'}</p>
                 </div>
                 <div className="space-y-2 pt-2">
                   <button
@@ -194,14 +194,14 @@ export default function ChatWidget() {
                     className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
                   >
                     <Bot className="w-4 h-4" />
-                    <span>KI-Assistenten starten</span>
+                    <span>{t.chat?.startAiChat || 'KI-Assistenten starten'}</span>
                   </button>
                   <button
                     onClick={() => setIsNewChatOpen(true)}
                     className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700"
                   >
                     <UserPlus className="w-4 h-4 text-teal-400" />
-                    <span>Nutzer anschreiben</span>
+                    <span>{t.chat?.startDirectUserChat || 'Nutzer anschreiben'}</span>
                   </button>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function ChatWidget() {
                       </div>
                       <div className="flex justify-between items-center mt-1">
                         <p className="text-xs text-slate-400 truncate">
-                          {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
+                          {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : '...'}
                         </p>
                         {(room.unreadCount || 0) > 0 && (
                           <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
@@ -278,24 +278,21 @@ export default function ChatWidget() {
                         </span>
                       )}
                     </h3>
-                    <p className="text-xs text-slate-400">
-                      {showOnlineStatus ? 'Aktiv • Live-Verschlüsselung' : 'Live-Verschlüsselung'}
-                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => addParticipantToRoom(activeRoom.id, { name: 'Omni AI Agent', type: 'ai' })}
                     className="p-2 hover:bg-slate-800 text-teal-400 hover:text-teal-300 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold"
-                    title="KI-Agent zum Gespräch einladen"
+                    title={t.chat?.inviteAi || 'KI einladen'}
                   >
                     <UserPlus className="w-4 h-4" />
-                    <span className="hidden sm:inline">KI einladen</span>
+                    <span className="hidden sm:inline">{t.chat?.inviteAi || 'KI einladen'}</span>
                   </button>
-                  <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Verkleinern">
+                  <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Minimize">
                     <Minimize2 className="w-5 h-5" />
                   </button>
-                  <button onClick={closeChat} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Schließen">
+                  <button onClick={closeChat} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title={t.common.close}>
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -362,7 +359,7 @@ export default function ChatWidget() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Nachricht schreiben..."
+                    placeholder={t.chat?.writeMessagePlaceholder || 'Nachricht schreiben...'}
                     className="flex-1 max-h-32 min-h-[40px] bg-transparent resize-none focus:outline-none py-2 px-3 text-sm text-slate-100"
                     rows={1}
                   />
@@ -378,8 +375,8 @@ export default function ChatWidget() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center">
               <Sparkles className="w-12 h-12 mb-3 opacity-30 text-indigo-400 animate-pulse" />
-              <h3 className="font-bold text-base text-white mb-1">Kein Chat gewählt</h3>
-              <p className="text-xs text-slate-400 max-w-sm">Wähle einen Raum aus der linken Spalte oder starte einen neuen Chat mit der KI oder einem Nutzer.</p>
+              <h3 className="font-bold text-base text-white mb-1">{t.chat?.noConversations || 'Kein Chat gewählt'}</h3>
+              <p className="text-xs text-slate-400 max-w-sm">{t.chat?.noConversationsSub || 'Wähle einen Raum aus oder starte einen neuen Chat.'}</p>
             </div>
           )}
         </div>
@@ -396,7 +393,7 @@ export default function ChatWidget() {
       <div className="flex items-center justify-between p-3.5 border-b border-slate-800 bg-slate-900/80">
         {activeRoom ? (
           <div className="flex items-center gap-2">
-            <button onClick={() => setActiveRoomId(null)} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white" title="Zurück zur Raumliste">
+            <button onClick={() => setActiveRoomId(null)} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white" title="Zurück">
               <ArrowLeft className="w-4 h-4" />
             </button>
             <h3 className="font-bold text-sm text-white truncate max-w-[170px]">
@@ -406,7 +403,7 @@ export default function ChatWidget() {
         ) : (
           <h2 className="font-bold text-sm text-white px-1 flex items-center gap-2">
             <MessageCircle className="w-4 h-4 text-indigo-400" />
-            Omni Chat
+            {t.chat?.title || 'Omni Chat'}
           </h2>
         )}
         
@@ -414,28 +411,28 @@ export default function ChatWidget() {
           <button
             onClick={() => setIsNewChatOpen(true)}
             className="p-1.5 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-colors"
-            title="Neuen Chat erstellen"
+            title={t.chat?.newChatTitle || 'Neuen Chat erstellen'}
           >
             <Plus className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-            title="Einstellungen"
+            title={t.chat?.settingsTitle || 'Einstellungen'}
           >
             <Settings className="w-4 h-4" />
           </button>
           <button
             onClick={toggleExpand}
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-            title="Maximieren"
+            title="Maximize"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
           <button
             onClick={closeChat}
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-            title="Schließen"
+            title={t.common.close}
           >
             <X className="w-4 h-4" />
           </button>
@@ -468,6 +465,12 @@ export default function ChatWidget() {
                     }`}>
                       {!isMe && <div className="text-[10px] font-bold text-indigo-400 mb-1">{msg.senderName}</div>}
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      {msg.meta?.vectorSummary && (
+                        <div className="mt-2 pt-2 border-t border-indigo-500/20 text-[11px] font-mono text-indigo-300 flex items-center gap-1.5 bg-indigo-950/40 px-2 py-1 rounded-xl border border-indigo-500/20">
+                          <Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                          <span>{msg.meta.vectorSummary}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-end gap-1 mt-1">
                         <span className={`text-[9px] font-mono ${isMe ? 'text-indigo-200' : 'text-slate-500'}`}>
                           {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -488,7 +491,7 @@ export default function ChatWidget() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Nachricht schreiben..."
+                  placeholder={t.chat?.writeMessagePlaceholder || 'Nachricht schreiben...'}
                   className="flex-1 max-h-24 min-h-[36px] bg-transparent resize-none focus:outline-none py-1.5 px-2 text-xs text-slate-100"
                   rows={1}
                 />
@@ -504,8 +507,8 @@ export default function ChatWidget() {
               <div className="p-6 text-center space-y-4">
                 <Sparkles className="w-10 h-10 mx-auto text-indigo-400 opacity-40 animate-pulse" />
                 <div>
-                  <h4 className="font-bold text-sm text-white mb-1">Keine Konversationen</h4>
-                  <p className="text-xs text-slate-400">Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.</p>
+                  <h4 className="font-bold text-sm text-white mb-1">{t.chat?.noConversations || 'Keine Konversationen'}</h4>
+                  <p className="text-xs text-slate-400">{t.chat?.noConversationsSub || 'Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.'}</p>
                 </div>
                 <div className="space-y-2 pt-2">
                   <button
@@ -513,14 +516,14 @@ export default function ChatWidget() {
                     className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
                   >
                     <Bot className="w-4 h-4" />
-                    <span>KI-Assistenten starten</span>
+                    <span>{t.chat?.startAiChat || 'KI-Assistenten starten'}</span>
                   </button>
                   <button
                     onClick={() => setIsNewChatOpen(true)}
                     className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700"
                   >
                     <UserPlus className="w-4 h-4 text-teal-400" />
-                    <span>Nutzer anschreiben</span>
+                    <span>{t.chat?.startDirectUserChat || 'Nutzer anschreiben'}</span>
                   </button>
                 </div>
               </div>
@@ -550,7 +553,7 @@ export default function ChatWidget() {
                     </div>
                     <div className="flex justify-between items-center mt-0.5">
                       <p className="text-[11px] text-slate-400 truncate">
-                        {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : 'Noch keine Nachrichten.'}
+                        {room.messages.length > 0 ? room.messages[room.messages.length - 1].content : '...'}
                       </p>
                       {(room.unreadCount || 0) > 0 && (
                         <span className="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-2">
@@ -578,7 +581,7 @@ export default function ChatWidget() {
           <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/80">
             <h3 className="font-bold text-white text-sm flex items-center gap-2">
               <UserPlus className="w-4 h-4 text-indigo-400" />
-              Neuen Chat starten
+              {t.chat?.newChatTitle || 'Neuen Chat starten'}
             </h3>
             <button onClick={() => setIsNewChatOpen(false)} className="p-1 text-slate-400 hover:text-white rounded-lg">
               <X className="w-4 h-4" />
@@ -595,27 +598,27 @@ export default function ChatWidget() {
                 <Bot className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">Mit KI-Assistent sprechen</h4>
-                <p className="text-xs text-slate-400">Frage den Assistenten nach Videos, Inhalten oder Navigation.</p>
+                <h4 className="font-bold text-sm text-white">{t.chat?.speakWithAi || 'Mit KI-Assistent sprechen'}</h4>
+                <p className="text-xs text-slate-400">{t.chat?.speakWithAiSub || 'Frage den Assistenten nach Videos, Inhalten oder Navigation.'}</p>
               </div>
             </button>
 
             {/* Quick Option 2: Search User */}
             <div className="space-y-2 pt-2 border-t border-slate-800">
-              <label className="block text-xs font-bold text-slate-300">Nutzer suchen & anschreiben</label>
+              <label className="block text-xs font-bold text-slate-300">{t.chat?.searchUserLabel || 'Nutzer suchen & anschreiben'}</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   value={userSearchQuery}
                   onChange={(e) => handleUserSearchChange(e.target.value)}
-                  placeholder="Nutzername suchen..."
+                  placeholder={t.chat?.searchUserPlaceholder || 'Nutzername suchen...'}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               {isSearchingUsers && (
-                <div className="p-3 text-center text-xs text-slate-400">Suche Nutzer...</div>
+                <div className="p-3 text-center text-xs text-slate-400">...</div>
               )}
 
               {userSearchResults.length > 0 ? (
@@ -636,7 +639,7 @@ export default function ChatWidget() {
                         </div>
                       </div>
                       <span className="text-[10px] font-semibold bg-indigo-600/20 text-indigo-300 px-2 py-1 rounded-full">
-                        Chat starten
+                        {t.chat?.startChatBtn || 'Chat starten'}
                       </span>
                     </div>
                   ))}
@@ -644,7 +647,7 @@ export default function ChatWidget() {
               ) : (
                 !isSearchingUsers && (
                   <div className="p-3 text-center text-xs text-slate-500">
-                    Keine Nutzer gefunden.
+                    {t.chat?.noUsersFound || 'Keine Nutzer gefunden.'}
                   </div>
                 )
               )}

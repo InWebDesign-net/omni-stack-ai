@@ -265,5 +265,32 @@
     "openProfileTitle": "Open profile of {name}",
     "loading": "Loading content...",
     "bookmarkSave": "Save"
+  },
+  "chat": {
+    "title": "Omni Chat",
+    "searchPlaceholder": "Search rooms & contacts...",
+    "noConversations": "No conversations",
+    "noConversationsSub": "Start a new chat with the AI Assistant or another user now.",
+    "startAiChat": "Start AI Assistant",
+    "startDirectUserChat": "Message a user",
+    "inviteAi": "Invite AI",
+    "privacyErrorNobody": "This user currently does not accept direct messages.",
+    "settingsTitle": "Privacy & Chat Settings",
+    "allowDirectMessages": "Who can send you direct messages?",
+    "everyone": "Everyone",
+    "subscribersOnly": "Subscribers only",
+    "nobody": "Nobody (Direct messages disabled)",
+    "soundNotifications": "Sound notifications",
+    "onlineStatus": "Show online status",
+    "readReceipts": "Show read receipts",
+    "newChatTitle": "Start new chat",
+    "speakWithAi": "Talk with AI Assistant",
+    "speakWithAiSub": "Ask the assistant about videos, content or navigation.",
+    "searchUserLabel": "Search & message user",
+    "searchUserPlaceholder": "Search username...",
+    "noUsersFound": "No users found.",
+    "startChatBtn": "Start chat",
+    "writeMessagePlaceholder": "Write a message...",
+    "welcomeAiMessage": "Hello! Welcome to Omni by InWebDesign.net! Do you already have a web project or questions about our high-performance hosting & AI solutions?"
   }
 }

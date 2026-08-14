@@ -265,5 +265,32 @@
     "openProfileTitle": "Profil von {name} öffnen",
     "loading": "Inhalte werden geladen...",
     "bookmarkSave": "Speichern"
+  },
+  "chat": {
+    "title": "Omni Chat",
+    "searchPlaceholder": "Räume & Kontakte suchen...",
+    "noConversations": "Keine Konversationen",
+    "noConversationsSub": "Starte jetzt einen neuen Chat mit der KI oder einem Nutzer.",
+    "startAiChat": "KI-Assistenten starten",
+    "startDirectUserChat": "Nutzer anschreiben",
+    "inviteAi": "KI einladen",
+    "privacyErrorNobody": "Dieser Nutzer akzeptiert aktuell keine Direktnachrichten.",
+    "settingsTitle": "Privatsphäre & Chat-Einstellungen",
+    "allowDirectMessages": "Wer kann dir Direktnachrichten senden?",
+    "everyone": "Alle Nutzer",
+    "subscribersOnly": "Nur Abonnenten",
+    "nobody": "Niemand (Chats deaktiviert)",
+    "soundNotifications": "Sound-Benachrichtigungen",
+    "onlineStatus": "Online-Status anzeigen",
+    "readReceipts": "Lesebestätigungen anzeigen",
+    "newChatTitle": "Neuen Chat starten",
+    "speakWithAi": "Mit KI-Assistent sprechen",
+    "speakWithAiSub": "Frage den Assistenten nach Videos, Inhalten oder Navigation.",
+    "searchUserLabel": "Nutzer suchen & anschreiben",
+    "searchUserPlaceholder": "Nutzername suchen...",
+    "noUsersFound": "Keine Nutzer gefunden.",
+    "startChatBtn": "Chat starten",
+    "writeMessagePlaceholder": "Nachricht schreiben...",
+    "welcomeAiMessage": "Hallo! Schön, dass du da bist. Ich bin dein Omni KI-Assistent von InWebDesign.net. Hast du schon eine eigene Website oder Fragen zu unseren Hosting & KI-Lösungen?"
   }
 }
