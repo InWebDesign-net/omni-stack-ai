@@ -143,12 +143,12 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#080e1e] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white">
-        <AppProvider>
-          <ChatProvider>
+        <ChatProvider>
+          <AppProvider>
             {children}
             <ChatWidget />
-          </ChatProvider>
-        </AppProvider>
+          </AppProvider>
+        </ChatProvider>
       </body>
     </html>
   );
