@@ -537,40 +537,50 @@ export default function VideoPageClient({
               </div>
 
               {/* Expandable Video Description */}
-              {(video.summary || video.description || video.tags) && (
-                <div className="space-y-3 pt-2 border-t border-slate-800/60">
-                  <p
-                    className={`text-sm text-slate-300 leading-relaxed ${
-                      !descExpanded ? 'line-clamp-3' : ''
-                    }`}
-                  >
-                    {flattenBlocks(video.summary) || video.description || ''}
-                  </p>
+              {(video.summary || video.description || video.tags) && (() => {
+                const descriptionText = (flattenBlocks(video.summary) || video.description || '').trim();
+                const isLongDescription = descriptionText.length > 180 || descriptionText.includes('\n');
 
-                  {/* Tags */}
-                  {Array.isArray(video.tags) && video.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {video.tags.map((tag: string, idx: number) => (
-                        <Link
-                          key={`tag-${idx}`}
-                          href={`/videos?page=1&includetag=${encodeURIComponent(tag)}`}
-                          className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:text-white hover:bg-indigo-600/30 hover:border-indigo-500/50 text-xs font-medium transition-all shadow-sm cursor-pointer"
+                return (
+                  <div className="space-y-3 pt-2 border-t border-slate-800/60">
+                    {descriptionText && (
+                      <div>
+                        <p
+                          className={`text-sm text-slate-300 leading-relaxed ${
+                            !descExpanded && isLongDescription ? 'line-clamp-3' : ''
+                          }`}
                         >
-                          #{tag}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                          {descriptionText}
+                        </p>
+                        {isLongDescription && (
+                          <button
+                            onClick={() => setDescExpanded(!descExpanded)}
+                            className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 mt-1.5 transition-colors"
+                          >
+                            <span>{descExpanded ? t.common.showLess : t.common.showMore}</span>
+                            {descExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
+                      </div>
+                    )}
 
-                  <button
-                    onClick={() => setDescExpanded(!descExpanded)}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 pt-1"
-                  >
-                    <span>{t.common.showMore}</span>
-                    {descExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              )}
+                    {/* Tags */}
+                    {Array.isArray(video.tags) && video.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {video.tags.map((tag: string, idx: number) => (
+                          <Link
+                            key={`tag-${idx}`}
+                            href={`/videos?page=1&includetag=${encodeURIComponent(tag)}`}
+                            className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:text-white hover:bg-indigo-600/30 hover:border-indigo-500/50 text-xs font-medium transition-all shadow-sm cursor-pointer"
+                          >
+                            #{tag}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Comments Section */}
