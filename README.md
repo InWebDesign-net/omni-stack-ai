@@ -1,13 +1,14 @@
-# 🚀 Omni – Hyper-Personalized Video Network & Feed Assembly Engine
+# 🚀 Omni – Hyper-Personalized Media Network & Feed Assembly Engine
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)](https://nextjs.org/)
 [![Strapi](https://img.shields.io/badge/Strapi-v5.51-purple?logo=strapi)](https://strapi.io/)
-[![Turborepo](https://img.shields.io/badge/Turborepo-v2.10-red?logo=turborepo)](https://turbo.build/)
+[![HLS AES-128](https://img.shields.io/badge/Security-Level_4_AES--128-emerald?logo=lock)](https://inwebdesign.net)
+[![Ollama AI](https://img.shields.io/badge/Ollama-Llama_3.1-orange?logo=ollama)](https://ollama.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
 [![PM2](https://img.shields.io/badge/PM2-Managed-green?logo=pm2)](https://pm2.io/)
 
-**Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks, video streaming platforms, and media distribution hubs. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, **Turborepo**, and **PM2**, Omni introduces **Stateful Preference Vectors** to replace traditional, expensive event-logging databases.
+**Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks, encrypted video streaming platforms, and AI-driven media distribution hubs. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, **Level 4 AES-128 HLS Video Transcoding**, and **Local Ollama AI Orchestration**, Omni introduces **Stateful Preference Vectors** to replace traditional, expensive event-logging databases.
 
 ---
 
@@ -21,7 +22,7 @@ You can test the running production deployment online:
 ### 🔑 Demo Login Credentials
 
 #### 1. Frontend Test User Accounts (Web App)
-You can log in directly via the Quick-Login buttons in the login modal or use these credentials:
+You can log in directly via the Quick-Login presets in the login modal or use these credentials:
 * **Demo Tech User (Tech & Science Focus):**
   * **E-Mail / Identifier:** `demotech@inwebdesign.net`
   * **Password:** `DemoUser2026!`
@@ -40,60 +41,60 @@ You can log in directly via the Quick-Login buttons in the login modal or use th
 
 The core boilerplate, standard feed assembly, video library catalog, batch tracking, content detail views, shorts feed, and authentication code in this repository are open-source and released under the **[MIT License](LICENSE)**. You are free to use, modify, and distribute this foundation for your own projects.
 
-### 🌟 Unlock the Premium AI Engine
-The advanced local LLM orchestration (Ollama CPU/GPU inference), real-time intent classification, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
+### 🌟 Unlock the Premium AI Engine & Managed Hosting
+The advanced local LLM orchestration (Ollama Llama 3.1 & Moondream Vision AI), real-time intent classification, conversational memory, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
 
 If you want to integrate the complete AI orchestration into your project without building it from scratch, we offer fully managed hosting, Proxmox LXC cluster deployments, and custom AI consulting.
 
-📩 **[Contact InWebDesign for Premium AI Integration & Hosting](https://inwebdesign.net)**
+📩 **[Contact InWebDesign for Premium AI Integration & Managed Hosting](https://inwebdesign.net)**
 
 ---
 
 ## 🧠 Key Features & Architectural Highlights
 
-### 1. Stateful Preference Vectors (`affinityGraph`)
+### 1. 🔒 Level 4 AES-128 Encrypted HLS Video Pipeline
+Omni implements an enterprise-grade, multi-stage content security pipeline:
+
+* ⚙️ **Automated LXC Hardware Transcoding (`process-videos.js`):** High-concurrency video transcoding pipeline converting raw uploads into Adaptive Bitrate (ABR) HLS streams (`1080p`, `720p`, `480p`) using FFmpeg QSV / CPU acceleration.
+* 🔐 **On-Disk AES-128 Encryption (Level 4 Security):** Every `.ts` video segment file stored on disk is encrypted with a unique 128-bit AES key (`enc.key`). Raw `.ts` files are 100% unplayable if copied directly.
+* 🔑 **JWT-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** Next.js & Strapi 5 serve the 16-byte AES decryption keys exclusively to authenticated users with valid JWT session tokens.
+* 🛡️ **Client Memory Isolation:** Native `hls.js` decodes segments into tab-scoped `blob:http://...` MediaSource buffers, preventing direct URL hotlinking, right-click downloads, and unauthorized media extraction.
+
+### 2. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
+* 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes a scrub bar with hover timestamp tooltips, smooth center play/pause splash animations, volume hover expansion, and full-screen toggle.
+* ⚙️ **HLS Quality Selector:** Unterbrechungsfreies manual or automatic quality resolution switching (`Auto`, `1080p`, `720p`, `480p`) via `hls.js`.
+* 🛡️ **Branded Context Menu:** Custom right-click menu (`© 2026 Omni by InWebDesign.net`, copy link at current timestamp `?t=124`, loop toggle) replacing standard browser context popups.
+* 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Frühstück`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
+
+### 3. 💬 Real-Time Chat Engine & Omni AI Assistant
+* 💬 **Dual-View Chat System:** WhatsApp/Telegram-style full-screen (2-column) and compact floating support widget. Supports 1:1 direct user messaging and room creation.
+* 🔒 **Granular Privacy Controls:** Users can set direct message permissions (*Everyone*, *Subscribers Only*, *Nobody/Disabled*), toggle read receipts (`✓✓`), online indicators, and sound alerts.
+* 🤖 **Context-Aware Omni AI Assistant (Ollama Llama 3.1):** Remembers past 6 conversation messages, answers tech stack & platform questions, and supports **Multi-Language Locale Awareness (`DE` / `EN`)**.
+* ⚡ **Algorithmic Preference Tuning Badges:** Natural conversation intent parsing dynamically mutates user `affinityGraph` vectors and renders visual badges (`⚡ Algorithmus-Anpassung: Kochen +95%`) inside chat bubbles.
+
+### 4. 🌐 Multilingual i18n Dictionary System
+* 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`/dictionaries/de.json` & `/dictionaries/en.json`):** Complete UI internationalization covering headers, search bars, player controls, chat widgets, privacy modals, and AI assistant prompts.
+* 🔄 **Instant Language Switching:** Instant toggle between German (`DE`) and English (`EN`) with persistent local storage and cookie sync.
+
+### 5. 🎯 Stateful Preference Vectors (`affinityGraph`)
 Instead of logging millions of individual click events in separate database rows, Omni mutates a single, highly-optimized **`affinityGraph` JSONB field** in PostgreSQL:
 
 ```json
 {
   "contentTypes": { "video": 0.8, "pdf": 0.85, "article": 0.7, "short": 0.5 },
   "topics": {
-    "Wissenschaft": { "score": 95, "last_interacted": "2026-08-04T18:00:00Z" },
-    "PostgreSQL": { "score": 100, "last_interacted": "2026-08-04T18:00:00Z" }
+    "Wissenschaft": { "score": 95, "last_interacted": "2026-08-14T10:00:00Z" },
+    "PostgreSQL": { "score": 100, "last_interacted": "2026-08-14T10:00:00Z" }
   },
-  "creators": { "1": { "score": 50, "last_interacted": "2026-08-04T18:00:00Z" } }
+  "creators": { "1": { "score": 50, "last_interacted": "2026-08-14T10:00:00Z" } }
 }
 ```
 
-### 2. Dynamic Media-Type Routing & Views
-
-* 🎞️ **Direct Video Library Catalog ([`/videos`](https://omni-web.inwebdesign.net/videos)):** Dedicated, un-ranked video catalog view with full pagination, live title search (`q`), favorites filtering (`fav`), and multi-field sorting (`createdatasc`, `createdatdesc`, `titleasc`, `titledesc`, `durationasc`, `durationdesc`). All query parameters are synchronized to the URL as the Single Source of Truth.
-* 🎬 **Video Detail & Player Page ([`/video/[slug]`](https://omni-web.inwebdesign.net/video/sample-video)):** 16:9 cinema widescreen theater page featuring adaptive HLS streaming, video details, view counts, creator channel badges, like toggling, and interactive comment sections.
-* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed ([`/shorts`](https://omni-web.inwebdesign.net/shorts) & [`/shorts/[slug]`](https://omni-web.inwebdesign.net/shorts/sample-short)):** TikTok / YouTube Shorts style vertical feed player with `snap-y snap-mandatory` smooth snapping, keyboard navigation (Up/Down arrows), floating action sidebar (Like, Comment Drawer, Share, Sound Toggle), and real-time URL synchronization.
-* 📄 **Universal Content View ([`/content/[slug]`](https://omni-web.inwebdesign.net/content/sample-article)):** Unified detail router for Videos, PDF Documents (embedded viewer & download hub), and Typography-optimized Articles.
-
-### 3. High-Performance Multilingual Tag Filtering & Catalog Engine ([`/videos`](https://omni-web.inwebdesign.net/videos))
-Omni features a powerful, enterprise-grade video catalog and tag-filtering architecture powered natively by Strapi v5 and PostgreSQL:
-
-* ⚡ **Native Strapi v5 & PostgreSQL Service (`/api/videos/filtered`):** High-efficiency database filtering and pagination executed directly at the backend level, eliminating heavy client/proxy array manipulations.
-* 🔗 **URL Parametrized Single Source of Truth:** All filter states (`?q=...&includetag=...&excludetag=...&matchmode=any|all&sort=...&lang=...&page=1`) are bidirectionally synchronized with the URL. Deep-linking, shareable catalog views, and browser back/forward navigation work seamlessly.
-* 🏷️ **Dynamic Tag Cloud with Deduplicated Frequency Counts:** Live tag frequency cloud (`/api/video/tags`) automatically filtered to public, non-processing items (`visibility: 'public'`, `isProcessing: false`). Tag frequencies are deduplicated per `documentId` across bilingual (`de`/`en`) localizations.
-* 🎛️ **Flexible Multi-Mode Tag Selection Engine:**
-  * **Include Tags (`includetag`):** Select single or multiple tags to filter content.
-  * **Match Modes (`matchmode`):** Toggle between `any` (OR-logic: matches any selected tag) and `all` (AND-logic: strictly requires all selected tags).
-  * **Exclude Tags (`excludetag`):** Negative tag filtering to hide unwanted genres or topics.
-* 🔍 **Live Title Search & Multi-Field Sorting:** Full-text instant title search (`q`) combined with multi-field sorting cases (`createdatdesc`, `createdatasc`, `titleasc`, `titledesc`, `durationasc`, `durationdesc`).
-
-### 4. Hyper-Personalized Feed Assembly & Navigation Modes
-Feeds are assembled dynamically by querying **4 Parallel Buckets**:
-* 🎯 **High Intent:** Content matching user affinities (Score > 0.45).
-* 👥 **Network & Subs:** Subscribed authors & followed channels.
-* 🧭 **Exploration:** Wildcard / novelty content for filter bubble breakout.
-* 🔥 **Fresh & Trending:** High view/like velocity across the platform (featuring `🔥 HOT #1`, `#2`, `#3` rank badges).
-
-### 5. Fullstack Authentication, User Profiles & Creator Channels
-* **Strapi Users-Permissions Integration:** JWT authentication, registration, and login tabs.
-* **1:1 User Profiles & Channel Management (`/user/[slug]`):** Server-rendered profile pages with JWT ownership validation (`isOwner`), owner control banners (instant upload modal, draft visibility), visitor subscription toggles, and channel info tabs.
+### 6. 📱 Dynamic Media-Type Routing & Views
+* 🎞️ **Direct Video Catalog ([`/videos`](https://omni-web.inwebdesign.net/videos)):** Un-ranked video library with live title search (`q`), tag filtering (`includetag`, `excludetag`, `matchmode`), and multi-field sorting.
+* 🎬 **Video Detail & Widescreen Theater ([`/video/[slug]`](https://omni-web.inwebdesign.net/video/sample-video)):** Cinema page with custom player, view counts, creator channel badges, like toggling, and interactive comment threads.
+* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed ([`/shorts`](https://omni-web.inwebdesign.net/shorts)):** TikTok / YouTube Shorts style vertical feed player with `snap-y` smooth snapping and floating action sidebars.
+* 📄 **Universal Content Router ([`/content/[slug]`](https://omni-web.inwebdesign.net/content/sample-article)):** Unified detail router for Videos, PDF Documents (embedded viewer), and Typography-optimized Articles.
 
 ---
 
@@ -101,13 +102,15 @@ Feeds are assembled dynamically by querying **4 Parallel Buckets**:
 
 ```
 omni-stack-ai/
-├── cms/                     # Strapi v5 Headless CMS (PostgreSQL)
-│   ├── config/              # PostgreSQL & Plugin configurations
-│   └── src/api/             # Custom Controllers & Services (feed, tracking, user-profile)
+├── cms/                     # Strapi v5 Headless CMS (PostgreSQL & TypeScript Factories)
+│   ├── config/              # PostgreSQL, CORS & Plugin configurations
+│   └── src/api/             # Controllers, Services & AI Intent Feed Engines
 ├── web/                     # Next.js 16 App Router Frontend
-│   ├── src/app/             # Pages, Catalog (/videos), Detail View (/video/[slug]), Shorts Feed (/shorts/[slug]), Auth & Modals
-│   └── src/lib/             # SWR Hooks (useVideos), Batch Tracking & Feed Dataset Helpers
-├── converter_lxc/           # Automated Video Transcoding Worker (MP4, HLS, Thumbnails, OG Images)
+│   ├── src/app/             # Pages, Catalog (/videos), Detail View (/video/[slug]), Shorts (/shorts), Key API (/api/media/key)
+│   ├── src/components/      # CustomVideoPlayer, ChatWidget, Header, Settings & Modals
+│   ├── src/context/         # AppContext (i18n), ChatContext (Rooms & Messages)
+│   └── src/dictionaries/    # Multilingual i18n JSON Dictionaries (de.json, en.json)
+├── converter_lxc/           # LXC Node 22 Transcoder (Level 4 AES-128 HLS, Watermarks, OG Images)
 ├── ecosystem.config.js      # PM2 Process Manager setup
 ├── turbo.json               # Turborepo task pipeline (Turbo v2)
 ├── package.json             # Monorepo workspaces configuration
@@ -121,6 +124,7 @@ omni-stack-ai/
 ### Prerequisites
 * **Node.js:** `v22.15.1` or higher
 * **PostgreSQL:** `v15` or higher
+* **FFmpeg:** `v6.0` or higher (with QSV / HLS support)
 * **PM2:** `npm install -g pm2`
 
 ### 1. Installation
@@ -141,6 +145,8 @@ DATABASE_PORT=5432
 DATABASE_NAME=omni_stack_db
 DATABASE_USERNAME=omni_user
 DATABASE_PASSWORD=omni_password_secure
+OLLAMA_URL=http://10.0.0.6:11434/v1/chat/completions
+OLLAMA_MODEL=llama3.1:latest
 ```
 
 ### 3. Build & Run with PM2
