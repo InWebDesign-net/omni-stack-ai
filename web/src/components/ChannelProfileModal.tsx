@@ -27,19 +27,38 @@ export default function ChannelProfileModal({
   const dmSetting = selectedChannel.allowDirectMessages || 'everyone';
   const canSendDM = !isOwner && dmSetting !== 'nobody';
 
-  const handleStartChat = async () => {
+  const handleStartChat = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!currentUser) {
       onClose();
       openAuthModal();
       return;
     }
-    openChat();
+
+    const cleanHandle = (selectedChannel.handle || '').replace(/^@/, '').toLowerCase();
+    const handleMap: Record<string, string> = {
+      demotech: '1',
+      demogourmet: '2',
+      greenplanet: '3',
+      finanzkompass: '4',
+      astro: '10',
+    };
+    const targetId = selectedChannel.id
+      ? String(selectedChannel.id)
+      : handleMap[cleanHandle];
+
     onClose();
-    await createRoom({
+
+    const res = await createRoom({
       name: selectedChannel.username,
       type: 'direct',
-      recipientId: selectedChannel.id ? String(selectedChannel.id) : undefined,
+      recipientId: targetId,
     });
+
+    openChat(res?.roomId || undefined);
   };
 
   return (
