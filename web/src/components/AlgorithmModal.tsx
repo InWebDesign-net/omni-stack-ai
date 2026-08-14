@@ -259,7 +259,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
                 { key: 'video', label: '📹 Videos', val: graph.contentTypes?.video ?? 0.9 },
                 { key: 'short', label: '⚡ Shorts', val: graph.contentTypes?.short ?? 0.5 },
                 { key: 'article', label: '✍️ Artikel', val: graph.contentTypes?.article ?? 0.7 },
-                { key: 'pdf', label: '📄 PDFs', val: graph.contentTypes?.pdf ?? 0.8 },
+                { key: 'image', label: '🖼️ Bilder', val: graph.contentTypes?.image ?? 0.8 },
               ].map(({ key, label, val }) => (
                 <div key={key} className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
                   <div className="flex justify-between items-center text-xs">

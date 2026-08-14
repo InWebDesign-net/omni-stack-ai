@@ -30,7 +30,7 @@ export function defaultAffinityGraph(): AffinityGraph {
   return {
     topics: {},
     contentTypes: {
-      pdf: 0.8,
+      image: 0.8,
       video: 0.9,
       article: 0.7,
       short: 0.5,
