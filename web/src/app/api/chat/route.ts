@@ -59,6 +59,26 @@ async function getOrCreateRoomBySlug(
   return null;
 }
 
+function isUserParticipantInRoom(room: any, userId: number | string): boolean {
+  if (!userId) return false;
+
+  let participantsList: any[] = [];
+  if (Array.isArray(room.participants)) {
+    participantsList = room.participants;
+  } else if (room.participants?.data && Array.isArray(room.participants.data)) {
+    participantsList = room.participants.data;
+  } else if (room.attributes?.participants && Array.isArray(room.attributes.participants)) {
+    participantsList = room.attributes.participants;
+  } else if (room.attributes?.participants?.data && Array.isArray(room.attributes.participants.data)) {
+    participantsList = room.attributes.participants.data;
+  }
+
+  return participantsList.some((p: any) => {
+    const pId = p.id || p.documentId;
+    return String(pId) === String(userId);
+  });
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -96,6 +116,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ users: [] });
     }
 
+    // Ensure Global channel and User AI room exist
+    if (user?.id) {
+      await getOrCreateRoomBySlug('room-global', 'Globaler Community Chat', 'global', [], authHeader);
+      await getOrCreateRoomBySlug(`room-ai-${user.id}`, 'Omni KI-Assistent', 'ai', [user.id], authHeader);
+    } else {
+      await getOrCreateRoomBySlug('room-global', 'Globaler Community Chat', 'global', [], authHeader);
+    }
+
     // Fetch chat rooms from Strapi REST API with populated participants
     const roomsRes = await fetch(
       `${STRAPI_URL}/api/chat-rooms?populate[participants][populate]=*&populate[messages][populate]=*&sort=updatedAt:desc&pagination[pageSize]=100`,
@@ -108,7 +136,21 @@ export async function GET(req: Request) {
     let rooms: any[] = [];
     if (roomsRes.ok) {
       const data = await roomsRes.json();
-      rooms = data?.data || [];
+      const rawRooms = data?.data || [];
+
+      if (user?.id) {
+        rooms = rawRooms.filter((room: any) => {
+          const roomType = room.type || room.attributes?.type;
+          // Global channels are visible to all users
+          if (roomType === 'global') return true;
+
+          // For direct, group, and AI chats: ONLY show if current user is a participant
+          return isUserParticipantInRoom(room, user.id);
+        });
+      } else {
+        // Unauthenticated guests only see global public rooms
+        rooms = rawRooms.filter((room: any) => (room.type || room.attributes?.type) === 'global');
+      }
     }
 
     // Fetch messages for active room if requested
@@ -214,6 +256,30 @@ export async function POST(req: Request) {
       if (createMsgRes.ok) {
         const data = await createMsgRes.json();
         savedMsg = data?.data;
+      }
+
+      // Trigger notification for other room participants if sender is a user
+      if (user?.id && senderType === 'user' && room) {
+        const participants = room.participants || room.attributes?.participants || [];
+        const otherParticipants = (Array.isArray(participants) ? participants : [])
+          .map((p: any) => p.id || p.documentId)
+          .filter((pId: any) => String(pId) !== String(user.id));
+
+        for (const targetRecipientId of otherParticipants) {
+          try {
+            await fetch(`${STRAPI_URL}/api/notifications`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                recipientId: Number(targetRecipientId),
+                type: 'chat_message',
+                title: `Neue Chat-Nachricht von ${user.username || 'Nutzer'}`,
+                message: content.length > 80 ? content.slice(0, 77) + '...' : content,
+                link: `chat:${room.slug || room.id}`,
+              }),
+            });
+          } catch (err) {}
+        }
       }
 
       return NextResponse.json({ message: savedMsg, room, success: true });

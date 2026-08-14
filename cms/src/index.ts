@@ -200,6 +200,7 @@ export default {
         await enablePermission(authRole.id, 'api::notification.notification.find');
         await enablePermission(authRole.id, 'api::notification.notification.markRead');
         await enablePermission(authRole.id, 'api::notification.notification.deleteOne');
+        await enablePermission(authRole.id, 'api::notification.notification.create');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }

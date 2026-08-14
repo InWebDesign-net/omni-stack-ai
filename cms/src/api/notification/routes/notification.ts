@@ -27,5 +27,14 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: 'POST',
+      path: '/notifications',
+      handler: 'api::notification.notification.create',
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

@@ -38,4 +38,26 @@ export default factories.createCoreController('api::notification.notification', 
 
     return ctx.send(result);
   },
+
+  async create(ctx) {
+    const user = ctx.state.user;
+    const body = ctx.request.body?.data || ctx.request.body || {};
+    const { recipient, recipientId, type, title, message, link } = body;
+
+    const targetRecipient = recipientId || recipient;
+    if (!targetRecipient || !title || !message) {
+      return ctx.badRequest('recipient, title and message required');
+    }
+
+    const notification = await strapi.service('api::notification.notification').createNotification({
+      recipientId: Number(targetRecipient),
+      senderId: user?.id ? Number(user.id) : undefined,
+      type: type || 'chat_message',
+      title,
+      message,
+      link,
+    });
+
+    return ctx.send({ notification });
+  },
 }));
