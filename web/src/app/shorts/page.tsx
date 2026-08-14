@@ -27,6 +27,7 @@ import {
 import { useApp } from '@/context/AppContext';
 import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import { jsonAuthHeaders } from '@/lib/affinity';
+import { tracker } from '@/lib/tracking';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -157,6 +158,16 @@ export default function ShortsFeedPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, shortsList.length]);
 
+  useEffect(() => {
+    const currentShort = shortsList[activeIndex];
+    if (currentShort) {
+      const tags = Array.isArray(currentShort.tags) && currentShort.tags.length > 0
+        ? currentShort.tags
+        : [(currentShort as any).category, currentShort.title].filter(Boolean);
+      tracker.track('view', tags, 'short', (currentShort as any).creator?.id || (currentShort as any).author?.id);
+    }
+  }, [activeIndex, shortsList]);
+
   const activeShort = shortsList[activeIndex];
 
   // Load user profile & preview status
@@ -197,6 +208,14 @@ export default function ShortsFeedPage() {
     setLikedMap((prev) => {
       const currentlyLiked = !!prev[id];
       setLikesMap((l) => ({ ...l, [id]: (l[id] ?? currentLikes) + (currentlyLiked ? -1 : 1) }));
+
+      if (activeShort && activeShort.id === id) {
+        const tags = Array.isArray(activeShort.tags) && activeShort.tags.length > 0
+          ? activeShort.tags
+          : [(activeShort as any).category, activeShort.title].filter(Boolean);
+        tracker.track(currentlyLiked ? 'unlike' : 'like', tags, 'short', (activeShort as any).creator?.id || (activeShort as any).author?.id);
+      }
+
       return { ...prev, [id]: !currentlyLiked };
     });
   };

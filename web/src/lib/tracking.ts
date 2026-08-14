@@ -1,5 +1,7 @@
+import { getStoredJwt } from './affinity';
+
 export interface TrackEvent {
-  type: 'view' | 'click' | 'completion';
+  type: 'view' | 'click' | 'like' | 'unlike' | 'completion' | 'share' | 'comment';
   tags: string[];
   mediaType?: 'video' | 'pdf' | 'article' | 'short';
   creatorId?: string | number;
@@ -13,10 +15,10 @@ class TrackingManager {
 
   constructor() {
     if (typeof window !== 'undefined') {
-      // Auto flush every 15 seconds
+      // Auto flush every 5 seconds
       this.flushInterval = setInterval(() => {
         this.flush();
-      }, 15000);
+      }, 5000);
 
       // Flush on page unload via sendBeacon
       window.addEventListener('beforeunload', () => {
@@ -29,7 +31,14 @@ class TrackingManager {
     this.userId = id;
   }
 
-  public track(type: 'view' | 'click' | 'completion', tags: string[], mediaType?: any, creatorId?: any) {
+  public track(
+    type: 'view' | 'click' | 'like' | 'unlike' | 'completion' | 'share' | 'comment',
+    tags: string[] = [],
+    mediaType?: any,
+    creatorId?: any
+  ) {
+    if (!tags || tags.length === 0) return;
+
     this.eventQueue.push({
       type,
       tags,
@@ -37,16 +46,15 @@ class TrackingManager {
       creatorId,
       timestamp: new Date().toISOString(),
     });
+
+    // Flush immediately on active actions
+    if (type === 'like' || type === 'unlike' || type === 'click' || type === 'comment') {
+      this.flush();
+    }
   }
 
   private getJwt(): string | null {
-    try {
-      const savedUser = localStorage.getItem('omni_user');
-      if (!savedUser) return null;
-      return JSON.parse(savedUser)?.jwt || null;
-    } catch {
-      return null;
-    }
+    return getStoredJwt();
   }
 
   public async flush() {
@@ -63,7 +71,7 @@ class TrackingManager {
       await fetch('/api/tracking/batch', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ events: eventsToSend }),
+        body: JSON.stringify({ events: eventsToSend, jwt }),
       });
     } catch (err) {
       console.error('Tracking batch flush failed:', err);
@@ -72,9 +80,9 @@ class TrackingManager {
 
   private flushBeacon() {
     if (this.eventQueue.length === 0) return;
-    // sendBeacon can't set headers — the proxy route lifts jwt into Authorization
+    const jwt = this.getJwt();
     const payload = JSON.stringify({
-      jwt: this.getJwt(),
+      jwt,
       events: this.eventQueue,
     });
     this.eventQueue = [];

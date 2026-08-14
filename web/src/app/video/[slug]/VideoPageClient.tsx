@@ -33,6 +33,7 @@ import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 import { useApp } from '@/context/AppContext';
 import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
+import { tracker } from '@/lib/tracking';
 import { formatRelativeDate } from '@/lib/date';
 import {
   fetchCommentsForSlug,
@@ -236,12 +237,24 @@ export default function VideoPageClient({
       }
     };
     checkInteraction();
+
+    if (video?.slug) {
+      const tags = Array.isArray(video.tags) && video.tags.length > 0
+        ? video.tags
+        : [video.category, video.title].filter(Boolean);
+      tracker.track('view', tags, 'video', creator?.id);
+    }
   }, [video?.slug, userIdent]);
 
   const handleVideoTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
     if (!hasTrackedView.current && el.currentTime >= 5 && video?.slug) {
       hasTrackedView.current = true;
+      const tags = Array.isArray(video.tags) && video.tags.length > 0
+        ? video.tags
+        : [video.category, video.title].filter(Boolean);
+      tracker.track('view', tags, 'video', creator?.id);
+
       fetch('/api/feed/interaction', {
         method: 'POST',
         headers: jsonAuthHeaders(),
@@ -267,6 +280,11 @@ export default function VideoPageClient({
     const nextIsLiked = !isLiked;
     setIsLiked(nextIsLiked);
     setLikesCount((prev: number) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
+
+    const tags = Array.isArray(video.tags) && video.tags.length > 0
+      ? video.tags
+      : [video.category, video.title].filter(Boolean);
+    tracker.track(nextIsLiked ? 'like' : 'unlike', tags, 'video', creator?.id);
 
     if (nextIsLiked) {
       showToast(t.common.likeAdded);

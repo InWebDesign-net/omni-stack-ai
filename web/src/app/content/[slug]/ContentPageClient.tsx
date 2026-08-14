@@ -34,6 +34,7 @@ import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import { loadStoredAffinityGraph, getStoredJwt, jsonAuthHeaders } from '@/lib/affinity';
+import { tracker } from '@/lib/tracking';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -178,10 +179,22 @@ export default function ContentPageClient({
     };
     checkInteraction();
 
+    if (item?.slug) {
+      const tags = Array.isArray(item.tags) && item.tags.length > 0
+        ? item.tags
+        : [item.category, item.title].filter(Boolean);
+      tracker.track('view', tags, item.type || 'article', item.author?.id);
+    }
+
     // Track view after reading for 3 seconds
     const timer = setTimeout(() => {
       if (!hasTrackedView.current) {
         hasTrackedView.current = true;
+        const tags = Array.isArray(item.tags) && item.tags.length > 0
+          ? item.tags
+          : [item.category, item.title].filter(Boolean);
+        tracker.track('view', tags, item.type || 'article', item.author?.id);
+
         const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
         fetch(`${strapiUrl}/api/feed/interaction`, {
           method: 'POST',
@@ -219,6 +232,11 @@ export default function ContentPageClient({
     const type = nextIsLiked ? 'like' : 'unlike';
     setIsLiked(nextIsLiked);
     setLikesCount((prev: number) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
+
+    const tags = Array.isArray(item.tags) && item.tags.length > 0
+      ? item.tags
+      : [item.category, item.title].filter(Boolean);
+    tracker.track(type, tags, item.type || 'article', item.author?.id);
 
     if (nextIsLiked) {
       showToast(t.content.likeAdded);

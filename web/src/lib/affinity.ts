@@ -27,19 +27,8 @@ export interface AffinityGraph {
 export const TOPIC_SCORE_MAX = 100;
 
 export function defaultAffinityGraph(): AffinityGraph {
-  const now = new Date().toISOString();
   return {
-    topics: {
-      'Wissenschaft': { score: 95, last_interacted: now },
-      'Natur': { score: 88, last_interacted: now },
-      'Kochen': { score: 75, last_interacted: now },
-      'Finanzen': { score: 80, last_interacted: now },
-      'PostgreSQL': { score: 90, last_interacted: now },
-      'Strapi': { score: 82, last_interacted: now },
-      'NextJS': { score: 85, last_interacted: now },
-      'Ollama': { score: 78, last_interacted: now },
-      'Funny Cat Videos': { score: 20, last_interacted: '2025-12-10T08:00:00Z' },
-    },
+    topics: {},
     contentTypes: {
       pdf: 0.8,
       video: 0.9,
@@ -189,13 +178,23 @@ export function storeAffinityGraph(graph: AffinityGraph) {
   } catch {}
 }
 
-/** JWT of the logged-in user from the stored session, if any (browser only). */
+/** JWT of the logged-in user from stored session, cookies or localStorage. */
 export function getStoredJwt(): string | null {
   if (typeof window === 'undefined') return null;
   try {
+    const directJwt = localStorage.getItem('omni_jwt');
+    if (directJwt) return directJwt;
+
     const savedUser = localStorage.getItem('omni_user');
-    if (!savedUser) return null;
-    return JSON.parse(savedUser)?.jwt || null;
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      if (parsed?.jwt) return parsed.jwt;
+    }
+
+    const m = document.cookie.match(/(?:^|;\s*)omni_jwt=([^;]+)/);
+    if (m?.[1]) return m[1];
+
+    return null;
   } catch {
     return null;
   }

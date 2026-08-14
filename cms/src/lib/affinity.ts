@@ -27,19 +27,8 @@ export interface AffinityGraph {
 export const TOPIC_SCORE_MAX = 100;
 
 export function defaultAffinityGraph(): AffinityGraph {
-  const now = new Date().toISOString();
   return {
-    topics: {
-      'Wissenschaft': { score: 95, last_interacted: now },
-      'Natur': { score: 88, last_interacted: now },
-      'Kochen': { score: 75, last_interacted: now },
-      'Finanzen': { score: 80, last_interacted: now },
-      'PostgreSQL': { score: 90, last_interacted: now },
-      'Strapi': { score: 82, last_interacted: now },
-      'NextJS': { score: 85, last_interacted: now },
-      'Ollama': { score: 78, last_interacted: now },
-      'Funny Cat Videos': { score: 20, last_interacted: '2025-12-10T08:00:00Z' },
-    },
+    topics: {},
     contentTypes: {
       pdf: 0.8,
       video: 0.9,
