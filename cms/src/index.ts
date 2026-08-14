@@ -197,6 +197,9 @@ export default {
         await enablePermission(authRole.id, 'api::chat-message.chat-message.find');
         await enablePermission(authRole.id, 'api::chat-message.chat-message.findOne');
         await enablePermission(authRole.id, 'api::chat-message.chat-message.create');
+        await enablePermission(authRole.id, 'api::notification.notification.find');
+        await enablePermission(authRole.id, 'api::notification.notification.markRead');
+        await enablePermission(authRole.id, 'api::notification.notification.deleteOne');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }

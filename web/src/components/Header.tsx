@@ -21,8 +21,11 @@ import {
   ExternalLink,
   X,
   Upload,
+  Bell,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useNotifications } from '@/context/NotificationContext';
+import NotificationDrawer from '@/components/NotificationDrawer';
 
 export function OmniLogo({ size = 24 }: { size?: number }) {
   return (
@@ -106,6 +109,8 @@ export default function Header({
     t,
   } = useApp();
 
+  const { unreadCount } = useNotifications();
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [universalNavOpen, setUniversalNavOpen] = useState(false);
 
@@ -216,6 +221,31 @@ export default function Header({
             {activeLang === 'de' ? <GermanFlag /> : <UKFlag />}
             <span className="font-mono text-[11px] font-bold uppercase">{activeLang}</span>
           </button>
+
+          {/* Notification Bell Button */}
+          <div className="relative">
+            <button
+              onClick={() => setNotificationDrawerOpen(!notificationDrawerOpen)}
+              className={`relative flex items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+                notificationDrawerOpen
+                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/25'
+                  : 'glass-surface hover:bg-white/6 text-[#dae2fd] border-white/8 hover:border-white/20'
+              }`}
+              title="Benachrichtigungen"
+            >
+              <Bell className="h-4 w-4 text-indigo-400" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-md animate-pulse">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            <NotificationDrawer
+              isOpen={notificationDrawerOpen}
+              onClose={() => setNotificationDrawerOpen(false)}
+            />
+          </div>
 
           {/* User Account Popover */}
           {activeUser ? (
