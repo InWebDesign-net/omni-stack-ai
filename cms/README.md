@@ -6,8 +6,8 @@ This is the Strapi v5 (PostgreSQL) backend for **Omni** – Hyper-Personalized V
 
 ## 🌐 Live Admin Panel & Credentials
 
-* ⚙️ **Strapi CMS Admin Panel:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
-* 📱 **Frontend Web App:** [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/)
+* ⚙️ **Strapi CMS Admin Panel:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
+* 📱 **Frontend Web App:** <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">https://omni-web.inwebdesign.net/</a>
 
 ### 🔑 Admin Credentials
 * **Identifier:** `admin@inwebdesign.net`

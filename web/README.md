@@ -6,8 +6,8 @@ This is the Next.js 16 App Router frontend for **Omni** – Hyper-Personalized V
 
 ## 🌐 Live Demo & Accounts
 
-* 📱 **Live App:** [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/)
-* ⚙️ **Backend CMS:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
+* 📱 **Live App:** <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">https://omni-web.inwebdesign.net/</a>
+* ⚙️ **Backend CMS:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
 
 ### 🔑 Demo Credentials
 * **Demo Tech User:** `demotech@inwebdesign.net` / `DemoUser2026!`

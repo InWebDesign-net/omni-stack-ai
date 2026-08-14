@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)](https://nextjs.org/)
 [![Strapi](https://img.shields.io/badge/Strapi-v5.51-purple?logo=strapi)](https://strapi.io/)
-[![HLS AES-128](https://img.shields.io/badge/Security-Level_4_AES--128-emerald?logo=lock)](https://inwebdesign.net)
+<a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer">![HLS AES-128](https://img.shields.io/badge/Security-Level_4_AES--128-emerald?logo=lock)</a>
 [![Ollama AI](https://img.shields.io/badge/Ollama-Llama_3.1-orange?logo=ollama)](https://ollama.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
 [![PM2](https://img.shields.io/badge/PM2-Managed-green?logo=pm2)](https://pm2.io/)
@@ -16,8 +16,8 @@
 
 You can test the running production deployment online:
 
-* 📱 **Live Web Application:** [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/)
-* ⚙️ **Strapi CMS Admin Panel:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
+* 📱 **Live Web Application:** <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">https://omni-web.inwebdesign.net/</a>
+* ⚙️ **Strapi CMS Admin Panel:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
 
 ### 🔑 Demo Login Credentials
 
@@ -31,7 +31,7 @@ You can log in directly via the Quick-Login presets in the login modal or use th
   * **Password:** `DemoUser2026!`
 
 #### 2. Strapi CMS Admin Access
-* **Admin URL:** [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin)
+* **Admin URL:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
 * **Identifier:** `admin@inwebdesign.net`
 * **Password:** `AdminSecret2026!`
 
@@ -46,7 +46,7 @@ The advanced local LLM orchestration (Ollama Llama 3.1 & Moondream Vision AI), r
 
 If you want to integrate the complete AI orchestration into your project without building it from scratch, we offer fully managed hosting, Proxmox LXC cluster deployments, and custom AI consulting.
 
-📩 **[Contact InWebDesign for Premium AI Integration & Managed Hosting](https://inwebdesign.net)**
+📩 <a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer"><strong>Contact InWebDesign for Premium AI Integration & Managed Hosting</strong></a>
 
 ---
 
@@ -86,7 +86,7 @@ Omni implements an enterprise-grade content security architecture:
 * 🔐 **On-Disk AES-128 Encryption (Level 4 Security):** Every `.ts` video segment file stored on disk is encrypted with a unique 128-bit AES key (`enc.key`). Raw `.ts` files are 100% unplayable if copied directly.
 * 🔑 **JWT-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** Next.js & Strapi 5 serve the 16-byte AES decryption keys exclusively to authenticated users with valid session tokens.
 * 🛡️ **Client Memory Isolation:** Native `hls.js` decodes segments into tab-scoped `blob:http://...` MediaSource buffers, preventing direct URL hotlinking, right-click downloads, and unauthorized media extraction.
-* 💼 **Managed Transcoding Infrastructure:** *Note: The automated multi-quality HLS video transcoding pipeline runs on private cluster nodes. Developers who require full automated video encoding/transcoding and do not wish to build custom FFmpeg pipelines can license our managed video infrastructure or host directly with us at [InWebDesign.net](https://inwebdesign.net).*
+* 💼 **Managed Transcoding Infrastructure:** *Note: The automated multi-quality HLS video transcoding pipeline runs on private cluster nodes. Developers who require full automated video encoding/transcoding and do not wish to build custom FFmpeg pipelines can license our managed video infrastructure or host directly with us at <a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer">InWebDesign.net</a>.*
 
 ### 4. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
 * 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes a scrub bar with hover timestamp tooltips, smooth center play/pause splash animations, volume hover expansion, and full-screen toggle.
@@ -99,10 +99,10 @@ Omni implements an enterprise-grade content security architecture:
 * 🔄 **Instant Language Switching:** Instant toggle between German (`DE`) and English (`EN`) with persistent local storage and cookie sync.
 
 ### 6. 📱 Dynamic Media-Type Routing & Views
-* 🎞️ **Direct Video Catalog ([`/videos`](https://omni-web.inwebdesign.net/videos)):** Un-ranked video library with live title search (`q`), tag filtering (`includetag`, `excludetag`, `matchmode`), and multi-field sorting.
-* 🎬 **Video Detail & Widescreen Theater ([`/video/[slug]`](https://omni-web.inwebdesign.net/video/sample-video)):** Cinema page with custom player, view counts, creator channel badges, like toggling, and interactive comment threads.
-* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed ([`/shorts`](https://omni-web.inwebdesign.net/shorts)):** TikTok / YouTube Shorts style vertical feed player with `snap-y` smooth snapping and floating action sidebars.
-* 📄 **Universal Content Router ([`/content/[slug]`](https://omni-web.inwebdesign.net/content/sample-article)):** Unified detail router for Videos, PDF Documents (embedded viewer), and Typography-optimized Articles.
+* 🎞️ **Direct Video Catalog** (<a href="https://omni-web.inwebdesign.net/videos" target="_blank" rel="noopener noreferrer"><code>/videos</code></a>): Un-ranked video library with live title search (`q`), tag filtering (`includetag`, `excludetag`, `matchmode`), and multi-field sorting.
+* 🎬 **Video Detail & Widescreen Theater** (<a href="https://omni-web.inwebdesign.net/video/sample-video" target="_blank" rel="noopener noreferrer"><code>/video/[slug]</code></a>): Cinema page with custom player, view counts, creator channel badges, like toggling, and interactive comment threads.
+* 📱 **Vertical 9:16 Snap-Scroll Shorts Feed** (<a href="https://omni-web.inwebdesign.net/shorts" target="_blank" rel="noopener noreferrer"><code>/shorts</code></a>): TikTok / YouTube Shorts style vertical feed player with `snap-y` smooth snapping and floating action sidebars.
+* 📄 **Universal Content Router** (<a href="https://omni-web.inwebdesign.net/content/sample-article" target="_blank" rel="noopener noreferrer"><code>/content/[slug]</code></a>): Unified detail router for Videos, PDF Documents (embedded viewer), and Typography-optimized Articles.
 
 ---
 
@@ -167,8 +167,8 @@ npm run start
 ```
 
 Services will be online:
-* **Frontend (Next.js):** `http://localhost:3000` (or [https://omni-web.inwebdesign.net/](https://omni-web.inwebdesign.net/))
-* **CMS Backend (Strapi):** `http://localhost:1337` (or [https://omni-cms.inwebdesign.net/admin](https://omni-cms.inwebdesign.net/admin))
+* **Frontend (Next.js):** `http://localhost:3000` (or <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">https://omni-web.inwebdesign.net/</a>)
+* **CMS Backend (Strapi):** `http://localhost:1337` (or <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>)
 
 ---
 
@@ -176,5 +176,5 @@ Services will be online:
 
 For enterprise deployments, custom AI prompt engineering, or managed Proxmox LXC clustering:
 
-* **Website:** [https://inwebdesign.net](https://inwebdesign.net)
+* **Website:** <a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer">https://inwebdesign.net</a>
 * **Copyright:** © 2026 InWebDesign. All rights reserved.
