@@ -33,13 +33,13 @@ export default function ChannelProfileModal({
       openAuthModal();
       return;
     }
+    openChat();
     onClose();
     await createRoom({
       name: selectedChannel.username,
       type: 'direct',
       recipientId: selectedChannel.id ? String(selectedChannel.id) : undefined,
     });
-    openChat();
   };
 
   return (
