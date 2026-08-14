@@ -8,6 +8,7 @@ export interface UserProfile {
   avatarUrl?: string;
   bio?: string;
   subscribersCount?: number;
+  allowDirectMessages?: 'everyone' | 'subscribers_only' | 'nobody';
   createdAt?: string;
 }
 

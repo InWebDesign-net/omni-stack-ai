@@ -230,6 +230,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     participantIds?: string[];
     language?: string;
   }): Promise<{ roomId: string | null; error?: string }> => {
+    if (params.type === 'direct' && params.recipientId) {
+      const existing = rooms.find(
+        (r) => r.type === 'direct' && r.participants?.some((p) => String(p.id) === String(params.recipientId))
+      );
+      if (existing) {
+        setActiveRoomId(existing.id);
+        setIsOpen(true);
+        return { roomId: existing.id };
+      }
+    }
+
     const localId = `room-${Date.now()}`;
     const localRoom: ChatRoom = {
       id: localId,
@@ -506,7 +517,31 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 export function useChat() {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error('useChat must be used within a ChatProvider');
+    return {
+      isOpen: false,
+      isExpanded: false,
+      activeRoomId: null,
+      rooms: [],
+      activeRoom: null,
+      totalUnreadCount: 0,
+      soundEnabled: true,
+      showOnlineStatus: true,
+      showReadReceipts: true,
+      userPrivacySetting: 'everyone' as const,
+      openChat: () => {},
+      closeChat: () => {},
+      toggleExpand: () => {},
+      setActiveRoomId: () => {},
+      createRoom: async (): Promise<{ roomId: string | null; error?: string }> => ({ roomId: null }),
+      sendMessage: async () => {},
+      updateUserPrivacySetting: async () => {},
+      searchEligibleUsers: async () => [],
+      addParticipantToRoom: async () => {},
+      removeParticipantFromRoom: async () => {},
+      setSoundEnabled: () => {},
+      setShowOnlineStatus: () => {},
+      setShowReadReceipts: () => {},
+    };
   }
   return context;
 }

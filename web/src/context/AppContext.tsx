@@ -30,11 +30,13 @@ export interface UserProfileSession {
 }
 
 export interface ChannelProfileData {
+  id?: number | string;
   username: string;
   handle: string;
   avatarUrl: string;
   bio?: string;
   subscribersCount?: number;
+  allowDirectMessages?: 'everyone' | 'subscribers_only' | 'nobody';
 }
 
 interface AppContextType {

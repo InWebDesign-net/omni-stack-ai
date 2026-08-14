@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
+import { useChat } from '@/context/ChatContext';
 import Header from '@/components/Header';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
 import { formatAbsoluteDate } from '@/lib/date';
@@ -31,12 +32,31 @@ interface UserPageClientProps {
 
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const { profile, isOwner, videos, favorites, stats } = profileDataInit;
-    const { t, lang, openVideoUploadModal } = useApp();
+    const { t, lang, currentUser, openAuthModal, openVideoUploadModal } = useApp();
+    const { createRoom } = useChat();
 
     const [activeTab, setActiveTab] = useState<'videos' | 'favorites' | 'about'>('videos');
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscriberCount, setSubscriberCount] = useState(profile.subscribersCount || 0);
     const [editingVideo, setEditingVideo] = useState<any | null>(null);
+
+    const dmSetting = profile.allowDirectMessages || 'everyone';
+    const canSendDM = !isOwner && (
+        dmSetting === 'everyone' ||
+        (dmSetting === 'subscribers_only' && isSubscribed)
+    );
+
+    const handleStartChat = async () => {
+        if (!currentUser) {
+            openAuthModal();
+            return;
+        }
+        await createRoom({
+            name: profile.username || profile.handle || 'Nutzer',
+            type: 'direct',
+            recipientId: String(profile.id),
+        });
+    };
 
     const handleSubscribeToggle = () => {
         const next = !isSubscribed;
@@ -127,6 +147,16 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 {isSubscribed ? <UserCheck className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                                                 <span>{isSubscribed ? 'Abonniert' : 'Abonnieren'}</span>
                                             </button>
+
+                                            {canSendDM && (
+                                                <button
+                                                    onClick={handleStartChat}
+                                                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+                                                >
+                                                    <MessageSquare className="w-4 h-4" />
+                                                    <span>Nachricht</span>
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                 </div>
