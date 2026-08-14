@@ -292,5 +292,19 @@
     "startChatBtn": "Chat starten",
     "writeMessagePlaceholder": "Nachricht schreiben...",
     "welcomeAiMessage": "Hallo! Schön, dass du da bist. Ich bin dein Omni KI-Assistent von InWebDesign.net. Hast du schon eine eigene Website oder Fragen zu unseren Hosting & KI-Lösungen?"
+  },
+  "player": {
+    "quality": "Qualität / Auflösung",
+    "selectQuality": "Qualität wählen",
+    "autoRecommended": "Auto (Empfohlen)",
+    "linkCopied": "Videolink mit Zeitstempel kopiert!",
+    "copyTimestampLink": "Link an aktueller Stelle kopieren ({time})",
+    "loop": "Wiederholen (Schleife)",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "mute": "Stummschalten",
+    "unmute": "Ton einschalten",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden"
   }
 }

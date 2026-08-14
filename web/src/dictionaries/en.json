@@ -292,5 +292,19 @@
     "startChatBtn": "Start chat",
     "writeMessagePlaceholder": "Write a message...",
     "welcomeAiMessage": "Hello! Welcome to Omni by InWebDesign.net! Do you already have a web project or questions about our high-performance hosting & AI solutions?"
+  },
+  "player": {
+    "quality": "Quality / Resolution",
+    "selectQuality": "Select quality",
+    "autoRecommended": "Auto (Recommended)",
+    "linkCopied": "Video link with timestamp copied!",
+    "copyTimestampLink": "Copy link at current position ({time})",
+    "loop": "Loop playback",
+    "play": "Play",
+    "pause": "Pause",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen"
   }
 }

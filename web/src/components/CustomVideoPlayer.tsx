@@ -6,6 +6,7 @@ import {
   Settings, Check, RotateCcw, Link2, Sparkles, Shield
 } from 'lucide-react';
 import Hls from 'hls.js';
+import { useApp } from '@/context/AppContext';
 
 interface CustomVideoPlayerProps {
   mp4Url?: string;
@@ -26,6 +27,7 @@ export default function CustomVideoPlayer({
   onTimeUpdate,
   className = 'w-full h-full',
 }: CustomVideoPlayerProps) {
+  const { t } = useApp();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -261,6 +263,8 @@ export default function CustomVideoPlayer({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const copyLabel = (t.player?.copyTimestampLink || 'Link an aktueller Stelle kopieren ({time})').replace('{time}', formatTime(currentTime));
+
   return (
     <div
       ref={containerRef}
@@ -295,7 +299,7 @@ export default function CustomVideoPlayer({
       {copyToast && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900/90 border border-indigo-500/40 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 backdrop-blur-md">
           <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span>Videolink mit Zeitstempel kopiert!</span>
+          <span>{t.player?.linkCopied || 'Videolink mit Zeitstempel kopiert!'}</span>
         </div>
       )}
 
@@ -321,7 +325,7 @@ export default function CustomVideoPlayer({
               className="w-full px-3 py-2 text-left hover:bg-indigo-600/20 hover:text-indigo-300 rounded-xl flex items-center gap-2 transition-colors"
             >
               <Link2 className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Link an aktueller Stelle kopieren ({formatTime(currentTime)})</span>
+              <span>{copyLabel}</span>
             </button>
             <button
               onClick={() => {
@@ -332,7 +336,7 @@ export default function CustomVideoPlayer({
             >
               <div className="flex items-center gap-2">
                 <RotateCcw className="w-3.5 h-3.5 text-teal-400" />
-                <span>Wiederholen (Schleife)</span>
+                <span>{t.player?.loop || 'Wiederholen (Schleife)'}</span>
               </div>
               {isLooping && <Check className="w-3.5 h-3.5 text-emerald-400" />}
             </button>
@@ -394,7 +398,7 @@ export default function CustomVideoPlayer({
             <button
               onClick={togglePlay}
               className="p-2 hover:bg-slate-800/80 rounded-xl text-white transition-all active:scale-95"
-              title={isPlaying ? 'Pause (K oder Leertaste)' : 'Abspielen (K oder Leertaste)'}
+              title={isPlaying ? (t.player?.pause || 'Pause') : (t.player?.play || 'Abspielen')}
             >
               {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white" />}
             </button>
@@ -404,7 +408,7 @@ export default function CustomVideoPlayer({
               <button
                 onClick={toggleMute}
                 className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all"
-                title={isMuted ? 'Ton einschalten (M)' : 'Stummschalten (M)'}
+                title={isMuted ? (t.player?.unmute || 'Ton einschalten') : (t.player?.mute || 'Stummschalten')}
               >
                 {isMuted || volume === 0 ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5" />}
               </button>
@@ -435,19 +439,19 @@ export default function CustomVideoPlayer({
                   className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold ${
                     isSettingsOpen ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800/80 text-slate-300 hover:text-white'
                   }`}
-                  title="Qualität / Auflösung"
+                  title={t.player?.quality || 'Qualität / Auflösung'}
                 >
                   <Settings className="w-4 h-4" />
                   <span className="text-[11px] font-mono">
-                    {currentLevel === -1 ? 'Auto' : levels[currentLevel]?.label}
+                    {currentLevel === -1 ? (t.player?.autoRecommended?.split(' ')[0] || 'Auto') : levels[currentLevel]?.label}
                   </span>
                 </button>
 
                 {/* Quality Popover */}
                 {isSettingsOpen && (
-                  <div className="absolute bottom-12 right-0 bg-[#0b0f19]/95 border border-slate-800 rounded-2xl p-2 w-40 shadow-2xl backdrop-blur-xl text-xs space-y-1 z-50">
+                  <div className="absolute bottom-12 right-0 bg-[#0b0f19]/95 border border-slate-800 rounded-2xl p-2 w-44 shadow-2xl backdrop-blur-xl text-xs space-y-1 z-50">
                     <div className="px-2 py-1 text-[10px] font-mono text-slate-400 border-b border-slate-800">
-                      Qualität wählen
+                      {t.player?.selectQuality || 'Qualität wählen'}
                     </div>
                     <button
                       onClick={() => handleQualityChange(-1)}
@@ -455,7 +459,7 @@ export default function CustomVideoPlayer({
                         currentLevel === -1 ? 'bg-indigo-600/20 text-indigo-300 font-bold' : 'hover:bg-slate-800 text-slate-300'
                       }`}
                     >
-                      <span>Auto (Empfohlen)</span>
+                      <span>{t.player?.autoRecommended || 'Auto (Empfohlen)'}</span>
                       {currentLevel === -1 && <Check className="w-3.5 h-3.5 text-indigo-400" />}
                     </button>
                     {levels.map((lvl) => (
@@ -479,7 +483,7 @@ export default function CustomVideoPlayer({
             <button
               onClick={toggleFullscreen}
               className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all"
-              title={isFullscreen ? 'Vollbild beenden (F)' : 'Vollbild (F)'}
+              title={isFullscreen ? (t.player?.exitFullscreen || 'Vollbild beenden') : (t.player?.fullscreen || 'Vollbild')}
             >
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
             </button>
