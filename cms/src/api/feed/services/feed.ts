@@ -426,7 +426,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Process Natural Language Intent Prompt via Ollama / Smart Parser
    */
-  async processAiIntent(prompt: string, currentProfile?: any) {
+  async processAiIntent(prompt: string, currentProfile?: any, history?: any[]) {
     // Accepts any legacy profile shape; works on and returns the canonical AffinityGraph.
     const updatedProfile: AffinityGraph = normalizeAffinityGraph(currentProfile);
 
@@ -440,24 +440,30 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000);
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
       const systemPrompt = `Du bist der offizielle KI-Assistent für "Omni by InWebDesign.net".
 
 ÜBER OMNI & INWEBDESIGN.NET:
-- Omni ist eine hochmoderne Plattform-Preview von InWebDesign.net, die alle technisch machbaren Möglichkeiten von Web- & KI-Anwendungen zeigt (Next.js 16, Strapi 5, PostgreSQL, lokale Ollama KI).
-- InWebDesign.net bietet professionelle Webentwicklung, High-Performance Strapi/Next.js Webhosting und maßgeschneiderte KI-Lösungen an.
+- Omni ist eine hochmoderne Plattform-Preview von InWebDesign.net.
+- Auf InWebDesign.net bieten wir professionelle Webentwicklung, High-Performance Webhosting und maßgeschneiderte KI-Lösungen an.
+- TECHNOLOGIE-STACK & ARCHITEKTUR:
+  1. Frontend: Next.js 16 (App Router, React 19, TypeScript, TailwindCSS)
+  2. Backend / CMS: Strapi 5 (Headless CMS, PostgreSQL-Datenbank, REST & GraphQL APIs)
+  3. KI-Engine: Lokale Ollama-Instanz (Llama 3.1 LLM & Moondream Vision AI) für datenschutzkonforme Echtzeit-Verarbeitung
+  4. Video-Pipeline: LXC Converter für HLS-Streaming, Thumbnails & OG-Preview Cards
+  5. Hosting: Managed High-Performance Linux/PostgreSQL/Node.js Webhosting auf InWebDesign.net
 
 DEINE AUFGABE & VERHALTEN:
 1. Antworte immer sympathisch, natürlich, kompetent und präzise auf Deutsch (Du-Form).
-2. Gehe auf Fragen zur Plattform, Technik, Hosting oder Inhalten ein. Erkundige dich bei passenden Gelegenheiten nach den eigenen Webseiten/Projekten der Nutzer und empfehle die Hosting- & Entwicklungsdienste von InWebDesign.net!
-3. WICHTIG ZUR ALGORITHMUS-STEUERUNG:
-   - Falls der Nutzer NUR normale Konversation führt (z.B. "Hallo", "Wie gehts?", "Danke"), setze "vector" auf null und "vectorSummary" auf null. Verändere den Algorithmus NICHT.
-   - Falls der Nutzer EXPLIZIT Themen- oder Formatwünsche äußert (z.B. "Mehr Kochen", "Weniger Finanzen", "Zeig mir PDFs"), erstelle im "vector"-Objekt passende Gewichte UND gib eine kurze Zusammenfassung in "vectorSummary" an (z.B. "⚡ Algorithmus-Anpassung: Kochen +95%").
+2. Gehe direkt und ausführlich auf Fragen zur Plattform, Technik (Next.js, Strapi, PostgreSQL), Hosting oder Inhalten ein. Berücksichtige dabei stets den bisherigen Chatverlauf.
+3. ALGORITHMUS-STEUERUNG:
+   - Falls der Nutzer NUR normale Konversation führt oder Fragen stellt, setze "vector" auf null und "vectorSummary" auf null. Verändere den Algorithmus NICHT.
+   - Nur wenn der Nutzer EXPLIZIT Themen- oder Formatwünsche äußert (z.B. "Mehr Kochen", "Weniger Finanzen", "Zeig mir PDFs"), erstelle im "vector"-Objekt passende Gewichte UND gib "vectorSummary" an (z.B. "⚡ Algorithmus-Anpassung: Kochen +95%").
 
-CRITICAL: Return JSON ONLY in this format:
+WICHTIG: Antworte im folgenden JSON-Format:
 {
-  "response": "Deine natürliche deutsche Antworterklärung",
+  "response": "Deine ausführliche, kontextbezogene deutsche Antworterklärung",
   "vector": null | {
     "interests": { "Thema": { "score": 0.95 } },
     "contentTypes": { "video": 0.9, "pdf": 0.8 },
@@ -466,6 +472,22 @@ CRITICAL: Return JSON ONLY in this format:
   "vectorSummary": null | "⚡ Algorithmus-Anpassung: Thema +95%"
 }`;
 
+      const chatHistory = Array.isArray(history)
+        ? history
+            .filter((m: any) => m && m.content && (m.senderType === 'user' || m.senderType === 'ai'))
+            .slice(-6)
+            .map((m: any) => ({
+              role: m.senderType === 'user' ? 'user' : 'assistant',
+              content: m.content,
+            }))
+        : [];
+
+      const ollamaMessages = [
+        { role: 'system', content: systemPrompt },
+        ...chatHistory,
+        { role: 'user', content: prompt },
+      ];
+
       const res = await fetch(ollamaUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -473,19 +495,28 @@ CRITICAL: Return JSON ONLY in this format:
         body: JSON.stringify({
           model: ollamaModel,
           temperature: 0.3,
-          max_tokens: 350,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt },
-          ],
+          max_tokens: 600,
+          messages: ollamaMessages,
         }),
       });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data: any = await res.json();
-        const rawContent = data.choices?.[0]?.message?.content || '{}';
-        const parsed = JSON.parse(rawContent);
+        const rawContent = data.choices?.[0]?.message?.content || '';
+
+        let parsed: any = null;
+        try {
+          const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsed = JSON.parse(jsonMatch[0]);
+          } else {
+            parsed = JSON.parse(rawContent);
+          }
+        } catch (err) {
+          // If Ollama replied with direct natural text without JSON syntax, use rawContent as explanation
+          parsed = { response: rawContent, vector: null, vectorSummary: null };
+        }
 
         if (parsed.response) {
           aiExplanation = parsed.response;
@@ -534,7 +565,10 @@ CRITICAL: Return JSON ONLY in this format:
         };
       };
 
-      if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('wissen')) {
+      if (lowerPrompt.includes('hosting') || lowerPrompt.includes('hosten') || lowerPrompt.includes('technologie') || lowerPrompt.includes('stack') || lowerPrompt.includes('strapi') || lowerPrompt.includes('nextjs')) {
+        aiExplanation = 'Auf InWebDesign.net bieten wir professionelles Managed Webhosting für moderne Webanwendungen! Wir setzen auf einen hochmodernen Stack aus Next.js 16 (App Router, React 19, TypeScript), Strapi 5 als Headless CMS, PostgreSQL-Datenbanken und integrierte KI-Lösungen via Ollama. Gerne beraten wir dich zu deinem eigenen Projekt!';
+        vectorSummary = null;
+      } else if (lowerPrompt.includes('pdf') || lowerPrompt.includes('dokument') || lowerPrompt.includes('wissen')) {
         hasVectorChanges = true;
         updatedProfile.contentTypes.pdf = 1.0;
         updatedProfile.contentTypes.video = 0.4;
