@@ -311,5 +311,45 @@
     "unmute": "Ton einschalten",
     "fullscreen": "Vollbild",
     "exitFullscreen": "Vollbild beenden"
+  },
+  "userProfile": {
+    "ownerBadge": "Dein Profil (Eigentümer)",
+    "ownerModeTitle": "Eigentümer-Modus aktiv",
+    "ownerModeDesc": "Du siehst zusätzlich alle deine privaten Entwürfe & kannst deinen Kanal verwalten.",
+    "newUpload": "Neuer Upload",
+    "newVideo": "Neues Video",
+    "tabs": {
+      "videos": "Videos",
+      "favorites": "Favoriten",
+      "about": "Kanal-Info"
+    },
+    "stats": {
+      "videos": "Videos",
+      "views": "Aufrufe",
+      "likes": "Likes",
+      "subscribers": "Abonnenten"
+    },
+    "emptyVideos": {
+      "title": "Noch keine Videos hochgeladen",
+      "ownerSub": "Lade jetzt dein erstes Video auf Omni hoch!",
+      "guestSub": "Dieser Ersteller hat noch keine öffentlichen Videos veröffentlicht.",
+      "uploadBtn": "Jetzt Video hochladen"
+    },
+    "emptyFavorites": {
+      "title": "Keine Favoriten vorhanden",
+      "ownerSub": "Videos, die du mit dem Herz-Button likest, erscheinen hier.",
+      "guestSub": "Dieser Nutzer hat noch keine öffentlichen Favoriten geteilt."
+    },
+    "about": {
+      "title": "Über diesen Kanal",
+      "noBio": "Keine Beschreibung angegeben.",
+      "username": "Benutzername",
+      "handle": "Handle",
+      "joined": "Mitglied seit"
+    },
+    "visibility": {
+      "privateDraft": "Privat / Entwurf",
+      "public": "Öffentlich"
+    }
   }
 }

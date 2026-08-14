@@ -304,12 +304,52 @@
     "autoRecommended": "Auto (Recommended)",
     "linkCopied": "Video link with timestamp copied!",
     "copyTimestampLink": "Copy link at current position ({time})",
-    "loop": "Loop playback",
+    "loop": "Repeat (Loop)",
     "play": "Play",
     "pause": "Pause",
     "mute": "Mute",
     "unmute": "Unmute",
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit Fullscreen"
+  },
+  "userProfile": {
+    "ownerBadge": "Your Profile (Owner)",
+    "ownerModeTitle": "Owner Mode Active",
+    "ownerModeDesc": "You can see all your private drafts & manage your channel.",
+    "newUpload": "New Upload",
+    "newVideo": "New Video",
+    "tabs": {
+      "videos": "Videos",
+      "favorites": "Favorites",
+      "about": "About Channel"
+    },
+    "stats": {
+      "videos": "Videos",
+      "views": "Views",
+      "likes": "Likes",
+      "subscribers": "Subscribers"
+    },
+    "emptyVideos": {
+      "title": "No videos uploaded yet",
+      "ownerSub": "Upload your first video to Omni now!",
+      "guestSub": "This creator hasn't published any public videos yet.",
+      "uploadBtn": "Upload Video Now"
+    },
+    "emptyFavorites": {
+      "title": "No favorites saved",
+      "ownerSub": "Videos you like with the heart button will appear here.",
+      "guestSub": "This user hasn't shared any public favorites yet."
+    },
+    "about": {
+      "title": "About this channel",
+      "noBio": "No description provided.",
+      "username": "Username",
+      "handle": "Handle",
+      "joined": "Joined"
+    },
+    "visibility": {
+      "privateDraft": "Private / Draft",
+      "public": "Public"
+    }
   }
 }

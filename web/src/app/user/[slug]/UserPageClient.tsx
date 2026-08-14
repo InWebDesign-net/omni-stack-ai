@@ -171,20 +171,20 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-slate-400 font-medium justify-center md:justify-start">
                                 <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
                                     <Film className="w-4 h-4 text-indigo-400" />
-                                    <span className="font-bold text-white">{stats.totalVideos}</span> Videos
+                                    <span className="font-bold text-white">{stats.totalVideos}</span> {(t as any).userProfile?.stats?.videos || 'Videos'}
                                 </div>
                                 <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
                                     <Eye className="w-4 h-4 text-teal-400" />
-                                    <span className="font-bold text-white">{stats.totalViews.toLocaleString()}</span> Aufrufe
+                                    <span className="font-bold text-white">{stats.totalViews.toLocaleString()}</span> {(t as any).userProfile?.stats?.views || t.common.views || 'Aufrufe'}
                                 </div>
                                 <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
                                     <Heart className="w-4 h-4 text-rose-400" />
-                                    <span className="font-bold text-white">{stats.totalLikes.toLocaleString()}</span> Likes
+                                    <span className="font-bold text-white">{stats.totalLikes.toLocaleString()}</span> {(t as any).userProfile?.stats?.likes || 'Likes'}
                                 </div>
                                 {!isOwner && (
                                     <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
                                         <UserCheck className="w-4 h-4 text-amber-400" />
-                                        <span className="font-bold text-white">{subscriberCount.toLocaleString()}</span> Abonnenten
+                                        <span className="font-bold text-white">{subscriberCount.toLocaleString()}</span> {(t as any).userProfile?.stats?.subscribers || 'Abonnenten'}
                                     </div>
                                 )}
                             </div>
@@ -200,9 +200,9 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-white">Eigentümer-Modus aktiv</h4>
+                                <h4 className="text-sm font-bold text-white">{(t as any).userProfile?.ownerModeTitle || 'Eigentümer-Modus aktiv'}</h4>
                                 <p className="text-xs text-slate-400">
-                                    Du siehst zusätzlich alle deine privaten Entwürfe & kannst deinen Kanal verwalten.
+                                    {(t as any).userProfile?.ownerModeDesc || 'Du siehst zusätzlich alle deine privaten Entwürfe & kannst deinen Kanal verwalten.'}
                                 </p>
                             </div>
                         </div>
@@ -211,7 +211,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             className="px-4 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/50 text-indigo-300 font-semibold text-xs transition-all flex items-center gap-2"
                         >
                             <Upload className="w-4 h-4" />
-                            <span>Neuer Upload</span>
+                            <span>{(t as any).userProfile?.newUpload || 'Neuer Upload'}</span>
                         </button>
                     </div>
                 )}
@@ -226,7 +226,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <Video className="w-4 h-4" />
-                        <span>Videos ({videos.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.videos || t.header.videos || 'Videos'} ({videos.length})</span>
                     </button>
 
                     <button
@@ -237,7 +237,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <Heart className="w-4 h-4" />
-                        <span>Favoriten ({favorites.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.favorites || t.common.favorites || 'Favoriten'} ({favorites.length})</span>
                     </button>
 
                     <button
@@ -248,7 +248,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <UserCheck className="w-4 h-4" />
-                        <span>Kanal-Info</span>
+                        <span>{(t as any).userProfile?.tabs?.about || 'Kanal-Info'}</span>
                     </button>
                 </div>
 
@@ -258,11 +258,11 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         {videos.length === 0 ? (
                             <div className="text-center py-16 bg-slate-900/30 rounded-3xl border border-slate-800/80 p-8 space-y-4">
                                 <Film className="w-12 h-12 text-slate-600 mx-auto" />
-                                <h3 className="text-lg font-bold text-slate-300">Noch keine Videos hochgeladen</h3>
+                                <h3 className="text-lg font-bold text-slate-300">{(t as any).userProfile?.emptyVideos?.title || 'Noch keine Videos hochgeladen'}</h3>
                                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
                                     {isOwner
-                                        ? 'Lade jetzt dein erstes Video auf Omni hoch!'
-                                        : 'Dieser Ersteller hat noch keine öffentlichen Videos veröffentlicht.'}
+                                        ? ((t as any).userProfile?.emptyVideos?.ownerSub || 'Lade jetzt dein erstes Video auf Omni hoch!')
+                                        : ((t as any).userProfile?.emptyVideos?.guestSub || 'Dieser Ersteller hat noch keine öffentlichen Videos veröffentlicht.')}
                                 </p>
                                 {isOwner && (
                                     <button
@@ -270,7 +270,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                         className="mt-2 px-5 py-2.5 rounded-xl bg-indigo-500 text-white font-bold text-xs hover:bg-indigo-600 transition-all inline-flex items-center gap-2"
                                     >
                                         <Upload className="w-4 h-4" />
-                                        <span>Jetzt Video hochladen</span>
+                                        <span>{(t as any).userProfile?.emptyVideos?.uploadBtn || 'Jetzt Video hochladen'}</span>
                                     </button>
                                 )}
                             </div>
@@ -313,11 +313,11 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                     <div className="absolute top-2.5 left-2.5">
                                                         {isPrivate ? (
                                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/90 text-slate-950">
-                                                                Privat / Entwurf
+                                                                {(t as any).userProfile?.visibility?.privateDraft || 'Privat / Entwurf'}
                                                             </span>
                                                         ) : (
                                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/90 text-slate-950">
-                                                                Öffentlich
+                                                                {(t as any).userProfile?.visibility?.public || 'Öffentlich'}
                                                             </span>
                                                         )}
                                                     </div>
@@ -368,11 +368,11 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         {favorites.length === 0 ? (
                             <div className="text-center py-16 bg-slate-900/30 rounded-3xl border border-slate-800/80 p-8 space-y-3">
                                 <Heart className="w-12 h-12 text-slate-600 mx-auto" />
-                                <h3 className="text-lg font-bold text-slate-300">Keine Favoriten vorhanden</h3>
+                                <h3 className="text-lg font-bold text-slate-300">{(t as any).userProfile?.emptyFavorites?.title || 'Keine Favoriten vorhanden'}</h3>
                                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
                                     {isOwner
-                                        ? 'Videos, die du mit dem Herz-Button likest, erscheinen hier.'
-                                        : 'Dieser Nutzer hat noch keine öffentlichen Favoriten geteilt.'}
+                                        ? ((t as any).userProfile?.emptyFavorites?.ownerSub || 'Videos, die du mit dem Herz-Button likest, erscheinen hier.')
+                                        : ((t as any).userProfile?.emptyFavorites?.guestSub || 'Dieser Nutzer hat noch keine öffentlichen Favoriten geteilt.')}
                                 </p>
                             </div>
                         ) : (
@@ -424,23 +424,23 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                 {activeTab === 'about' && (
                     <div className="bg-slate-900/60 rounded-3xl border border-slate-800/80 p-8 space-y-6">
                         <div>
-                            <h3 className="text-base font-bold text-white mb-2">Über diesen Kanal</h3>
+                            <h3 className="text-base font-bold text-white mb-2">{(t as any).userProfile?.about?.title || 'Über diesen Kanal'}</h3>
                             <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
-                                {profile.bio || 'Keine Beschreibung angegeben.'}
+                                {profile.bio || ((t as any).userProfile?.about?.noBio || 'Keine Beschreibung angegeben.')}
                             </p>
                         </div>
 
                         <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
                             <div>
-                                <span className="text-xs text-slate-500 block mb-1">Nutzername</span>
+                                <span className="text-xs text-slate-500 block mb-1">{(t as any).userProfile?.about?.username || 'Nutzername'}</span>
                                 <span className="font-bold text-white">{profile.username}</span>
                             </div>
                             <div>
-                                <span className="text-xs text-slate-500 block mb-1">Handle</span>
+                                <span className="text-xs text-slate-500 block mb-1">{(t as any).userProfile?.about?.handle || 'Handle'}</span>
                                 <span className="font-mono text-indigo-400">{profile.handle}</span>
                             </div>
                             <div>
-                                <span className="text-xs text-slate-500 block mb-1">Mitglied seit</span>
+                                <span className="text-xs text-slate-500 block mb-1">{(t as any).userProfile?.about?.joined || 'Mitglied seit'}</span>
                                 <span className="text-slate-300 font-mono">
                                     {profile.createdAt
                                         ? formatAbsoluteDate(profile.createdAt, lang)
