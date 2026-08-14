@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
+import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 import { useApp } from '@/context/AppContext';
 import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
@@ -418,19 +419,15 @@ export default function VideoPageClient({
           <div className="lg:col-span-2 space-y-6">
             {/* 16:9 Video Player Container */}
             <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
-              <video
-                src={video.mp4Url || video.mediaUrl}
-                controls
-                autoPlay
-                playsInline
-                poster={video.thumbnailUrl || '/media/thumbnails/default.png'}
+              <CustomVideoPlayer
+                mp4Url={video.mp4Url || video.mediaUrl}
+                hlsUrl={video.hlsUrl}
+                posterUrl={video.thumbnailUrl || '/media/thumbnails/default.png'}
+                title={video.title}
+                slug={slug}
                 onTimeUpdate={handleVideoTimeUpdate}
-                className="w-full h-full object-contain"
-              >
-                {video.hlsUrl && <source src={video.hlsUrl} type="application/x-mpegURL" />}
-                {video.mp4Url && <source src={video.mp4Url} type="video/mp4" />}
-                {t.videoDetail.browserNotSupported}
-              </video>
+                className="w-full h-full"
+              />
             </div>
 
             {/* Video Details Header */}
