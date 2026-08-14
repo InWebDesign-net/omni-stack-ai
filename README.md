@@ -52,32 +52,10 @@ If you want to integrate the complete AI orchestration into your project without
 
 ## 🧠 Key Features & Architectural Highlights
 
-### 1. 🔒 Level 4 AES-128 Encrypted HLS Video Pipeline
-Omni implements an enterprise-grade, multi-stage content security pipeline:
+### 1. 🎯 Stateful Preference Vectors & Dynamic Vector Decay (Vision & Core Architecture)
+Omni was built to solve a fundamental scalability flaw in modern recommendation platforms: traditional architectures log millions of individual click and view events into relational database rows, requiring expensive real-time queries and heavy infrastructure to compute user recommendations.
 
-* ⚙️ **Automated LXC Hardware Transcoding (`process-videos.js`):** High-concurrency video transcoding pipeline converting raw uploads into Adaptive Bitrate (ABR) HLS streams (`1080p`, `720p`, `480p`) using FFmpeg QSV / CPU acceleration.
-* 🔐 **On-Disk AES-128 Encryption (Level 4 Security):** Every `.ts` video segment file stored on disk is encrypted with a unique 128-bit AES key (`enc.key`). Raw `.ts` files are 100% unplayable if copied directly.
-* 🔑 **JWT-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** Next.js & Strapi 5 serve the 16-byte AES decryption keys exclusively to authenticated users with valid JWT session tokens.
-* 🛡️ **Client Memory Isolation:** Native `hls.js` decodes segments into tab-scoped `blob:http://...` MediaSource buffers, preventing direct URL hotlinking, right-click downloads, and unauthorized media extraction.
-
-### 2. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
-* 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes a scrub bar with hover timestamp tooltips, smooth center play/pause splash animations, volume hover expansion, and full-screen toggle.
-* ⚙️ **HLS Quality Selector:** Unterbrechungsfreies manual or automatic quality resolution switching (`Auto`, `1080p`, `720p`, `480p`) via `hls.js`.
-* 🛡️ **Branded Context Menu:** Custom right-click menu (`© 2026 Omni by InWebDesign.net`, copy link at current timestamp `?t=124`, loop toggle) replacing standard browser context popups.
-* 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Frühstück`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
-
-### 3. 💬 Real-Time Chat Engine & Omni AI Assistant
-* 💬 **Dual-View Chat System:** WhatsApp/Telegram-style full-screen (2-column) and compact floating support widget. Supports 1:1 direct user messaging and room creation.
-* 🔒 **Granular Privacy Controls:** Users can set direct message permissions (*Everyone*, *Subscribers Only*, *Nobody/Disabled*), toggle read receipts (`✓✓`), online indicators, and sound alerts.
-* 🤖 **Context-Aware Omni AI Assistant (Ollama Llama 3.1):** Remembers past 6 conversation messages, answers tech stack & platform questions, and supports **Multi-Language Locale Awareness (`DE` / `EN`)**.
-* ⚡ **Algorithmic Preference Tuning Badges:** Natural conversation intent parsing dynamically mutates user `affinityGraph` vectors and renders visual badges (`⚡ Algorithmus-Anpassung: Kochen +95%`) inside chat bubbles.
-
-### 4. 🌐 Multilingual i18n Dictionary System
-* 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`/dictionaries/de.json` & `/dictionaries/en.json`):** Complete UI internationalization covering headers, search bars, player controls, chat widgets, privacy modals, and AI assistant prompts.
-* 🔄 **Instant Language Switching:** Instant toggle between German (`DE`) and English (`EN`) with persistent local storage and cookie sync.
-
-### 5. 🎯 Stateful Preference Vectors (`affinityGraph`)
-Instead of logging millions of individual click events in separate database rows, Omni mutates a single, highly-optimized **`affinityGraph` JSONB field** in PostgreSQL:
+Omni replaces event-bloat with a lightweight, stateful **Preference Vector Engine** stored directly inside a single `affinityGraph` JSONB field per user in PostgreSQL:
 
 ```json
 {
@@ -89,6 +67,36 @@ Instead of logging millions of individual click events in separate database rows
   "creators": { "1": { "score": 50, "last_interacted": "2026-08-14T10:00:00Z" } }
 }
 ```
+
+* 📉 **Time-Weighted Vector Decay:** Older topic scores automatically decay over time using a time-weighted decay function. Active user engagements boost scores, while inactive topics naturally fade, ensuring recommendations always mirror current interest without manual resets.
+* 🤖 **AI Dynamic Keyword Extraction:** As users consume media or talk to the AI Assistant, the system dynamically extracts new semantic keywords and intent tags, adding them to the user's `affinityGraph` in real time.
+* ⚡ **Strict 50-Keyword Performance Cap:** To guarantee sub-10ms feed assembly and prevent memory bloat, `affinityGraph` enforces a strict cap of **maximum 50 topics**. Low-ranking or decayed topics are automatically pruned as new interests emerge.
+* 🔄 **Self-Tuning Interest Graph:** Topics keep themselves automatically up-to-date based on organic user behavior, providing a frictionless, zero-form personalization experience.
+
+### 2. 💬 Real-Time Chat Engine & Omni AI Assistant
+The core vision of Omni is to make the entire platform, feed assembly, and discovery **controllable via AI directly inside the site chat**:
+
+* 🤖 **In-Chat Feed Control & Intent Parsing (Ollama Llama 3.1):** Users can chat with the Omni AI Assistant to discover content ("Zeig mir Rezepte", "Wissenschafts-PDFs") or navigate the site. Intent parsing dynamically mutates user `affinityGraph` vectors and renders visual adjustment badges (`⚡ Algorithmus-Anpassung: Kochen +95%`) directly inside chat bubbles.
+* 💬 **Dual-View Chat System:** WhatsApp/Telegram-style full-screen (2-column) and compact floating support widget. Supports 1:1 direct user messaging with multi-language locale awareness (`DE` / `EN`).
+* 🔒 **Granular Privacy Controls:** Users can set direct message permissions (*Everyone*, *Subscribers Only*, *Nobody/Disabled*), toggle read receipts (`✓✓`), online indicators, and sound alerts.
+
+### 3. 🔒 Level 4 AES-128 Encrypted HLS Video Pipeline
+Omni implements an enterprise-grade content security architecture:
+
+* 🔐 **On-Disk AES-128 Encryption (Level 4 Security):** Every `.ts` video segment file stored on disk is encrypted with a unique 128-bit AES key (`enc.key`). Raw `.ts` files are 100% unplayable if copied directly.
+* 🔑 **JWT-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** Next.js & Strapi 5 serve the 16-byte AES decryption keys exclusively to authenticated users with valid session tokens.
+* 🛡️ **Client Memory Isolation:** Native `hls.js` decodes segments into tab-scoped `blob:http://...` MediaSource buffers, preventing direct URL hotlinking, right-click downloads, and unauthorized media extraction.
+* 💼 **Managed Transcoding Infrastructure:** *Note: The automated multi-quality HLS video transcoding pipeline runs on private cluster nodes. Developers who require full automated video encoding/transcoding and do not wish to build custom FFmpeg pipelines can license our managed video infrastructure or host directly with us at [InWebDesign.net](https://inwebdesign.net).*
+
+### 4. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
+* 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes a scrub bar with hover timestamp tooltips, smooth center play/pause splash animations, volume hover expansion, and full-screen toggle.
+* ⚙️ **HLS Quality Selector:** Seamless manual or automatic quality resolution switching (`Auto`, `1080p`, `720p`, `480p`) via `hls.js`.
+* 🛡️ **Branded Context Menu:** Custom right-click menu (`© 2026 Omni by InWebDesign.net`, copy link at current timestamp `?t=124`, loop toggle) replacing standard browser context popups.
+* 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Frühstück`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
+
+### 5. 🌐 Multilingual i18n Dictionary System
+* 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`/dictionaries/de.json` & `/dictionaries/en.json`):** Complete UI internationalization covering headers, search bars, player controls, user profiles, chat widgets, privacy modals, and AI assistant prompts.
+* 🔄 **Instant Language Switching:** Instant toggle between German (`DE`) and English (`EN`) with persistent local storage and cookie sync.
 
 ### 6. 📱 Dynamic Media-Type Routing & Views
 * 🎞️ **Direct Video Catalog ([`/videos`](https://omni-web.inwebdesign.net/videos)):** Un-ranked video library with live title search (`q`), tag filtering (`includetag`, `excludetag`, `matchmode`), and multi-field sorting.
