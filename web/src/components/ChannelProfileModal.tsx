@@ -14,7 +14,7 @@ export default function ChannelProfileModal({
   onClose,
 }: ChannelProfileModalProps) {
   const { t, currentUser, openAuthModal } = useApp();
-  const { createRoom } = useChat();
+  const { createRoom, openChat } = useChat();
   const router = useRouter();
 
   if (!selectedChannel) return null;
@@ -39,6 +39,7 @@ export default function ChannelProfileModal({
       type: 'direct',
       recipientId: selectedChannel.id ? String(selectedChannel.id) : undefined,
     });
+    openChat();
   };
 
   return (

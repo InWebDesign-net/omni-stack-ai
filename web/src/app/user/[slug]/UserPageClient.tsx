@@ -33,7 +33,7 @@ interface UserPageClientProps {
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const { profile, isOwner, videos, favorites, stats } = profileDataInit;
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal } = useApp();
-    const { createRoom } = useChat();
+    const { createRoom, openChat } = useChat();
 
     const [activeTab, setActiveTab] = useState<'videos' | 'favorites' | 'about'>('videos');
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -56,6 +56,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
             type: 'direct',
             recipientId: String(profile.id),
         });
+        openChat();
     };
 
     const handleSubscribeToggle = () => {

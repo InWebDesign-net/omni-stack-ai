@@ -203,11 +203,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     if (creatorOrItem.username && creatorOrItem.handle && creatorOrItem.avatarUrl) {
       setSelectedChannel({
+        id: creatorOrItem.id,
         username: creatorOrItem.username,
         handle: creatorOrItem.handle.startsWith('@') ? creatorOrItem.handle : `@${creatorOrItem.handle}`,
         avatarUrl: creatorOrItem.avatarUrl,
         bio: creatorOrItem.bio || 'Creator & Content Publisher im Omni Network.',
         subscribersCount: creatorOrItem.subscribersCount || 15400,
+        allowDirectMessages: creatorOrItem.allowDirectMessages || 'everyone',
       });
       return;
     }
@@ -216,20 +218,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const name = creatorOrItem.authorName || creatorOrItem.label || creatorOrItem.username || handle.replace('@', '');
       const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || creatorOrItem.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
       setSelectedChannel({
+        id: creatorOrItem.id || creatorOrItem.author?.id || creatorOrItem.creator?.id,
         username: name,
         handle: handle.startsWith('@') ? handle : `@${handle}`,
         avatarUrl: avatar,
-        bio: 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: 15400,
+        bio: creatorOrItem.bio || creatorOrItem.author?.bio || 'Creator & Content Publisher im Omni Network.',
+        subscribersCount: creatorOrItem.subscribersCount || 15400,
+        allowDirectMessages: creatorOrItem.allowDirectMessages || creatorOrItem.author?.allowDirectMessages || 'everyone',
       });
       return;
     }
     setSelectedChannel({
+      id: creatorOrItem.id || creatorOrItem.author?.id || creatorOrItem.creator?.id,
       username: getAuthorName(creatorOrItem),
       handle: getAuthorHandle(creatorOrItem),
       avatarUrl: getAuthorAvatar(creatorOrItem),
       bio: 'Creator & Content Publisher im Omni Network.',
       subscribersCount: 15400,
+      allowDirectMessages: creatorOrItem.allowDirectMessages || creatorOrItem.author?.allowDirectMessages || 'everyone',
     });
   };
 
