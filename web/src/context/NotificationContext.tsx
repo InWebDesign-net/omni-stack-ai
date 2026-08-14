@@ -36,8 +36,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     refreshNotifications();
-    // Poll for new notifications every 15 seconds
-    const interval = setInterval(refreshNotifications, 15000);
+    // Poll for new notifications every 3 seconds for real-time alerts
+    const interval = setInterval(refreshNotifications, 3000);
     return () => clearInterval(interval);
   }, [refreshNotifications]);
 

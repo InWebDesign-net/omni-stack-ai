@@ -113,7 +113,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Initial Rooms List
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
-  // Load real rooms from Strapi
+  // Load real rooms and poll for incoming chat messages every 2.5s
   useEffect(() => {
     let active = true;
     const fetchRooms = async () => {
@@ -155,6 +155,34 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               : [],
           }));
 
+          // Process incoming messages for active room
+          if (activeRoomId && Array.isArray(data.messages)) {
+            const serverMsgs: ChatMessage[] = data.messages.map((m: any) => ({
+              id: m.documentId || String(m.id),
+              senderType: m.senderType || 'user',
+              senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'User'),
+              content: m.content || '',
+              timestamp: m.createdAt || new Date().toISOString(),
+              meta: m.meta,
+            }));
+
+            setRooms((prev) =>
+              prev.map((r) => {
+                if (r.id === activeRoomId || r.slug === activeRoomId) {
+                  // Check if new incoming message arrived from another user
+                  if (serverMsgs.length > r.messages.length) {
+                    const lastMsg = serverMsgs[serverMsgs.length - 1];
+                    if (lastMsg && lastMsg.senderName !== 'Du' && soundEnabled) {
+                      playMessageChime();
+                    }
+                  }
+                  return { ...r, messages: serverMsgs };
+                }
+                return r;
+              })
+            );
+          }
+
           setRooms((prev) => {
             const map = new Map<string, ChatRoom>();
             for (const item of loadedRooms) map.set(item.id, item);
@@ -179,10 +207,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
 
     fetchRooms();
+
+    // Fast polling every 2.5s for instant real-time message sync
+    const interval = setInterval(fetchRooms, 2500);
+
     return () => {
       active = false;
+      clearInterval(interval);
     };
-  }, [activeRoomId]);
+  }, [activeRoomId, soundEnabled]);
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId || r.slug === activeRoomId) || null;
 
