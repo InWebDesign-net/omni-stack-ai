@@ -102,6 +102,7 @@ export default function Header({
     openSettingsModal,
     openAuthModal,
     openCreateItemModal,
+    openAlgoModal,
     t,
   } = useApp();
 
@@ -130,7 +131,7 @@ export default function Header({
     if (onToggleAlgoDrawer) {
       onToggleAlgoDrawer();
     } else {
-      router.push('/?algo=open');
+      openAlgoModal();
     }
   };
 

@@ -6,6 +6,7 @@ import ChannelProfileModal from '@/components/ChannelProfileModal';
 import UserSettingsModal from '@/components/UserSettingsModal';
 import AuthModal from '@/components/AuthModal';
 import CreateFeedItemModal from '@/components/CreateFeedItemModal';
+import AlgorithmModal from '@/components/AlgorithmModal';
 import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import {
   AffinityGraph,
@@ -75,6 +76,10 @@ interface AppContextType {
   openCreateItemModal: () => void;
   closeCreateItemModal: () => void;
 
+  isAlgoModalOpen: boolean;
+  openAlgoModal: () => void;
+  closeAlgoModal: () => void;
+
   // Subscribed Channels
   subscribedChannels: string[];
   toggleSubscribeChannel: (handle: string) => void;
@@ -94,6 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [isCreateItemOpen, setIsCreateItemOpen] = useState(false);
+  const [isAlgoModalOpen, setIsAlgoModalOpen] = useState(false);
 
   // Subscriptions
   const [subscribedChannels, setSubscribedChannels] = useState<string[]>(['@demotech', '@astro']);
@@ -276,6 +282,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         isCreateItemOpen,
         openCreateItemModal: () => setIsCreateItemOpen(true),
         closeCreateItemModal: () => setIsCreateItemOpen(false),
+        isAlgoModalOpen,
+        openAlgoModal: () => setIsAlgoModalOpen(true),
+        closeAlgoModal: () => setIsAlgoModalOpen(false),
         subscribedChannels,
         toggleSubscribeChannel,
       }}
@@ -309,6 +318,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       <CreateFeedItemModal
         isOpen={isCreateItemOpen}
         onClose={() => setIsCreateItemOpen(false)}
+      />
+
+      <AlgorithmModal
+        isOpen={isAlgoModalOpen}
+        onClose={() => setIsAlgoModalOpen(false)}
       />
     </AppContext.Provider>
   );
