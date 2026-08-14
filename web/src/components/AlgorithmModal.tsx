@@ -19,16 +19,41 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
-      if (profile) {
+      setSavedSuccess(false);
+      const jwt = getStoredJwt();
+      if (jwt) {
+        setIsLoadingProfile(true);
+        fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${jwt}` },
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data?.affinityGraph && Object.keys(data.affinityGraph.topics || {}).length > 0) {
+              setGraph(data.affinityGraph);
+              updateProfileState(data.affinityGraph);
+            } else if (profile && Object.keys(profile.topics || {}).length > 0) {
+              setGraph(JSON.parse(JSON.stringify(profile)));
+            } else {
+              setGraph(defaultAffinityGraph());
+            }
+          })
+          .catch(() => {
+            if (profile) setGraph(JSON.parse(JSON.stringify(profile)));
+          })
+          .finally(() => {
+            setIsLoadingProfile(false);
+          });
+      } else if (profile && Object.keys(profile.topics || {}).length > 0) {
         setGraph(JSON.parse(JSON.stringify(profile)));
       } else {
         setGraph(defaultAffinityGraph());
       }
-      setSavedSuccess(false);
     }
-  }, [isOpen, profile]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -142,7 +167,13 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto space-y-6 pr-1 custom-scrollbar">
+        {isLoadingProfile ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-16 space-y-3">
+            <Sparkles className="w-8 h-8 text-indigo-400 animate-spin" />
+            <p className="text-xs font-mono text-slate-400">Lade reale affinityGraph-Vektoren aus Strapi DB...</p>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto space-y-6 pr-1 custom-scrollbar">
           {/* Section 1: Topics & Keywords */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -249,6 +280,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
             </div>
           </div>
         </div>
+      )}
 
         {/* Footer Actions */}
         <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-3">

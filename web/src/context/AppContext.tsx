@@ -135,6 +135,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (storedGraph) {
         setProfile(storedGraph);
       }
+
+      // Fetch fresh profile & real affinityGraph from Strapi DB if logged in
+      const jwt = getStoredJwt();
+      if (jwt) {
+        fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${jwt}` },
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data?.user) {
+              setCurrentUser((prev) => ({ ...prev, ...data.user }));
+              try {
+                localStorage.setItem('omni_user', JSON.stringify(data.user));
+              } catch (e) {}
+            }
+            if (data?.affinityGraph) {
+              const norm = normalizeAffinityGraph(data.affinityGraph);
+              setProfile(norm);
+              storeAffinityGraph(norm);
+            }
+          })
+          .catch((err) => console.error('Failed to load profile from Strapi:', err));
+      }
     }
   }, []);
 
