@@ -551,12 +551,13 @@ export default function VideoPageClient({
                   {Array.isArray(video.tags) && video.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 pt-1">
                       {video.tags.map((tag: string, idx: number) => (
-                        <span
+                        <Link
                           key={`tag-${idx}`}
-                          className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium"
+                          href={`/videos?page=1&includetag=${encodeURIComponent(tag)}`}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:text-white hover:bg-indigo-600/30 hover:border-indigo-500/50 text-xs font-medium transition-all shadow-sm cursor-pointer"
                         >
                           #{tag}
-                        </span>
+                        </Link>
                       ))}
                     </div>
                   )}
