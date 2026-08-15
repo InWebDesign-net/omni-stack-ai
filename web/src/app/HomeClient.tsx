@@ -225,10 +225,10 @@ export default function HomeClient() {
             {/* Quick Topic Suggestion Badges */}
             <div className="mt-4 flex items-center justify-center flex-wrap gap-2 text-xs">
               {[
-                { tag: 'Wissenschaft', label: t.home?.tags?.science || '🔬 Wissenschaft & Tech' },
-                { tag: 'Kochen', label: t.home?.tags?.cooking || '🍝 Kulinarik & Rezepte' },
-                { tag: 'Natur', label: t.home?.tags?.nature || '🌿 Naturdokumentationen' },
-                { tag: 'Finanzen', label: t.home?.tags?.finance || '📈 Finanzwissen' },
+                { tag: 'Natur', label: t.home?.tags?.nature || '🌿 Natur & Umwelt' },
+                { tag: 'Zubereitung', label: t.home?.tags?.cooking || '🍝 Kulinarik & Zubereitung' },
+                { tag: 'Städte', label: t.home?.tags?.cities || '🏙️ Architektur & Städte' },
+                { tag: 'Schule', label: t.home?.tags?.education || '📚 Schule & Wissen' },
               ].map(({ tag, label }) => (
                 <Link
                   key={tag}

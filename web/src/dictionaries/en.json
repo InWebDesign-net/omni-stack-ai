@@ -361,10 +361,10 @@
     "askAiTitle": "Ask AI Assistant",
     "searchBtn": "Search",
     "tags": {
-      "science": "🔬 Science & Tech",
-      "cooking": "🍝 Culinary & Recipes",
-      "nature": "🌿 Nature Documentaries",
-      "finance": "📈 Financial Knowledge"
+      "nature": "🌿 Nature & Environment",
+      "cooking": "🍝 Culinary & Food",
+      "cities": "🏙️ Architecture & Cities",
+      "education": "📚 Education & Knowledge"
     },
     "creatorsTitle": "Recommended Creators & Channels",
     "creatorsSubtitle": "Channels with fresh content are prioritized",

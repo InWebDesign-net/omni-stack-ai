@@ -361,10 +361,10 @@
     "askAiTitle": "KI-Assistenten fragen",
     "searchBtn": "Suchen",
     "tags": {
-      "science": "🔬 Wissenschaft & Tech",
-      "cooking": "🍝 Kulinarik & Rezepte",
-      "nature": "🌿 Naturdokumentationen",
-      "finance": "📈 Finanzwissen"
+      "nature": "🌿 Natur & Umwelt",
+      "cooking": "🍝 Kulinarik & Zubereitung",
+      "cities": "🏙️ Architektur & Städte",
+      "education": "📚 Schule & Wissen"
     },
     "creatorsTitle": "Empfohlene Creator & Kanäle",
     "creatorsSubtitle": "Kanäle mit frischem Content werden bevorzugt dargestellt",
