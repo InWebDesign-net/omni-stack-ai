@@ -67,7 +67,7 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
     if (!filters.visibility) {
       filters.visibility = { $eq: 'public' };
     }
-    if (!filters.isProcessing) {
+    if (!filters.isProcessing && params.includeProcessing !== 'true') {
       filters.isProcessing = { $ne: true };
     }
 

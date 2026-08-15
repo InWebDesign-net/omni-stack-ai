@@ -15,7 +15,7 @@ export default function ImageUploadModal({
   onClose,
 }: ImageUploadModalProps) {
   const { t } = useApp();
-  const { addFiles } = useUploadManager();
+  const { addFiles, openManager } = useUploadManager();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
@@ -23,6 +23,7 @@ export default function ImageUploadModal({
   const handleFileChange = (files: FileList | null) => {
     if (files && files.length > 0) {
       addFiles(files, 'image');
+      openManager();
       onClose();
     }
   };
@@ -31,6 +32,7 @@ export default function ImageUploadModal({
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       addFiles(e.dataTransfer.files, 'image');
+      openManager();
       onClose();
     }
   };

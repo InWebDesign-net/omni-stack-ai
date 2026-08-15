@@ -184,7 +184,7 @@ export function UploadProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(async () => {
       attempts++;
       try {
-        const res = await fetch(isImage ? `${pollEndpoint}?q=${slug}` : pollEndpoint, {
+        const res = await fetch(isImage ? `${pollEndpoint}?includeProcessing=true&q=${slug}` : pollEndpoint, {
           method: isImage ? 'GET' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           ...(isImage ? {} : { body: JSON.stringify({ targetSlug: slug }) }),

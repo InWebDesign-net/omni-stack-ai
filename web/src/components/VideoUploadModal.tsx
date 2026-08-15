@@ -18,7 +18,7 @@ export default function VideoUploadModal({
   onClose,
 }: VideoUploadModalProps) {
   const { t } = useApp();
-  const { addFiles } = useUploadManager();
+  const { addFiles, openManager } = useUploadManager();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
@@ -26,6 +26,7 @@ export default function VideoUploadModal({
   const handleFileChange = (files: FileList | null) => {
     if (files && files.length > 0) {
       addFiles(files, 'video');
+      openManager();
       onClose();
     }
   };
@@ -34,6 +35,7 @@ export default function VideoUploadModal({
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       addFiles(e.dataTransfer.files, 'video');
+      openManager();
       onClose();
     }
   };
