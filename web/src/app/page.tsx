@@ -11,20 +11,20 @@ export const metadata: Metadata = {
     siteName: 'Omni Network',
     images: [
       {
-        url: 'https://omni-web.inwebdesign.net/android-chrome-192x192.png',
-        width: 192,
-        height: 192,
-        alt: 'Omni Logo',
+        url: 'https://omni-web.inwebdesign.net/og_image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Omni Media Network Preview',
       },
     ],
     locale: 'de_DE',
     type: 'website',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Omni – Hyper-Personalisiertes KI Mediennetzwerk',
     description: 'Entdecke hyper-personalisierte Videos, Kanäle und Inhalte powered by Omni AI & Level 4 HLS Security.',
-    images: ['https://omni-web.inwebdesign.net/android-chrome-192x192.png'],
+    images: ['https://omni-web.inwebdesign.net/og_image.jpg'],
   },
 };
 
