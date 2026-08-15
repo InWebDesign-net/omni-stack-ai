@@ -28,6 +28,7 @@ import {
   Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
+import SubscribeButton from '@/components/SubscribeButton';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 import { useApp } from '@/context/AppContext';
@@ -532,26 +533,10 @@ export default function VideoPageClient({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => toggleSubscribeChannel(creatorHandle)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                    isSubscribed
-                      ? 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30'
-                  }`}
-                >
-                    {isSubscribed ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>{t.videoDetail.subscribedBtn}</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="w-3.5 h-3.5" />
-                        <span>{t.videoDetail.subscribeBtn}</span>
-                      </>
-                    )}
-                  </button>
+                <SubscribeButton
+                  targetId={String(creator?.id || video?.creator?.id || video?.author?.id || 1)}
+                  size="md"
+                />
               </div>
 
               {/* Expandable Video Description */}

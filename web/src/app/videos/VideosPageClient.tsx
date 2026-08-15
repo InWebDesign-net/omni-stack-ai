@@ -25,7 +25,6 @@ import {
   X,
   User as UserIcon,
 } from "lucide-react";
-import SubscribeButton from "@/components/SubscribeButton";
 
 export default function VideosPageClient({
   initialParams,
@@ -525,21 +524,12 @@ export default function VideosPageClient({
                         <span className="truncate max-w-[90px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
                       </Link>
 
-                      <div className="flex items-center gap-2">
-                        {creator?.id && (
-                          <SubscribeButton
-                            targetId={String(creator.id)}
-                            size="sm"
-                            showCount={false}
-                          />
-                        )}
-                        {video.viewsCount !== undefined && (
-                          <div className="flex items-center gap-1 text-slate-400">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>{video.viewsCount.toLocaleString()}</span>
-                          </div>
-                        )}
-                      </div>
+                      {video.viewsCount !== undefined && (
+                        <div className="flex items-center gap-1 text-slate-400">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{video.viewsCount.toLocaleString()}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

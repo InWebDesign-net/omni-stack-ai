@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, BellOff, Check, Plus, Loader2 } from 'lucide-react';
+import { Bell, BellOff, Check, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { getStoredJwt } from '@/lib/affinity';
 
@@ -30,32 +30,48 @@ export default function SubscribeButton({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
-  // Fetch initial subscription state if not provided
+  // Sync state if props change from parent
+  useEffect(() => {
+    if (initialIsSubscribed !== undefined) {
+      setIsSubscribed(initialIsSubscribed);
+    }
+  }, [initialIsSubscribed]);
+
+  useEffect(() => {
+    if (initialCount !== undefined) {
+      setCount(initialCount);
+    }
+  }, [initialCount]);
+
+  // Fetch real subscription status from API
   useEffect(() => {
     let active = true;
-    if (initialIsSubscribed === undefined || initialCount === undefined) {
-      const fetchStatus = async () => {
-        try {
-          const jwt = getStoredJwt();
-          const queryParam = type === 'channel' ? `targetUser=${targetId}` : `targetChatRoom=${targetId}`;
-          const res = await fetch(`/api/subscriptions?${queryParam}`, {
-            headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
-          });
-          if (res.ok && active) {
-            const data = await res.json();
-            setIsSubscribed(data.isSubscribed);
+    if (!targetId) return;
+
+    const fetchStatus = async () => {
+      try {
+        const jwt = getStoredJwt();
+        const queryParam = type === 'channel' ? `targetUser=${targetId}` : `targetChatRoom=${targetId}`;
+        const res = await fetch(`/api/subscriptions?${queryParam}`, {
+          headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+        });
+        if (res.ok && active) {
+          const data = await res.json();
+          setIsSubscribed(Boolean(data.isSubscribed));
+          if (typeof data.subscriberCount === 'number') {
             setCount(data.subscriberCount);
           }
-        } catch (e) {
-          console.error('Failed to fetch subscription status:', e);
         }
-      };
-      fetchStatus();
-    }
+      } catch (e) {
+        console.error('Failed to fetch subscription status:', e);
+      }
+    };
+
+    fetchStatus();
     return () => {
       active = false;
     };
-  }, [targetId, type, initialIsSubscribed, initialCount]);
+  }, [targetId, type, currentUser?.id]);
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -66,7 +82,7 @@ export default function SubscribeButton({
       return;
     }
 
-    if (isLoading) return;
+    if (isLoading || !targetId) return;
 
     // Optimistic update
     const previousSubscribed = isSubscribed;
@@ -95,8 +111,10 @@ export default function SubscribeButton({
 
       if (res.ok) {
         const data = await res.json();
-        setIsSubscribed(data.isSubscribed);
-        setCount(data.subscriberCount);
+        setIsSubscribed(Boolean(data.isSubscribed));
+        if (typeof data.subscriberCount === 'number') {
+          setCount(data.subscriberCount);
+        }
       } else {
         // Rollback on failure
         setIsSubscribed(previousSubscribed);
@@ -124,7 +142,7 @@ export default function SubscribeButton({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       disabled={isLoading}
-      className={`inline-flex items-center justify-center transition-all select-none shadow-sm active:scale-95 ${sizeClasses} ${
+      className={`inline-flex items-center justify-center transition-all select-none shadow-sm active:scale-95 cursor-pointer ${sizeClasses} ${
         isSubscribed
           ? isHovered
             ? 'bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300'
