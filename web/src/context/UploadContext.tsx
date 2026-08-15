@@ -53,12 +53,12 @@ export function UploadProvider({ children }: { children: ReactNode }) {
     const newTasks: UploadTask[] = [];
 
     Array.from(files).forEach((file) => {
-      const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|ts|m4v)$/i.test(file.name);
-      const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|tiff|bmp)$/i.test(file.name);
+      const isVideo = forceMediaType === 'video' || forceMediaType === 'short' || file.type.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|ts|m4v|flv|wmv|mpg|mpeg|3gp|m2ts|mts)$/i.test(file.name);
+      const isImage = forceMediaType === 'image' || file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|tiff|bmp|svg|heic|avif)$/i.test(file.name);
 
-      if (!isVideo && !isImage) return;
+      if (!isVideo && !isImage && !forceMediaType) return;
 
-      const detectedType: 'video' | 'image' = isImage ? 'image' : 'video';
+      const detectedType: 'video' | 'image' = isImage && forceMediaType !== 'video' ? 'image' : 'video';
       const finalType = forceMediaType || detectedType;
 
       const rawName = file.name.replace(/\.[^/.]+$/, '');

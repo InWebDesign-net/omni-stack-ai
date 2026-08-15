@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import VideoUploadModal from "@/components/VideoUploadModal";
 import { useApp } from "@/context/AppContext";
 import { useVideos, VideoItem } from "@/lib/hooks/useVideos";
 import { TagCount } from "@/lib/videoFilters";
@@ -23,6 +24,7 @@ import {
   Film,
   Tag,
   X,
+  Upload,
   User as UserIcon,
 } from "lucide-react";
 
@@ -36,6 +38,8 @@ export default function VideosPageClient({
   const searchParams = useSearchParams();
   const { currentUser, lang, t } = useApp();
   const perPage = 24;
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Single Source of Truth from SearchParams
   const searchTerm = searchParams.get("q") || "";
@@ -213,16 +217,26 @@ export default function VideosPageClient({
               </p>
             </div>
 
-            {/* Quick Actions & Filters Reset */}
-            {hasActiveFilters && (
+            {/* Quick Actions & Video Upload Button */}
+            <div className="flex items-center gap-3">
               <button
-                onClick={hardReset}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all shadow-sm shrink-0"
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/20 shrink-0"
               >
-                <FilterX className="w-3.5 h-3.5 text-rose-400" />
-                <span>{t.common.resetFilters}</span>
+                <Upload className="w-4 h-4" />
+                <span>Video hochladen</span>
               </button>
-            )}
+
+              {hasActiveFilters && (
+                <button
+                  onClick={hardReset}
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all shadow-sm shrink-0"
+                >
+                  <FilterX className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{t.common.resetFilters}</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Search & Sort Control Bar */}
@@ -591,6 +605,11 @@ export default function VideosPageClient({
           </div>
         )}
       </main>
+
+      <VideoUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+      />
     </div>
   );
 }
