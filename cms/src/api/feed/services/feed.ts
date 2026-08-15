@@ -639,7 +639,7 @@ WICHTIG: Antworte im folgenden JSON-Format:
     const donePath = path.join(OUT_DIR, base + '.done');
     const metaPath = path.join(OUT_DIR, base + '.meta');
 
-    let metaDuration = duration || 0;
+    let metaDuration = Math.round(Number(duration) || 0);
 
     // Read meta file if exists
     if (fs.existsSync(metaPath)) {
@@ -648,7 +648,7 @@ WICHTIG: Antworte im folgenden JSON-Format:
         for (const line of lines) {
           const [key, value] = line.split('=');
           if (key && value && key.trim() === 'duration') {
-            metaDuration = parseInt(value.trim(), 10) || metaDuration;
+            metaDuration = Math.round(parseFloat(value.trim())) || metaDuration;
           }
         }
       } catch (e) {}
@@ -703,7 +703,7 @@ WICHTIG: Antworte im folgenden JSON-Format:
         const docId = videoMatches[0].documentId;
         const updateData = {
           isProcessing: false,
-          duration: metaDuration || (videoMatches[0] as any).duration || 0,
+          duration: Math.round(Number(metaDuration || (videoMatches[0] as any).duration || 0)),
           hlsUrl: `/media/videos/hls/${base}/master.m3u8`,
           mp4Url: `/media/videos/${base}.mp4`,
           thumbnailUrl: `/media/thumbnails/${base}-1.png`,
