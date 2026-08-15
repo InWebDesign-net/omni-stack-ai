@@ -1,0 +1,4 @@
+## 2024-05-18 - [Fix Hardcoded JWT Secret in socket Microservice]
+**Vulnerability:** Found a hardcoded fallback value (`'9ukrMWtnoIulQCWQbXoWRQ=='`) for the `JWT_SECRET` in `socket/src/index.ts`.
+**Learning:** Hardcoding a fallback secret introduces a critical vulnerability where an attacker with access to the codebase can forge authentication tokens if the environment variable is not explicitly set. The service allowed silent fallback to insecure states.
+**Prevention:** Always enforce "fail-fast" or "fail securely" patterns. If a critical security variable is missing, explicitly log a fatal error and call `process.exit(1)` rather than providing a default secret.
