@@ -225,14 +225,26 @@ export default function HomeClient() {
             {/* Quick Topic Suggestion Badges */}
             <div className="mt-4 flex items-center justify-center flex-wrap gap-2 text-xs">
               {[
-                { tag: 'Natur', label: t.home?.tags?.nature || '🌿 Natur & Umwelt' },
-                { tag: 'Zubereitung', label: t.home?.tags?.cooking || '🍝 Kulinarik & Zubereitung' },
-                { tag: 'Städte', label: t.home?.tags?.cities || '🏙️ Architektur & Städte' },
-                { tag: 'Schule', label: t.home?.tags?.education || '📚 Schule & Wissen' },
-              ].map(({ tag, label }) => (
+                {
+                  tags: 'Natur,Nature,Trees,Landscape,Bäume,Garden,Garten,Wald,Pflanzen,Plants,Tiere,Forest,Animals,Blumen,Flowers,Gras,Landscapes,Sonne,Umwelt',
+                  label: t.home?.tags?.nature || '🌿 Natur & Umwelt',
+                },
+                {
+                  tags: 'Kulinarik,Küche,Rezepte,Zubereitung,Kochen,Cooking,Food,Essen,Gerichte,Gourmet,Baking,Backen,Chef,Rezept,Pasta,Pizza,Salat',
+                  label: t.home?.tags?.cooking || '🍝 Kulinarik & Zubereitung',
+                },
+                {
+                  tags: 'Architektur,Städte,City,Architecture,Gebäude,Building,Metropole,Urban,Design,Skyline,Stadttour,Wohnen,Bauwerk,Museum,Brücke',
+                  label: t.home?.tags?.cities || '🏙️ Architektur & Städte',
+                },
+                {
+                  tags: 'Wissen,Schule,Wissenschaft,Science,Lernen,Tutorial,Bildung,Education,Tech,Doku,Dokumentation,Physik,Mathe,Geschichte,Forschung',
+                  label: t.home?.tags?.education || '📚 Schule & Wissen',
+                },
+              ].map(({ tags, label }) => (
                 <Link
-                  key={tag}
-                  href={`/videos?page=1&includetag=${encodeURIComponent(tag)}`}
+                  key={label}
+                  href={`/videos?page=1&includetag=${encodeURIComponent(tags)}`}
                   className="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all"
                 >
                   {label}
