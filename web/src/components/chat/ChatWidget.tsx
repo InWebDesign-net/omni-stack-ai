@@ -243,8 +243,16 @@ export default function ChatWidget() {
                 <Settings className="w-5 h-5" />
               </button>
               <button
+                onClick={toggleExpand}
+                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
+                title="Fenster verkleinern"
+              >
+                <Minimize2 className="w-5 h-5" />
+              </button>
+              <button
                 onClick={closeChat}
-                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all md:hidden"
+                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
+                title={t.common?.close || 'Schließen'}
               >
                 <X className="w-5 h-5" />
               </button>
