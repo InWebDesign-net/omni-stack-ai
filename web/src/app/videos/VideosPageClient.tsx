@@ -317,54 +317,52 @@ export default function VideosPageClient({
 
           {/* Tag filter (same control panel as search/sort) */}
           <div className="pt-4 border-t border-slate-800/60 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              {/* Left Side: Title + Inline Tag Search Box */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span className="text-sm font-semibold text-slate-200">{t.videos.allTags}</span>
-                  {hasTagFilters && (
-                    <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
-                      {t.videos.activeTags}
-                    </span>
-                  )}
-                </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {/* Left Side: Title + Active Filter Count */}
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{t.videos.allTags}</span>
+                {hasTagFilters && (
+                  <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                    {includedTags.length + excludedTags.length} {t.videos.activeTags || 'aktiv'}
+                  </span>
+                )}
+              </div>
 
-                {/* Inline Tag Search Input Box */}
-                <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-indigo-500/80 rounded-xl px-2.5 py-1 text-xs max-w-[200px] sm:max-w-[240px] transition-all">
-                  <Search className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" />
+              {/* Right Side: Tag Search Input + Count & Expand/Collapse Toggle Button */}
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-indigo-500/80 rounded-xl px-2.5 py-1 text-xs transition-all">
                   <input
                     type="text"
-                    placeholder={t.videos?.searchTagsPlaceholder || "Tags durchsuchen..."}
+                    placeholder={t.videos?.searchTagsPlaceholder || "Tag suchen..."}
                     value={tagSearch}
                     onChange={(e) => setTagSearch(e.target.value)}
-                    className="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
+                    className="w-28 sm:w-36 bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
                   />
                   {tagSearch && (
                     <button
                       type="button"
                       onClick={() => setTagSearch("")}
-                      className="p-0.5 text-slate-400 hover:text-slate-200 shrink-0"
+                      className="p-0.5 text-slate-400 hover:text-slate-200 shrink-0 ml-1"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   )}
                 </div>
-              </div>
 
-              {/* Right Side: Expand / Collapse Toggle Button */}
-              <button
-                type="button"
-                onClick={() => setIsTagCloudExpanded((prev) => !prev)}
-                className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-all shrink-0"
-              >
-                <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : (t.common?.showMore || "Mehr anzeigen")}</span>
-                {isTagCloudExpanded ? (
-                  <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5 text-indigo-400" />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setIsTagCloudExpanded((prev) => !prev)}
+                  className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-indigo-400 transition-all shrink-0"
+                >
+                  <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle (${allTags.length})`}</span>
+                  {isTagCloudExpanded ? (
+                    <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5 text-indigo-400" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Tag cloud: 1 line (collapsed 38px) vs 4 lines (expanded 148px) */}
