@@ -80,6 +80,11 @@ export default function VideosPageClient({
     return allTags.filter(({ tag }) => tag.toLowerCase().includes(q));
   }, [allTags, tagSearch]);
 
+  const displayedTags = React.useMemo(() => {
+    if (isTagCloudExpanded || tagSearch.trim()) return filteredAllTags;
+    return filteredAllTags.slice(0, 16);
+  }, [filteredAllTags, isTagCloudExpanded, tagSearch]);
+
   // Data fetching via SWR hook
   const {
     videos,
@@ -350,44 +355,40 @@ export default function VideosPageClient({
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsTagCloudExpanded((prev) => !prev)}
-                  className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-indigo-400 transition-all shrink-0"
-                >
-                  <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle (${allTags.length})`}</span>
-                  {isTagCloudExpanded ? (
-                    <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5 text-indigo-400" />
-                  )}
-                </button>
+                {allTags.length > 16 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsTagCloudExpanded((prev) => !prev)}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 font-medium transition-colors cursor-pointer"
+                  >
+                    <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle (${allTags.length})`}</span>
+                    {isTagCloudExpanded ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Tag cloud: 1 line (collapsed 38px) vs 4 lines (expanded 148px) */}
-            <div
-              className={`flex flex-wrap gap-2 transition-all duration-300 ease-in-out ${
-                isTagCloudExpanded
-                  ? "min-h-[148px] max-h-[148px] h-[148px] overflow-y-auto pr-1 tag-cloud-scroll"
-                  : "min-h-[38px] max-h-[38px] h-[38px] overflow-hidden"
-              }`}
-            >
+            {/* Tag cloud: natural flex-wrap container without hard height truncation */}
+            <div className="flex flex-wrap items-center gap-2">
               {allTags.length === 0 ? (
                 // Skeleton pills matching exact height
-                Array.from({ length: isTagCloudExpanded ? 16 : 6 }).map((_, i) => (
+                Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={`tag-skeleton-${i}`}
                     style={{ width: `${64 + ((i * 17) % 52)}px` }}
                     className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
                   />
                 ))
-              ) : filteredAllTags.length === 0 ? (
+              ) : displayedTags.length === 0 ? (
                 <div className="text-xs text-slate-500 italic py-1">
                   {(t.videos?.noTagsFound || 'Keine Tags für "{query}" gefunden.').replace('{query}', tagSearch)}
                 </div>
               ) : (
-                filteredAllTags.map(({ tag, count }) => {
+                displayedTags.map(({ tag, count }) => {
                   const state = includedTags.includes(tag)
                     ? "include"
                     : excludedTags.includes(tag)
