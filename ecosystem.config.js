@@ -37,6 +37,19 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: "1G"
+    },
+    {
+      name: "omni-socket",
+      cwd: "./socket",
+      script: "npm",
+      args: "run start",
+      env: {
+        NODE_ENV: "production",
+        PORT: 4000
+      },
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "500M"
     }
   ]
 };

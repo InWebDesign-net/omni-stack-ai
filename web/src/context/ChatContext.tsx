@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jsonAuthHeaders } from '@/lib/affinity';
+import { getSocket } from '@/lib/socket';
 
 export interface ChatMessage {
   id: string;
@@ -113,9 +114,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Initial Rooms List
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
-  // Load real rooms and poll for incoming chat messages every 2.5s
+  // Load real rooms from Strapi and listen for real-time WebSocket events
   useEffect(() => {
     let active = true;
+
     const fetchRooms = async () => {
       try {
         const res = await fetch(`/api/chat?roomId=${encodeURIComponent(activeRoomId || '')}`, {
@@ -147,7 +149,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               ? r.messages.map((m: any) => ({
                   id: m.documentId || String(m.id),
                   senderType: m.senderType || 'user',
-                  senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'User'),
+                  senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
                   content: m.content || '',
                   timestamp: m.createdAt || new Date().toISOString(),
                   meta: m.meta,
@@ -155,12 +157,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               : [],
           }));
 
-          // Process incoming messages for active room
           if (activeRoomId && Array.isArray(data.messages)) {
             const serverMsgs: ChatMessage[] = data.messages.map((m: any) => ({
               id: m.documentId || String(m.id),
               senderType: m.senderType || 'user',
-              senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'User'),
+              senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
               content: m.content || '',
               timestamp: m.createdAt || new Date().toISOString(),
               meta: m.meta,
@@ -169,13 +170,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             setRooms((prev) =>
               prev.map((r) => {
                 if (r.id === activeRoomId || r.slug === activeRoomId) {
-                  // Check if new incoming message arrived from another user
-                  if (serverMsgs.length > r.messages.length) {
-                    const lastMsg = serverMsgs[serverMsgs.length - 1];
-                    if (lastMsg && lastMsg.senderName !== 'Du' && soundEnabled) {
-                      playMessageChime();
-                    }
-                  }
                   return { ...r, messages: serverMsgs };
                 }
                 return r;
@@ -208,12 +202,55 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     fetchRooms();
 
-    // Fast polling every 2.5s for instant real-time message sync
-    const interval = setInterval(fetchRooms, 2500);
+    // WebSocket real-time connection
+    const socket = getSocket();
+    if (socket) {
+      if (activeRoomId) {
+        socket.emit('chat:join_room', { roomId: activeRoomId });
+      }
+
+      const handleIncomingMessage = (msgData: any) => {
+        if (!msgData || !msgData.roomId) return;
+        console.log('⚡ Incoming chat:message_received via WebSocket:', msgData);
+
+        const newMsg: ChatMessage = {
+          id: msgData.id || `msg-${Date.now()}`,
+          senderType: msgData.senderType || 'user',
+          senderName: msgData.senderName || 'Nutzer',
+          content: msgData.content,
+          timestamp: msgData.timestamp || new Date().toISOString(),
+        };
+
+        setRooms((prev) =>
+          prev.map((r) => {
+            if (r.id === msgData.roomId || r.slug === msgData.roomId) {
+              const exists = r.messages.some((m) => m.id === newMsg.id || (m.content === newMsg.content && Math.abs(new Date(m.timestamp).getTime() - new Date(newMsg.timestamp).getTime()) < 3000));
+              if (exists) return r;
+              return {
+                ...r,
+                lastMessageAt: newMsg.timestamp,
+                messages: [...r.messages, newMsg],
+              };
+            }
+            return r;
+          })
+        );
+
+        if (msgData.senderName !== 'Du' && soundEnabled) {
+          playMessageChime();
+        }
+      };
+
+      socket.on('chat:message_received', handleIncomingMessage);
+
+      return () => {
+        active = false;
+        socket.off('chat:message_received', handleIncomingMessage);
+      };
+    }
 
     return () => {
       active = false;
-      clearInterval(interval);
     };
   }, [activeRoomId, soundEnabled]);
 
@@ -405,6 +442,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       playMessageChime();
     }
 
+    const targetRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
+    const recipient = targetRoom?.participants?.find((p) => p.username !== 'Nutzer');
+
+    // Broadcast message instantly via WebSocket Gateway
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat:send_message', {
+        roomId,
+        content: content.trim(),
+        messageId: userMsg.id,
+        senderName: 'Du',
+        recipientId: recipient?.id,
+      });
+    }
+
     try {
       await fetch('/api/chat', {
         method: 'POST',
@@ -424,7 +476,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Trigger AI response if room is AI enabled
-    const targetRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
     if (targetRoom && (targetRoom.type === 'ai' || targetRoom.isAiEnabled)) {
       setTimeout(async () => {
         try {

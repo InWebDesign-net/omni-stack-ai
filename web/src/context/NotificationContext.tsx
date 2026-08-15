@@ -9,6 +9,8 @@ import {
 } from '@/lib/notifications';
 import { updateFaviconBadge } from '@/lib/faviconBadge';
 
+import { getSocket } from '@/lib/socket';
+
 interface NotificationContextType {
   notifications: NotificationItem[];
   unreadCount: number;
@@ -36,9 +38,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     refreshNotifications();
-    // Poll for new notifications every 3 seconds for real-time alerts
-    const interval = setInterval(refreshNotifications, 3000);
-    return () => clearInterval(interval);
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewNotification = (notification: NotificationItem) => {
+      console.log('⚡ Real-time notification received via WebSocket:', notification);
+      setNotifications((prev) => [notification, ...prev.filter((n) => n.id !== notification.id)]);
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on('notification:new', handleNewNotification);
+
+    return () => {
+      socket.off('notification:new', handleNewNotification);
+    };
   }, [refreshNotifications]);
 
   // Gmail-style Document Title & Dynamic Favicon Badge update
