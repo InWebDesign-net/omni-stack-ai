@@ -285,6 +285,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: savedMsg, room, success: true });
     }
 
+    // Action 3: Update chatroom settings (e.g. toggle isAiEnabled)
+    if (action === 'update_room') {
+      const { isAiEnabled } = body;
+      const findRes = await fetch(
+        `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(roomId)}`,
+        { headers, cache: 'no-store' }
+      );
+      if (findRes.ok) {
+        const findData = await findRes.json();
+        const targetRoom = findData?.data?.[0];
+        if (targetRoom) {
+          const roomDocId = targetRoom.documentId || targetRoom.id;
+          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${roomDocId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              data: {
+                ...(typeof isAiEnabled === 'boolean' ? { isAiEnabled } : {}),
+              },
+            }),
+          });
+          if (updateRes.ok) {
+            const updated = await updateRes.json();
+            return NextResponse.json({ room: updated.data, success: true });
+          }
+        }
+      }
+      return NextResponse.json({ error: 'Room not found or update failed' }, { status: 400 });
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to process chat action' }, { status: 500 });

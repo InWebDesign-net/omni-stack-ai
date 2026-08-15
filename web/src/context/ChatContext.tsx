@@ -375,10 +375,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addParticipantToRoom = async (roomId: string, userOrAi: { name: string; type: 'user' | 'ai' }) => {
+    const isAi = userOrAi.type === 'ai';
     const sysMsg: ChatMessage = {
       id: `sys-${Date.now()}`,
       senderType: 'system',
-      content: `${userOrAi.name} (${userOrAi.type === 'ai' ? 'KI-Agent' : 'Nutzer'}) wurde zum Chat hinzugefügt.`,
+      content: `${userOrAi.name} (${isAi ? 'KI-Assistent' : 'Nutzer'}) wurde zum Chat hinzugefügt.`,
       timestamp: new Date().toISOString(),
     };
 
@@ -387,20 +388,81 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         if (r.id === roomId || r.slug === roomId) {
           return {
             ...r,
-            isAiEnabled: userOrAi.type === 'ai' ? true : r.isAiEnabled,
+            isAiEnabled: isAi ? true : r.isAiEnabled,
             messages: [...r.messages, sysMsg],
           };
         }
         return r;
       })
     );
+
+    try {
+      if (isAi) {
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            ...jsonAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'update_room',
+            roomId,
+            isAiEnabled: true,
+          }),
+        });
+      }
+    } catch (e) {}
+
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat:send_message', {
+        roomId,
+        content: sysMsg.content,
+        senderName: 'System',
+        senderType: 'system',
+      });
+    }
+
+    if (isAi) {
+      setTimeout(async () => {
+        const aiGreeting: ChatMessage = {
+          id: `msg-ai-greeting-${Date.now()}`,
+          senderType: 'ai',
+          senderName: 'Omni AI',
+          content: 'Hallo! Ich bin jetzt im Chat und unterstütze euch gerne mit Antworten & KI-Funktionen.',
+          timestamp: new Date().toISOString(),
+        };
+
+        setRooms((prev) =>
+          prev.map((r) => {
+            if (r.id === roomId || r.slug === roomId) {
+              return {
+                ...r,
+                messages: [...r.messages, aiGreeting],
+              };
+            }
+            return r;
+          })
+        );
+
+        if (socket) {
+          socket.emit('chat:send_message', {
+            roomId,
+            content: aiGreeting.content,
+            senderName: 'Omni AI',
+            senderType: 'ai',
+          });
+        }
+      }, 500);
+    }
   };
 
-  const removeParticipantFromRoom = async (roomId: string, participantId: string) => {
+  const removeParticipantFromRoom = async (roomId: string, participantIdOrType: string) => {
+    const isAi = participantIdOrType === 'ai';
     const sysMsg: ChatMessage = {
       id: `sys-${Date.now()}`,
       senderType: 'system',
-      content: `Teilnehmer wurde aus dem Chat entfernt.`,
+      content: isAi ? 'Omni KI-Assistent wurde aus dem Chat entfernt.' : 'Teilnehmer wurde aus dem Chat entfernt.',
       timestamp: new Date().toISOString(),
     };
 
@@ -409,12 +471,40 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         if (r.id === roomId || r.slug === roomId) {
           return {
             ...r,
+            isAiEnabled: isAi ? false : r.isAiEnabled,
             messages: [...r.messages, sysMsg],
           };
         }
         return r;
       })
     );
+
+    try {
+      if (isAi) {
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            ...jsonAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'update_room',
+            roomId,
+            isAiEnabled: false,
+          }),
+        });
+      }
+    } catch (e) {}
+
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat:send_message', {
+        roomId,
+        content: sysMsg.content,
+        senderName: 'System',
+        senderType: 'system',
+      });
+    }
   };
 
   const sendMessage = async (roomId: string, content: string) => {
