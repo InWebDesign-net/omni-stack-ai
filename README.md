@@ -9,6 +9,10 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
 [![PM2](https://img.shields.io/badge/PM2-Managed-green?logo=pm2)](https://pm2.io/)
 
+<p align="center">
+  <img src="web/public/og_image.jpg" alt="Omni Media Network Preview" width="100%" style="border-radius: 12px;" />
+</p>
+
 **Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks, encrypted video streaming platforms, real-time WebSocket chat networks, and AI-driven media distribution hubs. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, **Standalone WebSocket Microservice (`omni-socket`)**, **Level 4 AES-128 HLS Video Transcoding**, and **Local Ollama AI Orchestration**, Omni introduces **Stateful Preference Vectors** to replace traditional, expensive event-logging databases.
 
 ---
