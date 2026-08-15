@@ -268,6 +268,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).openChatRoom = (roomId?: string) => {
+        openChat(roomId);
+      };
+    }
+  }, []);
+
   const closeChat = () => {
     setIsOpen(false);
   };

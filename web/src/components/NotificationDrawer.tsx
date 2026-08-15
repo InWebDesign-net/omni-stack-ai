@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
 import { useApp } from '@/context/AppContext';
+import { useChat } from '@/context/ChatContext';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
   const router = useRouter();
   const { notifications, unreadCount, markAllAsRead, markAsRead, deleteNotification } =
     useNotifications();
+  const { openChat } = useChat();
   const { t } = useApp();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
@@ -59,14 +61,22 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
     onClose();
 
     if (n.link) {
-      if (n.link.startsWith('chat:')) {
-        const roomId = n.link.replace('chat:', '');
-        if (typeof window !== 'undefined' && (window as any).openChatRoom) {
-          (window as any).openChatRoom(roomId);
-        } else {
-          router.push(`/user?tab=chat&room=${roomId}`);
+      const linkStr = String(n.link);
+      if (linkStr.startsWith('chat:') || linkStr.includes('room=')) {
+        let roomId = '';
+        if (linkStr.startsWith('chat:')) {
+          roomId = linkStr.replace('chat:', '');
+        } else if (linkStr.includes('room=')) {
+          const match = linkStr.match(/room=([^&]+)/);
+          if (match) roomId = match[1];
         }
-      } else {
+        if (roomId) {
+          openChat(roomId);
+          return;
+        }
+      }
+
+      if (!linkStr.startsWith('chat:')) {
         router.push(n.link);
       }
     }
