@@ -196,9 +196,10 @@ export default function ChatWidget() {
 
   // ⚡ Bolt Optimization: Memoized room filtering to prevent O(N) recalculations on every keystroke in chat input
   const filteredRooms = useMemo(() => {
-    // ⚡ Bolt Optimization: Calculate lowerQuery once outside the loop instead of N times inside
-    const lowerQuery = searchQuery.toLowerCase();
-    return rooms.filter((r) => r.name.toLowerCase().includes(lowerQuery));
+    const lowerQuery = (searchQuery || '').toLowerCase().trim();
+    if (!rooms || !Array.isArray(rooms)) return [];
+    if (!lowerQuery) return rooms;
+    return rooms.filter((r) => r && (r.name || r.slug || '').toLowerCase().includes(lowerQuery));
   }, [rooms, searchQuery]);
 
   // 1. Floating Support Button (Collapsed Launcher)
