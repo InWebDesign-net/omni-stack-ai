@@ -72,10 +72,14 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
     }
 
     if (searchTerm) {
-      filters.title = { $containsi: searchTerm };
+      filters.$or = [
+        { title: { $containsi: searchTerm } },
+        { slug: { $containsi: searchTerm } },
+        { summary: { $containsi: searchTerm } },
+      ];
     }
 
-    const docQueryLocale = targetLocale === '*' ? '*' : targetLocale;
+    const docQueryLocale = (targetLocale === '*' || Boolean(searchTerm)) ? '*' : targetLocale;
 
     let items = await strapi.documents('api::image.image').findMany({
       locale: docQueryLocale,
@@ -85,9 +89,9 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
       sort: strapiSort,
     });
 
-    if ((!items || items.length === 0) && targetLocale !== 'de') {
+    if ((!items || items.length === 0) && docQueryLocale !== '*') {
       items = await strapi.documents('api::image.image').findMany({
-        locale: 'de',
+        locale: '*',
         status: 'published',
         filters,
         populate: ['creator'],
