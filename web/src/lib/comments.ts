@@ -11,6 +11,40 @@ export interface CommentItem {
   feedSlug: string;
   createdAt?: string;
   isCurrentUser?: boolean;
+  parentId?: string | number | null;
+  depth?: number;
+  repliesCount?: number;
+  replies?: CommentItem[];
+}
+
+export function buildCommentTree(flatComments: CommentItem[]): CommentItem[] {
+  const itemMap = new Map<string | number, CommentItem>();
+  const rootComments: CommentItem[] = [];
+
+  // First pass: clone all items and store in map
+  flatComments.forEach((c) => {
+    const key = c.documentId || c.id;
+    itemMap.set(key, { ...c, replies: [] });
+  });
+
+  // Second pass: link children to parents
+  flatComments.forEach((c) => {
+    const key = c.documentId || c.id;
+    const item = itemMap.get(key);
+    if (!item) return;
+
+    if (c.parentId && itemMap.has(c.parentId)) {
+      const parent = itemMap.get(c.parentId);
+      if (parent) {
+        if (!parent.replies) parent.replies = [];
+        parent.replies.push(item);
+      }
+    } else {
+      rootComments.push(item);
+    }
+  });
+
+  return rootComments;
 }
 
 export async function fetchCommentsForSlug(
@@ -25,17 +59,28 @@ export async function fetchCommentsForSlug(
     const json = await res.json();
     if (!json.success || !Array.isArray(json.data)) return [];
 
-    return json.data.map((item: any) => ({
-      id: item.documentId || item.id,
-      documentId: item.documentId,
-      text: item.text,
-      authorName: item.authorName || 'Gast',
-      authorHandle: item.authorHandle || '@gast',
-      authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-      isEdited: item.isEdited || false,
-      feedSlug: item.feedSlug,
-      createdAt: formatRelativeDate(item.createdAt, lang) || 'Gerade eben',
-    }));
+    const rawList: CommentItem[] = json.data.map((item: any) => {
+      const parentObj = item.parent;
+      const parentId = parentObj ? (parentObj.documentId || parentObj.id) : null;
+
+      return {
+        id: item.documentId || item.id,
+        documentId: item.documentId,
+        text: item.text,
+        authorName: item.authorName || 'Gast',
+        authorHandle: item.authorHandle || '@gast',
+        authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        isEdited: item.isEdited || false,
+        feedSlug: item.feedSlug,
+        createdAt: formatRelativeDate(item.createdAt, lang) || 'Gerade eben',
+        parentId,
+        depth: item.depth || 0,
+        repliesCount: item.repliesCount || 0,
+        replies: [],
+      };
+    });
+
+    return buildCommentTree(rawList);
   } catch (error) {
     console.error('Error in fetchCommentsForSlug:', error);
     return [];
@@ -48,6 +93,7 @@ export async function createCommentInStrapi(params: {
   authorName?: string;
   authorHandle?: string;
   authorAvatar?: string;
+  parentId?: string | number | null;
 }): Promise<CommentItem | null> {
   try {
     const res = await fetch('/api/comments', {
@@ -71,6 +117,10 @@ export async function createCommentInStrapi(params: {
       feedSlug: item.feedSlug,
       createdAt: 'Gerade eben',
       isCurrentUser: true,
+      parentId: params.parentId || null,
+      depth: item.depth || (params.parentId ? 1 : 0),
+      repliesCount: 0,
+      replies: [],
     };
   } catch (error) {
     console.error('Error in createCommentInStrapi:', error);

@@ -7,9 +7,9 @@ export async function GET(request: Request) {
   const slug = searchParams.get('slug');
 
   try {
-    let endpoint = `${STRAPI_URL}/api/comments?sort=createdAt:desc`;
+    let endpoint = `${STRAPI_URL}/api/comments?populate=*&sort=createdAt:asc`;
     if (slug) {
-      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&sort=createdAt:desc`;
+      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&populate=*&sort=createdAt:asc`;
     }
 
     const res = await fetch(endpoint, {
@@ -33,13 +33,49 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { feedSlug, text, authorName, authorHandle, authorAvatar } = body;
+    const { feedSlug, text, authorName, authorHandle, authorAvatar, parentId } = body;
 
     if (!feedSlug || !text) {
       return NextResponse.json({ success: false, error: 'feedSlug and text required' }, { status: 400 });
     }
 
-    const payload = {
+    let calculatedDepth = 0;
+    let parentDocId: string | null = null;
+    let parentAuthorHandle: string | null = null;
+
+    if (parentId) {
+      try {
+        const parentRes = await fetch(`${STRAPI_URL}/api/comments/${parentId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+        });
+        if (parentRes.ok) {
+          const parentJson = await parentRes.json();
+          const pData = parentJson.data;
+          if (pData) {
+            parentDocId = pData.documentId || pData.id;
+            calculatedDepth = (pData.depth || 0) + 1;
+            parentAuthorHandle = pData.authorHandle || null;
+
+            // Increment repliesCount on parent comment
+            await fetch(`${STRAPI_URL}/api/comments/${parentDocId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                data: {
+                  repliesCount: (pData.repliesCount || 0) + 1,
+                },
+              }),
+            }).catch(() => {});
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching parent comment:', e);
+      }
+    }
+
+    const payload: any = {
       data: {
         feedSlug,
         text,
@@ -47,8 +83,14 @@ export async function POST(request: Request) {
         authorHandle: authorHandle || '@gast',
         authorAvatar: authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
         isEdited: false,
+        depth: calculatedDepth,
+        repliesCount: 0,
       },
     };
+
+    if (parentDocId) {
+      payload.data.parent = parentDocId;
+    }
 
     const res = await fetch(`${STRAPI_URL}/api/comments`, {
       method: 'POST',
@@ -59,6 +101,28 @@ export async function POST(request: Request) {
     const json = await res.json();
     if (!res.ok) {
       return NextResponse.json({ success: false, error: json.error }, { status: res.status });
+    }
+
+    // Automated notification trigger for comment reply
+    if (parentDocId && parentAuthorHandle && parentAuthorHandle !== authorHandle) {
+      try {
+        await fetch(`${STRAPI_URL}/api/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: {
+              type: 'comment_reply',
+              title: 'Neue Antwort auf deinen Kommentar',
+              message: `${authorName || 'Jemand'} hat auf deinen Kommentar geantwortet: "${text.substring(0, 45)}${text.length > 45 ? '...' : ''}"`,
+              link: `/video/${feedSlug}`,
+              isRead: false,
+              targetUserHandle: parentAuthorHandle,
+            },
+          }),
+        }).catch(() => {});
+      } catch (e) {
+        console.error('Error triggering comment_reply notification:', e);
+      }
     }
 
     return NextResponse.json({ success: true, data: json.data });

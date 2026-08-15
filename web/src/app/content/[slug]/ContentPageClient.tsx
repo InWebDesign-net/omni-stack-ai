@@ -35,12 +35,13 @@ import { useApp } from '@/context/AppContext';
 import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import { loadStoredAffinityGraph, getStoredJwt, jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
+import CommentItem from '@/components/CommentItem';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
   updateCommentInStrapi,
   deleteCommentFromStrapi,
-  CommentItem,
+  CommentItem as CommentItemType,
 } from '@/lib/comments';
 
 interface ContentPageClientProps {
@@ -109,7 +110,7 @@ export default function ContentPageClient({
   const hasTrackedView = useRef(false);
 
   // Comment section state connected to Strapi
-  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [comments, setComments] = useState<CommentItemType[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [newCommentText, setNewCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -296,13 +297,39 @@ export default function ContentPageClient({
     });
 
     if (result) {
-      setComments([result, ...comments]);
+      await loadComments();
       setNewCommentText('');
       showToast(t.common.comment || 'Kommentar hinzugefügt');
     } else {
       showToast('Ein Fehler ist aufgetreten');
     }
     setIsSubmittingComment(false);
+  };
+
+  const handleAddReply = async (parentId: string | number, text: string): Promise<boolean> => {
+    try {
+      const activeUser = currentUser || userData;
+      const created = await createCommentInStrapi({
+        feedSlug: slug,
+        text,
+        authorName: activeUser?.username || 'Gast',
+        authorHandle: activeUser?.handle || '@gast',
+        authorAvatar: activeUser?.avatarUrl,
+        parentId,
+      });
+
+      if (created) {
+        await loadComments();
+        showToast('Antwort veröffentlicht!');
+        return true;
+      } else {
+        showToast('Fehler beim Veröffentlichen der Antwort.');
+        return false;
+      }
+    } catch (err) {
+      showToast('Fehler beim Senden der Antwort.');
+      return false;
+    }
   };
 
   const handleUpdateComment = async (id: string | number) => {
@@ -601,21 +628,25 @@ export default function ContentPageClient({
                   {t.common.noCommentsYet}
                 </div>
               ) : (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 divide-y divide-slate-800/60">
                   {comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3 bg-[#080e1e]/60 p-4 rounded-2xl border border-white/4">
-                      <img
-                        src={comment.authorAvatar}
-                        alt={comment.authorName}
-                        className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0"
+                    <div key={comment.id} className="pt-3">
+                      <CommentItem
+                        comment={comment}
+                        currentUser={currentUser || userData}
+                        onAddReply={handleAddReply}
+                        onEditComment={async (id, text) => {
+                          const ok = await updateCommentInStrapi(id, text);
+                          if (ok) await loadComments();
+                          return ok;
+                        }}
+                        onDeleteComment={async (id) => {
+                          const ok = await deleteCommentFromStrapi(id);
+                          if (ok) await loadComments();
+                          return ok;
+                        }}
+                        t={t}
                       />
-                      <div className="flex-1 flex flex-col gap-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-white">{comment.authorName}</span>
-                          <span className="text-[10px] font-mono text-[#5c657d]">{comment.createdAt || t.common.justNow}</span>
-                        </div>
-                        <p className="text-xs text-[#dae2fd] leading-relaxed mt-0.5">{comment.text}</p>
-                      </div>
                     </div>
                   ))}
                 </div>

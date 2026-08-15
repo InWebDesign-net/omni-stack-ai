@@ -36,12 +36,13 @@ import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { formatRelativeDate } from '@/lib/date';
+import CommentItem from '@/components/CommentItem';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
   updateCommentInStrapi,
   deleteCommentFromStrapi,
-  CommentItem,
+  CommentItem as CommentItemType,
 } from '@/lib/comments';
 
 // Flatten a Strapi `blocks` field (array of {type, children}) into plain text.
@@ -154,7 +155,7 @@ export default function VideoPageClient({
   const hasTrackedView = useRef(false);
 
   // Comment section state connected to Strapi
-  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [comments, setComments] = useState<CommentItemType[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [newCommentText, setNewCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -342,7 +343,7 @@ export default function VideoPageClient({
       });
 
       if (created) {
-        setComments((prev) => [created, ...prev]);
+        await loadComments();
         setNewCommentText('');
         showToast(t.videoDetail.commentPublished);
       } else {
@@ -352,6 +353,31 @@ export default function VideoPageClient({
       showToast(t.videoDetail.commentCreateError);
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleAddReply = async (parentId: string | number, text: string): Promise<boolean> => {
+    try {
+      const created = await createCommentInStrapi({
+        feedSlug: slug,
+        text,
+        authorName: currentUser?.username || 'Gast',
+        authorHandle: currentUser?.handle || '@gast',
+        authorAvatar: currentUser?.avatarUrl,
+        parentId,
+      });
+
+      if (created) {
+        await loadComments();
+        showToast((t.videoDetail as any)?.replyPublished || 'Antwort veröffentlicht!');
+        return true;
+      } else {
+        showToast(t.videoDetail?.commentPublishError || 'Fehler beim Veröffentlichen der Antwort.');
+        return false;
+      }
+    } catch (err) {
+      showToast(t.videoDetail?.commentCreateError || 'Fehler beim Senden der Antwort.');
+      return false;
     }
   };
 
@@ -634,73 +660,26 @@ export default function VideoPageClient({
                 </p>
               ) : (
                 <div className="space-y-4 pt-2 divide-y divide-slate-800/60">
-                  {comments.map((comment) => {
-                    const isOwner = Boolean(comment.isCurrentUser || (currentUser?.username && comment.authorName === currentUser.username));
-                    const isEditing = editingCommentId === comment.id;
-
-                    return (
-                      <div key={comment.id} className="pt-4 flex items-start gap-3">
-                        <img
-                          src={comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
-                          alt={comment.authorName}
-                          className="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0"
-                        />
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-xs text-slate-200">
-                              {comment.authorName}
-                            </span>
-                            {isOwner && !isEditing && (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingCommentId(comment.id);
-                                    setEditCommentText(comment.text);
-                                  }}
-                                  className="text-slate-400 hover:text-slate-200"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteComment(comment.id)}
-                                  className="text-slate-400 hover:text-rose-400"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-
-                          {isEditing ? (
-                            <div className="flex items-center gap-2 pt-1">
-                              <input
-                                type="text"
-                                value={editCommentText}
-                                onChange={(e) => setEditCommentText(e.target.value)}
-                                className="flex-1 px-3 py-1 bg-slate-950 border border-indigo-500 rounded text-xs text-white"
-                              />
-                              <button
-                                onClick={() => handleEditComment(comment.id)}
-                                className="p-1 rounded bg-indigo-600 text-white hover:bg-indigo-500"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => setEditingCommentId(null)}
-                                className="p-1 rounded bg-slate-800 text-slate-300 hover:text-white"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-slate-300 leading-relaxed">
-                              {comment.text}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="pt-4">
+                      <CommentItem
+                        comment={comment}
+                        currentUser={currentUser}
+                        onAddReply={handleAddReply}
+                        onEditComment={async (id, text) => {
+                          const ok = await updateCommentInStrapi(id, text);
+                          if (ok) await loadComments();
+                          return ok;
+                        }}
+                        onDeleteComment={async (id) => {
+                          const ok = await deleteCommentFromStrapi(id);
+                          if (ok) await loadComments();
+                          return ok;
+                        }}
+                        t={t}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

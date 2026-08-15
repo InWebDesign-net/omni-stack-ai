@@ -41,6 +41,26 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::comment.comment",
+      "inversedBy": "replies"
+    },
+    "replies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "parent"
+    },
+    "depth": {
+      "type": "integer",
+      "default": 0
+    },
+    "repliesCount": {
+      "type": "integer",
+      "default": 0
     }
   }
 }
