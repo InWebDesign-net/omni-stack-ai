@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -114,6 +114,55 @@ export default function Header({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [universalNavOpen, setUniversalNavOpen] = useState(false);
 
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click or Escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (notificationRef.current && !notificationRef.current.contains(target)) {
+        setNotificationDrawerOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setNotificationDrawerOpen(false);
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const toggleNotificationDrawer = () => {
+    setNotificationDrawerOpen((prev) => {
+      const next = !prev;
+      if (next) setUserDropdownOpen(false);
+      return next;
+    });
+  };
+
+  const toggleUserDropdown = () => {
+    setUserDropdownOpen((prev) => {
+      const next = !prev;
+      if (next) setNotificationDrawerOpen(false);
+      return next;
+    });
+  };
+
   const activeLang = propLang || appLang;
   const activeUser = propUser !== undefined ? propUser : appContextUser;
 
@@ -223,9 +272,9 @@ export default function Header({
           </button>
 
           {/* Notification Bell Button */}
-          <div className="relative">
+          <div ref={notificationRef} className="relative">
             <button
-              onClick={() => setNotificationDrawerOpen(!notificationDrawerOpen)}
+              onClick={toggleNotificationDrawer}
               className={`relative flex items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all duration-200 border ${
                 notificationDrawerOpen
                   ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/25'
@@ -249,10 +298,10 @@ export default function Header({
 
           {/* User Account Popover */}
           {activeUser ? (
-            <div className="relative">
+            <div ref={userDropdownRef} className="relative">
               <button
                 type="button"
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                onClick={toggleUserDropdown}
                 className="flex items-center gap-2 glass-surface hover:bg-white/8 p-1 sm:pr-2.5 rounded-xl border border-white/8 hover:border-white/20 transition-all duration-200 group"
               >
                 <img
