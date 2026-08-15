@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   MessageCircle, X, Maximize2, Minimize2, Settings, 
   Search, Send, Sparkles, AlertCircle, Bot, ArrowLeft,
@@ -194,9 +194,12 @@ export default function ChatWidget() {
     }
   };
 
-  const filteredRooms = rooms.filter((r) =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // ⚡ Bolt Optimization: Memoized room filtering to prevent O(N) recalculations on every keystroke in chat input
+  const filteredRooms = useMemo(() => {
+    // ⚡ Bolt Optimization: Calculate lowerQuery once outside the loop instead of N times inside
+    const lowerQuery = searchQuery.toLowerCase();
+    return rooms.filter((r) => r.name.toLowerCase().includes(lowerQuery));
+  }, [rooms, searchQuery]);
 
   // 1. Floating Support Button (Collapsed Launcher)
   if (!isOpen) {
