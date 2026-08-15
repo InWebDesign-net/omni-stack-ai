@@ -53,11 +53,12 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
           const field = match[1];
           const op = match[2];
           if (field) {
+            const parsedValue = value === 'true' ? true : value === 'false' ? false : value;
             if (op) {
               if (!filters[field] || typeof filters[field] !== 'object') filters[field] = {};
-              filters[field][op] = value;
+              filters[field][op] = parsedValue;
             } else {
-              filters[field] = value;
+              filters[field] = parsedValue;
             }
           }
         }
