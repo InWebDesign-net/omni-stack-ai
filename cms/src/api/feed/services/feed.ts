@@ -748,6 +748,32 @@ WICHTIG: Antworte im folgenden JSON-Format:
       }
     } catch (e) {}
 
+    try {
+      const imageMatches = await strapi.documents('api::image.image').findMany({
+        filters: { slug: { $eq: base } },
+        locale: '*',
+      });
+      if (imageMatches && imageMatches.length > 0) {
+        const docId = imageMatches[0].documentId;
+        const imgUpdateData = {
+          isProcessing: false,
+          imageUrl: `/media/images/${base}.webp`,
+          thumbnailUrl: `/media/images/thumbnails/${base}_thumb.webp`,
+        };
+        const imageLocales = new Set(imageMatches.map((img: any) => img.locale || 'en'));
+        for (const loc of imageLocales) {
+          try {
+            await strapi.documents('api::image.image').update({
+              documentId: docId,
+              locale: loc,
+              data: imgUpdateData as any,
+              status: 'published',
+            });
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+
     const updateStrapiItem = async () => {
       try {
         const matches = await strapi.documents('api::feed-item.feed-item').findMany({
