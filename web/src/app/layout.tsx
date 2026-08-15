@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&h=630&q=80',
+        url: '/og_image.jpg',
         width: 1200,
         height: 630,
         alt: 'Omni Media Network Preview',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     description:
       'Entdecke KI-personalisierte Videos, Artikel & PDFs in Echtzeit. Powered by InWebDesign.',
     creator: '@InWebDesign',
-    images: ['https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&h=630&q=80'],
+    images: ['/og_image.jpg'],
   },
   robots: {
     index: true,

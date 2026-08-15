@@ -19,6 +19,7 @@ build
 converter_lxc
 scripts
 agy_setup.md
+web/public/media
 
 # Logs
 npm-debug.log*
