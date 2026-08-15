@@ -192,9 +192,9 @@ export default function VideosPageClient({
       {/* Top Header */}
       <Header />
 
-      <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">
         {/* Page Title & Controls Header */}
-        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-6">
+        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-2xl space-y-4 sm:space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3">
@@ -427,22 +427,22 @@ export default function VideosPageClient({
 
         {/* Video Card Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-6">
             {Array.from({ length: 12 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
-                className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden animate-pulse flex flex-col h-72"
+                className="bg-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl overflow-hidden animate-pulse flex flex-col h-60 sm:h-72"
               >
                 <div className="aspect-video bg-slate-800/80 w-full" />
-                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                  <div className="h-4 bg-slate-800/60 rounded w-3/4" />
+                <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="h-3.5 sm:h-4 bg-slate-800/60 rounded w-3/4" />
                   <div className="h-3 bg-slate-800/40 rounded w-1/2" />
                 </div>
               </div>
             ))}
           </div>
         ) : isError ? (
-          <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-8 text-center space-y-4">
+          <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center space-y-4">
             <p className="text-rose-300 font-medium">{t.videos.noVideosFound}</p>
             <button
               onClick={() => refresh()}
@@ -452,10 +452,10 @@ export default function VideosPageClient({
             </button>
           </div>
         ) : videos.length === 0 ? (
-          <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-12 text-center space-y-4">
-            <Film className="w-12 h-12 text-slate-600 mx-auto" />
-            <h3 className="text-lg font-semibold text-slate-200">{t.videos.noVideosFound}</h3>
-            <p className="text-slate-400 text-sm max-w-md mx-auto">
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-8 sm:p-12 text-center space-y-4">
+            <Film className="w-10 h-10 sm:w-12 sm:h-12 text-slate-600 mx-auto" />
+            <h3 className="text-base sm:text-lg font-semibold text-slate-200">{t.videos.noVideosFound}</h3>
+            <p className="text-slate-400 text-xs sm:text-sm max-w-md mx-auto">
               {t.videos.noVideosSub}
             </p>
             <button
@@ -466,7 +466,7 @@ export default function VideosPageClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-6">
             {videos.map((video: VideoItem) => {
               const creator = video.creator || (video as any).author;
               const creatorName = creator?.username || creator?.handle || (video as any).authorName || "Omni Creator";
@@ -475,7 +475,7 @@ export default function VideosPageClient({
               return (
                 <div
                   key={video.documentId || video.id}
-                  className="group bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-indigo-500/40 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+                  className="group bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
                 >
                   {/* Video Thumbnail & Play Overlay */}
                   <Link href={`/video/${video.slug}`} className="relative aspect-video w-full overflow-hidden block bg-slate-950">
@@ -488,45 +488,45 @@ export default function VideosPageClient({
 
                     {/* Play Icon Badge */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="p-3 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur-md transform group-hover:scale-110 transition-transform">
-                        <Play className="w-6 h-6 fill-white ml-0.5" />
+                      <div className="p-2 sm:p-3 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur-md transform group-hover:scale-110 transition-transform">
+                        <Play className="w-4 h-4 sm:w-6 sm:h-6 fill-white ml-0.5" />
                       </div>
                     </div>
 
                     {/* Duration Badge */}
                     {video.duration && (
-                      <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[10px] font-mono text-slate-200 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-indigo-400" />
+                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[9px] sm:text-[10px] font-mono text-slate-200 flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-400" />
                         <span>{formatDuration(video.duration)}</span>
                       </div>
                     )}
                   </Link>
 
                   {/* Card Details */}
-                  <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-between">
                     <div>
                       <Link
                         href={`/video/${video.slug}`}
-                        className="font-semibold text-slate-100 group-hover:text-indigo-300 text-sm line-clamp-2 transition-colors"
+                        className="font-semibold text-slate-100 group-hover:text-indigo-300 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
                       >
                         {video.title}
                       </Link>
                     </div>
 
                     {/* Creator & Meta */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs text-slate-400">
-                      <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-800/60 text-[11px] sm:text-xs text-slate-400">
+                      <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0">
                         <img
                           src={creatorAvatar}
                           alt={creatorName}
-                          className="w-6 h-6 rounded-full object-cover border border-slate-700 shrink-0"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
                         />
-                        <span className="truncate max-w-[90px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
+                        <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
                       </Link>
 
                       {video.viewsCount !== undefined && (
-                        <div className="flex items-center gap-1 text-slate-400">
-                          <Eye className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-0.5 sm:gap-1 text-slate-400 shrink-0">
+                          <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           <span>{video.viewsCount.toLocaleString()}</span>
                         </div>
                       )}

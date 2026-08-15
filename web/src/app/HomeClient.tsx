@@ -341,17 +341,17 @@ export default function HomeClient() {
           </div>
 
           {isLoadingVideos ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="aspect-video bg-slate-900/60 rounded-2xl animate-pulse border border-slate-800" />
+                <div key={n} className="aspect-video bg-slate-900/60 rounded-xl sm:rounded-2xl animate-pulse border border-slate-800" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {videos.map((item) => (
                 <div
                   key={item.slug || item.id}
-                  className="group relative bg-[#0d1528]/80 rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
+                  className="group relative bg-[#0d1528]/80 rounded-xl sm:rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
                 >
                   <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
                     <img
@@ -362,32 +362,32 @@ export default function HomeClient() {
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-12 h-12 rounded-full bg-indigo-500/90 text-white flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform">
-                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                      <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-500/90 text-white flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform">
+                        <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
                       </div>
                     </div>
 
                     {item.duration > 0 && (
-                      <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
+                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 rounded bg-slate-950/80 text-[9px] sm:text-[11px] font-mono text-slate-200 border border-slate-800">
                         {formatDuration(item.duration)}
                       </div>
                     )}
                   </Link>
 
-                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                  <div className="p-2.5 sm:p-4 space-y-2 flex-1 flex flex-col justify-between">
                     <Link href={`/video/${item.slug}`} className="block group-hover:text-indigo-400 transition-colors">
-                      <h3 className="font-bold text-sm text-slate-100 line-clamp-2 leading-snug">
+                      <h3 className="font-bold text-xs sm:text-sm text-slate-100 line-clamp-2 leading-snug">
                         {item.title}
                       </h3>
                     </Link>
 
-                    <div className="pt-2 flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-800/60">
-                      <div className="flex items-center gap-1.5">
-                        <Eye className="w-3.5 h-3.5 text-slate-500" />
+                    <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 font-mono border-t border-slate-800/60">
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" />
                         <span>{(item.viewsCount || 0).toLocaleString()}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Heart className="w-3.5 h-3.5 text-rose-500/80" />
+                      <div className="flex items-center gap-1">
+                        <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-500/80" />
                         <span>{(item.likesCount || 0).toLocaleString()}</span>
                       </div>
                     </div>

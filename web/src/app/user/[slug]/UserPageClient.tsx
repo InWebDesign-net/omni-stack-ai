@@ -277,7 +277,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 )}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                                 {videos.map((item: any) => {
                                     const thumb = item.thumbnailUrl || '/media/thumbnails/default.png';
                                     const isPrivate = item.visibility === 'private';
@@ -285,7 +285,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                     return (
                                         <div
                                             key={item.slug || item.id}
-                                            className="group relative bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
+                                            className="group relative bg-slate-900/60 rounded-xl sm:rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
                                         >
                                             {/* Thumbnail Container */}
                                             <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
@@ -298,27 +298,27 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                                                 {/* Play Button Overlay */}
                                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div className="w-12 h-12 rounded-full bg-indigo-500/90 text-white flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform">
-                                                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                                                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-500/90 text-white flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform">
+                                                        <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
                                                     </div>
                                                 </div>
 
                                                 {/* Duration Badge */}
                                                 {item.duration > 0 && (
-                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
+                                                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 rounded bg-slate-950/80 text-[9px] sm:text-[11px] font-mono text-slate-200 border border-slate-800">
                                                         {formatDuration(item.duration)}
                                                     </div>
                                                 )}
 
                                                 {/* Visibility Status Badge for Owner */}
                                                 {isOwner && (
-                                                    <div className="absolute top-2.5 left-2.5">
+                                                    <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5">
                                                         {isPrivate ? (
-                                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/90 text-slate-950">
+                                                            <span className="px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-amber-500/90 text-slate-950">
                                                                 {(t as any).userProfile?.visibility?.privateDraft || 'Privat / Entwurf'}
                                                             </span>
                                                         ) : (
-                                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/90 text-slate-950">
+                                                            <span className="px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-emerald-500/90 text-slate-950">
                                                                 {(t as any).userProfile?.visibility?.public || 'Öffentlich'}
                                                             </span>
                                                         )}
@@ -326,20 +326,20 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 )}
                                             </Link>
 
-                                            {/* Content Info */}
-                                            <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                                            {/* Details */}
+                                            <div className="p-2.5 sm:p-4 space-y-2 flex-1 flex flex-col justify-between">
                                                 <Link href={`/video/${item.slug}`} className="block group-hover:text-indigo-400 transition-colors">
-                                                    <h3 className="font-bold text-sm text-slate-100 line-clamp-2 leading-snug">
+                                                    <h3 className="font-bold text-xs sm:text-sm text-slate-100 line-clamp-2 leading-snug">
                                                         {item.title}
                                                     </h3>
                                                 </Link>
 
-                                                <div className="pt-2 flex items-center justify-between text-xs text-slate-400 font-mono border-t border-slate-800/60">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                                <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 font-mono border-t border-slate-800/60">
+                                                    <div className="flex items-center gap-1">
+                                                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" />
                                                         <span>{(item.viewsCount || 0).toLocaleString()}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1.5">
+                                                    <div className="flex items-center gap-1">
                                                         {isOwner && (
                                                             <button
                                                                 type="button"
