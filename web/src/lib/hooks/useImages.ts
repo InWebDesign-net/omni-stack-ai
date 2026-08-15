@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 
 export interface UseImagesParams {
-  currentPage: number;
+  currentPage?: number;
   pageSize?: number | string;
   sort?: string;
   searchTerm?: string;
@@ -64,36 +64,41 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function useImages({
-  currentPage,
-  pageSize = 24,
-  sort = 'createdatasc',
-  searchTerm = '',
-  filterFavorites = '',
-  includedTags = [],
-  excludedTags = [],
-  matchMode = 'any',
-  lang = 'de',
-  enabled = true,
-  fallbackData,
-}: UseImagesParams): UseImagesResult {
-  const queryParams = new URLSearchParams();
-  queryParams.set('page', currentPage.toString());
-  queryParams.set('pageSize', pageSize.toString());
-  queryParams.set('sort', sort);
-  queryParams.set('lang', lang);
+export function useImages(params: UseImagesParams = {}): UseImagesResult {
+  const {
+    currentPage = 1,
+    pageSize = 24,
+    sort = 'createdatasc',
+    searchTerm = '',
+    filterFavorites = '',
+    includedTags = [],
+    excludedTags = [],
+    matchMode = 'any',
+    lang = 'de',
+    enabled = true,
+    fallbackData,
+  } = params || {};
 
-  if (searchTerm.trim()) {
-    queryParams.set('q', searchTerm.trim());
+  const queryParams = new URLSearchParams();
+  queryParams.set('page', (currentPage || 1).toString());
+  queryParams.set('pageSize', (pageSize || 24).toString());
+  queryParams.set('sort', sort || 'createdatasc');
+  queryParams.set('lang', lang || 'de');
+
+  const safeSearch = (searchTerm || '').trim();
+  if (safeSearch) {
+    queryParams.set('q', safeSearch);
   }
   if (filterFavorites) {
     queryParams.set('favsOnly', 'true');
   }
-  if (includedTags.length > 0) {
-    queryParams.set('includetag', includedTags.join(','));
+  const safeIncluded = Array.isArray(includedTags) ? includedTags : [];
+  const safeExcluded = Array.isArray(excludedTags) ? excludedTags : [];
+  if (safeIncluded.length > 0) {
+    queryParams.set('includetag', safeIncluded.join(','));
   }
-  if (excludedTags.length > 0) {
-    queryParams.set('excludetag', excludedTags.join(','));
+  if (safeExcluded.length > 0) {
+    queryParams.set('excludetag', safeExcluded.join(','));
   }
   if (matchMode) {
     queryParams.set('matchmode', matchMode);
