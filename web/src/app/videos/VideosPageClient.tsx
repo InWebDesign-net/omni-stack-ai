@@ -13,12 +13,15 @@ import {
   FilterX,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Play,
   Clock,
   Eye,
   SlidersHorizontal,
   Sparkles,
   Film,
+  Tag,
   X,
   User as UserIcon,
 } from "lucide-react";
@@ -62,6 +65,16 @@ export default function VideosPageClient({
   const { data: allTags = [] } = useSWR<TagCount[]>("/api/video/tags", (url: string) =>
     fetch(url).then((r) => r.json())
   );
+
+  // Local Tag Search & Expand/Collapse state
+  const [tagSearch, setTagSearch] = useState("");
+  const [isTagCloudExpanded, setIsTagCloudExpanded] = useState(false);
+
+  const filteredAllTags = React.useMemo(() => {
+    if (!tagSearch.trim()) return allTags;
+    const q = tagSearch.trim().toLowerCase();
+    return allTags.filter(({ tag }) => tag.toLowerCase().includes(q));
+  }, [allTags, tagSearch]);
 
   // Data fetching via SWR hook
   const {
@@ -269,36 +282,86 @@ export default function VideosPageClient({
 
           {/* Tag filter (same control panel as search/sort) */}
           <div className="pt-4 border-t border-slate-800/60 space-y-3">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
-              <span className="text-sm font-semibold text-slate-200">{t.videos.allTags}</span>
-              {hasTagFilters && (
-                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
-                  {t.videos.activeTags}
-                </span>
-              )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {/* Left Side: Title + Inline Tag Search Box */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <span className="text-sm font-semibold text-slate-200">{t.videos.allTags}</span>
+                  {hasTagFilters && (
+                    <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                      {t.videos.activeTags}
+                    </span>
+                  )}
+                </div>
+
+                {/* Inline Tag Search Input Box */}
+                <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-indigo-500/80 rounded-xl px-2.5 py-1 text-xs max-w-[200px] sm:max-w-[240px] transition-all">
+                  <Search className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Tags durchsuchen..."
+                    value={tagSearch}
+                    onChange={(e) => setTagSearch(e.target.value)}
+                    className="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
+                  />
+                  {tagSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setTagSearch("")}
+                      className="p-0.5 text-slate-400 hover:text-slate-200 shrink-0"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Side: Expand / Collapse Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsTagCloudExpanded((prev) => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-all shrink-0"
+              >
+                <span>{isTagCloudExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}</span>
+                {isTagCloudExpanded ? (
+                  <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5 text-indigo-400" />
+                )}
+              </button>
             </div>
 
-            {/* Tag cloud with fixed 3-line height to prevent layout shifts during loading */}
-            <div className="flex flex-wrap gap-2 min-h-[110px] max-h-[110px] h-[110px] overflow-y-auto pr-1 tag-cloud-scroll">
+            {/* Tag cloud: 1 line (collapsed 38px) vs 4 lines (expanded 148px) */}
+            <div
+              className={`flex flex-wrap gap-2 transition-all duration-300 ease-in-out ${
+                isTagCloudExpanded
+                  ? "min-h-[148px] max-h-[148px] h-[148px] overflow-y-auto pr-1 tag-cloud-scroll"
+                  : "min-h-[38px] max-h-[38px] h-[38px] overflow-hidden"
+              }`}
+            >
               {allTags.length === 0 ? (
-                // 3-line animated skeleton pills matching the exact height of real tag pills
-                Array.from({ length: 12 }).map((_, i) => (
+                // Skeleton pills matching exact height
+                Array.from({ length: isTagCloudExpanded ? 16 : 6 }).map((_, i) => (
                   <div
                     key={`tag-skeleton-${i}`}
                     style={{ width: `${64 + ((i * 17) % 52)}px` }}
                     className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
                   />
                 ))
+              ) : filteredAllTags.length === 0 ? (
+                <div className="text-xs text-slate-500 italic py-1">
+                  Keine Tags für "{tagSearch}" gefunden.
+                </div>
               ) : (
-                allTags.map(({ tag, count }) => {
+                filteredAllTags.map(({ tag, count }) => {
                   const state = includedTags.includes(tag)
                     ? "include"
                     : excludedTags.includes(tag)
                     ? "exclude"
                     : "neutral";
                   const base =
-                    "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer select-none flex items-center gap-1.5";
+                    "px-3 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer select-none flex items-center gap-1.5 shrink-0";
                   const tone =
                     state === "include"
                       ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
@@ -320,7 +383,7 @@ export default function VideosPageClient({
                       className={`${base} ${tone}`}
                     >
                       <span>{tag}</span>
-                      <span className="text-[10px] font-mono opacity-60">{count}</span>
+                      <span className="text-[10px] font-mono opacity-60">({count})</span>
                       {state === "include" && <span className="text-emerald-400">✓</span>}
                       {state === "exclude" && <X className="w-3 h-3 text-rose-400" />}
                     </button>
