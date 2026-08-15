@@ -365,22 +365,6 @@ export default function Header({
                     type="button"
                     onClick={() => {
                       setUserDropdownOpen(false);
-                      if (onOpenVideoUploadModal) {
-                        onOpenVideoUploadModal();
-                      } else {
-                        openVideoUploadModal();
-                      }
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-[#8083ff]/15 transition-all text-left"
-                  >
-                    <Upload className="h-4 w-4 text-[#8083ff]" />
-                    <span>{activeLang === 'de' ? t.header.uploadVideo : t.header.uploadVideo}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
                       if (onOpenCreateModal) {
                         onOpenCreateModal();
                       } else {
