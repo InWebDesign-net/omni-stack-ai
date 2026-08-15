@@ -240,36 +240,6 @@ export default {
         console.error('affinityGraph normalization failed:', e);
       }
 
-      // 3c. One-time migration: favs -> favorites
-      try {
-        const legacyFavs = await strapi.db.query('api::fav.fav').findMany({ populate: ['user', 'video', 'feedItem'] });
-        if (legacyFavs && legacyFavs.length > 0) {
-          console.log(`🔄 Migrating ${legacyFavs.length} legacy fav(s) to favorites...`);
-          for (const oldFav of legacyFavs) {
-            const existing = await strapi.db.query('api::favorite.favorite').findOne({
-              where: {
-                user: oldFav.user?.id,
-                video: oldFav.video?.id,
-                feedItem: oldFav.feedItem?.id,
-              },
-            });
-            if (!existing) {
-              await strapi.db.query('api::favorite.favorite').create({
-                data: {
-                  userIdentifier: oldFav.userIdentifier,
-                  user: oldFav.user?.id,
-                  video: oldFav.video?.id,
-                  feedItem: oldFav.feedItem?.id,
-                },
-              });
-            }
-          }
-          console.log(`✅ Legacy favs migrated successfully!`);
-        }
-      } catch (e) {
-        // Safe catch
-      }
-
       // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)
       const outDir = '/root/media/out';
       const workerSecret = process.env.INGEST_WORKER_SECRET;

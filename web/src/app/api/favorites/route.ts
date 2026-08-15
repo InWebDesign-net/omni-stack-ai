@@ -28,22 +28,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ favoriteVideoIds: [], favoriteFeedItemIds: [] });
     }
 
-    // Try favorites collection first, fallback to favs
-    let favRes = await fetch(
+    const favRes = await fetch(
       getStrapiUrl(`/api/favorites?filters[user][id][$eq]=${authUser.id}&populate[video][fields][0]=id&populate[feedItem][fields][0]=id`),
       {
         headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
       }
     );
-
-    if (!favRes.ok) {
-      favRes = await fetch(
-        getStrapiUrl(`/api/favs?filters[user][id][$eq]=${authUser.id}&populate[video][fields][0]=id&populate[feedItem][fields][0]=id`),
-        {
-          headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
-        }
-      );
-    }
 
     if (!favRes.ok) {
       return NextResponse.json({ favoriteVideoIds: [], favoriteFeedItemIds: [] });
@@ -87,19 +77,9 @@ export async function POST(req: NextRequest) {
       ? `filters[user][id][$eq]=${authUser.id}&filters[video][id][$eq]=${videoId}`
       : `filters[user][id][$eq]=${authUser.id}&filters[feedItem][id][$eq]=${feedItemId}`;
 
-    // Query existing favorite in favorites endpoint
-    let existingRes = await fetch(getStrapiUrl(`/api/favorites?${targetFilter}`), {
+    const existingRes = await fetch(getStrapiUrl(`/api/favorites?${targetFilter}`), {
       headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
     });
-
-    let endpoint = '/api/favorites';
-
-    if (!existingRes.ok) {
-      existingRes = await fetch(getStrapiUrl(`/api/favs?${targetFilter}`), {
-        headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
-      });
-      if (existingRes.ok) endpoint = '/api/favs';
-    }
 
     let isFavorite = false;
     let recordId: string | null = null;
@@ -114,7 +94,7 @@ export async function POST(req: NextRequest) {
 
     if (isFavorite && recordId) {
       // Toggle OFF (Delete favorite)
-      await fetch(getStrapiUrl(`${endpoint}/${recordId}`), {
+      await fetch(getStrapiUrl(`/api/favorites/${recordId}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
       });
@@ -128,7 +108,7 @@ export async function POST(req: NextRequest) {
       if (videoId) payload.video = videoId;
       if (feedItemId) payload.feedItem = feedItemId;
 
-      const createRes = await fetch(getStrapiUrl('/api/favorites'), {
+      await fetch(getStrapiUrl('/api/favorites'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,18 +116,6 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({ data: payload }),
       });
-
-      if (!createRes.ok) {
-        // Fallback to legacy endpoint if favorites table is not ready
-        await fetch(getStrapiUrl('/api/favs'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-          },
-          body: JSON.stringify({ data: payload }),
-        });
-      }
       isFavorite = true;
     }
 

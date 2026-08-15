@@ -113,7 +113,7 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     let favorites: any[] = [];
     try {
       const favRes = await fetch(
-        `${strapiUrl}/api/favs?filters[user][id][$eq]=${targetProfile.id}&populate=video,feedItem&pagination[pageSize]=50`,
+        `${strapiUrl}/api/favorites?filters[user][id][$eq]=${targetProfile.id}&populate=video,feedItem&pagination[pageSize]=50`,
         { headers, cache: 'no-store' }
       );
       if (favRes.ok) {
