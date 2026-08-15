@@ -17,14 +17,14 @@ export async function GET(req: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: res.status });
+      return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: 200 });
     }
 
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching notifications:', error);
-    return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: 500 });
+    return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: 200 });
   }
 }
 

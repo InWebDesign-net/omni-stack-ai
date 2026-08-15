@@ -44,6 +44,19 @@ export default function ChatWidget() {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const debouncedSearchUsers = useDebouncedCallback(async (query: string) => {
+    setIsSearchingUsers(true);
+    const results = await searchEligibleUsers(query);
+    setUserSearchResults(results);
+    setIsSearchingUsers(false);
+  }, 300);
+
+  const handleUserSearchChange = (query: string) => {
+    setUserSearchQuery(query);
+    setIsSearchingUsers(true);
+    debouncedSearchUsers(query);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -155,19 +168,6 @@ export default function ChatWidget() {
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const debouncedSearchUsers = useDebouncedCallback(async (query: string) => {
-    setIsSearchingUsers(true);
-    const results = await searchEligibleUsers(query);
-    setUserSearchResults(results);
-    setIsSearchingUsers(false);
-  }, 300);
-
-  const handleUserSearchChange = (query: string) => {
-    setUserSearchQuery(query);
-    setIsSearchingUsers(true);
-    debouncedSearchUsers(query);
   };
 
   const handleStartAiChat = async () => {
