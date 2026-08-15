@@ -300,7 +300,7 @@ export default function VideosPageClient({
                   <Search className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" />
                   <input
                     type="text"
-                    placeholder="Tags durchsuchen..."
+                    placeholder={t.videos?.searchTagsPlaceholder || "Tags durchsuchen..."}
                     value={tagSearch}
                     onChange={(e) => setTagSearch(e.target.value)}
                     className="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
@@ -323,7 +323,7 @@ export default function VideosPageClient({
                 onClick={() => setIsTagCloudExpanded((prev) => !prev)}
                 className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-all shrink-0"
               >
-                <span>{isTagCloudExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}</span>
+                <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : (t.common?.showMore || "Mehr anzeigen")}</span>
                 {isTagCloudExpanded ? (
                   <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
                 ) : (
@@ -351,7 +351,7 @@ export default function VideosPageClient({
                 ))
               ) : filteredAllTags.length === 0 ? (
                 <div className="text-xs text-slate-500 italic py-1">
-                  Keine Tags für "{tagSearch}" gefunden.
+                  {(t.videos?.noTagsFound || 'Keine Tags für "{query}" gefunden.').replace('{query}', tagSearch)}
                 </div>
               ) : (
                 filteredAllTags.map(({ tag, count }) => {

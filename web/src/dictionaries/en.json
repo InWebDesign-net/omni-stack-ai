@@ -90,7 +90,9 @@
     "activeTags": "Active tag filters",
     "allTags": "All tags",
     "noVideosFound": "No videos found",
-    "noVideosSub": "No video entries were found for your current search and filter criteria."
+    "noVideosSub": "No video entries were found for your current search and filter criteria.",
+    "searchTagsPlaceholder": "Search tags...",
+    "noTagsFound": "No tags found for \"{query}\"."
   },
   "videoDetail": {
     "comments": "Comments",
