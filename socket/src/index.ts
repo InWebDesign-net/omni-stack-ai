@@ -8,7 +8,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET || '';
+if (!process.env.JWT_SECRET) {
+  console.error('🚨 CRITICAL ERROR: JWT_SECRET environment variable is not set. Refusing to start in an insecure state.');
+  process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((o) => o.trim());
