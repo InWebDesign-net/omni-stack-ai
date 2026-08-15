@@ -304,6 +304,7 @@ export default function HomeClient() {
               >
                 <div className="flex items-center gap-3">
                   <div className="relative">
+                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                     <img
                       src={channel.avatarUrl}
                       alt={channel.username}
@@ -372,6 +373,7 @@ export default function HomeClient() {
                   className="group relative bg-[#0d1528]/80 rounded-xl sm:rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
                 >
                   <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
+                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
                     <img
                       src={item.thumbnailUrl || '/media/thumbnails/default.png'}
                       alt={item.title}
