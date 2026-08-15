@@ -7,7 +7,11 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const uploadId = (formData.get('uploadId') as string) || `upload_${Date.now()}`;
+    const rawUploadId = (formData.get('uploadId') as string) || `upload_${Date.now()}`;
+    const uploadId = rawUploadId.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!uploadId) {
+      return NextResponse.json({ error: 'Invalid uploadId' }, { status: 400 });
+    }
     const chunkIndex = parseInt((formData.get('chunkIndex') as string) || '0', 10);
     const totalChunks = parseInt((formData.get('totalChunks') as string) || '1', 10);
     const title = (formData.get('title') as string) || 'Neues Video';
