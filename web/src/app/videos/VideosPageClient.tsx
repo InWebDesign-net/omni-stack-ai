@@ -224,7 +224,7 @@ export default function VideosPageClient({
                 className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/20 shrink-0"
               >
                 <Upload className="w-4 h-4" />
-                <span>Video hochladen</span>
+                <span>{t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}</span>
               </button>
 
               {hasActiveFilters && (

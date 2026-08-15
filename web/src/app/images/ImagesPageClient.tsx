@@ -162,7 +162,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                 className="px-4 py-2.5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-teal-500/20"
               >
                 <Upload className="w-4 h-4" />
-                <span>Bild hochladen</span>
+                <span>{t.upload?.uploadImage || (lang === 'de' ? 'Bild hochladen' : 'Upload Image')}</span>
               </button>
 
               {hasActiveFilters && (

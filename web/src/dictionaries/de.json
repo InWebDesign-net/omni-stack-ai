@@ -386,5 +386,29 @@
       "subtitle": "Omni Network – Hyper-Personalisiertes KI Mediennetzwerk",
       "rights": "© 2026 InWebDesign. Alle Rechte vorbehalten."
     }
+  },
+  "upload": {
+    "uploadVideo": "Video hochladen",
+    "uploadImage": "Bild hochladen",
+    "selectVideosSubtitle": "Wähle Videos zum Hochladen aus",
+    "selectImagesSubtitle": "Wähle ein oder mehrere Bilder aus",
+    "dragVideosHere": "Video-Dateien hier hineinziehen",
+    "dragImagesHere": "Bilder hier hineinziehen",
+    "orClickVideos": "oder klicken um Dateien auszuwählen (MP4, MOV, MKV)",
+    "orClickImages": "oder klicken um Dateien auszuwählen (JPG, PNG, WebP)",
+    "processing": "Uploads in Arbeit...",
+    "completedMin": "Uploads abgeschlossen",
+    "clickToOpenManager": "Klicken zum Öffnen des Managers",
+    "managerTitle": "Medien-Upload Manager",
+    "managerSubtitle": "Zentraler Upload für Videos, Shorts & Bilder (WebP + Converter)",
+    "dropHere": "Videos oder Bilder hier hineinziehen",
+    "dropHint": "Unterstützt MP4, MOV, MKV, WebM sowie JPG, PNG, WebP (automatische Konvertierung)",
+    "queueLabel": "Upload-Warteschlange",
+    "titlePlaceholder": "Titel eingeben...",
+    "queued": "Eingereiht",
+    "uploading": "Lädt hoch",
+    "transcoding": "HLS Transcoding...",
+    "completed": "Abgeschlossen & Veröffentlicht",
+    "error": "Fehler beim Upload"
   }
 }

@@ -17,7 +17,7 @@ export default function VideoUploadModal({
   isOpen,
   onClose,
 }: VideoUploadModalProps) {
-  const { t } = useApp();
+  const { t, lang } = useApp();
   const { addFiles, openManager } = useUploadManager();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,8 +51,8 @@ export default function VideoUploadModal({
               <FileVideo className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white">Video hochladen</h3>
-              <p className="text-xs text-[#9ba4bf]">Wähle Videos zum Hochladen aus</p>
+              <h3 className="text-base font-extrabold text-white">{t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}</h3>
+              <p className="text-xs text-[#9ba4bf]">{t.upload?.selectVideosSubtitle || (lang === 'de' ? 'Wähle Videos zum Hochladen aus' : 'Select videos to upload')}</p>
             </div>
           </div>
           <button
@@ -74,14 +74,14 @@ export default function VideoUploadModal({
           <input
             ref={fileInputRef}
             type="file"
-            accept="video/*,.mp4,.mov,.mkv,.webm"
+            accept="video/*,.mp4,.mov,.mkv,.webm,.avi,.m4v,.ts,.flv,.wmv"
             multiple
             className="hidden"
             onChange={(e) => handleFileChange(e.target.files)}
           />
           <Upload className="h-8 w-8 text-indigo-400 mb-3" />
-          <h4 className="text-sm font-bold text-white mb-1">Video-Dateien hier hineinziehen</h4>
-          <p className="text-xs text-[#9ba4bf]">oder klicken um Dateien auszuwählen (MP4, MOV, MKV)</p>
+          <h4 className="text-sm font-bold text-white mb-1">{t.upload?.dragVideosHere || (lang === 'de' ? 'Video-Dateien hier hineinziehen' : 'Drag & drop video files here')}</h4>
+          <p className="text-xs text-[#9ba4bf]">{t.upload?.orClickVideos || (lang === 'de' ? 'oder klicken um Dateien auszuwählen (MP4, MOV, MKV)' : 'or click to select files (MP4, MOV, MKV)')}</p>
         </div>
       </div>
     </div>

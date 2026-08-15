@@ -14,7 +14,7 @@ export default function ImageUploadModal({
   isOpen,
   onClose,
 }: ImageUploadModalProps) {
-  const { t } = useApp();
+  const { t, lang } = useApp();
   const { addFiles, openManager } = useUploadManager();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,8 +48,8 @@ export default function ImageUploadModal({
               <ImageIcon className="h-5 w-5 text-teal-400" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white">Bilder hochladen</h3>
-              <p className="text-xs text-[#9ba4bf]">Wähle ein oder mehrere Bilder aus</p>
+              <h3 className="text-base font-extrabold text-white">{t.upload?.uploadImage || (lang === 'de' ? 'Bilder hochladen' : 'Upload Images')}</h3>
+              <p className="text-xs text-[#9ba4bf]">{t.upload?.selectImagesSubtitle || (lang === 'de' ? 'Wähle ein oder mehrere Bilder aus' : 'Select one or more images')}</p>
             </div>
           </div>
           <button
@@ -71,14 +71,14 @@ export default function ImageUploadModal({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,.jpg,.jpeg,.png,.webp,.gif"
+            accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.svg,.heic,.avif"
             multiple
             className="hidden"
             onChange={(e) => handleFileChange(e.target.files)}
           />
           <Upload className="h-8 w-8 text-teal-400 mb-3" />
-          <h4 className="text-sm font-bold text-white mb-1">Bilder hier hineinziehen</h4>
-          <p className="text-xs text-[#9ba4bf]">oder klicken um Dateien auszuwählen (JPG, PNG, WebP)</p>
+          <h4 className="text-sm font-bold text-white mb-1">{t.upload?.dragImagesHere || (lang === 'de' ? 'Bilder hier hineinziehen' : 'Drag & drop images here')}</h4>
+          <p className="text-xs text-[#9ba4bf]">{t.upload?.orClickImages || (lang === 'de' ? 'oder klicken um Dateien auszuwählen (JPG, PNG, WebP)' : 'or click to select files (JPG, PNG, WebP)')}</p>
         </div>
       </div>
     </div>
