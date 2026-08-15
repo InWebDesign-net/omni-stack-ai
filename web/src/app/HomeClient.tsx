@@ -3,10 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Users, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
+import { useImages } from '@/lib/hooks/useImages';
 
 interface VideoItem {
   id: string | number;
@@ -42,6 +43,12 @@ export default function HomeClient() {
   const [channels, setChannels] = useState<ChannelItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(true);
+
+  const { images, isLoading: isLoadingImages } = useImages({
+    currentPage: 1,
+    pageSize: 6,
+    lang,
+  });
 
   const channelScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -176,7 +183,6 @@ export default function HomeClient() {
       <Header />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        {/* Section 1: Hero AI Search & Intent Prompt */}
         <section className="relative rounded-3xl bg-gradient-to-b from-[#0d1528] via-[#080e1e] to-[#080e1e] border border-white/10 p-8 sm:p-12 shadow-2xl overflow-hidden text-center space-y-6">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
           
@@ -193,7 +199,6 @@ export default function HomeClient() {
             {t.home?.heroSubtitle || 'Nutze die KI-Suche oder stöbere in un-gefiltertem Content direkt aus dem Omni Network.'}
           </p>
 
-          {/* Search Box Form */}
           <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto">
             <div className="relative flex items-center bg-[#0b1222] border border-white/15 rounded-2xl p-2 shadow-2xl focus-within:border-indigo-500 transition-all">
               <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
@@ -225,7 +230,6 @@ export default function HomeClient() {
               </button>
             </div>
 
-            {/* Quick Topic Suggestion Badges */}
             <div className="mt-4 flex items-center justify-center flex-wrap gap-2 text-xs">
               {[
                 {
@@ -257,7 +261,6 @@ export default function HomeClient() {
           </form>
         </section>
 
-        {/* Section 2: Creator Channels Carousel (Prioritizing Creators with New Content) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -301,7 +304,6 @@ export default function HomeClient() {
               >
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                     <img
                       src={channel.avatarUrl}
                       alt={channel.username}
@@ -335,7 +337,6 @@ export default function HomeClient() {
           </div>
         </section>
 
-        {/* Section 3: Latest Videos Grid */}
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -371,7 +372,6 @@ export default function HomeClient() {
                   className="group relative bg-[#0d1528]/80 rounded-xl sm:rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
                 >
                   <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
-                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
                     <img
                       src={item.thumbnailUrl || '/media/thumbnails/default.png'}
                       alt={item.title}
@@ -416,9 +416,66 @@ export default function HomeClient() {
             </div>
           )}
         </section>
+
+        <section className="space-y-6 pt-4 border-t border-slate-800/80">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-extrabold text-lg text-white">Aktuelle Bilder & Galerie im Network</h2>
+                <p className="text-xs text-slate-400">Entdecke Kunstwerke, Renderings & Fotografie im WebP-Format</p>
+              </div>
+            </div>
+
+            <Link
+              href="/images"
+              className="text-xs font-bold text-teal-400 hover:text-teal-300 flex items-center gap-1 transition-colors"
+            >
+              <span>Alle Bilder ansehen</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {isLoadingImages ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="aspect-[4/3] bg-slate-900/60 rounded-xl animate-pulse border border-slate-800" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              {images.slice(0, 6).map((img) => (
+                <Link
+                  key={img.id || img.documentId}
+                  href={`/image/${img.slug}`}
+                  className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                >
+                  <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
+                    <img
+                      src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
+                      alt={img.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                  </div>
+                  <div className="p-2.5 flex flex-col gap-1">
+                    <h3 className="font-bold text-xs text-white group-hover:text-teal-400 transition-colors line-clamp-1">
+                      {img.title}
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-mono truncate">
+                      {img.creator?.username || 'Creator'}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </main>
 
-      {/* Footer */}
       <footer className="w-full border-t border-slate-800/80 py-8 bg-[#050914] text-xs text-slate-500 text-center space-y-2">
         <p>{t.home?.footer?.subtitle || 'Omni Network – Hyper-Personalisiertes KI Mediennetzwerk'}</p>
         <p>{t.home?.footer?.rights || '© 2026 InWebDesign. Alle Rechte vorbehalten.'}</p>

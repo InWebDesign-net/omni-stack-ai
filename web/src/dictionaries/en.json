@@ -38,9 +38,10 @@
     "share": "Share"
   },
   "header": {
-    "searchPlaceholder": "What do you want to explore today?",
+    "searchPlaceholder": "What would you like to discover today?",
     "feed": "My Feed",
     "videos": "Videos",
+    "images": "Images & Gallery",
     "shorts": "Shorts",
     "login": "Sign In",
     "register": "Register",
