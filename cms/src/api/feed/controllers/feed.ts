@@ -215,6 +215,65 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
+  async createImage(ctx: any) {
+    try {
+      const { title, slug, tags, userId, summary, visibility } = ctx.request.body || {};
+      if (!title || !slug) {
+        return ctx.badRequest('Title and slug are required');
+      }
+
+      let targetUserId = userId || ctx.state?.user?.id || null;
+      if (!targetUserId) {
+        const defaultUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+          where: { email: 'demotech@inwebdesign.net' },
+        });
+        if (defaultUser) targetUserId = defaultUser.id;
+      }
+
+      const summaryText = summary || `${title} — Bildinhalt im Omni Network.`;
+      const imageData: any = {
+        title,
+        slug,
+        summary: summaryText,
+        tags: (tags && Array.isArray(tags) && tags.length > 0) ? tags : ['Architektur', 'Fotografie', 'Bild'],
+        viewsCount: 0,
+        likesCount: 0,
+        commentsCount: 0,
+        imageUrl: `/media/images/${slug}.webp`,
+        thumbnailUrl: `/media/images/thumbnails/${slug}_thumb.webp`,
+        isProcessing: true,
+        creator: targetUserId,
+        visibility: visibility || 'public',
+      };
+
+      const createdEn = await strapi.documents('api::image.image').create({
+        data: imageData,
+        locale: 'en',
+        status: 'published',
+      });
+
+      try {
+        await strapi.documents('api::image.image').update({
+          documentId: createdEn.documentId,
+          locale: 'de',
+          data: imageData,
+          status: 'published',
+        });
+      } catch (deErr: any) {
+        console.error('Failed to create DE locale for image:', deErr.message);
+      }
+
+      return ctx.send({
+        success: true,
+        documentId: createdEn.documentId,
+        slug,
+        isProcessing: true,
+      });
+    } catch (err: any) {
+      return ctx.badRequest('Create Image Error', { error: err.message });
+    }
+  },
+
   async handleInteraction(ctx: any) {
     try {
       // Identity comes from the JWT only — a spoofed body userId must never

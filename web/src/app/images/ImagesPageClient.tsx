@@ -1,0 +1,413 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Header from '@/components/Header';
+import ImageUploadModal from '@/components/ImageUploadModal';
+import { useApp } from '@/context/AppContext';
+import { useImages, useImageTags, ImageItem } from '@/lib/hooks/useImages';
+import {
+  Search,
+  FilterX,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon,
+  Heart,
+  Eye,
+  SlidersHorizontal,
+  Sparkles,
+  Tag,
+  X,
+  Upload,
+  User as UserIcon,
+} from 'lucide-react';
+
+export default function ImagesPageClient({ initialParams }: { initialParams?: any }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { currentUser, lang, t } = useApp();
+  const perPage = 24;
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  const searchTerm = searchParams.get('q') || '';
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const sort = searchParams.get('sort') || 'createdatasc';
+  const filterFavorites = searchParams.get('fav') || 'false';
+
+  const [searchInput, setSearchInput] = useState(searchTerm);
+
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
+
+  const includedTags = (searchParams.get('includetag') || '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const excludedTags = (searchParams.get('excludetag') || '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const matchMode = (searchParams.get('matchmode') || 'any') === 'all' ? 'all' : 'any';
+
+  const { tags: allTags = [] } = useImageTags();
+
+  const [tagSearch, setTagSearch] = useState('');
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  const updateURL = (newParams: Record<string, string | null>) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null || value === '' || value === 'false') {
+        current.delete(key);
+      } else {
+        current.set(key, value);
+      }
+    });
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    router.push(`${pathname}${query}`);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateURL({ q: searchInput, page: '1' });
+  };
+
+  const clearSearch = () => {
+    setSearchInput('');
+    updateURL({ q: null, page: '1' });
+  };
+
+  const handleSortChange = (newSort: string) => {
+    updateURL({ sort: newSort, page: '1' });
+  };
+
+  const toggleIncludeTag = (tag: string) => {
+    const isIncluded = includedTags.includes(tag);
+    let nextIncluded: string[];
+    let nextExcluded = excludedTags.filter((t) => t !== tag);
+
+    if (isIncluded) {
+      nextIncluded = includedTags.filter((t) => t !== tag);
+    } else {
+      nextIncluded = [...includedTags, tag];
+    }
+    updateURL({
+      includetag: nextIncluded.length > 0 ? nextIncluded.join(',') : null,
+      excludetag: nextExcluded.length > 0 ? nextExcluded.join(',') : null,
+      page: '1',
+    });
+  };
+
+  const resetAllFilters = () => {
+    setSearchInput('');
+    router.push(pathname);
+  };
+
+  const filteredTagList = allTags.filter((tc) =>
+    tc.tag.toLowerCase().includes(tagSearch.toLowerCase())
+  );
+  const displayedTags = showAllTags ? filteredTagList : filteredTagList.slice(0, 16);
+
+  const { images, total, isLoading } = useImages({
+    currentPage,
+    pageSize: perPage,
+    sort,
+    searchTerm,
+    filterFavorites: filterFavorites === 'true' ? 'true' : '',
+    includedTags,
+    excludedTags,
+    matchMode,
+    lang,
+  });
+
+  const totalPages = Math.ceil(total / perPage);
+  const hasActiveFilters =
+    searchTerm !== '' ||
+    includedTags.length > 0 ||
+    excludedTags.length > 0 ||
+    filterFavorites === 'true';
+
+  return (
+    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
+      <Header />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Top Control Header */}
+        <div className="flex flex-col gap-6 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                  <ImageIcon className="w-5 h-5" />
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  Omni Galerie & Fotografie
+                </h1>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-400">
+                Entdecke hochauflösende Kunstwerke, Fotografien & Renderings im WebP-Format.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-teal-500/20"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Bild hochladen</span>
+              </button>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={resetAllFilters}
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all shadow-sm shrink-0"
+                >
+                  <FilterX className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{t.common.resetFilters}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Search & Sort Control Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
+            {/* Search Input Form */}
+            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                id="images-search-input"
+                type="text"
+                aria-label={t.common.searchPlaceholder}
+                placeholder="Bilder, Renderings & Fotografien suchen..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 outline-none focus:outline-none focus:border-teal-500 transition-all"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  aria-label="Suche zurücksetzen"
+                  title="Suche zurücksetzen"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </form>
+
+            <div className="flex items-center gap-3">
+              {/* Sort Selector Dropdown */}
+              <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5">
+                <SlidersHorizontal className="w-4 h-4 text-teal-400 shrink-0" />
+                <select
+                  id="images-sort-select"
+                  aria-label="Sortierung"
+                  value={sort}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
+                >
+                  <option value="createdatasc" className="bg-slate-900 text-slate-200">
+                    ✨ Neueste Bilder (Default)
+                  </option>
+                  <option value="trending" className="bg-slate-900 text-slate-200">
+                    🔥 Trending (Beliebt & Neu)
+                  </option>
+                  <option value="affinity" className="bg-slate-900 text-slate-200">
+                    🎯 KI-Interessen Profil (Personalized)
+                  </option>
+                  <option value="mostliked" className="bg-slate-900 text-slate-200">
+                    ❤️ Meist-Favorisiert / Liked
+                  </option>
+                  <option value="mostcommented" className="bg-slate-900 text-slate-200">
+                    💬 Meist-Kommentiert (Aktivität)
+                  </option>
+                  <option value="createdatdesc" className="bg-slate-900 text-slate-200">
+                    ⌛ Älteste zuerst
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Multi-Tag Filter Cloud */}
+          {allTags.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-slate-800/60">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-3.5 h-3.5 text-teal-400" />
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Kategorien & Tags Filter
+                  </span>
+                  {includedTags.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-mono border border-teal-500/30">
+                      {includedTags.length} aktiv
+                    </span>
+                  )}
+                </div>
+
+                {allTags.length > 16 && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Tag suchen..."
+                      value={tagSearch}
+                      onChange={(e) => setTagSearch(e.target.value)}
+                      className="px-2.5 py-1 bg-slate-950/80 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                    />
+                    <button
+                      onClick={() => setShowAllTags(!showAllTags)}
+                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-teal-400 font-medium transition-colors"
+                    >
+                      <span>{showAllTags ? 'Weniger anzeigen' : `Alle (${allTags.length})`}</span>
+                      {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {displayedTags.map(({ tag, count }) => {
+                  const isInc = includedTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => toggleIncludeTag(tag)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                        isInc
+                          ? 'bg-teal-500 text-slate-950 shadow-md shadow-teal-500/20 font-bold scale-[1.02]'
+                          : 'bg-slate-950/70 border border-slate-800 text-slate-300 hover:border-teal-500/50 hover:text-white'
+                      }`}
+                    >
+                      <span>#{tag}</span>
+                      <span className={`text-[10px] font-mono ${isInc ? 'text-slate-900' : 'text-slate-500'}`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Gallery Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="bg-slate-900/60 border border-slate-800/80 rounded-2xl h-56 animate-pulse" />
+            ))}
+          </div>
+        ) : images.length === 0 ? (
+          <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center space-y-4">
+            <Sparkles className="w-12 h-12 text-teal-400/40 mx-auto animate-pulse" />
+            <h3 className="text-lg font-bold text-white">Keine Bilder gefunden</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Versuche deine Filter zurückzusetzen oder lade dein erstes eigenes Bild hoch!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {images.map((img) => (
+              <Link
+                key={img.id || img.documentId}
+                href={`/image/${img.slug}`}
+                className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+              >
+                {/* Aspect ratio image container */}
+                <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
+                  <img
+                    src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
+                    alt={img.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+
+                  {/* Top Stats Badges */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono text-white border border-white/10">
+                    <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+                    <span>{img.likesCount || 0}</span>
+                  </div>
+
+                  {/* Creator Avatar Badge */}
+                  {img.creator && (
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                      <img
+                        src={img.creator.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
+                        alt={img.creator.username || 'Creator'}
+                        className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0"
+                      />
+                      <span className="text-[11px] font-semibold text-white drop-shadow truncate max-w-[120px]">
+                        {img.creator.username || 'Creator'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Info */}
+                <div className="p-4 flex flex-col gap-1.5 flex-1">
+                  <h3 className="font-extrabold text-sm text-white group-hover:text-teal-400 transition-colors line-clamp-1">
+                    {img.title}
+                  </h3>
+                  {img.summary && (
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                      {img.summary}
+                    </p>
+                  )}
+                  {img.tags && img.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-auto pt-2">
+                      {img.tags.slice(0, 3).map((t) => (
+                        <span
+                          key={t}
+                          className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300 font-medium"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-6">
+            <button
+              disabled={currentPage <= 1}
+              onClick={() => updateURL({ page: (currentPage - 1).toString() })}
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 disabled:opacity-40 text-slate-200 transition-all"
+              aria-label="Vorherige Seite"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono font-bold text-teal-400">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={() => updateURL({ page: (currentPage + 1).toString() })}
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 disabled:opacity-40 text-slate-200 transition-all"
+              aria-label="Nächste Seite"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </main>
+
+      <ImageUploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
+    </div>
+  );
+}

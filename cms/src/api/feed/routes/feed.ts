@@ -66,6 +66,11 @@ export default {
     },
     {
       method: 'POST',
+      path: '/feed/create-image',
+      handler: 'feed.createImage',
+    },
+    {
+      method: 'POST',
       path: '/feed/interaction',
       handler: 'feed.handleInteraction',
     },

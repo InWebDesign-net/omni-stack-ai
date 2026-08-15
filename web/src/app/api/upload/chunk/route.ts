@@ -32,18 +32,21 @@ export async function POST(req: Request) {
 
     if (isComplete) {
       // Generate clean, unique collision-free slug from title & timestamp/hash
+      const isImage = mediaType === 'image';
+      const defaultPrefix = isImage ? 'image' : 'video';
       const baseSlug = title
         .toLowerCase()
         .trim()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '') || 'video';
+        .replace(/^-+|-+$/g, '') || defaultPrefix;
       
       const uniqueHash = Math.random().toString(36).substring(2, 7);
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}-${uniqueHash}`;
       
-      const finalRawPath = path.join(inDir, `${uniqueSlug}.mp4`);
+      const rawExt = isImage ? '.img' : '.mp4';
+      const finalRawPath = path.join(inDir, `${uniqueSlug}${rawExt}`);
       
-      // Rename temp file to final raw video path in /root/media/in
+      // Rename temp file to final raw path in /root/media/in
       if (fs.existsSync(finalRawPath)) {
         fs.unlinkSync(finalRawPath);
       }
@@ -53,7 +56,8 @@ export async function POST(req: Request) {
       const userId = userIdStr ? parseInt(userIdStr, 10) : null;
 
       const tagsStr = formData.get('tags') as string | null;
-      let parsedTags: string[] = ['Wissenschaft', 'Technologie', 'Video'];
+      let defaultTags = isImage ? ['Architektur', 'Fotografie', 'Bild'] : ['Wissenschaft', 'Technologie', 'Video'];
+      let parsedTags: string[] = defaultTags;
       if (tagsStr) {
         try {
           const raw = JSON.parse(tagsStr);
@@ -64,9 +68,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // Create bilingual Video entity via Strapi backend endpoint
-      // This calls the feed controller's createVideo action which uses the Document Service API
-      // to properly create EN + DE locale entries linked via documentId, both published.
+      // Create bilingual entity via Strapi backend endpoint
       const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
       const authHeader = req.headers.get('authorization');
       const headers: Record<string, string> = {
@@ -78,9 +80,10 @@ export async function POST(req: Request) {
         headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
       }
 
-      let createdVideoDocId = null;
+      let createdDocId = null;
+      const createEndpoint = isImage ? `${strapiUrl}/api/feed/create-image` : `${strapiUrl}/api/feed/create-video`;
       try {
-        const createRes = await fetch(`${strapiUrl}/api/feed/create-video`, {
+        const createRes = await fetch(createEndpoint, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -92,19 +95,19 @@ export async function POST(req: Request) {
         });
         if (createRes.ok) {
           const createData = await createRes.json();
-          createdVideoDocId = createData?.documentId || null;
+          createdDocId = createData?.documentId || null;
         }
       } catch (e) {
-        console.error('Failed to create bilingual video entry:', e);
+        console.error('Failed to create bilingual media entry:', e);
       }
 
       return NextResponse.json({
         success: true,
         isComplete: true,
         slug: uniqueSlug,
-        documentId: createdVideoDocId,
+        documentId: createdDocId,
         isProcessing: true,
-        message: 'Upload abgeschlossen. Video wurde zur Konvertierung eingereiht.',
+        message: `Upload abgeschlossen. ${isImage ? 'Bild' : 'Video'} wurde zur Konvertierung eingereiht.`,
       });
     }
 

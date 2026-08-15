@@ -1,0 +1,147 @@
+import useSWR from 'swr';
+
+export interface UseImagesParams {
+  currentPage: number;
+  pageSize?: number | string;
+  sort?: string;
+  searchTerm?: string;
+  filterFavorites?: string;
+  includedTags?: string[];
+  excludedTags?: string[];
+  matchMode?: 'any' | 'all';
+  lang?: 'de' | 'en';
+  enabled?: boolean;
+  fallbackData?: any;
+}
+
+export interface ImageAuthor {
+  id?: number;
+  documentId?: string;
+  username?: string;
+  handle?: string;
+  avatarUrl?: string;
+  bio?: string;
+}
+
+export interface ImageItem {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  summary?: string;
+  content?: string;
+  tags?: string[];
+  viewsCount?: number;
+  likesCount?: number;
+  commentsCount?: number;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  createdAt?: string;
+  creator?: ImageAuthor;
+  isProcessing?: boolean;
+}
+
+export interface UseImagesResult {
+  images: ImageItem[];
+  total: number;
+  isLoading: boolean;
+  isError: boolean;
+  refresh: () => void;
+}
+
+const fetcher = async (url: string) => {
+  const jwt = typeof window !== 'undefined' ? localStorage.getItem('omni_jwt') : null;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (jwt) {
+    headers['Authorization'] = `Bearer ${jwt}`;
+  }
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    throw new Error('Failed to fetch images');
+  }
+  return res.json();
+};
+
+export function useImages({
+  currentPage,
+  pageSize = 24,
+  sort = 'createdatasc',
+  searchTerm = '',
+  filterFavorites = '',
+  includedTags = [],
+  excludedTags = [],
+  matchMode = 'any',
+  lang = 'de',
+  enabled = true,
+  fallbackData,
+}: UseImagesParams): UseImagesResult {
+  const queryParams = new URLSearchParams();
+  queryParams.set('page', currentPage.toString());
+  queryParams.set('pageSize', pageSize.toString());
+  queryParams.set('sort', sort);
+  queryParams.set('lang', lang);
+
+  if (searchTerm.trim()) {
+    queryParams.set('q', searchTerm.trim());
+  }
+  if (filterFavorites) {
+    queryParams.set('favsOnly', 'true');
+  }
+  if (includedTags.length > 0) {
+    queryParams.set('includetag', includedTags.join(','));
+  }
+  if (excludedTags.length > 0) {
+    queryParams.set('excludetag', excludedTags.join(','));
+  }
+  if (matchMode) {
+    queryParams.set('matchmode', matchMode);
+  }
+
+  if (sort === 'affinity' && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('omni_user_interest_profile');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const topTopics = Object.entries(parsed.topics || {})
+          .sort((a: any, b: any) => b[1].score - a[1].score)
+          .slice(0, 10)
+          .map(([t]) => t);
+        if (topTopics.length > 0) {
+          queryParams.set('userTopics', topTopics.join(','));
+        }
+      }
+    } catch (e) {}
+  }
+
+  const url = enabled ? `/api/image/list?${queryParams.toString()}` : null;
+
+  const { data, error, isLoading, mutate } = useSWR(url, fetcher, {
+    fallbackData,
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+  });
+
+  return {
+    images: data?.data || [],
+    total: data?.meta?.pagination?.total || 0,
+    isLoading: enabled ? isLoading : false,
+    isError: !!error,
+    refresh: mutate,
+  };
+}
+
+export function useImageTags() {
+  const { data, error, isLoading } = useSWR<{ data: { tag: string; count: number }[] }>(
+    '/api/image/tags',
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  return {
+    tags: data?.data || [],
+    isLoading,
+    isError: !!error,
+  };
+}
