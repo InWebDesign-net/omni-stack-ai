@@ -226,7 +226,7 @@ export default function SubscribeButton({
 
       {/* Floating Toast Message */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-slate-900/95 border border-indigo-500/40 text-white font-medium text-sm shadow-2xl shadow-indigo-600/30 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-4 duration-300 backdrop-blur-md">
+        <div className="fixed bottom-24 right-6 z-50 px-4 py-3 rounded-2xl bg-slate-900/95 border border-indigo-500/40 text-white font-medium text-sm shadow-2xl shadow-indigo-600/30 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-4 duration-300 backdrop-blur-md">
           <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-300">
             <Sparkles className="w-4 h-4" />
           </div>
