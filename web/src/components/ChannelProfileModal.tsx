@@ -110,8 +110,9 @@ export default function ChannelProfileModal({
             {canSendDM && (
               <button
                 onClick={handleStartChat}
-                className="p-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+                aria-label="Direktnachricht senden"
                 title="Direktnachricht senden"
+                className="p-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
               >
                 <MessageSquare className="h-4 w-4" />
               </button>
@@ -119,6 +120,8 @@ export default function ChannelProfileModal({
 
             <button
               onClick={onClose}
+              aria-label={t.common?.close || 'Schließen'}
+              title={t.common?.close || 'Schließen'}
               className="p-2 text-[#9ba4bf] hover:text-white rounded-xl hover:bg-white/5 transition-all"
             >
               <X className="h-5 w-5" />

@@ -231,7 +231,9 @@ export default function VideosPageClient({
             <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
+                id="videos-search-input"
                 type="text"
+                aria-label={t.common.searchPlaceholder}
                 placeholder={t.common.searchPlaceholder}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
@@ -241,6 +243,8 @@ export default function VideosPageClient({
                 <button
                   type="button"
                   onClick={clearSearch}
+                  aria-label="Suche zurücksetzen"
+                  title="Suche zurücksetzen"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
                 >
                   <X className="w-4 h-4" />
@@ -253,6 +257,8 @@ export default function VideosPageClient({
               <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5">
                 <SlidersHorizontal className="w-4 h-4 text-indigo-400 shrink-0" />
                 <select
+                  id="videos-sort-select"
+                  aria-label="Sortierung"
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"

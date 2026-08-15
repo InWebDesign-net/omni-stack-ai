@@ -198,7 +198,9 @@ export default function HomeClient() {
             <div className="relative flex items-center bg-[#0b1222] border border-white/15 rounded-2xl p-2 shadow-2xl focus-within:border-indigo-500 transition-all">
               <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
               <input
+                id="home-hero-search-input"
                 type="text"
+                aria-label={t.home?.searchPlaceholder || 'Titel, Themen oder KI-Intents suchen'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.home?.searchPlaceholder || 'Titel, Themen oder KI-Intents suchen...'}
@@ -207,6 +209,7 @@ export default function HomeClient() {
               <button
                 type="button"
                 onClick={handleAiSearchOpen}
+                aria-label={t.home?.askAiTitle || 'KI-Assistenten fragen'}
                 className="px-3.5 py-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 font-semibold text-xs border border-indigo-500/30 flex items-center gap-1.5 transition-colors shrink-0 mr-1"
                 title={t.home?.askAiTitle || 'KI-Assistenten fragen'}
               >

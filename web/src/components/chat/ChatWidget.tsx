@@ -476,12 +476,15 @@ export default function ChatWidget() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    aria-label={t.chat?.writeMessagePlaceholder || 'Nachricht schreiben'}
                     placeholder={t.chat?.writeMessagePlaceholder || 'Nachricht schreiben...'}
                     className="flex-1 max-h-32 min-h-[40px] bg-transparent resize-none outline-none focus:outline-none focus:ring-0 ring-0 border-none shadow-none py-2 px-3 text-sm text-slate-100"
                     rows={1}
                   />
                   <button
                     type="submit"
+                    aria-label="Nachricht senden"
+                    title="Nachricht senden"
                     className="p-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-md flex-shrink-0"
                   >
                     <Send className="w-4 h-4" />
@@ -638,11 +641,17 @@ export default function ChatWidget() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  aria-label={t.chat?.writeMessagePlaceholder || 'Nachricht schreiben'}
                   placeholder={t.chat?.writeMessagePlaceholder || 'Nachricht schreiben...'}
                   className="flex-1 max-h-24 min-h-[36px] bg-transparent resize-none outline-none focus:outline-none focus:ring-0 ring-0 border-none shadow-none py-1.5 px-2 text-xs text-slate-100"
                   rows={1}
                 />
-                <button type="submit" className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors flex-shrink-0">
+                <button
+                  type="submit"
+                  aria-label="Nachricht senden"
+                  title="Nachricht senden"
+                  className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors flex-shrink-0"
+                >
                   <Send className="w-3.5 h-3.5" />
                 </button>
               </div>

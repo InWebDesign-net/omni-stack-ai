@@ -144,6 +144,7 @@ export default function CommentItem({
             <div className="flex items-center gap-2 pt-1">
               <input
                 type="text"
+                aria-label="Kommentar bearbeiten"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 className="flex-1 px-3 py-1 bg-slate-950 border border-indigo-500/80 rounded-lg text-xs text-white outline-none"
@@ -151,6 +152,8 @@ export default function CommentItem({
               <button
                 type="button"
                 onClick={handleEditSubmit}
+                aria-label="Änderung speichern"
+                title="Speichern"
                 className="p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-all"
               >
                 <Check className="w-3.5 h-3.5" />
@@ -158,6 +161,8 @@ export default function CommentItem({
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
+                aria-label="Abbrechen"
+                title="Abbrechen"
                 className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition-all"
               >
                 <X className="w-3.5 h-3.5" />
@@ -211,6 +216,7 @@ export default function CommentItem({
         >
           <input
             type="text"
+            aria-label="Antwort schreiben"
             placeholder={
               currentUser
                 ? `Antwort an @${comment.authorName}...`
@@ -224,6 +230,8 @@ export default function CommentItem({
           <button
             type="submit"
             disabled={isSubmittingReply || !replyText.trim()}
+            aria-label="Antwort senden"
+            title="Senden"
             className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1 shrink-0"
           >
             {isSubmittingReply ? (
@@ -236,6 +244,8 @@ export default function CommentItem({
           <button
             type="button"
             onClick={() => setShowReplyForm(false)}
+            aria-label="Antwort abbrechen"
+            title="Abbrechen"
             className="p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
           >
             <X className="w-3.5 h-3.5" />

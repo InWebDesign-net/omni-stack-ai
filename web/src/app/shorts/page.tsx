@@ -610,7 +610,9 @@ export default function ShortsFeedPage() {
 
             <form onSubmit={handleAddComment} className="pt-3 border-t border-white/10 flex gap-2">
               <input
+                id="shorts-comment-input"
                 type="text"
+                aria-label={lang === 'de' ? 'Kommentar schreiben' : 'Write comment'}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder={
@@ -624,6 +626,8 @@ export default function ShortsFeedPage() {
               <button
                 type="submit"
                 disabled={isSubmittingComment || !commentText.trim()}
+                aria-label={lang === 'de' ? 'Kommentar absenden' : 'Submit comment'}
+                title={lang === 'de' ? 'Kommentar absenden' : 'Submit comment'}
                 className="bg-[#8083ff] hover:bg-[#6b6eff] disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 shrink-0 transition-all"
               >
                 <Send className="h-3.5 w-3.5" />

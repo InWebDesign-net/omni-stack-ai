@@ -313,6 +313,8 @@ export default function VideoUploadModal({
           </div>
           <button
             onClick={onClose}
+            aria-label={t.common?.close || 'Schließen'}
+            title={t.common?.close || 'Schließen'}
             className="p-2 rounded-xl text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-colors"
           >
             <X className="h-5 w-5" />
@@ -333,6 +335,8 @@ export default function VideoUploadModal({
         >
           <input
             ref={fileInputRef}
+            id="video-file-upload-input"
+            aria-label="Video-Datei auswählen"
             type="file"
             accept="video/*,.mp4,.mov,.avi,.mkv,.webm,.ts"
             multiple
@@ -377,6 +381,7 @@ export default function VideoUploadModal({
                     <div className="flex flex-col min-w-0 flex-1">
                       <input
                         type="text"
+                        aria-label="Video Titel"
                         value={task.title}
                         onChange={(e) => updateTaskTitle(task.id, e.target.value)}
                         className="bg-transparent text-sm font-bold text-white focus:outline-none border-b border-transparent focus:border-[#8083ff] truncate"
@@ -392,6 +397,8 @@ export default function VideoUploadModal({
                   <button
                     type="button"
                     onClick={() => removeTask(task.id)}
+                    aria-label="Upload-Aufgabe löschen"
+                    title="Upload-Aufgabe löschen"
                     className="p-1.5 rounded-lg text-[#5c657d] hover:text-red-400 hover:bg-white/5 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />

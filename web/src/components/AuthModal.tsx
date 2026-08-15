@@ -188,6 +188,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
       <div className="bg-[#0d1528] border border-white/10 max-w-md w-full rounded-3xl p-7 relative flex flex-col gap-6 shadow-2xl animate-fadeInUp">
         <button
           onClick={onClose}
+          aria-label={t.common?.close || 'Schließen'}
+          title={t.common?.close || 'Schließen'}
           className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-all"
         >
           <X className="h-4 w-4" />
@@ -267,10 +269,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               { key: 'password', label: t.auth.password, type: 'password', placeholder: '••••••••', icon: Lock },
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
+                <label htmlFor={`reg-${key}`} className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
                 <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm transition-all">
                   <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
                   <input
+                    id={`reg-${key}`}
                     type={type}
                     value={(regForm as any)[key]}
                     onChange={(e) => setRegForm({ ...regForm, [key]: e.target.value })}
@@ -346,10 +349,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               { key: 'password', label: 'Passwort', type: 'password', placeholder: '••••••••', icon: Lock },
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
+                <label htmlFor={`login-${key}`} className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{label}</label>
                 <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 transition-all">
                   <Icon className="h-4 w-4 text-[#5c657d] mr-3 shrink-0" />
                   <input
+                    id={`login-${key}`}
                     type={type}
                     value={(loginForm as any)[key]}
                     onChange={(e) => setLoginForm({ ...loginForm, [key]: e.target.value })}

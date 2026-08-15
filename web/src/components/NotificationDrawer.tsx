@@ -128,6 +128,8 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
           )}
           <button
             onClick={onClose}
+            aria-label={t.common?.close || 'Schließen'}
+            title={t.common?.close || 'Schließen'}
             className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
           >
             <X className="w-4 h-4" />
@@ -223,6 +225,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                     e.stopPropagation();
                     deleteNotification(n.id);
                   }}
+                  aria-label="Benachrichtigung löschen"
                   title="Löschen"
                   className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
                 >

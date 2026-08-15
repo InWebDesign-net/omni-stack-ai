@@ -82,6 +82,8 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
           </div>
           <button
             onClick={onClose}
+            aria-label={t.common?.close || 'Schließen'}
+            title={t.common?.close || 'Schließen'}
             className="p-1.5 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-white"
           >
             <X className="w-5 h-5" />

@@ -160,6 +160,8 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
           </div>
           <button
             onClick={onClose}
+            aria-label={t.common?.close || 'Schließen'}
+            title={t.common?.close || 'Schließen'}
             className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -190,6 +192,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
             <form onSubmit={handleAddTopic} className="flex items-center gap-2 bg-slate-900/80 p-2 rounded-2xl border border-slate-800">
               <input
                 type="text"
+                aria-label="Neues Thema eingeben"
                 value={newTopicName}
                 onChange={(e) => setNewTopicName(e.target.value)}
                 placeholder="Neues Thema eingeben (z.B. KI, Gaming)..."
@@ -197,6 +200,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
               />
               <input
                 type="number"
+                aria-label="Initialen Score eingeben"
                 min="0"
                 max="100"
                 value={newTopicScore}
@@ -228,6 +232,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
 
                   <input
                     type="range"
+                    aria-label={`Score für Thema ${topic}`}
                     min="0"
                     max="100"
                     value={Math.round(data.score)}
@@ -237,6 +242,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
 
                   <button
                     onClick={() => handleRemoveTopic(topic)}
+                    aria-label={`Thema ${topic} entfernen`}
                     className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                     title="Thema entfernen"
                   >
@@ -268,6 +274,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
                   </div>
                   <input
                     type="range"
+                    aria-label={`Gewichtung für ${label}`}
                     min="0"
                     max="1"
                     step="0.05"
