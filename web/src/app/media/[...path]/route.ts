@@ -62,9 +62,10 @@ export async function GET(
     const relativePath = pathSegments.join('/');
 
     const resolvedPath = path.resolve(path.join(MEDIA_ROOT, relativePath));
+    const mediaRootWithSep = MEDIA_ROOT.endsWith(path.sep) ? MEDIA_ROOT : MEDIA_ROOT + path.sep;
 
     // Security: Prevent directory traversal attack
-    if (!resolvedPath.startsWith(MEDIA_ROOT)) {
+    if (!resolvedPath.startsWith(mediaRootWithSep) && resolvedPath !== MEDIA_ROOT) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
