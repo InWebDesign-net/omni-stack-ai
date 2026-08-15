@@ -83,6 +83,19 @@ export const useVideos = ({
   queryParams.set('sort', sort);
   if (lang) queryParams.set('lang', lang);
 
+  if (sort === 'affinity' || sort === 'personal') {
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_user_interest_profile') : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const topics = Object.keys(parsed.topics || {}).join(',');
+        if (topics) {
+          queryParams.set('userTopics', topics);
+        }
+      }
+    } catch (e) {}
+  }
+
   if (searchTerm) {
     queryParams.set('q', searchTerm);
   }

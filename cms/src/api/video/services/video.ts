@@ -26,9 +26,15 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       : [];
 
     // Map sort parameter to Strapi sort format
-    const sortMapping: Record<string, string> = {
+    const sortMapping: Record<string, any> = {
       createdatasc: 'createdAt:desc',  // Newest first
+      newest: 'createdAt:desc',
       createdatdesc: 'createdAt:asc',   // Oldest first
+      oldest: 'createdAt:asc',
+      mostliked: 'likesCount:desc',
+      mostcommented: 'viewsCount:desc',
+      mostpopular: 'viewsCount:desc',
+      trending: ['likesCount:desc', 'createdAt:desc'],
       titleasc: 'title:asc',
       titledesc: 'title:desc',
       durationasc: 'duration:asc',
@@ -98,7 +104,6 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
     }
 
     // Also collect tags across all localizations of each document for robust matching
-    // (e.g. if user matches 'Architecture' or 'Natur')
     if (includeList.length > 0 || excludeList.length > 0) {
       const docIds = (items as any[]).map((it) => it.documentId).filter(Boolean);
       let allLocaleItems: any[] = [];
@@ -144,6 +149,50 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       });
     }
 
+    // Custom ranking algorithms for trending and personal interest affinity
+    const lowerSort = sortStr.toLowerCase();
+    if (lowerSort === 'trending') {
+      const now = Date.now();
+      const ONE_DAY_MS = 86400000;
+      items = (items as any[]).sort((a, b) => {
+        const getTrendScore = (it: any) => {
+          const likes = it.likesCount || 0;
+          const views = it.viewsCount || 0;
+          const ageDays = Math.max(0.1, (now - new Date(it.createdAt || Date.now()).getTime()) / ONE_DAY_MS);
+          return (likes * 10 + views) / Math.pow(ageDays + 1, 1.2);
+        };
+        return getTrendScore(b) - getTrendScore(a);
+      });
+    } else if (lowerSort === 'affinity' || lowerSort === 'personal') {
+      const userTopics = (params.userTopics || '').split(',').map((t: string) => t.trim().toLowerCase()).filter(Boolean);
+      const userTopicScores: Record<string, number> = {};
+
+      if (params.userTopicScores) {
+        try {
+          Object.assign(userTopicScores, JSON.parse(params.userTopicScores));
+        } catch (e) {}
+      } else {
+        userTopics.forEach((topic: string, index: number) => {
+          userTopicScores[topic] = Math.max(10, 100 - index * 5);
+        });
+      }
+
+      items = (items as any[]).sort((a, b) => {
+        const getAffinityScore = (it: any) => {
+          let score = 0;
+          const itemTags = (it.tags || []).map((t: string) => (t || '').trim().toLowerCase());
+          itemTags.forEach((t: string) => {
+            if (userTopicScores[t]) score += userTopicScores[t];
+          });
+          return score;
+        };
+        const scoreA = getAffinityScore(a);
+        const scoreB = getAffinityScore(b);
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return new Date(b.createdAt || Date.now()).getTime() - new Date(a.createdAt || Date.now()).getTime();
+      });
+    }
+
     // Calculate exact pagination
     const total = items.length;
     const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -184,7 +233,7 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
     const docTagsMap = new Map<string, Set<string>>();
 
     for (const it of items as Array<{ documentId?: string; tags?: string[] | null }>) {
-      const docId = it.documentId || Math.random().toString(); // fallback for items without documentId
+      const docId = it.documentId || Math.random().toString();
       if (!docTagsMap.has(docId)) {
         docTagsMap.set(docId, new Set());
       }

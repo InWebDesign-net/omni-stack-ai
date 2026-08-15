@@ -260,6 +260,21 @@ export default function VideosPageClient({
                   <option value="createdatasc" className="bg-slate-900 text-slate-200">
                     {t.videos.sortNewest}
                   </option>
+                  <option value="trending" className="bg-slate-900 text-slate-200">
+                    {(t.videos as any).sortTrending || '🔥 Trendinhalt (Trending)'}
+                  </option>
+                  <option value="mostliked" className="bg-slate-900 text-slate-200">
+                    {(t.videos as any).sortMostLiked || '❤️ Beliebteste / Likes'}
+                  </option>
+                  <option value="mostcommented" className="bg-slate-900 text-slate-200">
+                    {(t.videos as any).sortMostCommented || '💬 Aktivste / Diskussionen'}
+                  </option>
+                  <option value="mostpopular" className="bg-slate-900 text-slate-200">
+                    {(t.videos as any).sortMostPopular || '👑 Höchste Reichweite (Popular)'}
+                  </option>
+                  <option value="affinity" className="bg-slate-900 text-slate-200">
+                    {(t.videos as any).sortAffinity || '🎯 Persönliches Interesse (KI-Graph)'}
+                  </option>
                   <option value="createdatdesc" className="bg-slate-900 text-slate-200">
                     {t.videos.sortOldest}
                   </option>
