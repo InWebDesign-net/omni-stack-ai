@@ -88,19 +88,34 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     updateURL({ sort: newSort, page: '1' });
   };
 
-  const toggleIncludeTag = (tag: string) => {
+  const toggleTag = (tag: string) => {
     const isIncluded = includedTags.includes(tag);
-    let nextIncluded: string[];
-    let nextExcluded = excludedTags.filter((t) => t !== tag);
+    const isExcluded = excludedTags.includes(tag);
+    let nextIncluded = [...includedTags];
+    let nextExcluded = [...excludedTags];
 
     if (isIncluded) {
-      nextIncluded = includedTags.filter((t) => t !== tag);
+      // included -> excluded
+      nextIncluded = nextIncluded.filter((t) => t !== tag);
+      nextExcluded = [...nextExcluded, tag];
+    } else if (isExcluded) {
+      // excluded -> neutral
+      nextExcluded = nextExcluded.filter((t) => t !== tag);
     } else {
-      nextIncluded = [...includedTags, tag];
+      // neutral -> included
+      nextIncluded = [...nextIncluded, tag];
     }
+
     updateURL({
       includetag: nextIncluded.length > 0 ? nextIncluded.join(',') : null,
       excludetag: nextExcluded.length > 0 ? nextExcluded.join(',') : null,
+      page: '1',
+    });
+  };
+
+  const toggleMatchMode = (mode: 'any' | 'all') => {
+    updateURL({
+      matchmode: mode === 'any' ? null : 'all',
       page: '1',
     });
   };
@@ -242,15 +257,42 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
           {allTags.length > 0 && (
             <div className="space-y-3 pt-4 border-t border-slate-800/60">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Tag className="w-3.5 h-3.5 text-teal-400" />
                   <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                     Kategorien & Tags Filter
                   </span>
-                  {includedTags.length > 0 && (
+                  {(includedTags.length > 0 || excludedTags.length > 0) && (
                     <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-mono border border-teal-500/30">
-                      {includedTags.length} aktiv
+                      {includedTags.length + excludedTags.length} aktiv
                     </span>
+                  )}
+
+                  {includedTags.length > 1 && (
+                    <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-[11px] ml-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleMatchMode('any')}
+                        className={`px-2 py-0.5 rounded-md font-medium transition-all ${
+                          matchMode === 'any'
+                            ? 'bg-teal-500/20 text-teal-300 font-bold'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        Irgendein Tag
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleMatchMode('all')}
+                        className={`px-2 py-0.5 rounded-md font-medium transition-all ${
+                          matchMode === 'all'
+                            ? 'bg-teal-500/20 text-teal-300 font-bold'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        Alle Tags
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -279,20 +321,29 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   const tag = typeof item === 'string' ? item : item?.tag || '';
                   const count = typeof item === 'object' ? item?.count : null;
                   const isInc = includedTags.includes(tag);
+                  const isExc = excludedTags.includes(tag);
+                  const state = isInc ? 'include' : isExc ? 'exclude' : 'neutral';
+                  const base =
+                    'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border';
+                  const tone =
+                    state === 'include'
+                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold shadow-md shadow-emerald-500/10'
+                      : state === 'exclude'
+                      ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 font-bold shadow-md shadow-rose-500/10'
+                      : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-teal-500/50 hover:text-white';
                   return (
                     <button
                       key={tag}
-                      onClick={() => toggleIncludeTag(tag)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                        isInc
-                          ? 'bg-teal-500 text-slate-950 shadow-md shadow-teal-500/20 font-bold scale-[1.02]'
-                          : 'bg-slate-950/70 border border-slate-800 text-slate-300 hover:border-teal-500/50 hover:text-white'
-                      }`}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={`${base} ${tone}`}
                     >
                       <span>#{tag}</span>
-                      <span className={`text-[10px] font-mono ${isInc ? 'text-slate-900' : 'text-slate-500'}`}>
-                        {count}
-                      </span>
+                      {count !== null && count !== undefined && (
+                        <span className={`text-[10px] font-mono ${state !== 'neutral' ? 'opacity-90' : 'text-slate-500'}`}>
+                          {count}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
