@@ -202,7 +202,7 @@ export default function HomeClient() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.home?.searchPlaceholder || 'Titel, Themen oder KI-Intents suchen...'}
-                className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none"
+                className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:outline-none focus:ring-0 ring-0 border-none shadow-none"
               />
               <button
                 type="button"

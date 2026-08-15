@@ -67,6 +67,24 @@
   input[type="button"] {
     cursor: pointer;
   }
+
+  input,
+  textarea,
+  select,
+  button {
+    outline: none !important;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none !important;
+    outline-offset: 0px !important;
+  }
 }
 
 /* ─── Glassmorphism Surfaces ──────────────────────────────────────────────── */
