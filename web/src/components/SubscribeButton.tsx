@@ -12,6 +12,7 @@ interface SubscribeButtonProps {
   initialCount?: number;
   className?: string;
   showCount?: boolean;
+  iconOnly?: boolean;
   size?: 'sm' | 'md' | 'lg';
   onStatusChange?: (isSubscribed: boolean, count: number) => void;
 }
@@ -23,6 +24,7 @@ export default function SubscribeButton({
   initialCount,
   className = '',
   showCount = false,
+  iconOnly = false,
   size = 'md',
   onStatusChange,
 }: SubscribeButtonProps) {
@@ -162,11 +164,17 @@ export default function SubscribeButton({
     }
   };
 
-  const sizeClasses = {
-    sm: 'px-2.5 py-1 text-xs rounded-lg gap-1.5',
-    md: 'px-4 py-2 text-xs font-bold rounded-xl gap-2',
-    lg: 'px-5 py-2.5 text-sm font-bold rounded-2xl gap-2.5',
-  }[size];
+  const sizeClasses = iconOnly
+    ? {
+        sm: 'p-2 rounded-xl',
+        md: 'p-2.5 rounded-xl',
+        lg: 'p-3 rounded-2xl',
+      }[size]
+    : {
+        sm: 'px-2.5 py-1 text-xs rounded-lg gap-1.5',
+        md: 'px-4 py-2 text-xs font-bold rounded-xl gap-2',
+        lg: 'px-5 py-2.5 text-sm font-bold rounded-2xl gap-2.5',
+      }[size];
 
   return (
     <>
@@ -192,24 +200,26 @@ export default function SubscribeButton({
         }
       >
         {isLoading ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" />
         ) : isSubscribed ? (
           isHovered ? (
-            <BellOff className="w-3.5 h-3.5 text-rose-400" />
+            <BellOff className="w-4 h-4 text-rose-400" />
           ) : (
-            <Check className="w-3.5 h-3.5 text-indigo-400" />
+            <Check className="w-4 h-4 text-indigo-400" />
           )
         ) : (
-          <Bell className="w-3.5 h-3.5 text-white" />
+          <Bell className="w-4 h-4 text-white" />
         )}
 
-        <span>
-          {isSubscribed
-            ? isHovered
-              ? (t.common as any)?.unsubscribe || 'Deabonnieren'
-              : t.common?.subscribed || 'Abonniert'
-            : t.common?.subscribe || 'Abonnieren'}
-        </span>
+        {!iconOnly && (
+          <span>
+            {isSubscribed
+              ? isHovered
+                ? (t.common as any)?.unsubscribe || 'Deabonnieren'
+                : t.common?.subscribed || 'Abonniert'
+              : t.common?.subscribe || 'Abonnieren'}
+          </span>
+        )}
 
         {showCount && count > 0 && (
           <span

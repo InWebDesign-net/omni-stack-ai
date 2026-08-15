@@ -96,12 +96,13 @@ export default function ChannelProfileModal({
             </div>
           </div>
 
-          {/* Compact Top Action Buttons (Abonnieren & Nachricht) */}
-          <div className="flex items-center gap-2 shrink-0 pt-0.5">
+          {/* Compact Top Action Buttons (Icon-only for Abonnieren & Nachricht) */}
+          <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
             {!isOwner && (
               <SubscribeButton
                 targetId={targetId}
                 size="sm"
+                iconOnly
                 showCount={false}
               />
             )}
@@ -109,17 +110,16 @@ export default function ChannelProfileModal({
             {canSendDM && (
               <button
                 onClick={handleStartChat}
-                className="px-3 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                className="p-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
                 title="Direktnachricht senden"
               >
-                <MessageSquare className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Nachricht</span>
+                <MessageSquare className="h-4 w-4" />
               </button>
             )}
 
             <button
               onClick={onClose}
-              className="p-1.5 text-[#9ba4bf] hover:text-white rounded-xl hover:bg-white/5 transition-all ml-1"
+              className="p-2 text-[#9ba4bf] hover:text-white rounded-xl hover:bg-white/5 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
