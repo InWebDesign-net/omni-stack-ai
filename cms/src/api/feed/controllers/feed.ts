@@ -118,7 +118,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   async ingestFinalizedVideo(ctx: any) {
-    const expectedSecret = process.env.INGEST_WORKER_SECRET || 'omni_ingest_worker_secret_2026';
+    const expectedSecret = process.env.INGEST_WORKER_SECRET;
+
+    if (!expectedSecret) {
+       return ctx.internalServerError('INGEST_WORKER_SECRET configuration missing');
+    }
+
     try {
       const payload = ctx.request.body || {};
       const secretHeader = ctx.request.headers['x-worker-secret'];

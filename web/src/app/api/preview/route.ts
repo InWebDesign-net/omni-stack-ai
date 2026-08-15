@@ -12,9 +12,9 @@ export async function GET(request: Request) {
   const type = searchParams.get('type') || 'article';
   const status = searchParams.get('status') || 'draft';
 
-  const expectedSecret = process.env.STRAPI_PREVIEW_SECRET || 'omni_preview_secret_2026';
+  const expectedSecret = process.env.STRAPI_PREVIEW_SECRET;
 
-  if (secret !== expectedSecret || (!slug && !documentId)) {
+  if (!expectedSecret || secret !== expectedSecret || (!slug && !documentId)) {
     return new Response('Invalid secret token or missing slug', { status: 401 });
   }
 
