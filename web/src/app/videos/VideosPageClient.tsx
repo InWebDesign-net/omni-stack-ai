@@ -479,9 +479,11 @@ export default function VideosPageClient({
                 >
                   {/* Video Thumbnail & Play Overlay */}
                   <Link href={`/video/${video.slug}`} className="relative aspect-video w-full overflow-hidden block bg-slate-950">
+                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
                     <img
                       src={video.thumbnailUrl || "/media/thumbnails/default.png"}
                       alt={video.title}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
@@ -516,9 +518,11 @@ export default function VideosPageClient({
                     {/* Creator & Meta */}
                     <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-800/60 text-[11px] sm:text-xs text-slate-400">
                       <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0">
+                        {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                         <img
                           src={creatorAvatar}
                           alt={creatorName}
+                          loading="lazy"
                           className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
                         />
                         <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
