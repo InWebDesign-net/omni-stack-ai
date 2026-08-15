@@ -44,6 +44,14 @@ export default function ChatWidget() {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  // ⚡ Bolt Optimization: Memoized room filtering (Must be called at top level before early returns to satisfy Rules of Hooks)
+  const filteredRooms = useMemo(() => {
+    const lowerQuery = (searchQuery || '').toLowerCase().trim();
+    if (!rooms || !Array.isArray(rooms)) return [];
+    if (!lowerQuery) return rooms;
+    return rooms.filter((r) => r && (r.name || r.slug || '').toLowerCase().includes(lowerQuery));
+  }, [rooms, searchQuery]);
+
   const debouncedSearchUsers = useDebouncedCallback(async (query: string) => {
     setIsSearchingUsers(true);
     const results = await searchEligibleUsers(query);
@@ -193,14 +201,6 @@ export default function ChatWidget() {
       setPrivacyError(res.error);
     }
   };
-
-  // ⚡ Bolt Optimization: Memoized room filtering to prevent O(N) recalculations on every keystroke in chat input
-  const filteredRooms = useMemo(() => {
-    const lowerQuery = (searchQuery || '').toLowerCase().trim();
-    if (!rooms || !Array.isArray(rooms)) return [];
-    if (!lowerQuery) return rooms;
-    return rooms.filter((r) => r && (r.name || r.slug || '').toLowerCase().includes(lowerQuery));
-  }, [rooms, searchQuery]);
 
   // 1. Floating Support Button (Collapsed Launcher)
   if (!isOpen) {
