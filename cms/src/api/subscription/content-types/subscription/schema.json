@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "subscriptions",
+  "info": {
+    "singularName": "subscription",
+    "pluralName": "subscriptions",
+    "displayName": "Subscription",
+    "description": "User Subscriptions to Channels and Chat Rooms"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "channel",
+        "chat_room"
+      ],
+      "default": "channel"
+    },
+    "subscriber": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "targetUser": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "targetChatRoom": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chat-room.chat-room"
+    }
+  }
+}

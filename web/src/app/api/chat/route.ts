@@ -215,6 +215,23 @@ export async function POST(req: Request) {
               { status: 403 }
             );
           }
+          if (recipient?.allowDirectMessages === 'subscribers_only' && user?.id) {
+            const subRes = await fetch(
+              `${STRAPI_URL}/api/subscriptions?filters[subscriber][id][$eq]=${user.id}&filters[targetUser][id][$eq]=${recipientId}&filters[type][$eq]=channel`,
+              { headers }
+            );
+            let isSubbed = false;
+            if (subRes.ok) {
+              const subData = await subRes.json();
+              if ((subData.data || []).length > 0) isSubbed = true;
+            }
+            if (!isSubbed) {
+              return NextResponse.json(
+                { error: 'Dieser Nutzer erlaubt Direktnachrichten nur seinen Abonnenten. Bitte abonniere den Kanal zuerst.' },
+                { status: 403 }
+              );
+            }
+          }
         }
       }
 

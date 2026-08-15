@@ -23,6 +23,7 @@ import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import Header from '@/components/Header';
+import SubscribeButton from '@/components/SubscribeButton';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
 import { formatAbsoluteDate } from '@/lib/date';
 
@@ -138,16 +139,12 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                         </>
                                     ) : (
                                         <>
-                                            <button
-                                                onClick={handleSubscribeToggle}
-                                                className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${isSubscribed
-                                                        ? 'bg-slate-800 border border-slate-700 text-slate-300'
-                                                        : 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20'
-                                                    }`}
-                                            >
-                                                {isSubscribed ? <UserCheck className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                                                <span>{isSubscribed ? t.common.subscribed : t.common.subscribe}</span>
-                                            </button>
+                                            <SubscribeButton
+                                                targetId={String(profile.id)}
+                                                initialIsSubscribed={isSubscribed}
+                                                initialCount={subscriberCount}
+                                                size="md"
+                                            />
 
                                             {canSendDM && (
                                                 <button

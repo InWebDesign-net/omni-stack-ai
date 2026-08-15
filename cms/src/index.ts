@@ -201,6 +201,14 @@ export default {
         await enablePermission(authRole.id, 'api::notification.notification.markRead');
         await enablePermission(authRole.id, 'api::notification.notification.deleteOne');
         await enablePermission(authRole.id, 'api::notification.notification.create');
+        await enablePermission(authRole.id, 'api::subscription.subscription.find');
+        await enablePermission(authRole.id, 'api::subscription.subscription.findOne');
+        await enablePermission(authRole.id, 'api::subscription.subscription.create');
+        await enablePermission(authRole.id, 'api::subscription.subscription.delete');
+        await enablePermission(authRole.id, 'api::favorite.favorite.find');
+        await enablePermission(authRole.id, 'api::favorite.favorite.findOne');
+        await enablePermission(authRole.id, 'api::favorite.favorite.create');
+        await enablePermission(authRole.id, 'api::favorite.favorite.delete');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }
@@ -230,6 +238,36 @@ export default {
         }
       } catch (e) {
         console.error('affinityGraph normalization failed:', e);
+      }
+
+      // 3c. One-time migration: favs -> favorites
+      try {
+        const legacyFavs = await strapi.db.query('api::fav.fav').findMany({ populate: ['user', 'video', 'feedItem'] });
+        if (legacyFavs && legacyFavs.length > 0) {
+          console.log(`🔄 Migrating ${legacyFavs.length} legacy fav(s) to favorites...`);
+          for (const oldFav of legacyFavs) {
+            const existing = await strapi.db.query('api::favorite.favorite').findOne({
+              where: {
+                user: oldFav.user?.id,
+                video: oldFav.video?.id,
+                feedItem: oldFav.feedItem?.id,
+              },
+            });
+            if (!existing) {
+              await strapi.db.query('api::favorite.favorite').create({
+                data: {
+                  userIdentifier: oldFav.userIdentifier,
+                  user: oldFav.user?.id,
+                  video: oldFav.video?.id,
+                  feedItem: oldFav.feedItem?.id,
+                },
+              });
+            }
+          }
+          console.log(`✅ Legacy favs migrated successfully!`);
+        }
+      } catch (e) {
+        // Safe catch
       }
 
       // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)
