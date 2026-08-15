@@ -61,7 +61,7 @@ Omni replaces traditional event-log database bloat with a lightweight, stateful 
 {
   "contentTypes": { "video": 0.8, "pdf": 0.85, "article": 0.7, "short": 0.5 },
   "topics": {
-    "Wissenschaft": { "score": 95, "last_interacted": "2026-08-14T10:00:00Z" },
+    "Science": { "score": 95, "last_interacted": "2026-08-14T10:00:00Z" },
     "PostgreSQL": { "score": 100, "last_interacted": "2026-08-14T10:00:00Z" }
   },
   "creators": { "1": { "score": 50, "last_interacted": "2026-08-14T10:00:00Z" } }
@@ -69,7 +69,7 @@ Omni replaces traditional event-log database bloat with a lightweight, stateful 
 ```
 
 * 📉 **Time-Weighted Vector Decay:** Older topic scores automatically decay over time using a time-weighted decay function. Active user engagements boost scores, while inactive topics naturally fade.
-* 🤖 **AI Dynamic Keyword Extraction:** As users consume media or talk to the AI Assistant, the system dynamically extracts new semantic keywords and intent tags, adding them to the user's `affinityGraph` in real time.
+* 🤖 **AI Dynamic Keyword Extraction:** As users consume media or talk to the AI Assistant ("Show me recipes", "Science PDFs"), the system dynamically parses intent, mutates `affinityGraph` vectors, and renders visual badges (`⚡ Algorithm Adjustment: Cooking +95%`).
 * ⚡ **Strict 50-Keyword Performance Cap:** To guarantee sub-10ms feed assembly and prevent memory bloat, `affinityGraph` enforces a strict cap of **maximum 50 topics**. Low-ranking or decayed topics are automatically pruned.
 
 ### 2. ⚡ Standalone WebSocket Microservice (`omni-socket`) & Real-Time Chat Engine
@@ -77,7 +77,7 @@ Omni features a dedicated, low-latency WebSocket microservice (`socket/`) runnin
 
 * 🔌 **Zero-Polling Architecture:** Replaces expensive HTTP polling with instant, bi-directional WebSocket event delivery.
 * 💬 **Dual-View Chat System:** Full-screen 2-column view and compact floating support widget. Supports 1:1 direct user DMs, global community channels, and group chat rooms.
-* 🤖 **Dynamic AI Assistant Invitation (`[+ KI einladen]` / `[x KI entfernen]`):** Users can dynamically invite the Omni AI Assistant into any chat room. When invited, the bot responds contextually; when removed, it leaves the room cleanly via real-time WebSocket signals.
+* 🤖 **Dynamic AI Assistant Invitation (`[+ Invite AI]` / `[x Remove AI]`):** Users can dynamically invite the Omni AI Assistant into any chat room. When invited, the bot responds contextually; when removed, it leaves the room cleanly via real-time WebSocket signals.
 * 🔒 **Granular Privacy & Subscriber-Only DMs:** Users can set direct message permissions (*Everyone*, *Subscribers Only*, *Nobody*). When set to *Subscribers Only*, the system verifies active channel subscriptions before allowing DMs.
 
 ### 3. 🔔 In-App Notifications & Real-Time Drawer
@@ -89,7 +89,7 @@ Omni features a centralized notification engine (`api::notification.notification
 
 ### 4. 🔔 Subscriptions & Standardized Favorites System
 * 🔔 **Subscriptions Engine (`api::subscription.subscription`):** Supports channel subscriptions (Creators) and chat room subscriptions with live subscriber counting.
-* ⚡ **Interactive `<SubscribeButton>` Component:** Features optimistic UI updates, state synchronization, and floating Toast notifications (*"Kanal erfolgreich abonniert! 🎉"*).
+* ⚡ **Interactive `<SubscribeButton>` Component:** Features optimistic UI updates, state synchronization, and floating Toast notifications (*"Channel subscribed successfully! 🎉"*).
 * ❤️ **Standardized Favorites (`api::favorite.favorite`):** Unified REST API (`/api/favorites`) allowing users to favorite and bookmark videos, articles, and feed items across the platform.
 
 ### 5. 🔒 Level 4 AES-128 Encrypted HLS Video Pipeline
@@ -102,7 +102,7 @@ Omni implements an enterprise-grade content security architecture:
 ### 6. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
 * 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes scrub bar hover timestamp tooltips, smooth play/pause animations, volume hover expansion, and full-screen toggle.
 * ⚙️ **HLS Quality Selector:** Seamless manual or automatic quality resolution switching (`Auto`, `1080p`, `720p`, `480p`).
-* 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Frühstück`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
+* 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Breakfast`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
 
 ### 7. 🌐 Multilingual i18n Dictionary System
 * 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`/dictionaries/de.json` & `/dictionaries/en.json`):** Complete UI internationalization covering headers, search bars, player controls, user profiles, chat widgets, privacy modals, and AI assistant prompts.
