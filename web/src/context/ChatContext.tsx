@@ -170,8 +170,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             }));
 
             setRooms((prev) =>
-              prev.map((r) => {
-                if (r.id === activeRoomId || r.slug === activeRoomId) {
+              (prev || []).map((r) => {
+                if (r && (r.id === activeRoomId || r.slug === activeRoomId)) {
                   return { ...r, messages: serverMsgs };
                 }
                 return r;
@@ -181,14 +181,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
           setRooms((prev) => {
             const map = new Map<string, ChatRoom>();
-            for (const item of loadedRooms) map.set(item.id, item);
-            for (const item of prev) {
+            for (const item of loadedRooms) {
+              if (item && item.id) map.set(item.id, item);
+            }
+            for (const item of prev || []) {
+              if (!item || !item.id) continue;
               const existing = map.get(item.id);
               if (existing) {
+                const itemMsgs = Array.isArray(item.messages) ? item.messages : [];
+                const itemParts = Array.isArray(item.participants) ? item.participants : [];
                 map.set(item.id, {
                   ...existing,
-                  messages: item.messages.length > 0 ? item.messages : existing.messages,
-                  participants: item.participants && item.participants.length > 0 ? item.participants : existing.participants,
+                  messages: itemMsgs.length > 0 ? itemMsgs : (existing.messages || []),
+                  participants: itemParts.length > 0 ? itemParts : (existing.participants || []),
                 });
               } else {
                 map.set(item.id, item);
