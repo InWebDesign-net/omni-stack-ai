@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, BellOff, Check, Loader2 } from 'lucide-react';
+import { Bell, BellOff, Check, Loader2, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { getStoredJwt } from '@/lib/affinity';
 
@@ -13,6 +13,7 @@ interface SubscribeButtonProps {
   className?: string;
   showCount?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  onStatusChange?: (isSubscribed: boolean, count: number) => void;
 }
 
 export default function SubscribeButton({
@@ -21,14 +22,16 @@ export default function SubscribeButton({
   initialIsSubscribed,
   initialCount,
   className = '',
-  showCount = true,
+  showCount = false,
   size = 'md',
+  onStatusChange,
 }: SubscribeButtonProps) {
   const { currentUser, t } = useApp();
   const [isSubscribed, setIsSubscribed] = useState<boolean>(initialIsSubscribed ?? false);
   const [count, setCount] = useState<number>(initialCount ?? 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Sync state if props change from parent
   useEffect(() => {
@@ -57,9 +60,13 @@ export default function SubscribeButton({
         });
         if (res.ok && active) {
           const data = await res.json();
-          setIsSubscribed(Boolean(data.isSubscribed));
-          if (typeof data.subscriberCount === 'number') {
-            setCount(data.subscriberCount);
+          const subState = Boolean(data.isSubscribed);
+          const subCount = typeof data.subscriberCount === 'number' ? data.subscriberCount : 0;
+          
+          setIsSubscribed(subState);
+          setCount(subCount);
+          if (onStatusChange) {
+            onStatusChange(subState, subCount);
           }
         }
       } catch (e) {
@@ -72,6 +79,11 @@ export default function SubscribeButton({
       active = false;
     };
   }, [targetId, type, currentUser?.id]);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -92,6 +104,9 @@ export default function SubscribeButton({
 
     setIsSubscribed(nextSubscribed);
     setCount(nextCount);
+    if (onStatusChange) {
+      onStatusChange(nextSubscribed, nextCount);
+    }
     setIsLoading(true);
 
     try {
@@ -111,19 +126,37 @@ export default function SubscribeButton({
 
       if (res.ok) {
         const data = await res.json();
-        setIsSubscribed(Boolean(data.isSubscribed));
-        if (typeof data.subscriberCount === 'number') {
-          setCount(data.subscriberCount);
+        const finalSubState = Boolean(data.isSubscribed);
+        const finalSubCount = typeof data.subscriberCount === 'number' ? data.subscriberCount : nextCount;
+        
+        setIsSubscribed(finalSubState);
+        setCount(finalSubCount);
+        if (onStatusChange) {
+          onStatusChange(finalSubState, finalSubCount);
+        }
+
+        if (finalSubState) {
+          showToast(type === 'channel' ? 'Kanal erfolgreich abonniert! 🎉' : 'Chatraum abonniert! 🎉');
+        } else {
+          showToast(type === 'channel' ? 'Kanal-Abonnement beendet.' : 'Chatraum-Abonnement beendet.');
         }
       } else {
         // Rollback on failure
         setIsSubscribed(previousSubscribed);
         setCount(previousCount);
+        if (onStatusChange) {
+          onStatusChange(previousSubscribed, previousCount);
+        }
+        showToast('Fehler beim Aktualisieren des Abonnements.');
       }
     } catch (e) {
       console.error('Failed to toggle subscription:', e);
       setIsSubscribed(previousSubscribed);
       setCount(previousCount);
+      if (onStatusChange) {
+        onStatusChange(previousSubscribed, previousCount);
+      }
+      showToast('Fehler beim Aktualisieren des Abonnements.');
     } finally {
       setIsLoading(false);
     }
@@ -131,63 +164,75 @@ export default function SubscribeButton({
 
   const sizeClasses = {
     sm: 'px-2.5 py-1 text-xs rounded-lg gap-1.5',
-    md: 'px-3.5 py-1.5 text-xs font-semibold rounded-xl gap-2',
+    md: 'px-4 py-2 text-xs font-bold rounded-xl gap-2',
     lg: 'px-5 py-2.5 text-sm font-bold rounded-2xl gap-2.5',
   }[size];
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      disabled={isLoading}
-      className={`inline-flex items-center justify-center transition-all select-none shadow-sm active:scale-95 cursor-pointer ${sizeClasses} ${
-        isSubscribed
-          ? isHovered
-            ? 'bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300'
-            : 'bg-indigo-600/20 border border-indigo-500/40 text-indigo-300'
-          : 'bg-indigo-600 hover:bg-indigo-500 border border-indigo-500 text-white shadow-indigo-600/25 shadow-md'
-      } ${className}`}
-      title={
-        isSubscribed
-          ? isHovered
-            ? 'Abonnement beenden'
-            : 'Abonniert'
-          : 'Kanal abonnieren'
-      }
-    >
-      {isLoading ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-      ) : isSubscribed ? (
-        isHovered ? (
-          <BellOff className="w-3.5 h-3.5 text-rose-400" />
+    <>
+      <button
+        type="button"
+        onClick={handleToggle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        disabled={isLoading}
+        className={`inline-flex items-center justify-center transition-all select-none shadow-sm active:scale-95 cursor-pointer ${sizeClasses} ${
+          isSubscribed
+            ? isHovered
+              ? 'bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300'
+              : 'bg-indigo-600/20 border border-indigo-500/40 text-indigo-300'
+            : 'bg-indigo-600 hover:bg-indigo-500 border border-indigo-500 text-white shadow-indigo-600/25 shadow-md'
+        } ${className}`}
+        title={
+          isSubscribed
+            ? isHovered
+              ? 'Abonnement beenden'
+              : 'Abonniert'
+            : 'Kanal abonnieren'
+        }
+      >
+        {isLoading ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : isSubscribed ? (
+          isHovered ? (
+            <BellOff className="w-3.5 h-3.5 text-rose-400" />
+          ) : (
+            <Check className="w-3.5 h-3.5 text-indigo-400" />
+          )
         ) : (
-          <Check className="w-3.5 h-3.5 text-indigo-400" />
-        )
-      ) : (
-        <Bell className="w-3.5 h-3.5 text-white" />
-      )}
+          <Bell className="w-3.5 h-3.5 text-white" />
+        )}
 
-      <span>
-        {isSubscribed
-          ? isHovered
-            ? (t.common as any)?.unsubscribe || 'Deabonnieren'
-            : t.common?.subscribed || 'Abonniert'
-          : t.common?.subscribe || 'Abonnieren'}
-      </span>
-
-      {showCount && count > 0 && (
-        <span
-          className={`ml-0.5 px-1.5 py-0.2 text-[10px] font-mono rounded-md ${
-            isSubscribed
-              ? 'bg-indigo-500/20 text-indigo-300'
-              : 'bg-white/20 text-white'
-          }`}
-        >
-          {count}
+        <span>
+          {isSubscribed
+            ? isHovered
+              ? (t.common as any)?.unsubscribe || 'Deabonnieren'
+              : t.common?.subscribed || 'Abonniert'
+            : t.common?.subscribe || 'Abonnieren'}
         </span>
+
+        {showCount && count > 0 && (
+          <span
+            className={`ml-0.5 px-1.5 py-0.2 text-[10px] font-mono rounded-md ${
+              isSubscribed
+                ? 'bg-indigo-500/20 text-indigo-300'
+                : 'bg-white/20 text-white'
+            }`}
+          >
+            {count}
+          </span>
+        )}
+      </button>
+
+      {/* Floating Toast Message */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-slate-900/95 border border-indigo-500/40 text-white font-medium text-sm shadow-2xl shadow-indigo-600/30 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-4 duration-300 backdrop-blur-md">
+          <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-300">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <span>{toastMessage}</span>
+        </div>
       )}
-    </button>
+    </>
   );
 }

@@ -144,6 +144,11 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 initialIsSubscribed={isSubscribed}
                                                 initialCount={subscriberCount}
                                                 size="md"
+                                                showCount={false}
+                                                onStatusChange={(newSubscribed, newCount) => {
+                                                    setIsSubscribed(newSubscribed);
+                                                    setSubscriberCount(newCount);
+                                                }}
                                             />
 
                                             {canSendDM && (

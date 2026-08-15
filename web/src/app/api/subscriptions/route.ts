@@ -11,8 +11,9 @@ async function getAuthUser(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return null;
   try {
+    const formattedAuth = authHeader.startsWith('Bearer ') ? authHeader : `Bearer ${authHeader}`;
     const res = await fetch(getStrapiUrl('/api/users/me'), {
-      headers: { Authorization: authHeader },
+      headers: { Authorization: formattedAuth },
     });
     if (!res.ok) return null;
     return await res.json();
@@ -166,25 +167,25 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    let isSubscribed = false;
-    let existingRecordId: string | null = null;
-
+    let existingItems: any[] = [];
     if (existingRes.ok) {
       const existingData = await existingRes.json();
-      if ((existingData.data || []).length > 0) {
-        isSubscribed = true;
-        existingRecordId = String(existingData.data[0].id);
-      }
+      existingItems = existingData.data || [];
     }
 
-    if (isSubscribed && existingRecordId) {
-      // Unsubscribe
-      await fetch(getStrapiUrl(`/api/subscriptions/${existingRecordId}`), {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-        },
-      });
+    let isSubscribed = false;
+
+    if (existingItems.length > 0) {
+      // Unsubscribe all matching entries
+      for (const item of existingItems) {
+        const recId = item.documentId || String(item.id);
+        await fetch(getStrapiUrl(`/api/subscriptions/${recId}`), {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${STRAPI_API_TOKEN}`,
+          },
+        });
+      }
       isSubscribed = false;
     } else {
       // Subscribe
