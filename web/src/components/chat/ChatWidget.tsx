@@ -11,7 +11,7 @@ import { useApp } from '@/context/AppContext';
 import { useChat, SearchableUser } from '@/context/ChatContext';
 
 export default function ChatWidget() {
-  const { currentUser, t } = useApp();
+  const { currentUser, openAuthModal, t } = useApp();
   const {
     isOpen,
     isExpanded,
@@ -57,7 +57,86 @@ export default function ChatWidget() {
     }
   }, [isNewChatOpen]);
 
-  if (!currentUser) return null;
+  // Guest view (Unauthenticated User)
+  if (!currentUser) {
+    if (!isOpen) {
+      return (
+        <button
+          onClick={() => openChat()}
+          className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30"
+          title={t.chat?.title || 'Omni Chat'}
+        >
+          <MessageCircle className="w-6 h-6" />
+        </button>
+      );
+    }
+
+    return (
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col w-[360px] sm:w-[400px] bg-[#080e1e] border border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
+        {/* Header */}
+        <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-400 text-white shadow-md">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-sm text-white">Omni KI-Assistent & Chat</h3>
+              <p className="text-[10px] text-teal-400 font-mono">Community & AI Hub</p>
+            </div>
+          </div>
+          <button
+            onClick={() => closeChat()}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Guest Body */}
+        <div className="p-6 space-y-5 text-center flex flex-col items-center justify-center bg-gradient-to-b from-[#080e1e] to-[#0d1528]">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-xl">
+              <Sparkles className="w-8 h-8 text-teal-400 animate-pulse" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 p-1 bg-indigo-600 rounded-full text-white">
+              <Bot className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-extrabold text-base text-white">
+              Mit der KI & der Community chatten 🚀
+            </h4>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+              Melde dich an, um mit dem Omni KI-Assistenten zu chatten, deinen Feed in Echtzeit anzupassen und direkt in Gruppenräumen teilzunehmen.
+            </p>
+          </div>
+
+          <div className="w-full space-y-2.5 pt-2">
+            <button
+              onClick={() => {
+                closeChat();
+                openAuthModal('register');
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+            >
+              <span>🔐 Jetzt Anmelden / Registrieren</span>
+            </button>
+
+            <button
+              onClick={() => {
+                closeChat();
+                openAuthModal('login');
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs border border-slate-800 transition-all cursor-pointer"
+            >
+              Konto vorhanden? Einloggen
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
