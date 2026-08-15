@@ -4,10 +4,11 @@ const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
 async function proxyRequest(req: Request, params: { path: string[] }) {
   try {
-    if (params.path.some(p => p === '..' || p === '.')) {
+    const pathList = (params && Array.isArray(params.path)) ? params.path : [];
+    if (pathList.some(p => p === '..' || p === '.')) {
       return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
     }
-    const pathStr = params.path.join('/');
+    const pathStr = pathList.join('/');
     const url = new URL(req.url);
     const searchParams = url.search;
     const targetUrl = `${STRAPI_URL}/api/feed/${pathStr}${searchParams}`;
