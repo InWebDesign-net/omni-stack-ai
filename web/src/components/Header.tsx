@@ -27,14 +27,14 @@ import { useApp } from '@/context/AppContext';
 import { useNotifications } from '@/context/NotificationContext';
 import NotificationDrawer from '@/components/NotificationDrawer';
 
-export function OmniLogo({ size = 24 }: { size?: number }) {
+export function OmniLogo({ size = 28 }: { size?: number }) {
   return (
     <img
       src="/android-chrome-192x192.png"
       alt="Omni Logo"
       width={size}
       height={size}
-      className="object-contain rounded-lg shrink-0"
+      className="object-contain rounded-md shrink-0"
     />
   );
 }
@@ -230,9 +230,9 @@ export default function Header({
 
           <Link href="/" className="flex items-center gap-3 group select-none">
             <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#8083ff] via-[#44e2cd] to-[#ffb783] opacity-30 blur-md group-hover:opacity-60 transition-opacity duration-300" />
-              <div className="relative rounded-xl bg-[#0d1528] border border-white/10 p-1.5 group-hover:border-white/20 transition-colors duration-200">
-                <OmniLogo size={22} />
+              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-indigo-600 via-[#8083ff] to-purple-600 opacity-40 blur-md group-hover:opacity-75 transition-opacity duration-300" />
+              <div className="relative rounded-xl bg-[#0d1528] border border-white/15 p-1 group-hover:border-indigo-400/40 transition-colors duration-200 flex items-center justify-center">
+                <OmniLogo size={28} />
               </div>
             </div>
             <div className="flex flex-col leading-none">
@@ -443,8 +443,8 @@ export default function Header({
                 onClick={() => setUniversalNavOpen(false)}
                 className="flex items-center gap-3 group"
               >
-                <div className="rounded-xl bg-[#0d1528] border border-white/10 p-1.5 group-hover:border-[#8083ff]/40 transition-colors">
-                  <OmniLogo size={22} />
+                <div className="rounded-xl bg-[#0d1528] border border-white/15 p-1 group-hover:border-[#8083ff]/40 transition-colors flex items-center justify-center">
+                  <OmniLogo size={28} />
                 </div>
                 <div className="flex flex-col leading-none">
                   <span className="font-extrabold text-base text-white">Omni Network</span>
