@@ -110,8 +110,8 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     router.push(pathname);
   };
 
-  const filteredTagList = allTags.filter((tc) =>
-    tc.tag.toLowerCase().includes(tagSearch.toLowerCase())
+  const filteredTagList = (allTags || []).filter((tc: any) =>
+    (typeof tc === 'string' ? tc : tc?.tag || '').toLowerCase().includes((tagSearch || '').toLowerCase())
   );
   const displayedTags = showAllTags ? filteredTagList : filteredTagList.slice(0, 16);
 
@@ -275,7 +275,9 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                {displayedTags.map(({ tag, count }) => {
+                {displayedTags.map((item: any) => {
+                  const tag = typeof item === 'string' ? item : item?.tag || '';
+                  const count = typeof item === 'object' ? item?.count : null;
                   const isInc = includedTags.includes(tag);
                   return (
                     <button

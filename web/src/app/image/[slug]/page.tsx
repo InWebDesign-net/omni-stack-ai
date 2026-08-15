@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 async function fetchImageBySlug(slug: string) {
   const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
   try {
-    const res = await fetch(`${strapiUrl}/api/images/filtered?q=${slug}&pageSize=1`, {
+    const res = await fetch(`${strapiUrl}/api/images/filtered?q=${slug}&pageSize=1&includeProcessing=true`, {
       cache: 'no-store',
     });
     if (!res.ok) return null;
