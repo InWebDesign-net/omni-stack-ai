@@ -20,7 +20,7 @@ export default {
 
     // Centralized Document Service Middleware for default-deny visibility enforcement
     strapi.documents.use(async (context: any, next: any) => {
-      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item'];
+      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item', 'api::image.image'];
       const action = context.action;
 
       if (targetUIDs.includes(context.uid) && (action === 'findMany' || action === 'findOne' || action === 'findFirst')) {
@@ -40,12 +40,14 @@ export default {
         const omniViewer = context.params?.omniViewer;
         if (!context.params) context.params = {};
 
-        const uidNum = omniViewer?.userId ? Number(omniViewer.userId) : null;
+        const uidNum = omniViewer?.userId
+          ? Number(omniViewer.userId)
+          : (koaCtx?.state?.user?.id ? Number(koaCtx.state.user.id) : null);
         const hasExistingFilters = context.params.filters && Object.keys(context.params.filters).length > 0;
 
-        const isVideo = context.uid === 'api::video.video';
+        const usesCreator = context.uid === 'api::video.video' || context.uid === 'api::image.image';
         const ownerFilter = uidNum
-          ? (isVideo ? { creator: { id: { $eq: uidNum } } } : { author: { id: { $eq: uidNum } } })
+          ? (usesCreator ? { creator: { id: { $eq: uidNum } } } : { author: { id: { $eq: uidNum } } })
           : null;
 
         const visibilityFilter = ownerFilter
