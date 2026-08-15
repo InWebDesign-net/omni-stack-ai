@@ -4,6 +4,9 @@ const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
 async function proxyRequest(req: Request, params: { path: string[] }) {
   try {
+    if (params.path.some(p => p === '..' || p === '.')) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+    }
     const pathStr = params.path.join('/');
     const url = new URL(req.url);
     const searchParams = url.search;
