@@ -309,7 +309,10 @@ export default function ChatWidget() {
               {/* Chat Message History */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {activeRoom.messages.map((msg) => {
-                  const isMe = msg.senderType === 'user' && msg.senderName === 'Du';
+                  const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+                  const isMe =
+                    msg.senderName === 'Du' ||
+                    (Boolean(currentUserId) && Boolean(msg.senderId) && String(msg.senderId) === currentUserId);
                   const isSystem = msg.senderType === 'system';
 
                   if (isSystem) {
@@ -445,7 +448,10 @@ export default function ChatWidget() {
           <>
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {activeRoom.messages.map((msg) => {
-                const isMe = msg.senderType === 'user' && msg.senderName === 'Du';
+                const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+                const isMe =
+                  msg.senderName === 'Du' ||
+                  (Boolean(currentUserId) && Boolean(msg.senderId) && String(msg.senderId) === currentUserId);
                 const isSystem = msg.senderType === 'system';
 
                 if (isSystem) {

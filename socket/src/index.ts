@@ -109,11 +109,13 @@ io.on('connection', (socket: AuthenticatedSocket) => {
       const { roomId, content, messageId, senderName, senderAvatar, recipientId } = data;
       if (!roomId || !content) return;
 
+      const senderId = user?.id ? String(user.id) : ((data as any).senderId ? String((data as any).senderId) : undefined);
+
       const messagePayload = {
         id: messageId || `msg-${Date.now()}`,
         roomId,
-        senderId: user?.id ? String(user.id) : undefined,
-        senderName: senderName || user?.username || 'Nutzer',
+        senderId,
+        senderName: user?.username || (senderName && senderName !== 'Du' ? senderName : 'Nutzer'),
         senderAvatar: senderAvatar,
         senderType: 'user',
         content,

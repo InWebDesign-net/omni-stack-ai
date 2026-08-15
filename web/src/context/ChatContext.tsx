@@ -148,6 +148,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             messages: Array.isArray(r.messages)
               ? r.messages.map((m: any) => ({
                   id: m.documentId || String(m.id),
+                  senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
                   senderType: m.senderType || 'user',
                   senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
                   content: m.content || '',
@@ -160,6 +161,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           if (activeRoomId && Array.isArray(data.messages)) {
             const serverMsgs: ChatMessage[] = data.messages.map((m: any) => ({
               id: m.documentId || String(m.id),
+              senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
               senderType: m.senderType || 'user',
               senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
               content: m.content || '',
@@ -215,6 +217,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
         const newMsg: ChatMessage = {
           id: msgData.id || `msg-${Date.now()}`,
+          senderId: msgData.senderId ? String(msgData.senderId) : undefined,
           senderType: msgData.senderType || 'user',
           senderName: msgData.senderName || 'Nutzer',
           content: msgData.content,
