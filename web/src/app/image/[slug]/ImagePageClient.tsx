@@ -20,6 +20,8 @@ import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import { useApp } from '@/context/AppContext';
+import { useImages } from '@/lib/hooks/useImages';
+import { getRotatedRecommendations } from '@/lib/recommendations';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { formatRelativeDate } from '@/lib/date';
 import CommentItem from '@/components/CommentItem';
@@ -63,6 +65,21 @@ export default function ImagePageClient({
   const [commentText, setCommentText] = useState('');
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  // Related Recommendations Hook with excludeSlug & rotation
+  const { images: hookRelated = [] } = useImages({
+    pageSize: 12,
+    excludeSlug: slug,
+    sort: currentUser ? 'affinity' : 'createdatasc',
+    lang,
+    enabled: true,
+  });
+
+  const displayRelated = getRotatedRecommendations(
+    hookRelated.length > 0 ? hookRelated : initialRelated,
+    slug,
+    6
+  );
 
   useEffect(() => {
     loadComments();
@@ -373,7 +390,7 @@ export default function ImagePageClient({
               </h3>
 
               <div className="flex flex-col gap-3">
-                {initialRelated.map((rel) => (
+                {displayRelated.map((rel) => (
                   <Link
                     key={rel.id || rel.documentId}
                     href={`/image/${rel.slug}`}

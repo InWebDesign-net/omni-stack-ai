@@ -29,14 +29,17 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
-import VideoSettingsModal from '@/components/VideoSettingsModal';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';
+import ChannelProfileModal from '@/components/ChannelProfileModal';
+import VideoSettingsModal from '@/components/VideoSettingsModal';
+import CommentItem from '@/components/CommentItem';
 import { useApp } from '@/context/AppContext';
+import { useVideos } from '@/lib/hooks/useVideos';
+import { getRotatedRecommendations } from '@/lib/recommendations';
 import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { formatRelativeDate } from '@/lib/date';
-import CommentItem from '@/components/CommentItem';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -142,6 +145,22 @@ export default function VideoPageClient({
 
   const [video, setVideo] = useState<any>(() => pickLocalized(initialVideo, initialLang));
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
+
+  // Dynamic recommendations via useVideos hook with excludeSlug & rotation
+  const { videos: hookRelated = [] } = useVideos({
+    currentPage: 1,
+    pageSize: 12,
+    excludeSlug: slug,
+    sort: currentUser ? 'affinity' : 'createdatasc',
+    lang: effectiveLang,
+    enabled: true,
+  });
+
+  const displayRelated = getRotatedRecommendations(
+    hookRelated.length > 0 ? hookRelated : relatedItems,
+    slug,
+    6
+  );
 
   useEffect(() => {
     setVideo(pickLocalized(initialVideo, effectiveLang));
@@ -693,7 +712,7 @@ export default function VideoPageClient({
             </h3>
 
             <div className="space-y-4">
-              {relatedItems.map((rel: any) => {
+              {displayRelated.map((rel: any) => {
                 const relCreator = rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
                 return (
                   <Link

@@ -10,6 +10,7 @@ export interface UseVideosParams {
   excludedTags?: string[];
   matchMode?: 'any' | 'all';
   lang?: 'de' | 'en';
+  excludeSlug?: string | string[];
   enabled?: boolean;
   fallbackData?: any;
 }
@@ -74,6 +75,7 @@ export const useVideos = ({
   excludedTags = [],
   matchMode = 'any',
   lang = 'de',
+  excludeSlug,
   enabled = true,
   fallbackData,
 }: UseVideosParams): UseVideosResult => {
@@ -107,6 +109,10 @@ export const useVideos = ({
   }
   if (excludedTags.length) {
     queryParams.set('excludetag', excludedTags.join(','));
+  }
+  if (excludeSlug) {
+    const excludes = Array.isArray(excludeSlug) ? excludeSlug.join(',') : excludeSlug;
+    if (excludes) queryParams.set('excludeSlug', excludes);
   }
   if (matchMode && matchMode !== 'any') {
     queryParams.set('matchmode', matchMode);

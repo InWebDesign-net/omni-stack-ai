@@ -10,6 +10,7 @@ export interface UseImagesParams {
   excludedTags?: string[];
   matchMode?: 'any' | 'all';
   lang?: 'de' | 'en';
+  excludeSlug?: string | string[];
   enabled?: boolean;
   fallbackData?: any;
 }
@@ -100,8 +101,9 @@ export function useImages(params: UseImagesParams = {}): UseImagesResult {
   if (safeExcluded.length > 0) {
     queryParams.set('excludetag', safeExcluded.join(','));
   }
-  if (matchMode) {
-    queryParams.set('matchmode', matchMode);
+  if (params.excludeSlug) {
+    const excludes = Array.isArray(params.excludeSlug) ? params.excludeSlug.join(',') : params.excludeSlug;
+    if (excludes) queryParams.set('excludeSlug', excludes);
   }
 
   if (sort === 'affinity' && typeof window !== 'undefined') {

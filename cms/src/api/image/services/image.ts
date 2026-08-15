@@ -72,6 +72,16 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
       filters.isProcessing = { $ne: true };
     }
 
+    if (params.excludeSlug) {
+      const excludes = Array.isArray(params.excludeSlug)
+        ? params.excludeSlug
+        : String(params.excludeSlug).split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (excludes.length > 0) {
+        if (!filters.slug || typeof filters.slug !== 'object') filters.slug = {};
+        filters.slug.$notIn = excludes;
+      }
+    }
+
     if (searchTerm) {
       filters.$or = [
         { title: { $containsi: searchTerm } },

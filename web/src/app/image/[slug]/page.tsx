@@ -18,10 +18,11 @@ async function fetchImageBySlug(slug: string) {
   }
 }
 
-async function fetchRelatedImages() {
+async function fetchRelatedImages(excludeSlug?: string) {
   const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
   try {
-    const res = await fetch(`${strapiUrl}/api/images/filtered?pageSize=6`, {
+    const excludeQuery = excludeSlug ? `&excludeSlug=${encodeURIComponent(excludeSlug)}` : '';
+    const res = await fetch(`${strapiUrl}/api/images/filtered?pageSize=12${excludeQuery}`, {
       cache: 'no-store',
     });
     if (!res.ok) return [];
@@ -61,7 +62,7 @@ export default async function ImagePage({ params }: { params: Promise<{ slug: st
     notFound();
   }
 
-  const related = await fetchRelatedImages();
+  const related = await fetchRelatedImages(slug);
 
   return <ImagePageClient initialImage={image} initialRelated={related} slug={slug} />;
 }
