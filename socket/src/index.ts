@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET || '9ukrMWtnoIulQCWQbXoWRQ==';
+const JWT_SECRET = process.env.JWT_SECRET || '';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((o) => o.trim());
