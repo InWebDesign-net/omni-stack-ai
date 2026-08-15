@@ -207,7 +207,8 @@ export default function Header({
   const getUserHandleString = (usr: typeof activeUser) => {
     if (!usr) return '@creator';
     if (usr.handle) return usr.handle.startsWith('@') ? usr.handle : `@${usr.handle}`;
-    return `@${usr.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    const rawName = usr.username || (usr as any).email || 'user';
+    return `@${rawName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
   };
 
   return (

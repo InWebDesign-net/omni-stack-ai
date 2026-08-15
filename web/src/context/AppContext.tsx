@@ -118,15 +118,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      const sanitizeUserSession = (usr: any): UserProfileSession | null => {
+        if (!usr) return null;
+        const username = usr.username || usr.name || (usr.email ? usr.email.split('@')[0] : 'Omni User');
+        const rawHandle = usr.handle || `@${username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+        return {
+          ...usr,
+          id: usr.id || 1,
+          username,
+          email: usr.email || '',
+          handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
+          avatarUrl: usr.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+          bio: usr.bio || '',
+          subscribersCount: usr.subscribersCount || 0,
+        };
+      };
+
       try {
         const savedUserStr = localStorage.getItem('omni_user');
         if (savedUserStr) {
           const parsedUser = JSON.parse(savedUserStr);
-          setCurrentUser(parsedUser);
-          if (parsedUser.affinityGraph) {
-            const norm = normalizeAffinityGraph(parsedUser.affinityGraph);
-            setProfile(norm);
-            storeAffinityGraph(norm);
+          const sanitized = sanitizeUserSession(parsedUser);
+          if (sanitized) {
+            setCurrentUser(sanitized);
+            if (sanitized.affinityGraph) {
+              const norm = normalizeAffinityGraph(sanitized.affinityGraph);
+              setProfile(norm);
+              storeAffinityGraph(norm);
+            }
           }
         }
       } catch (e) {}
@@ -145,10 +164,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           .then((res) => (res.ok ? res.json() : null))
           .then((data) => {
             if (data?.user) {
-              setCurrentUser((prev) => ({ ...prev, ...data.user }));
-              try {
-                localStorage.setItem('omni_user', JSON.stringify(data.user));
-              } catch (e) {}
+              const sanitized = sanitizeUserSession(data.user);
+              if (sanitized) {
+                setCurrentUser((prev) => ({ ...prev, ...sanitized }));
+                try {
+                  localStorage.setItem('omni_user', JSON.stringify(sanitized));
+                } catch (e) {}
+              }
             }
             if (data?.affinityGraph) {
               const norm = normalizeAffinityGraph(data.affinityGraph);
