@@ -9,6 +9,7 @@ import {
 import ChatSettingsModal from './ChatSettingsModal';
 import { useApp } from '@/context/AppContext';
 import { useChat, SearchableUser } from '@/context/ChatContext';
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function ChatWidget() {
   const { currentUser, openAuthModal, t } = useApp();
@@ -156,12 +157,17 @@ export default function ChatWidget() {
     }
   };
 
-  const handleUserSearchChange = async (query: string) => {
-    setUserSearchQuery(query);
+  const debouncedSearchUsers = useDebouncedCallback(async (query: string) => {
     setIsSearchingUsers(true);
     const results = await searchEligibleUsers(query);
     setUserSearchResults(results);
     setIsSearchingUsers(false);
+  }, 300);
+
+  const handleUserSearchChange = (query: string) => {
+    setUserSearchQuery(query);
+    setIsSearchingUsers(true);
+    debouncedSearchUsers(query);
   };
 
   const handleStartAiChat = async () => {

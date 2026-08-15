@@ -66,6 +66,7 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
       <div className="bg-[#0d1528] border border-white/10 max-w-xl w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp">
         <button
           onClick={onClose}
+          aria-label="Close"
           className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
         >
           <X className="h-5 w-5" />
@@ -83,8 +84,9 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
 
         <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.titleLabel}</label>
+            <label htmlFor="create-title" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.titleLabel}</label>
               <input
+                id="create-title"
                 type="text"
                 required
                 value={form.title}
@@ -96,8 +98,9 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.mediaTypeLabel}</label>
+              <label htmlFor="create-mediaType" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.mediaTypeLabel}</label>
               <select
+                id="create-mediaType"
                 value={form.mediaType}
                 onChange={(e) => setForm({ ...form, mediaType: e.target.value as any })}
                 className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none cursor-pointer"
@@ -110,8 +113,9 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.tagsLabel}</label>
+              <label htmlFor="create-tags" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.tagsLabel}</label>
               <input
+                id="create-tags"
                 type="text"
                 value={form.tags}
                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
@@ -122,8 +126,9 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.summaryLabel}</label>
+            <label htmlFor="create-summary" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.summaryLabel}</label>
             <textarea
+              id="create-summary"
               rows={2}
               value={form.summary}
               onChange={(e) => setForm({ ...form, summary: e.target.value })}
@@ -133,8 +138,9 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.contentLabel}</label>
+            <label htmlFor="create-content" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">{t.create.contentLabel}</label>
             <textarea
+              id="create-content"
               rows={4}
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}

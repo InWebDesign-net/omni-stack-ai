@@ -58,6 +58,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
       <div className="bg-[#0d1528] border border-white/10 max-w-lg w-full rounded-3xl p-7 relative flex flex-col gap-5 shadow-2xl animate-fadeInUp">
         <button
           onClick={onClose}
+          aria-label="Close"
           className="absolute top-5 right-5 text-[#5c657d] hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
         >
           <X className="h-5 w-5" />
@@ -79,10 +80,11 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
 
         <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+            <label htmlFor="username" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
               {t.settings.usernameLabel}
             </label>
             <input
+              id="username"
               type="text"
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -92,12 +94,13 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+            <label htmlFor="handle" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
               {t.settings.handleLabel}
             </label>
             <div className="flex items-center bg-[#080e1e] border border-white/8 focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white">
               <span className="text-[#8083ff] font-mono font-bold mr-1">@</span>
               <input
+                id="handle"
                 type="text"
                 value={form.handle}
                 onChange={(e) => setForm({ ...form, handle: e.target.value })}
@@ -108,10 +111,11 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+            <label htmlFor="avatarUrl" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
               {t.settings.avatarLabel}
             </label>
             <input
+              id="avatarUrl"
               type="text"
               value={form.avatarUrl}
               onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
@@ -121,10 +125,11 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
+            <label htmlFor="bio" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
               {t.settings.bioLabel}
             </label>
             <textarea
+              id="bio"
               rows={3}
               value={form.bio}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
