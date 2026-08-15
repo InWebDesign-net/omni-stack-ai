@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { CommentItem as CommentItemType } from '@/lib/comments';
+import { useApp } from '@/context/AppContext';
 
 interface CommentItemProps {
   comment: CommentItemType;
@@ -32,12 +33,22 @@ export default function CommentItem({
   onDeleteComment,
   t,
 }: CommentItemProps) {
+  const { openChannelModal } = useApp();
+
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [showReplies, setShowReplies] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.text);
+
+  const handleAuthorClick = () => {
+    openChannelModal({
+      username: comment.authorName,
+      handle: comment.authorHandle,
+      avatarUrl: comment.authorAvatar,
+    });
+  };
 
   const isOwner = Boolean(
     comment.isCurrentUser ||
@@ -84,15 +95,21 @@ export default function CommentItem({
         <img
           src={comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
           alt={comment.authorName}
-          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-700 shrink-0 mt-0.5"
+          onClick={handleAuthorClick}
+          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-700 hover:border-indigo-400 hover:scale-105 shrink-0 mt-0.5 cursor-pointer transition-all"
+          title={`${comment.authorName} - Kanal anzeigen`}
         />
 
         <div className="flex-1 space-y-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 truncate">
-              <span className="font-semibold text-xs text-slate-200 truncate">
+              <button
+                type="button"
+                onClick={handleAuthorClick}
+                className="font-semibold text-xs text-slate-200 hover:text-indigo-300 transition-colors cursor-pointer truncate text-left"
+              >
                 {comment.authorName}
-              </span>
+              </button>
               <span className="text-[10px] text-slate-500 font-mono">
                 {comment.createdAt}
               </span>
