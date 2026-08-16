@@ -176,6 +176,22 @@ export default function SubscribeButton({
         lg: 'px-5 py-2.5 text-sm font-bold rounded-2xl gap-2.5',
       }[size];
 
+  const isSelf = Boolean(
+    currentUser &&
+      targetId &&
+      (String(currentUser.id) === String(targetId) ||
+        ((currentUser as any).documentId && String((currentUser as any).documentId) === String(targetId)) ||
+        (currentUser.handle &&
+          String(currentUser.handle).replace(/^@/, '').toLowerCase() ===
+            String(targetId).replace(/^@/, '').toLowerCase()) ||
+        (currentUser.username &&
+          String(currentUser.username).toLowerCase() === String(targetId).toLowerCase()))
+  );
+
+  if (isSelf) {
+    return null;
+  }
+
   return (
     <>
       <button

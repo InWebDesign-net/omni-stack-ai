@@ -605,7 +605,7 @@ export default function VideoPageClient({
                 </div>
 
                 <SubscribeButton
-                  targetId={String(creator?.id || video?.creator?.id || video?.author?.id || 1)}
+                  targetId={String(creator?.handle || creator?.username || creator?.id || video?.creator?.handle || video?.creator?.id || video?.author?.id || '')}
                   size="md"
                 />
               </div>
