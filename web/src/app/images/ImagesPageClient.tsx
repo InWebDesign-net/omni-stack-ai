@@ -36,6 +36,12 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   useEffect(() => {
     try {
@@ -61,6 +67,12 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     );
 
     img.likesCount = Math.max(0, (img.likesCount || 0) + (nextIsLiked ? 1 : -1));
+
+    if (nextIsLiked) {
+      showToast(t.common?.likeAdded || 'Zu Favoriten hinzugefügt');
+    } else {
+      showToast(t.common?.likeRemoved || 'Aus Favoriten entfernt');
+    }
 
     try {
       const storedLikes = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
@@ -205,6 +217,14 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
       <Header />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 right-6 z-50 bg-slate-900/95 border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-indigo-400" />
+          <span className="text-sm font-medium">{toastMessage}</span>
+        </div>
+      )}
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Top Control Header */}
