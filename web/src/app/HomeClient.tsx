@@ -61,19 +61,19 @@ export default function HomeClient() {
 
   const fetchChannels = async () => {
     try {
-      const res = await fetch('/api/profile?pageSize=20');
+      const res = await fetch('/api/creators');
       if (res.ok) {
         const data = await res.json();
-        const rawProfiles = data.profiles || data.users || [];
-        if (rawProfiles.length > 0) {
-          const mapped: ChannelItem[] = rawProfiles.map((p: any) => ({
-            id: String(p.id),
-            documentId: p.documentId,
-            username: p.username || 'Creator',
-            handle: p.handle || `@${(p.username || 'creator').toLowerCase()}`,
-            avatarUrl: p.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
-            bio: p.bio || '',
-            subscribersCount: Number(p.subscribersCount || 0),
+        const creators = data.creators || [];
+        if (creators.length > 0) {
+          const mapped: ChannelItem[] = creators.map((c: any) => ({
+            id: String(c.id),
+            documentId: c.documentId,
+            username: c.username || 'Creator',
+            handle: c.handle || `@${(c.username || 'creator').toLowerCase()}`,
+            avatarUrl: c.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+            bio: c.bio || '',
+            subscribersCount: Number(c.subscribersCount || 0),
             hasNewContent: false,
           }));
           setChannels(mapped);
