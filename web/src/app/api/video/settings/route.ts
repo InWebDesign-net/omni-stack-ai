@@ -41,7 +41,7 @@ export async function GET(req: Request) {
 
     const targetUrl = `${strapiBase()}/api/videos?filters[documentId][$eq]=${encodeURIComponent(
       documentId
-    )}&locale=*&populate=creator`;
+    )}&locale=*&populate=creator&status=draft`;
 
     const res = await fetch(targetUrl, {
       method: 'GET',

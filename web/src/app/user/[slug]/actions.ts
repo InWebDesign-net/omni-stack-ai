@@ -61,9 +61,9 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       return null;
     }
 
-    // 2. Load videos to populate this profile's feed (filter by creator below)
+    // 2. Load videos to populate this profile's feed (filter by creator below, status=draft to load private entries for owner)
     const videosRes = await fetch(
-      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*`,
+      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*&status=draft`,
       { headers, cache: 'no-store' }
     );
 

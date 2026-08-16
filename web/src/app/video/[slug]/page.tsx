@@ -39,9 +39,9 @@ async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
-    // Fetch primary video by slug from Strapi (all localizations)
+    // Fetch primary video by slug from Strapi (all localizations, including draft/private for owner)
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*&status=draft`,
       { headers, cache: 'no-store' }
     );
 
