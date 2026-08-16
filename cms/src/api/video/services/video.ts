@@ -159,7 +159,7 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       });
     }
 
-    // Custom ranking algorithms for trending and personal interest affinity
+    // Custom ranking algorithms for trending, discussion and personal interest affinity
     const lowerSort = sortStr.toLowerCase();
     if (lowerSort === 'trending') {
       const now = Date.now();
@@ -167,11 +167,19 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       items = (items as any[]).sort((a, b) => {
         const getTrendScore = (it: any) => {
           const likes = it.likesCount || 0;
+          const comments = it.commentsCount || 0;
           const views = it.viewsCount || 0;
           const ageDays = Math.max(0.1, (now - new Date(it.createdAt || Date.now()).getTime()) / ONE_DAY_MS);
-          return (likes * 10 + views) / Math.pow(ageDays + 1, 1.2);
+          return (likes * 10 + comments * 15 + views) / Math.pow(ageDays + 1, 1.2);
         };
         return getTrendScore(b) - getTrendScore(a);
+      });
+    } else if (lowerSort === 'discussion' || lowerSort === 'comments') {
+      items = (items as any[]).sort((a, b) => {
+        const commentsA = Number(a.commentsCount || 0);
+        const commentsB = Number(b.commentsCount || 0);
+        if (commentsB !== commentsA) return commentsB - commentsA;
+        return new Date(b.createdAt || Date.now()).getTime() - new Date(a.createdAt || Date.now()).getTime();
       });
     } else if (lowerSort === 'affinity' || lowerSort === 'personal') {
       const userTopics = (params.userTopics || '').split(',').map((t: string) => t.trim().toLowerCase()).filter(Boolean);

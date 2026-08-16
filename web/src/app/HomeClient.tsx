@@ -377,11 +377,15 @@ export default function HomeClient() {
                     </Link>
 
                     <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 font-mono border-t border-slate-800/60">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1" title="Aufrufe">
                         <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" />
                         <span>{(item.viewsCount || 0).toLocaleString()}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1" title="Kommentare">
+                        <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400" />
+                        <span>{(item.commentsCount || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center gap-1" title="Likes">
                         <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-500/80" />
                         <span>{(item.likesCount || 0).toLocaleString()}</span>
                       </div>

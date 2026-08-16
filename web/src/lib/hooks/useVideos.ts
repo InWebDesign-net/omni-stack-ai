@@ -33,6 +33,7 @@ export interface VideoItem {
   tags?: string[];
   viewsCount?: number;
   likesCount?: number;
+  commentsCount?: number;
   mp4Url?: string;
   hlsUrl?: string;
   thumbnailUrl?: string;

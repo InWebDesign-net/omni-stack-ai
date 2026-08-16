@@ -19,6 +19,8 @@ import {
   Play,
   Clock,
   Eye,
+  Heart,
+  MessageSquare,
   SlidersHorizontal,
   Sparkles,
   Film,
@@ -562,12 +564,22 @@ export default function VideosPageClient({
                         <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
                       </Link>
 
-                      {video.viewsCount !== undefined && (
-                        <div className="flex items-center gap-0.5 sm:gap-1 text-slate-400 shrink-0">
-                          <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          <span>{video.viewsCount.toLocaleString()}</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2.5 text-slate-400 shrink-0 font-mono text-[10px] sm:text-xs">
+                        {video.viewsCount !== undefined && (
+                          <div className="flex items-center gap-0.5" title="Aufrufe">
+                            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400" />
+                            <span>{video.viewsCount.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-0.5" title="Kommentare">
+                          <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400" />
+                          <span>{(video.commentsCount || 0).toLocaleString()}</span>
                         </div>
-                      )}
+                        <div className="flex items-center gap-0.5" title="Likes">
+                          <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-400" />
+                          <span>{(video.likesCount || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
