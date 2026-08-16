@@ -562,16 +562,6 @@ export default function VideoPageClient({
                     <span>{likesCount}</span>
                   </button>
 
-                  {accessStatus?.isOwner && (
-                    <button
-                      onClick={() => setShowSettingsModal(true)}
-                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all"
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t.header.settings}</span>
-                    </button>
-                  )}
-
                   <button
                     onClick={handleShare}
                     className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all"
@@ -604,10 +594,20 @@ export default function VideoPageClient({
                   </div>
                 </div>
 
-                <SubscribeButton
-                  targetId={String(creator?.handle || creator?.username || creator?.id || video?.creator?.handle || video?.creator?.id || video?.author?.id || '')}
-                  size="md"
-                />
+                {accessStatus?.isOwner ? (
+                  <button
+                    onClick={() => setShowSettingsModal(true)}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4 text-indigo-400" />
+                    <span>{t.header.settings}</span>
+                  </button>
+                ) : (
+                  <SubscribeButton
+                    targetId={String(creator?.handle || creator?.username || creator?.id || video?.creator?.handle || video?.creator?.id || video?.author?.id || '')}
+                    size="md"
+                  />
+                )}
               </div>
 
               {/* Expandable Video Description */}
