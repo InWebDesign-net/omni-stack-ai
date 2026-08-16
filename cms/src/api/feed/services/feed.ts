@@ -1389,7 +1389,31 @@ WICHTIG: Antworte im folgenden JSON-Format:
     userIdentifier?: string;
     userId?: number | string;
   }) {
-    const { slug, type, watchTimeSeconds = 0, userIdentifier = 'anonymous', userId } = payload;
+    console.log('[handleInteraction] incoming payload:', JSON.stringify(payload));
+    const slug = (payload?.slug || '').trim();
+    const type = payload?.type;
+    const watchTimeSeconds = Number(payload?.watchTimeSeconds || 0);
+    let userId = payload?.userId;
+    const userIdentifier = payload?.userIdentifier || 'anonymous';
+
+    if (!userId && userIdentifier && userIdentifier !== 'anonymous') {
+      try {
+        const cleanIdent = String(userIdentifier).trim().replace(/^@/, '');
+        const foundUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+          where: {
+            $or: [
+              { handle: cleanIdent },
+              { username: cleanIdent },
+              { email: cleanIdent },
+            ],
+          },
+        });
+        if (foundUser) {
+          userId = foundUser.id;
+        }
+      } catch (e) {}
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const viewKey = `view:${slug}:${userIdentifier}:${today}`;
 
@@ -1402,17 +1426,31 @@ WICHTIG: Antworte im folgenden JSON-Format:
     let imageMatches: any[] = [];
     try {
       videoMatches = await strapi.documents('api::video.video').findMany({
-        filters: { slug: slug },
+        filters: { slug: { $eq: slug } },
+        status: 'published',
         locale: '*',
       });
+      if (videoMatches.length === 0) {
+        videoMatches = await strapi.db.query('api::video.video').findMany({ where: { slug } });
+      }
+
       imageMatches = await strapi.documents('api::image.image').findMany({
-        filters: { slug: slug },
+        filters: { slug: { $eq: slug } },
+        status: 'published',
         locale: '*',
       });
+      if (imageMatches.length === 0) {
+        imageMatches = await strapi.db.query('api::image.image').findMany({ where: { slug } });
+      }
+
       feedMatches = await strapi.documents('api::feed-item.feed-item').findMany({
-        filters: { slug: slug },
+        filters: { slug: { $eq: slug } },
+        status: 'published',
         locale: '*',
       });
+      if (feedMatches.length === 0) {
+        feedMatches = await strapi.db.query('api::feed-item.feed-item').findMany({ where: { slug } });
+      }
     } catch (e: any) {
       console.error('Error in handleInteraction findMany:', e.message || e);
     }

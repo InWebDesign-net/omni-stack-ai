@@ -112,10 +112,9 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     // 5. Fetch Favorites for this profile (videos, images AND feed-items / content)
     let favorites: any[] = [];
     try {
-      const favRes = await fetch(
-        `${strapiUrl}/api/favorites?filters[user][id][$eq]=${targetProfile.id}&populate=video,image,feedItem&pagination[pageSize]=50`,
-        { headers, cache: 'no-store' }
-      );
+      const handleFilter = encodeURIComponent(targetProfile.handle || targetProfile.username || '');
+      const userFavUrl = `${strapiUrl}/api/favorites?filters[$or][0][user][id][$eq]=${targetProfile.id}&filters[$or][1][userIdentifier][$eq]=${handleFilter}&populate=video,image,feedItem&pagination[pageSize]=50`;
+      const favRes = await fetch(userFavUrl, { headers, cache: 'no-store' });
       if (favRes.ok) {
         const favData = await favRes.json();
         const rawFavs = favData?.data || [];

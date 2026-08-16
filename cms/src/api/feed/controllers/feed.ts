@@ -284,10 +284,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async handleInteraction(ctx: any) {
     try {
-      // Identity comes from the JWT only — a spoofed body userId must never
-      // write into someone else's affinityGraph.
+      const rawBody = ctx.request.body?.data || ctx.request.body || {};
       const payload = {
-        ...ctx.request.body,
+        ...rawBody,
         userId: ctx.state?.user?.id,
       };
       const result = await strapi.service('api::feed.feed').handleInteraction(payload);
