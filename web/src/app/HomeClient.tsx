@@ -227,18 +227,18 @@ export default function HomeClient() {
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                <Users className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0 mt-0.5 sm:mt-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <h2 className="font-extrabold text-lg text-white">{t.home?.creatorsTitle || 'Empfohlene Creator & Kanäle'}</h2>
-                <p className="text-xs text-slate-400">{t.home?.creatorsSubtitle || 'Kanäle mit frischem Content werden bevorzugt dargestellt'}</p>
+              <div className="space-y-0.5">
+                <h2 className="font-extrabold text-base sm:text-lg text-white tracking-tight">{t.home?.creatorsTitle || 'Empfohlene Creator & Kanäle'}</h2>
+                <p className="text-xs text-slate-400 leading-normal">{t.home?.creatorsSubtitle || 'Kanäle mit frischem Content werden bevorzugt dargestellt'}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
               <button
                 onClick={() => handleScroll('left')}
                 disabled={!canScrollLeft}
@@ -304,15 +304,15 @@ export default function HomeClient() {
         </section>
 
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                <Film className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30 shrink-0 mt-0.5 sm:mt-0">
+                <Film className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-extrabold text-lg text-white">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
-                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-extrabold text-base sm:text-lg text-white tracking-tight">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
+                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${
                     currentUser
                       ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
                       : 'bg-teal-500/20 text-teal-300 border-teal-500/30'
@@ -320,13 +320,13 @@ export default function HomeClient() {
                     {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">{t.home?.videosSubtitle || 'Entdecke die neusten Veröffentlichungen im Katalog'}</p>
+                <p className="text-xs text-slate-400 leading-normal">{t.home?.videosSubtitle || 'Entdecke die neusten Veröffentlichungen im Katalog'}</p>
               </div>
             </div>
 
             <Link
               href="/videos"
-              className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors self-start sm:self-center shrink-0"
             >
               <span>{t.home?.viewAllVideos || 'Alle Videos ansehen'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -398,15 +398,15 @@ export default function HomeClient() {
         </section>
 
         <section className="space-y-6 pt-4 border-t border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                <ImageIcon className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30 shrink-0 mt-0.5 sm:mt-0">
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-extrabold text-lg text-white">Aktuelle Bilder & Galerie im Network</h2>
-                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-extrabold text-base sm:text-lg text-white tracking-tight">Aktuelle Bilder & Galerie im Network</h2>
+                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${
                     currentUser
                       ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
                       : 'bg-teal-500/20 text-teal-300 border-teal-500/30'
@@ -414,13 +414,13 @@ export default function HomeClient() {
                     {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">Entdecke Kunstwerke, Renderings & Fotografie im WebP-Format</p>
+                <p className="text-xs text-slate-400 leading-normal">Entdecke Kunstwerke, Renderings & Fotografie im WebP-Format</p>
               </div>
             </div>
 
             <Link
               href="/images"
-              className="text-xs font-bold text-teal-400 hover:text-teal-300 flex items-center gap-1 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-400 hover:text-teal-300 transition-colors self-start sm:self-center shrink-0"
             >
               <span>Alle Bilder ansehen</span>
               <ArrowRight className="w-3.5 h-3.5" />
