@@ -262,7 +262,7 @@ export default function ImagePageClient({
             className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Zurück zur Galerie</span>
+            <span>{t.common?.back || (lang === 'de' ? 'Zurück' : 'Back')}</span>
           </button>
         </div>
 
