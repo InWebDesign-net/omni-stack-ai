@@ -28,7 +28,7 @@ export async function getVideoOwnerStatus(slug: string): Promise<VideoOwnerStatu
     }
 
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*&status=draft`,
+      `${strapiUrl}/api/videos/filtered?filters[slug][$eq]=${encodeURIComponent(slug)}&allowPrivate=true&locale=*`,
       { headers, cache: 'no-store' }
     );
 

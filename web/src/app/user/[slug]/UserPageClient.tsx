@@ -27,11 +27,14 @@ import SubscribeButton from '@/components/SubscribeButton';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
 import { formatAbsoluteDate } from '@/lib/date';
 
+import { useRouter } from 'next/navigation';
+
 interface UserPageClientProps {
     profileDataInit: ProfileData;
 }
 
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
+    const router = useRouter();
     const { profile, isOwner, videos, favorites, stats } = profileDataInit;
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal } = useApp();
     const { createRoom, openChat } = useChat();
@@ -468,6 +471,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     documentId={editingVideo.documentId}
                     slug={editingVideo.slug}
                     onClose={() => setEditingVideo(null)}
+                    onSave={() => router.refresh()}
                 />
             )}
         </main>

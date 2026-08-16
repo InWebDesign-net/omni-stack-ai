@@ -480,6 +480,7 @@ export default function VideoPageClient({
           documentId={video.documentId || initialVideo?.documentId || ''}
           slug={slug}
           onClose={() => setShowSettingsModal(false)}
+          onSave={() => router.refresh()}
         />
       )}
 

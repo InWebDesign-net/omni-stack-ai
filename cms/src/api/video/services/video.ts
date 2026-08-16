@@ -69,7 +69,9 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       }
     }
 
-    if (!filters.visibility) {
+    const allowPrivate = params.allowPrivate === 'true' || params.includePrivate === 'true' || params.allowPrivate === true;
+
+    if (!filters.visibility && !allowPrivate) {
       filters.visibility = { $eq: 'public' };
     }
     if (!filters.isProcessing) {
@@ -92,21 +94,22 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
 
     // Determine target locale query (if targetLocale === '*', fetch all localizations)
     const docQueryLocale = targetLocale === '*' ? '*' : targetLocale;
+    const statusQuery = allowPrivate ? (params.status || undefined) : 'published';
 
     // Fetch candidate document set for target locale
     let items = await strapi.documents('api::video.video').findMany({
       locale: docQueryLocale,
-      status: 'published',
+      status: statusQuery,
       filters,
       populate: ['creator'],
       sort: strapiSort,
     });
 
     // Fallback: If no items found for targetLocale, fetch default locale ('de')
-    if ((!items || items.length === 0) && targetLocale !== 'de') {
+    if ((!items || items.length === 0) && targetLocale !== 'de' && targetLocale !== '*') {
       items = await strapi.documents('api::video.video').findMany({
         locale: 'de',
-        status: 'published',
+        status: statusQuery,
         filters,
         populate: ['creator'],
         sort: strapiSort,

@@ -93,19 +93,18 @@ export async function PUT(req: Request) {
       }
     }
 
-    // Update global visibility (non-localized)
+    // Update global visibility across all localizations (de + en) and publish changes
     if (typeof visibility === 'string') {
-      const res = await fetch(`${strapiBase()}/api/videos/${documentId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ data: { visibility } }),
-      });
-      if (!res.ok) {
-        const errText = await res.text();
-        return NextResponse.json(
-          { error: 'update visibility failed', detail: errText },
-          { status: res.status }
-        );
+      for (const locale of ['de', 'en']) {
+        const res = await fetch(`${strapiBase()}/api/videos/${documentId}?locale=${locale}&status=published`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ data: { visibility } }),
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error(`update visibility for ${locale} failed:`, errText);
+        }
       }
     }
 

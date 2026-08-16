@@ -39,6 +39,7 @@ interface VideoSettingsModalProps {
   documentId: string;
   slug: string;
   onClose: () => void;
+  onSave?: () => void;
 }
 
 const EMPTY_LOCALE: LocaleData = { title: '', summary: '', tags: [] };
@@ -47,6 +48,7 @@ export default function VideoSettingsModal({
   documentId,
   slug,
   onClose,
+  onSave,
 }: VideoSettingsModalProps) {
   const { t } = useApp();
   const [activeLocale, setActiveLocale] = useState<'de' | 'en'>('de');
@@ -152,6 +154,7 @@ export default function VideoSettingsModal({
       setSaved(true);
       // Update snapshot so the form is no longer dirty, then close the modal.
       setSnapshot({ form, visibility });
+      if (onSave) onSave();
       onClose();
     } catch (e: any) {
       setError(e?.message || 'Fehler beim Speichern');
