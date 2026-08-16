@@ -40,9 +40,14 @@ export default {
         const omniViewer = context.params?.omniViewer;
         if (!context.params) context.params = {};
 
+        const headerUserId = koaCtx?.header?.['x-omni-user-id'] || koaCtx?.request?.header?.['x-omni-user-id'];
+        const queryUserId = koaCtx?.query?.omniUserId || koaCtx?.request?.query?.omniUserId;
+
         const uidNum = omniViewer?.userId
           ? Number(omniViewer.userId)
-          : (koaCtx?.state?.user?.id ? Number(koaCtx.state.user.id) : null);
+          : (koaCtx?.state?.user?.id
+              ? Number(koaCtx.state.user.id)
+              : (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : null)));
         const hasExistingFilters = context.params.filters && Object.keys(context.params.filters).length > 0;
 
         const usesCreator = context.uid === 'api::video.video' || context.uid === 'api::image.image';

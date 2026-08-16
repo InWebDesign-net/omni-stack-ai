@@ -26,9 +26,12 @@ export async function getVideoOwnerStatus(slug: string): Promise<VideoOwnerStatu
     if (process.env.STRAPI_API_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
+    if (user?.id) {
+      headers['x-omni-user-id'] = String(user.id);
+    }
 
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos/filtered?filters[slug][$eq]=${encodeURIComponent(slug)}&allowPrivate=true&locale=*`,
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
       { headers, cache: 'no-store' }
     );
 

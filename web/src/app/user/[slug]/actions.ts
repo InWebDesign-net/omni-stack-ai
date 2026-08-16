@@ -44,6 +44,9 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     if (process.env.STRAPI_API_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
+    if (viewer?.id) {
+      headers['x-omni-user-id'] = String(viewer.id);
+    }
 
     // 1. Resolve the target user profile by its unique handle (server-side, public)
     const handleRes = await fetch(
@@ -61,9 +64,9 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       return null;
     }
 
-    // 2. Load videos to populate this profile's feed (allowPrivate=true to load private entries for owner filtering)
+    // 2. Load videos to populate this profile's feed (full catalog up to 200 items)
     const videosRes = await fetch(
-      `${strapiUrl}/api/videos/filtered?allowPrivate=true&pagination[pageSize]=200&locale=*`,
+      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*`,
       { headers, cache: 'no-store' }
     );
 

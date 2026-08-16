@@ -35,13 +35,14 @@ async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
     // `creator` (user data) are visible regardless of the viewer's role.
     // The user JWT is only needed for user-specific writes (likes/favs),
     // not for reading public video/profile data.
-    if (process.env.STRAPI_API_TOKEN) {
-      headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+    const { user } = await getCurrentUserFromCookies();
+    if (user?.id) {
+      headers['x-omni-user-id'] = String(user.id);
     }
 
-    // Fetch primary video by slug from Strapi (all localizations, allowing private for owner check)
+    // Fetch primary video by slug from Strapi (all localizations)
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos/filtered?filters[slug][$eq]=${encodeURIComponent(slug)}&allowPrivate=true&locale=*`,
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
       { headers, cache: 'no-store' }
     );
 
