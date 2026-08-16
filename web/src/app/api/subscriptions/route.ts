@@ -22,55 +22,100 @@ async function getAuthUser(req: NextRequest) {
   }
 }
 
+async function resolveTargetUser(targetIdStr: string) {
+  const cleanIdent = String(targetIdStr).trim().replace(/^@/, '');
+  if (!cleanIdent) return null;
+
+  if (/^\d+$/.test(cleanIdent)) {
+    try {
+      const res = await fetch(getStrapiUrl(`/api/users/${cleanIdent}`), {
+        headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {}
+  }
+
+  try {
+    const filterUrl = getStrapiUrl(
+      `/api/users?filters[$or][0][handle][$eq]=${encodeURIComponent(cleanIdent)}&filters[$or][1][username][$eq]=${encodeURIComponent(cleanIdent)}`
+    );
+    const filterRes = await fetch(filterUrl, {
+      headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
+    });
+    if (filterRes.ok) {
+      const list = await filterRes.json();
+      if (Array.isArray(list) && list.length > 0) return list[0];
+    }
+  } catch (e) {}
+
+  return null;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthUser(req);
     const { searchParams } = new URL(req.url);
-    const targetUser = searchParams.get('targetUser');
-    const targetChatRoom = searchParams.get('targetChatRoom');
+    const targetUserParam = searchParams.get('targetUser');
+    const targetChatRoomParam = searchParams.get('targetChatRoom');
 
     // Case A: Check subscription status for a specific target user (creator) or chat room
-    if (targetUser || targetChatRoom) {
+    if (targetUserParam || targetChatRoomParam) {
       let isSubscribed = false;
       let subscriberCount = 0;
 
-      // Count total subscribers for the target
-      const countFilter = targetUser
-        ? `filters[targetUser][id][$eq]=${targetUser}&filters[type][$eq]=channel`
-        : `filters[targetChatRoom][id][$eq]=${targetChatRoom}&filters[type][$eq]=chat_room`;
+      if (targetUserParam) {
+        const targetUserObj = await resolveTargetUser(targetUserParam);
+        const resolvedUserId = targetUserObj?.id || targetUserParam;
+        const baseSubCount = Number(targetUserObj?.subscribersCount || 0);
 
-      const countRes = await fetch(
-        getStrapiUrl(`/api/subscriptions?${countFilter}&pagination[pageSize]=1`),
-        {
-          headers: {
-            Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-          },
-        }
-      );
-
-      if (countRes.ok) {
-        const countData = await countRes.json();
-        subscriberCount = countData.meta?.pagination?.total || 0;
-      }
-
-      // Check if logged in user is subscribed
-      if (authUser?.id) {
-        const userFilter = targetUser
-          ? `filters[subscriber][id][$eq]=${authUser.id}&filters[targetUser][id][$eq]=${targetUser}&filters[type][$eq]=channel`
-          : `filters[subscriber][id][$eq]=${authUser.id}&filters[targetChatRoom][id][$eq]=${targetChatRoom}&filters[type][$eq]=chat_room`;
-
-        const userRes = await fetch(
-          getStrapiUrl(`/api/subscriptions?${userFilter}&pagination[pageSize]=1`),
-          {
-            headers: {
-              Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-            },
-          }
+        const countFilter = `filters[targetUser][id][$eq]=${resolvedUserId}&filters[type][$eq]=channel`;
+        const countRes = await fetch(
+          getStrapiUrl(`/api/subscriptions?${countFilter}&pagination[pageSize]=1`),
+          { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` } }
         );
 
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          isSubscribed = (userData.data || []).length > 0;
+        let subscriptionRecordsCount = 0;
+        if (countRes.ok) {
+          const countData = await countRes.json();
+          subscriptionRecordsCount = countData.meta?.pagination?.total || 0;
+        }
+
+        subscriberCount = Math.max(baseSubCount, subscriptionRecordsCount);
+
+        if (authUser?.id) {
+          const userFilter = `filters[subscriber][id][$eq]=${authUser.id}&filters[targetUser][id][$eq]=${resolvedUserId}&filters[type][$eq]=channel`;
+          const userRes = await fetch(
+            getStrapiUrl(`/api/subscriptions?${userFilter}&pagination[pageSize]=1`),
+            { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` } }
+          );
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            isSubscribed = (userData.data || []).length > 0;
+          }
+        }
+      } else if (targetChatRoomParam) {
+        const countFilter = `filters[targetChatRoom][id][$eq]=${targetChatRoomParam}&filters[type][$eq]=chat_room`;
+        const countRes = await fetch(
+          getStrapiUrl(`/api/subscriptions?${countFilter}&pagination[pageSize]=1`),
+          { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` } }
+        );
+        if (countRes.ok) {
+          const countData = await countRes.json();
+          subscriberCount = countData.meta?.pagination?.total || 0;
+        }
+
+        if (authUser?.id) {
+          const userFilter = `filters[subscriber][id][$eq]=${authUser.id}&filters[targetChatRoom][id][$eq]=${targetChatRoomParam}&filters[type][$eq]=chat_room`;
+          const userRes = await fetch(
+            getStrapiUrl(`/api/subscriptions?${userFilter}&pagination[pageSize]=1`),
+            { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` } }
+          );
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            isSubscribed = (userData.data || []).length > 0;
+          }
         }
       }
 
@@ -152,11 +197,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
+    let targetUserObj: any = null;
+    let resolvedTargetId = targetId;
+
+    if (type === 'channel') {
+      targetUserObj = await resolveTargetUser(targetId);
+      if (targetUserObj?.id) {
+        resolvedTargetId = targetUserObj.id;
+      }
+    }
+
     // Check if subscription already exists
     const queryFilter =
       type === 'channel'
-        ? `filters[subscriber][id][$eq]=${authUser.id}&filters[targetUser][id][$eq]=${targetId}&filters[type][$eq]=channel`
-        : `filters[subscriber][id][$eq]=${authUser.id}&filters[targetChatRoom][id][$eq]=${targetId}&filters[type][$eq]=chat_room`;
+        ? `filters[subscriber][id][$eq]=${authUser.id}&filters[targetUser][id][$eq]=${resolvedTargetId}&filters[type][$eq]=channel`
+        : `filters[subscriber][id][$eq]=${authUser.id}&filters[targetChatRoom][id][$eq]=${resolvedTargetId}&filters[type][$eq]=chat_room`;
 
     const existingRes = await fetch(
       getStrapiUrl(`/api/subscriptions?${queryFilter}`),
@@ -195,9 +250,9 @@ export async function POST(req: NextRequest) {
       };
 
       if (type === 'channel') {
-        payloadData.targetUser = targetId;
+        payloadData.targetUser = resolvedTargetId;
       } else {
-        payloadData.targetChatRoom = targetId;
+        payloadData.targetChatRoom = resolvedTargetId;
       }
 
       const createRes = await fetch(getStrapiUrl('/api/subscriptions'), {
@@ -216,8 +271,8 @@ export async function POST(req: NextRequest) {
       }
       isSubscribed = true;
 
-      // Optional: trigger notification to creator if subscribing to channel
-      if (type === 'channel' && String(targetId) !== String(authUser.id)) {
+      // Trigger notification to creator if subscribing to channel
+      if (type === 'channel' && String(resolvedTargetId) !== String(authUser.id)) {
         try {
           await fetch(getStrapiUrl('/api/notifications'), {
             method: 'POST',
@@ -227,7 +282,7 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({
               data: {
-                recipient: targetId,
+                recipient: resolvedTargetId,
                 type: 'new_subscriber',
                 title: 'Neuer Abonnent! 🎉',
                 message: `${authUser.username || authUser.handle || 'Ein Nutzer'} abonniert jetzt deinen Kanal.`,
@@ -242,25 +297,41 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Get updated subscriber count
-    const countFilter =
-      type === 'channel'
-        ? `filters[targetUser][id][$eq]=${targetId}&filters[type][$eq]=channel`
-        : `filters[targetChatRoom][id][$eq]=${targetId}&filters[type][$eq]=chat_room`;
-
-    const countRes = await fetch(
-      getStrapiUrl(`/api/subscriptions?${countFilter}&pagination[pageSize]=1`),
-      {
-        headers: {
-          Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-        },
-      }
-    );
-
+    // Update subscribersCount on User in Strapi if channel
     let subscriberCount = 0;
-    if (countRes.ok) {
-      const countData = await countRes.json();
-      subscriberCount = countData.meta?.pagination?.total || 0;
+
+    if (type === 'channel' && targetUserObj?.id) {
+      const currentCount = Number(targetUserObj.subscribersCount || 0);
+      const newCount = isSubscribed ? currentCount + 1 : Math.max(0, currentCount - 1);
+      subscriberCount = newCount;
+
+      try {
+        await fetch(getStrapiUrl(`/api/users/${targetUserObj.id}`), {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${STRAPI_API_TOKEN}`,
+          },
+          body: JSON.stringify({ subscribersCount: newCount }),
+        });
+      } catch (e) {
+        console.error('Failed to update user subscribersCount in Strapi:', e);
+      }
+    } else {
+      const countFilter =
+        type === 'channel'
+          ? `filters[targetUser][id][$eq]=${resolvedTargetId}&filters[type][$eq]=channel`
+          : `filters[targetChatRoom][id][$eq]=${resolvedTargetId}&filters[type][$eq]=chat_room`;
+
+      const countRes = await fetch(
+        getStrapiUrl(`/api/subscriptions?${countFilter}&pagination[pageSize]=1`),
+        { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` } }
+      );
+
+      if (countRes.ok) {
+        const countData = await countRes.json();
+        subscriberCount = countData.meta?.pagination?.total || 0;
+      }
     }
 
     return NextResponse.json({ isSubscribed, subscriberCount });

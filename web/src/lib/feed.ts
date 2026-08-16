@@ -428,5 +428,5 @@ export function getAuthorBio(item: FeedItem): string {
 }
 
 export function getAuthorSubscribers(item: FeedItem): number {
-  return item.author?.subscribersCount || 12500;
+  return item.author?.subscribersCount || 0;
 }

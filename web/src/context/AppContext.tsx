@@ -249,7 +249,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         handle: `@${normHandle}`,
         avatarUrl: match?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
         bio: match?.bio || 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: 15400,
+        subscribersCount: 0,
         allowDirectMessages: 'everyone',
       });
       return;
@@ -261,7 +261,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         handle: creatorOrItem.handle.startsWith('@') ? creatorOrItem.handle : `@${creatorOrItem.handle}`,
         avatarUrl: creatorOrItem.avatarUrl,
         bio: creatorOrItem.bio || 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: creatorOrItem.subscribersCount || 15400,
+        subscribersCount: Number(creatorOrItem.subscribersCount || 0),
         allowDirectMessages: creatorOrItem.allowDirectMessages || 'everyone',
       });
       return;
@@ -276,7 +276,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         handle: handle.startsWith('@') ? handle : `@${handle}`,
         avatarUrl: avatar,
         bio: creatorOrItem.bio || creatorOrItem.author?.bio || 'Creator & Content Publisher im Omni Network.',
-        subscribersCount: creatorOrItem.subscribersCount || 15400,
+        subscribersCount: Number(creatorOrItem.subscribersCount || creatorOrItem.author?.subscribersCount || 0),
         allowDirectMessages: creatorOrItem.allowDirectMessages || creatorOrItem.author?.allowDirectMessages || 'everyone',
       });
       return;
@@ -287,7 +287,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       handle: getAuthorHandle(creatorOrItem),
       avatarUrl: getAuthorAvatar(creatorOrItem),
       bio: 'Creator & Content Publisher im Omni Network.',
-      subscribersCount: 15400,
+      subscribersCount: Number(creatorOrItem.subscribersCount || creatorOrItem.author?.subscribersCount || 0),
       allowDirectMessages: creatorOrItem.allowDirectMessages || creatorOrItem.author?.allowDirectMessages || 'everyone',
     });
   };

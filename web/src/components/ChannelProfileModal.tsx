@@ -90,7 +90,9 @@ export default function ChannelProfileModal({
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[11px] text-[#44e2cd] font-semibold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
-                  {((selectedChannel.subscribersCount || 15400) / 1000).toFixed(1)}k Abonnenten
+                  {selectedChannel.subscribersCount && selectedChannel.subscribersCount >= 1000
+                    ? `${(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten`
+                    : `${(selectedChannel.subscribersCount || 0).toLocaleString()} Abonnenten`}
                 </span>
               </div>
             </div>

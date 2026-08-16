@@ -61,63 +61,25 @@ export default function HomeClient() {
 
   const fetchChannels = async () => {
     try {
-      // Fallback presets prioritized with active creators
-      const presetChannels: ChannelItem[] = [
-        {
-          id: '1',
-          username: 'Database Guru',
-          handle: '@demotech',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-          bio: 'Tech, Datenbanken & AI Engineering.',
-          subscribersCount: 24500,
-          hasNewContent: true,
-        },
-        {
-          id: '2',
-          username: 'Culinary Masterclass',
-          handle: '@demogourmet',
-          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
-          bio: 'Italienische Küche, feine Rezepte & Kulinarik.',
-          subscribersCount: 18900,
-          hasNewContent: true,
-        },
-        {
-          id: '10',
-          username: 'Astro-Wissen Magazin',
-          handle: '@astro',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-          bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.',
-          subscribersCount: 31200,
-          hasNewContent: false,
-        },
-        {
-          id: '3',
-          username: 'Green Planet Doku',
-          handle: '@greenplanet',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
-          bio: 'Naturdokumentationen & Artenschutz.',
-          subscribersCount: 14200,
-          hasNewContent: false,
-        },
-        {
-          id: '4',
-          username: 'FinanzKompass',
-          handle: '@finanzkompass',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-          bio: 'Finanzwissen & Vermögensaufbau.',
-          subscribersCount: 9800,
-          hasNewContent: false,
-        },
-      ];
-
-      // Shuffle & prioritize creators with new content
-      const sorted = [...presetChannels].sort((a, b) => {
-        if (a.hasNewContent && !b.hasNewContent) return -1;
-        if (!a.hasNewContent && b.hasNewContent) return 1;
-        return Math.random() - 0.5;
-      });
-
-      setChannels(sorted);
+      const res = await fetch('/api/profile?pageSize=20');
+      if (res.ok) {
+        const data = await res.json();
+        const rawProfiles = data.profiles || data.users || [];
+        if (rawProfiles.length > 0) {
+          const mapped: ChannelItem[] = rawProfiles.map((p: any) => ({
+            id: String(p.id),
+            documentId: p.documentId,
+            username: p.username || 'Creator',
+            handle: p.handle || `@${(p.username || 'creator').toLowerCase()}`,
+            avatarUrl: p.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+            bio: p.bio || '',
+            subscribersCount: Number(p.subscribersCount || 0),
+            hasNewContent: false,
+          }));
+          setChannels(mapped);
+          return;
+        }
+      }
     } catch (e) {
       console.error('Error loading channels:', e);
     }
@@ -330,7 +292,7 @@ export default function HomeClient() {
                 </p>
 
                 <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                  <span>{(channel.subscribersCount || 15400).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
+                  <span>{(channel.subscribersCount || 0).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
                   <span className="text-indigo-400 font-semibold group-hover:underline">{t.home?.viewChannel || 'Kanal ansehen →'}</span>
                 </div>
               </div>

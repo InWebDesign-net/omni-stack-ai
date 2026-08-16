@@ -63,7 +63,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
         avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
         bio: data.user.bio || t.auth.demoUserBio,
-        subscribersCount: data.user.subscribersCount || 1280,
+        subscribersCount: Number(data.user.subscribersCount || 0),
         jwt: data.jwt,
       };
 
@@ -159,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
         avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
         bio: data.user.bio || 'Omni Content Explorer',
-        subscribersCount: data.user.subscribersCount || 100,
+        subscribersCount: Number(data.user.subscribersCount || 0),
         jwt: data.jwt,
       };
 

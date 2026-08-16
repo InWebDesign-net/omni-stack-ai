@@ -237,7 +237,7 @@ export default function ImagePageClient({
       handle: creator.handle || `@${(creator.username || 'creator').toLowerCase()}`,
       avatarUrl: creator.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
       bio: creator.bio || 'Omni Network Content Creator',
-      subscribersCount: creator.subscribersCount || 128,
+      subscribersCount: Number(creator.subscribersCount || 0),
     });
     setIsChannelModalOpen(true);
   };
