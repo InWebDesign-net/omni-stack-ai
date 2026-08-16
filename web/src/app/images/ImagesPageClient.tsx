@@ -25,14 +25,67 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 
+import { jsonAuthHeaders } from '@/lib/affinity';
+
 export default function ImagesPageClient({ initialParams }: { initialParams?: any }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { currentUser, lang, t } = useApp();
+  const { currentUser, openAuthModal, lang, t } = useApp();
   const perPage = 24;
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+      setLikedSlugs(stored);
+    } catch (e) {}
+  }, []);
+
+  const handleCardLikeToggle = async (e: React.MouseEvent, img: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
+
+    const isLiked = likedSlugs.includes(img.slug);
+    const nextIsLiked = !isLiked;
+
+    setLikedSlugs((prev) =>
+      nextIsLiked ? [...prev, img.slug] : prev.filter((s) => s !== img.slug)
+    );
+
+    img.likesCount = Math.max(0, (img.likesCount || 0) + (nextIsLiked ? 1 : -1));
+
+    try {
+      const storedLikes = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+      if (nextIsLiked && !storedLikes.includes(img.slug)) {
+        localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, img.slug]));
+      } else if (!nextIsLiked) {
+        localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s: string) => s !== img.slug)));
+      }
+    } catch (err) {}
+
+    try {
+      const userIdent = currentUser.username || currentUser.handle || `user-${currentUser.id}`;
+      await fetch('/api/feed/interaction', {
+        method: 'POST',
+        headers: jsonAuthHeaders(),
+        body: JSON.stringify({
+          slug: img.slug,
+          type: nextIsLiked ? 'like' : 'unlike',
+          userIdentifier: userIdent,
+        }),
+      });
+    } catch (err) {
+      console.error('Error toggling image like:', err);
+    }
+  };
 
   const searchTerm = searchParams.get('q') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
@@ -386,10 +439,19 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
                   {/* Top Stats Badges */}
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono text-white border border-white/10">
-                    <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+                  <button
+                    type="button"
+                    onClick={(e) => handleCardLikeToggle(e, img)}
+                    title={likedSlugs.includes(img.slug) ? 'Gefällt mir nicht mehr' : 'Gefällt mir'}
+                    className={`absolute top-3 right-3 z-10 flex items-center gap-1.5 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all cursor-pointer ${
+                      likedSlugs.includes(img.slug)
+                        ? 'bg-rose-500/30 text-rose-200 border-rose-500/50 shadow-md shadow-rose-500/20'
+                        : 'bg-black/60 text-white border-white/10 hover:border-rose-400/50 hover:text-rose-300'
+                    }`}
+                  >
+                    <Heart className={`w-3 h-3 ${likedSlugs.includes(img.slug) ? 'text-rose-400 fill-rose-400' : 'text-rose-400'}`} />
                     <span>{img.likesCount || 0}</span>
-                  </div>
+                  </button>
 
                   {/* Creator Avatar Badge */}
                   {img.creator && (

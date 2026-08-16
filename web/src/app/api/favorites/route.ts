@@ -25,34 +25,37 @@ export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthUser(req);
     if (!authUser?.id) {
-      return NextResponse.json({ favoriteVideoIds: [], favoriteFeedItemIds: [] });
+      return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteFeedItemIds: [] });
     }
 
     const favRes = await fetch(
-      getStrapiUrl(`/api/favorites?filters[user][id][$eq]=${authUser.id}&populate[video][fields][0]=id&populate[feedItem][fields][0]=id`),
+      getStrapiUrl(`/api/favorites?filters[user][id][$eq]=${authUser.id}&populate[video][fields][0]=id&populate[image][fields][0]=id&populate[feedItem][fields][0]=id`),
       {
         headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
       }
     );
 
     if (!favRes.ok) {
-      return NextResponse.json({ favoriteVideoIds: [], favoriteFeedItemIds: [] });
+      return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteFeedItemIds: [] });
     }
 
     const favData = await favRes.json();
     const items = favData.data || [];
 
     const favoriteVideoIds: string[] = [];
+    const favoriteImageIds: string[] = [];
     const favoriteFeedItemIds: string[] = [];
 
     items.forEach((item: any) => {
       const vId = item.attributes?.video?.data?.id || item.video?.id;
+      const imgId = item.attributes?.image?.data?.id || item.image?.id;
       const fId = item.attributes?.feedItem?.data?.id || item.feedItem?.id;
       if (vId) favoriteVideoIds.push(String(vId));
+      if (imgId) favoriteImageIds.push(String(imgId));
       if (fId) favoriteFeedItemIds.push(String(fId));
     });
 
-    return NextResponse.json({ favoriteVideoIds, favoriteFeedItemIds });
+    return NextResponse.json({ favoriteVideoIds, favoriteImageIds, favoriteFeedItemIds });
   } catch (error: any) {
     console.error('GET /api/favorites error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
@@ -67,14 +70,16 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { videoId, feedItemId } = body;
+    const { videoId, imageId, feedItemId } = body;
 
-    if (!videoId && !feedItemId) {
-      return NextResponse.json({ error: 'Missing videoId or feedItemId' }, { status: 400 });
+    if (!videoId && !imageId && !feedItemId) {
+      return NextResponse.json({ error: 'Missing videoId, imageId, or feedItemId' }, { status: 400 });
     }
 
     const targetFilter = videoId
       ? `filters[user][id][$eq]=${authUser.id}&filters[video][id][$eq]=${videoId}`
+      : imageId
+      ? `filters[user][id][$eq]=${authUser.id}&filters[image][id][$eq]=${imageId}`
       : `filters[user][id][$eq]=${authUser.id}&filters[feedItem][id][$eq]=${feedItemId}`;
 
     const existingRes = await fetch(getStrapiUrl(`/api/favorites?${targetFilter}`), {
@@ -106,6 +111,7 @@ export async function POST(req: NextRequest) {
         userIdentifier: authUser.username || authUser.handle || `user-${authUser.id}`,
       };
       if (videoId) payload.video = videoId;
+      if (imageId) payload.image = imageId;
       if (feedItemId) payload.feedItem = feedItemId;
 
       await fetch(getStrapiUrl('/api/favorites'), {

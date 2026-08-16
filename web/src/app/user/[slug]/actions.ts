@@ -109,11 +109,11 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       totalLikes += Number(v.likesCount || 0);
     }
 
-    // 5. Fetch Favorites for this profile (videos AND feed-items / content)
+    // 5. Fetch Favorites for this profile (videos, images AND feed-items / content)
     let favorites: any[] = [];
     try {
       const favRes = await fetch(
-        `${strapiUrl}/api/favorites?filters[user][id][$eq]=${targetProfile.id}&populate=video,feedItem&pagination[pageSize]=50`,
+        `${strapiUrl}/api/favorites?filters[user][id][$eq]=${targetProfile.id}&populate=video,image,feedItem&pagination[pageSize]=50`,
         { headers, cache: 'no-store' }
       );
       if (favRes.ok) {
@@ -122,6 +122,17 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         for (const f of rawFavs) {
           if (f.video) {
             favorites.push({ ...f.video, mediaType: 'video' });
+          } else if (f.image) {
+            favorites.push({
+              documentId: f.image.documentId,
+              slug: f.image.slug,
+              title: f.image.title,
+              thumbnailUrl: f.image.thumbnailUrl || f.image.imageUrl,
+              summary: f.image.summary,
+              viewsCount: f.image.viewsCount || 0,
+              likesCount: f.image.likesCount || 0,
+              mediaType: 'image',
+            });
           } else if (f.feedItem) {
             // Normalize feed-item shape to the card format expected by the UI
             const fi = f.feedItem;

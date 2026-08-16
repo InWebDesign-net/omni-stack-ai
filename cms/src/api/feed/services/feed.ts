@@ -1399,8 +1399,13 @@ WICHTIG: Antworte im folgenden JSON-Format:
 
     let videoMatches: any[] = [];
     let feedMatches: any[] = [];
+    let imageMatches: any[] = [];
     try {
       videoMatches = await strapi.documents('api::video.video').findMany({
+        filters: { slug: slug },
+        locale: '*',
+      });
+      imageMatches = await strapi.documents('api::image.image').findMany({
         filters: { slug: slug },
         locale: '*',
       });
@@ -1412,19 +1417,20 @@ WICHTIG: Antworte im folgenden JSON-Format:
       console.error('Error in handleInteraction findMany:', e.message || e);
     }
 
-    if (videoMatches.length === 0 && feedMatches.length === 0) {
+    if (videoMatches.length === 0 && feedMatches.length === 0 && imageMatches.length === 0) {
       return { success: false, error: 'Entity not found' };
     }
 
-    const currentItem = videoMatches[0] || feedMatches[0];
+    const currentItem = videoMatches[0] || imageMatches[0] || feedMatches[0];
     let currentViewsCount = Number(currentItem?.viewsCount || 0);
     let currentLikesCount = Number(currentItem?.likesCount || 0);
     const targetVideoDocId = videoMatches[0]?.documentId || null;
+    const targetImageDocId = imageMatches[0]?.documentId || null;
     const targetFeedItemDocId = feedMatches[0]?.documentId || null;
     const tags: string[] = currentItem?.tags || ['Community'];
 
     if (type === 'view') {
-      const mediaType = currentItem?.mediaType || 'video';
+      const mediaType = currentItem?.mediaType || (imageMatches.length > 0 ? 'image' : 'video');
       const requiredDuration = (mediaType === 'video' || mediaType === 'short') ? 5 : 3;
 
       if (watchTimeSeconds < requiredDuration) {
@@ -1454,6 +1460,17 @@ WICHTIG: Antworte im folgenden JSON-Format:
       for (const doc of videoMatches) {
         try {
           await strapi.documents('api::video.video').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            status: 'published',
+            data: { viewsCount: currentViewsCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      for (const doc of imageMatches) {
+        try {
+          await strapi.documents('api::image.image').update({
             documentId: doc.documentId,
             locale: doc.locale || 'de',
             status: 'published',
@@ -1502,9 +1519,14 @@ WICHTIG: Antworte im folgenden JSON-Format:
           },
         };
         if (targetVideoDocId) favQuery.filters.video = { documentId: { $eq: targetVideoDocId } };
+        else if (targetImageDocId) favQuery.filters.image = { documentId: { $eq: targetImageDocId } };
         else if (targetFeedItemDocId) favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
 
-        existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
+        try {
+          existingFavs = await strapi.documents('api::favorite.favorite').findMany(favQuery);
+        } catch (e) {
+          existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
+        }
       } catch (e) {}
 
       if (existingFavs.length === 0) {
@@ -1513,11 +1535,18 @@ WICHTIG: Antworte im folgenden JSON-Format:
           const favData: any = { userIdentifier };
           if (userId) favData.user = userId;
           if (targetVideoDocId) favData.video = targetVideoDocId;
+          if (targetImageDocId) favData.image = targetImageDocId;
           if (targetFeedItemDocId) favData.feedItem = targetFeedItemDocId;
 
-          await strapi.documents('api::fav.fav').create({
-            data: favData,
-          });
+          try {
+            await strapi.documents('api::favorite.favorite').create({
+              data: favData,
+            });
+          } catch (e) {
+            await strapi.documents('api::fav.fav').create({
+              data: favData,
+            });
+          }
         } catch (e) {}
 
         currentLikesCount += 1;
@@ -1526,6 +1555,17 @@ WICHTIG: Antworte im folgenden JSON-Format:
         for (const doc of videoMatches) {
           try {
             await strapi.documents('api::video.video').update({
+              documentId: doc.documentId,
+              locale: doc.locale || 'de',
+              status: 'published',
+              data: { likesCount: currentLikesCount } as any,
+            });
+          } catch (e) {}
+        }
+
+        for (const doc of imageMatches) {
+          try {
+            await strapi.documents('api::image.image').update({
               documentId: doc.documentId,
               locale: doc.locale || 'de',
               status: 'published',
@@ -1548,7 +1588,7 @@ WICHTIG: Antworte im folgenden JSON-Format:
         if (userId) {
           try {
             await strapi.service('api::tracking.tracking').processBatch(userId, [
-              { type: 'like', tags, mediaType: currentItem?.mediaType },
+              { type: 'like', tags, mediaType: currentItem?.mediaType || 'image' },
             ]);
           } catch (e) {}
         }
@@ -1574,13 +1614,24 @@ WICHTIG: Antworte im folgenden JSON-Format:
           },
         };
         if (targetVideoDocId) favQuery.filters.video = { documentId: { $eq: targetVideoDocId } };
+        else if (targetImageDocId) favQuery.filters.image = { documentId: { $eq: targetImageDocId } };
         else if (targetFeedItemDocId) favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
 
-        const existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
-        for (const fav of existingFavs) {
-          await strapi.documents('api::fav.fav').delete({
-            documentId: fav.documentId,
-          });
+        let existingFavs: any[] = [];
+        try {
+          existingFavs = await strapi.documents('api::favorite.favorite').findMany(favQuery);
+          for (const fav of existingFavs) {
+            await strapi.documents('api::favorite.favorite').delete({
+              documentId: fav.documentId,
+            });
+          }
+        } catch (e) {
+          existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
+          for (const fav of existingFavs) {
+            await strapi.documents('api::fav.fav').delete({
+              documentId: fav.documentId,
+            });
+          }
         }
       } catch (e) {}
 
@@ -1589,6 +1640,17 @@ WICHTIG: Antworte im folgenden JSON-Format:
       for (const doc of videoMatches) {
         try {
           await strapi.documents('api::video.video').update({
+            documentId: doc.documentId,
+            locale: doc.locale || 'de',
+            status: 'published',
+            data: { likesCount: currentLikesCount } as any,
+          });
+        } catch (e) {}
+      }
+
+      for (const doc of imageMatches) {
+        try {
+          await strapi.documents('api::image.image').update({
             documentId: doc.documentId,
             locale: doc.locale || 'de',
             status: 'published',
@@ -1611,7 +1673,7 @@ WICHTIG: Antworte im folgenden JSON-Format:
       if (userId) {
         try {
           await strapi.service('api::tracking.tracking').processBatch(userId, [
-            { type: 'unlike', tags, mediaType: currentItem?.mediaType },
+            { type: 'unlike', tags, mediaType: currentItem?.mediaType || 'image' },
           ]);
         } catch (e) {}
       }
@@ -1637,12 +1699,22 @@ WICHTIG: Antworte im folgenden JSON-Format:
         return { success: false, error: 'userIdentifier or userId is required' };
       }
 
-      const favs = await strapi.documents('api::fav.fav').findMany({
-        filters: {
-          $or: favFilters,
-        },
-        populate: ['video', 'feedItem'],
-      });
+      let favs: any[] = [];
+      try {
+        favs = await strapi.documents('api::favorite.favorite').findMany({
+          filters: {
+            $or: favFilters,
+          },
+          populate: ['video', 'feedItem', 'image'],
+        });
+      } catch (e) {
+        favs = await strapi.documents('api::fav.fav').findMany({
+          filters: {
+            $or: favFilters,
+          },
+          populate: ['video', 'feedItem', 'image'],
+        });
+      }
 
       return {
         success: true,

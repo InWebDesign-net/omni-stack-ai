@@ -28,6 +28,11 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::feed-item.feed-item"
+    },
+    "image": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::image.image"
     }
   }
 }

@@ -82,6 +82,12 @@ export default function ImagePageClient({
   );
 
   useEffect(() => {
+    try {
+      const storedLikes = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+      if (storedLikes.includes(slug)) {
+        setIsLiked(true);
+      }
+    } catch (e) {}
     loadComments();
     trackView();
   }, [slug]);
@@ -101,6 +107,11 @@ export default function ImagePageClient({
   const trackView = async () => {
     try {
       setViewsCount((prev) => prev + 1);
+      await fetch('/api/feed/interaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, type: 'view' }),
+      });
     } catch (e) {}
   };
 
@@ -112,6 +123,36 @@ export default function ImagePageClient({
     const nextIsLiked = !isLiked;
     setIsLiked(nextIsLiked);
     setLikesCount((prev) => (nextIsLiked ? prev + 1 : Math.max(0, prev - 1)));
+
+    try {
+      const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+      if (nextIsLiked && !storedLikes.includes(slug)) {
+        localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, slug]));
+      } else if (!nextIsLiked) {
+        localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== slug)));
+      }
+    } catch (e) {}
+
+    try {
+      const userIdent = currentUser.username || currentUser.handle || `user-${currentUser.id}`;
+      const res = await fetch('/api/feed/interaction', {
+        method: 'POST',
+        headers: jsonAuthHeaders(),
+        body: JSON.stringify({
+          slug,
+          type: nextIsLiked ? 'like' : 'unlike',
+          userIdentifier: userIdent,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.likesCount === 'number') {
+          setLikesCount(data.likesCount);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to sync image like interaction:', e);
+    }
   };
 
   const handleAddComment = async (e: React.FormEvent) => {

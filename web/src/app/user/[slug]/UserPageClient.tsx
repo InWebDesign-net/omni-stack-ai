@@ -380,8 +380,12 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {favorites.map((item: any) => {
-                                    const thumb = item.thumbnailUrl || '/media/thumbnails/default.png';
-                                    const itemHref = item.mediaType === 'content' ? `/content/${item.slug}` : `/video/${item.slug}`;
+                                    const thumb = item.thumbnailUrl || item.imageUrl || '/media/thumbnails/default.png';
+                                    const itemHref = item.mediaType === 'image'
+                                        ? `/image/${item.slug}`
+                                        : item.mediaType === 'content'
+                                        ? `/content/${item.slug}`
+                                        : `/video/${item.slug}`;
 
                                     return (
                                         <div
@@ -398,6 +402,11 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 {item.mediaType === 'video' && (
                                                     <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
                                                         {formatDuration(item.duration)}
+                                                    </div>
+                                                )}
+                                                {item.mediaType === 'image' && (
+                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-teal-950/80 text-[11px] font-mono text-teal-300 border border-teal-800/80">
+                                                        Bild / Galerie
                                                     </div>
                                                 )}
                                                 {item.mediaType === 'content' && (
