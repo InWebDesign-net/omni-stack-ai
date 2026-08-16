@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
+import { safeJsonLd } from '@/lib/jsonLd';
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://omni-web.inwebdesign.net'),
   title: {
@@ -138,11 +140,11 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdWebsite) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdOrganization) }}
         />
       </head>
       <body className="antialiased bg-[#080e1e] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white" suppressHydrationWarning>

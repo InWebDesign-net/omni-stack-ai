@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import ContentPageClient from './ContentPageClient';
+import { safeJsonLd } from '@/lib/jsonLd';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 type Props = {
@@ -202,12 +203,12 @@ export default async function Page({ params }: Props) {
       {jsonLdArticle && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdArticle) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdArticle) }}
         />
       )}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       <ContentPageClient
         initialItem={item}

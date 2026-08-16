@@ -2,6 +2,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import VideoPageClient from '@/app/video/[slug]/VideoPageClient';
+import { safeJsonLd } from '@/lib/jsonLd';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
 import { getVideoOwnerStatus } from '@/app/video/[slug]/actions';
 
@@ -241,12 +242,12 @@ export default async function Page({ params }: Props) {
       {jsonLdVideo && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdVideo) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdVideo) }}
         />
       )}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       <VideoPageClient
         initialVideo={data.videoList}

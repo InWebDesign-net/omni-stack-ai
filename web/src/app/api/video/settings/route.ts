@@ -6,15 +6,21 @@ function strapiBase() {
   return process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 }
 
-function buildHeaders(req: Request): Record<string, string> {
+function buildHeaders(req: Request, requireUserAuth = false): Record<string, string> | null {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  // Forward the user JWT so Strapi applies the authenticated role's permissions
   const authHeader = req.headers.get('authorization');
   if (authHeader) {
     headers['Authorization'] = authHeader;
-  } else if (process.env.STRAPI_API_TOKEN) {
+    return headers;
+  }
+  
+  if (requireUserAuth) {
+    return null;
+  }
+
+  if (process.env.STRAPI_API_TOKEN) {
     headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
   }
   return headers;
@@ -28,13 +34,18 @@ export async function GET(req: Request) {
     if (!documentId) {
       return NextResponse.json({ error: 'documentId required' }, { status: 400 });
     }
+    const headers = buildHeaders(req, false);
+    if (!headers) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const targetUrl = `${strapiBase()}/api/videos?filters[documentId][$eq]=${encodeURIComponent(
       documentId
     )}&locale=*&populate=creator`;
 
     const res = await fetch(targetUrl, {
       method: 'GET',
-      headers: buildHeaders(req),
+      headers,
       cache: 'no-store',
     });
 
@@ -52,14 +63,17 @@ export async function GET(req: Request) {
 // PUT /api/video/settings  -> { documentId, localeUpdates: [{locale, data}], visibility }
 export async function PUT(req: Request) {
   try {
+    const headers = buildHeaders(req, true);
+    if (!headers) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { documentId, localeUpdates, visibility } = body;
 
     if (!documentId) {
       return NextResponse.json({ error: 'documentId required' }, { status: 400 });
     }
-
-    const headers = buildHeaders(req);
 
     // Update localized fields per locale
     if (Array.isArray(localeUpdates)) {

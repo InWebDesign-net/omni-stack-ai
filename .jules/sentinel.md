@@ -16,5 +16,7 @@
 **Vulnerability:** Found a hardcoded fallback value (`'9ukrMWtnoIulQCWQbXoWRQ=='`) for the `JWT_SECRET` in `socket/src/index.ts`.
 **Learning:** Hardcoding a fallback secret introduces a critical vulnerability where an attacker with access to the codebase can forge authentication tokens if the environment variable is not explicitly set. The service allowed silent fallback to insecure states.
 **Prevention:** Always enforce "fail-fast" or "fail securely" patterns. If a critical security variable is missing, explicitly log a fatal error and call `process.exit(1)` rather than providing a default secret.
-=======
->>>>>>> 2a2cefb (🛡️ Sentinel: [CRITICAL] Fix hardcoded secret fallbacks)
+## 2026-08-16 - [HIGH] XSS Vulnerability in JSON-LD Metadata & Unauthenticated Mutation Fallback
+**Vulnerability:** Next.js pages embedded JSON-LD SEO metadata using `dangerouslySetInnerHTML={{ __html: JSON.stringify(...) }}` without escaping HTML tag break-outs (`<`, `>`, `&`). Additionally, `/api/video/settings/route.ts` fell back to `process.env.STRAPI_API_TOKEN` for `PUT` mutations when no user token was provided.
+**Learning:** `JSON.stringify` does not escape HTML characters such as `<` or `>`, allowing user-controlled input (like usernames, titles, or bios) to breakout of `<script type="application/ld+json">` tags. Furthermore, proxy API routes must strictly enforce user authentication for state mutation routes without falling back to master API tokens.
+**Prevention:** Always sanitize JSON-LD string representations by escaping HTML characters (`<` -> `\u003c`, `>` -> `\u003e`, `&` -> `\u0026`) via `safeJsonLd()`. For API mutation routes, enforce user bearer token verification and reject unauthenticated requests with HTTP 401.

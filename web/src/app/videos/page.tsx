@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import VideosPageClient from "@/app/videos/VideosPageClient";
 import { VideosSkeleton } from "@/app/videos/skeleton";
+import { safeJsonLd } from "@/lib/jsonLd";
 
 // Hilfsfunktion für SEO-Titel basierend auf Querys
 function getTitle(searchParams: any) {
@@ -64,7 +65,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<any
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+                dangerouslySetInnerHTML={{ __html: safeJsonLd(collectionJsonLd) }}
             />
             <Suspense fallback={<VideosSkeleton />}>
                 <VideosPageClient initialParams={resolvedParams} />
