@@ -28,7 +28,7 @@ export default function SubscribeButton({
   size = 'md',
   onStatusChange,
 }: SubscribeButtonProps) {
-  const { currentUser, t } = useApp();
+  const { currentUser, openAuthModal, t } = useApp();
   const [isSubscribed, setIsSubscribed] = useState<boolean>(initialIsSubscribed ?? false);
   const [count, setCount] = useState<number>(initialCount ?? 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -92,7 +92,7 @@ export default function SubscribeButton({
     e.stopPropagation();
 
     if (!currentUser) {
-      alert((t.common as any)?.loginRequired || 'Bitte melde dich an, um Kanäle zu abonnieren.');
+      openAuthModal();
       return;
     }
 
