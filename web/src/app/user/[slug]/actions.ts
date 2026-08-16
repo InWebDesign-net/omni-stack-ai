@@ -78,17 +78,33 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     // 3. Determine ownership
     const isOwner = Boolean(
       viewer &&
-        (viewer.id === targetProfile.id ||
-          (viewer.handle && viewer.handle === targetProfile.handle) ||
-          (viewer.username && viewer.username === targetProfile.username))
+        targetProfile &&
+        (
+          (viewer.id != null && targetProfile.id != null && String(viewer.id) === String(targetProfile.id)) ||
+          ((viewer as any).documentId && targetProfile.documentId && String((viewer as any).documentId) === String(targetProfile.documentId)) ||
+          (viewer.handle && targetProfile.handle && String(viewer.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
+          (viewer.username && targetProfile.username && String(viewer.username).toLowerCase() === String(targetProfile.username).toLowerCase())
+        )
     );
 
     // 3. Filter videos for this profile
     const profileVideoMap = new Map<string, any>();
     for (const v of allVideos) {
-      if (v.creator && (v.creator.id === targetProfile.id || v.creator.documentId === targetProfile.documentId)) {
+      const creator = v.creator || v.author;
+      const belongsToProfile = Boolean(
+        creator &&
+          targetProfile &&
+          (
+            (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
+            (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
+            (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
+            (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
+          )
+      );
+
+      if (belongsToProfile) {
         const key = v.slug || v.documentId || v.id;
-        // If owner: see all videos. If visitor: see only public videos.
+        // If owner: see all videos (public, unlisted, private). If visitor: see only public videos.
         const canView = isOwner || v.visibility === 'public';
         if (canView) {
           if (!profileVideoMap.has(key)) {

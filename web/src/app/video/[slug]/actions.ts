@@ -16,19 +16,19 @@ export async function getVideoOwnerStatus(slug: string): Promise<VideoOwnerStatu
 
   try {
     const { user } = await getCurrentUserFromCookies();
+    if (!user) return { isOwner: false, videoExists: false };
+
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    // Server-side reads use the API token so the creator relation is always
-    // visible regardless of the viewer's role.
     if (process.env.STRAPI_API_TOKEN) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
     const videoRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator`,
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
       { headers, cache: 'no-store' }
     );
 
@@ -38,9 +38,18 @@ export async function getVideoOwnerStatus(slug: string): Promise<VideoOwnerStatu
     const videoList = videoData?.data || [];
     if (videoList.length === 0) return { isOwner: false, videoExists: false };
 
-    const video = videoList.find((v: any) => v.creator) || videoList[0];
+    const videoWithCreator = videoList.find((v: any) => v.creator || v.author) || videoList[0];
+    const creator = videoWithCreator?.creator || videoWithCreator?.author;
+
     const isOwner = Boolean(
-      user && (user.id === video.creator?.id)
+      user &&
+        creator &&
+        (
+          (user.id != null && creator.id != null && String(user.id) === String(creator.id)) ||
+          ((user as any).documentId && creator.documentId && String((user as any).documentId) === String(creator.documentId)) ||
+          (user.handle && creator.handle && String(user.handle).replace(/^@/, '').toLowerCase() === String(creator.handle).replace(/^@/, '').toLowerCase()) ||
+          (user.username && creator.username && String(user.username).toLowerCase() === String(creator.username).toLowerCase())
+        )
     );
 
     return { isOwner, videoExists: true };

@@ -71,7 +71,17 @@ export async function generateMetadata(
   }
 
   const item = data.item;
-  const isOwner = Boolean(user?.id && item.author?.id === user.id);
+  const author = item.author || item.creator;
+  const isOwner = Boolean(
+    user &&
+      author &&
+      (
+        (user.id != null && author.id != null && String(user.id) === String(author.id)) ||
+        ((user as any).documentId && author.documentId && String((user as any).documentId) === String(author.documentId)) ||
+        (user.handle && author.handle && String(user.handle).replace(/^@/, '').toLowerCase() === String(author.handle).replace(/^@/, '').toLowerCase()) ||
+        (user.username && author.username && String(user.username).toLowerCase() === String(author.username).toLowerCase())
+      )
+  );
 
   if (item.visibility === 'private' && !isOwner) {
     return {
@@ -135,7 +145,17 @@ export default async function Page({ params }: Props) {
   }
 
   const item = data.item;
-  const isOwner = Boolean(user?.id && item.author?.id === user.id);
+  const author = item.author || item.creator;
+  const isOwner = Boolean(
+    user &&
+      author &&
+      (
+        (user.id != null && author.id != null && String(user.id) === String(author.id)) ||
+        ((user as any).documentId && author.documentId && String((user as any).documentId) === String(author.documentId)) ||
+        (user.handle && author.handle && String(user.handle).replace(/^@/, '').toLowerCase() === String(author.handle).replace(/^@/, '').toLowerCase()) ||
+        (user.username && author.username && String(user.username).toLowerCase() === String(author.username).toLowerCase())
+      )
+  );
 
   if (item.visibility === 'private' && !isOwner) {
     notFound();
