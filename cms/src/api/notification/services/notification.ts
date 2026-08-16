@@ -40,21 +40,27 @@ export default factories.createCoreService('api::notification.notification', ({ 
     };
   },
 
-  async markAsRead(userId: number, notificationIds?: (number | string)[], markAll = false) {
+  async markAsRead(userId: number, notificationIds?: (number | string)[], markAll = false, targetIsRead = true) {
     if (!userId) return { success: false };
 
     if (markAll) {
       await strapi.db.query('api::notification.notification').updateMany({
-        where: { recipient: { id: userId }, isRead: false },
+        where: { recipient: { id: userId } },
         data: { isRead: true },
       });
     } else if (Array.isArray(notificationIds) && notificationIds.length > 0) {
+      const numIds = notificationIds.map((id) => Number(id)).filter((id) => !isNaN(id));
+      const strIds = notificationIds.map((id) => String(id));
+
       await strapi.db.query('api::notification.notification').updateMany({
         where: {
           recipient: { id: userId },
-          id: { $in: notificationIds },
+          $or: [
+            ...(numIds.length > 0 ? [{ id: { $in: numIds } }] : []),
+            ...(strIds.length > 0 ? [{ documentId: { $in: strIds } }] : []),
+          ],
         },
-        data: { isRead: true },
+        data: { isRead: Boolean(targetIsRead) },
       });
     }
 
@@ -64,10 +70,16 @@ export default factories.createCoreService('api::notification.notification', ({ 
   async deleteUserNotification(userId: number, notificationId: number | string) {
     if (!userId || !notificationId) return { success: false };
 
-    await strapi.db.query('api::notification.notification').delete({
+    const numId = Number(notificationId);
+    const strId = String(notificationId);
+
+    await strapi.db.query('api::notification.notification').deleteMany({
       where: {
-        id: notificationId,
         recipient: { id: userId },
+        $or: [
+          ...(!isNaN(numId) ? [{ id: numId }] : []),
+          { documentId: strId },
+        ],
       },
     });
 
@@ -77,7 +89,7 @@ export default factories.createCoreService('api::notification.notification', ({ 
   async createNotification(params: {
     recipientId: number;
     senderId?: number;
-    type: 'chat_message' | 'comment_reply' | 'new_video' | 'new_subscriber';
+    type: 'chat_message' | 'comment_reply' | 'new_comment' | 'new_video' | 'new_subscriber';
     title: string;
     message: string;
     link?: string;
@@ -85,8 +97,7 @@ export default factories.createCoreService('api::notification.notification', ({ 
     const { recipientId, senderId, type, title, message, link } = params;
     if (!recipientId) return null;
 
-    // Do not notify self
-    if (senderId && senderId === recipientId) return null;
+    if (senderId && Number(senderId) === Number(recipientId)) return null;
 
     const notification = await strapi.db.query('api::notification.notification').create({
       data: {
@@ -102,4 +113,72 @@ export default factories.createCoreService('api::notification.notification', ({ 
 
     return notification;
   },
+
+  async createOrBucketNotification(params: {
+    recipientId: number;
+    senderId?: number;
+    senderUsername?: string;
+    type: 'chat_message' | 'comment_reply' | 'new_comment' | 'new_video' | 'new_subscriber';
+    title: string;
+    message: string;
+    link?: string;
+    contentTitle?: string;
+  }) {
+    const { recipientId, senderId, senderUsername, type, title, message, link, contentTitle } = params;
+    if (!recipientId) return null;
+
+    if (senderId && Number(senderId) === Number(recipientId)) return null;
+
+    const cleanLink = link || '';
+    const baseLink = cleanLink.split('#')[0];
+
+    if (baseLink && (type === 'comment_reply' || type === 'new_comment')) {
+      const oneDayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const existing = await strapi.db.query('api::notification.notification').findMany({
+        where: {
+          recipient: { id: recipientId },
+          isRead: false,
+          createdAt: { $gte: oneDayAgo },
+        },
+        orderBy: { createdAt: 'DESC' },
+        limit: 10,
+      });
+
+      const match = (existing || []).find((n: any) => n.link && n.link.split('#')[0] === baseLink);
+
+      if (match) {
+        const existingSenders: string[] = match.message.match(/@[\w.-]+/g) || [];
+        const newSenderTag = senderUsername ? `@${senderUsername.replace(/^@/, '')}` : (senderId ? `@user${senderId}` : 'Jemand');
+        
+        let sendersList = existingSenders;
+        if (!sendersList.includes(newSenderTag)) {
+          sendersList = [newSenderTag, ...sendersList];
+        }
+
+        const totalCount = sendersList.length;
+        let bucketMessage = message;
+        if (totalCount === 1) {
+          bucketMessage = `${sendersList[0]} hat ${contentTitle ? `"${contentTitle}"` : 'deinen Inhalt'} kommentiert`;
+        } else if (totalCount === 2) {
+          bucketMessage = `${sendersList[0]} und ${sendersList[1]} haben ${contentTitle ? `"${contentTitle}"` : 'deinen Inhalt'} kommentiert`;
+        } else {
+          bucketMessage = `${sendersList[0]}, ${sendersList[1]} und ${totalCount - 2} weitere haben ${contentTitle ? `"${contentTitle}"` : 'deinen Inhalt'} kommentiert`;
+        }
+
+        await strapi.db.query('api::notification.notification').update({
+          where: { id: match.id },
+          data: {
+            message: bucketMessage,
+            link: cleanLink,
+            createdAt: new Date().toISOString(),
+          },
+        });
+
+        return match;
+      }
+    }
+
+    return this.createNotification({ recipientId, senderId, type, title, message, link: cleanLink });
+  },
 }));
+

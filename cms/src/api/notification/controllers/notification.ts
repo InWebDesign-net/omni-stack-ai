@@ -17,10 +17,12 @@ export default factories.createCoreController('api::notification.notification', 
       return ctx.unauthorized('Authentication required');
     }
 
-    const { notificationIds, markAll } = ctx.request.body || {};
+    const { notificationIds, markAll, isRead } = ctx.request.body || {};
+    const targetIsRead = isRead !== undefined ? Boolean(isRead) : true;
+
     const result = await strapi
       .service('api::notification.notification')
-      .markAsRead(user.id, notificationIds, Boolean(markAll));
+      .markAsRead(user.id, notificationIds, Boolean(markAll), targetIsRead);
 
     return ctx.send(result);
   },
@@ -42,20 +44,39 @@ export default factories.createCoreController('api::notification.notification', 
   async create(ctx) {
     const user = ctx.state.user;
     const body = ctx.request.body?.data || ctx.request.body || {};
-    const { recipient, recipientId, type, title, message, link } = body;
+    const { recipient, recipientId, recipientHandle, targetUserHandle, type, title, message, link, contentTitle } = body;
 
-    const targetRecipient = recipientId || recipient;
-    if (!targetRecipient || !title || !message) {
+    let targetRecipientId = recipientId || recipient;
+
+    if (!targetRecipientId && (recipientHandle || targetUserHandle)) {
+      const normHandle = String(recipientHandle || targetUserHandle).replace(/^@/, '').toLowerCase();
+      const matchedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+        where: {
+          $or: [
+            { handle: { $eq: `@${normHandle}` } },
+            { handle: { $eq: normHandle } },
+            { username: { $eq: normHandle } },
+          ],
+        },
+      });
+      if (matchedUser) {
+        targetRecipientId = matchedUser.id;
+      }
+    }
+
+    if (!targetRecipientId || !title || !message) {
       return ctx.badRequest('recipient, title and message required');
     }
 
-    const notification = await strapi.service('api::notification.notification').createNotification({
-      recipientId: Number(targetRecipient),
+    const notification = await strapi.service('api::notification.notification').createOrBucketNotification({
+      recipientId: Number(targetRecipientId),
       senderId: user?.id ? Number(user.id) : undefined,
+      senderUsername: user?.username || user?.handle,
       type: type || 'chat_message',
       title,
       message,
       link,
+      contentTitle,
     });
 
     return ctx.send({ notification });

@@ -103,66 +103,111 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: json.error }, { status: res.status });
     }
 
-    // Automated notification trigger for comment reply
-    if (parentDocId && parentAuthorHandle && parentAuthorHandle !== authorHandle) {
-      try {
-        await fetch(`${STRAPI_URL}/api/notifications`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data: {
-              type: 'comment_reply',
-              title: 'Neue Antwort auf deinen Kommentar',
-              message: `${authorName || 'Jemand'} hat auf deinen Kommentar geantwortet: "${text.substring(0, 45)}${text.length > 45 ? '...' : ''}"`,
-              link: `/video/${feedSlug}`,
-              isRead: false,
-              targetUserHandle: parentAuthorHandle,
-            },
-          }),
-        }).catch(() => {});
-      } catch (e) {
-        console.error('Error triggering comment_reply notification:', e);
-      }
-    }
+    const commentId = json.data?.documentId || json.data?.id;
 
-    // Sync commentsCount on Image / Video entity in Strapi
+    // Sync commentsCount and send Notifications for Creator & Parent Comment Author
     if (feedSlug) {
       try {
         const token = process.env.STRAPI_API_TOKEN;
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (token) headers.Authorization = `Bearer ${token}`;
 
-        // 1. Image check
-        const imgRes = await fetch(`${STRAPI_URL}/api/images?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
+        let isImage = false;
+        let contentTitle = '';
+        let creatorHandle = '';
+        let creatorId: number | undefined;
+
+        // 1. Check Image
+        const imgRes = await fetch(`${STRAPI_URL}/api/images?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&populate[creator]=true&locale=*`, { headers });
         if (imgRes.ok) {
           const imgData = await imgRes.json();
           const items = imgData.data || [];
-          for (const item of items) {
-            const currentCount = Number(item.commentsCount || 0);
-            await fetch(`${STRAPI_URL}/api/images/${item.documentId || item.id}`, {
-              method: 'PUT',
-              headers,
-              body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
-            });
+          if (items.length > 0) {
+            isImage = true;
+            const item = items[0];
+            contentTitle = item.title || '';
+            if (item.creator) {
+              creatorHandle = item.creator.handle || item.creator.username;
+              creatorId = item.creator.id;
+            }
+            for (const it of items) {
+              const currentCount = Number(it.commentsCount || 0);
+              await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
+              });
+            }
           }
         }
 
-        // 2. Video check
-        const vidRes = await fetch(`${STRAPI_URL}/api/videos?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
-        if (vidRes.ok) {
-          const vidData = await vidRes.json();
-          const items = vidData.data || [];
-          for (const item of items) {
-            const currentCount = Number(item.commentsCount || 0);
-            await fetch(`${STRAPI_URL}/api/videos/${item.documentId || item.id}`, {
-              method: 'PUT',
-              headers,
-              body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
-            });
+        // 2. Check Video
+        if (!isImage) {
+          const vidRes = await fetch(`${STRAPI_URL}/api/videos?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&populate[creator]=true&locale=*`, { headers });
+          if (vidRes.ok) {
+            const vidData = await vidRes.json();
+            const items = vidData.data || [];
+            if (items.length > 0) {
+              const item = items[0];
+              contentTitle = item.title || '';
+              if (item.creator) {
+                creatorHandle = item.creator.handle || item.creator.username;
+                creatorId = item.creator.id;
+              }
+              for (const it of items) {
+                const currentCount = Number(it.commentsCount || 0);
+                await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}`, {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
+                });
+              }
+            }
+          }
+        }
+
+        const basePath = isImage ? `/image/${feedSlug}` : `/video/${feedSlug}`;
+        const anchorLink = commentId ? `${basePath}#comment-${commentId}` : basePath;
+        const senderTag = authorName || (authorHandle ? `@${authorHandle.replace(/^@/, '')}` : 'Jemand');
+
+        // A. Notify Parent Comment Author (Reply notification)
+        if (parentDocId && parentAuthorHandle && parentAuthorHandle !== authorHandle) {
+          await fetch(`${STRAPI_URL}/api/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'comment_reply',
+              title: 'Neue Antwort auf deinen Kommentar',
+              message: `${senderTag} hat auf deinen Kommentar geantwortet: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`,
+              link: anchorLink,
+              targetUserHandle: parentAuthorHandle,
+              contentTitle,
+            }),
+          }).catch(() => {});
+        }
+
+        // B. Notify Content Creator (Content comment notification)
+        if (creatorHandle || creatorId) {
+          const normCreatorHandle = creatorHandle ? creatorHandle.replace(/^@/, '').toLowerCase() : '';
+          const normAuthorHandle = authorHandle ? authorHandle.replace(/^@/, '').toLowerCase() : '';
+          if (normCreatorHandle !== normAuthorHandle) {
+            await fetch(`${STRAPI_URL}/api/notifications`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'new_comment',
+                title: 'Neuer Kommentar',
+                message: `${senderTag} hat deinen Inhalt "${contentTitle || feedSlug}" kommentiert: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`,
+                link: anchorLink,
+                recipientId: creatorId,
+                targetUserHandle: creatorHandle,
+                contentTitle,
+              }),
+            }).catch(() => {});
           }
         }
       } catch (e) {
-        console.error('Error updating commentsCount in Strapi:', e);
+        console.error('Error in comment notification trigger:', e);
       }
     }
 

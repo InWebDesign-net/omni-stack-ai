@@ -90,7 +90,11 @@ export default function CommentItem({
   };
 
   return (
-    <div className={`space-y-3 transition-all ${getDepthStyle()}`}>
+    <div
+      id={`comment-${comment.id}`}
+      data-comment-id={`comment-${comment.documentId}`}
+      className={`space-y-3 transition-all scroll-mt-24 p-2 rounded-xl transition-all duration-700 ${getDepthStyle()}`}
+    >
       <div className="flex items-start gap-2.5 sm:gap-3 group">
         <img
           src={comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}

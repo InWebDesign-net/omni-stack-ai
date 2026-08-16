@@ -37,13 +37,14 @@ export async function fetchNotificationsFromApi(): Promise<NotificationsResponse
 
 export async function markNotificationsAsRead(
   notificationIds?: (number | string)[],
-  markAll = false
+  markAll = false,
+  isRead = true
 ): Promise<NotificationsResponse> {
   try {
     const res = await fetch('/api/notifications', {
       method: 'POST',
       headers: jsonAuthHeaders(),
-      body: JSON.stringify({ notificationIds, markAll }),
+      body: JSON.stringify({ notificationIds, markAll, isRead }),
     });
     if (!res.ok) return { notifications: [], unreadCount: 0 };
     return await res.json();

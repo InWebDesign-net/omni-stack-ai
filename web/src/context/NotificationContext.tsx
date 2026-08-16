@@ -18,6 +18,7 @@ interface NotificationContextType {
   refreshNotifications: () => Promise<void>;
   markAllAsRead: () => Promise<void>;
   markAsRead: (id: number | string) => Promise<void>;
+  toggleRead: (id: number | string, isRead: boolean) => Promise<void>;
   deleteNotification: (id: number | string) => Promise<void>;
 }
 
@@ -78,7 +79,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const markAllAsRead = async () => {
     setUnreadCount(0);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    const data = await markNotificationsAsRead(undefined, true);
+    const data = await markNotificationsAsRead(undefined, true, true);
     setNotifications(data.notifications || []);
     setUnreadCount(data.unreadCount || 0);
   };
@@ -88,7 +89,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       prev.map((n) => (n.id === id || n.documentId === id ? { ...n, isRead: true } : n))
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
-    const data = await markNotificationsAsRead([id], false);
+    const data = await markNotificationsAsRead([id], false, true);
+    setNotifications(data.notifications || []);
+    setUnreadCount(data.unreadCount || 0);
+  };
+
+  const toggleRead = async (id: number | string, isRead: boolean) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id || n.documentId === id ? { ...n, isRead } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, isRead ? prev - 1 : prev + 1));
+    const data = await markNotificationsAsRead([id], false, isRead);
     setNotifications(data.notifications || []);
     setUnreadCount(data.unreadCount || 0);
   };
@@ -109,6 +120,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         refreshNotifications,
         markAllAsRead,
         markAsRead,
+        toggleRead,
         deleteNotification,
       }}
     >

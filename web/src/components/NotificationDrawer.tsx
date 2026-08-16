@@ -14,6 +14,8 @@ import {
   UserPlus,
   Sparkles,
   ExternalLink,
+  Mail,
+  MailOpen,
 } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
 import { useApp } from '@/context/AppContext';
@@ -26,7 +28,7 @@ interface NotificationDrawerProps {
 
 export default function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps) {
   const router = useRouter();
-  const { notifications, unreadCount, markAllAsRead, markAsRead, deleteNotification } =
+  const { notifications, unreadCount, markAllAsRead, markAsRead, toggleRead, deleteNotification } =
     useNotifications();
   const { openChat } = useChat();
   const { t } = useApp();
@@ -45,6 +47,8 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
         return <MessageSquare className="w-4 h-4 text-indigo-400" />;
       case 'comment_reply':
         return <MessageCircle className="w-4 h-4 text-teal-400" />;
+      case 'new_comment':
+        return <MessageCircle className="w-4 h-4 text-indigo-400" />;
       case 'new_video':
         return <Play className="w-4 h-4 text-emerald-400" />;
       case 'new_subscriber':
@@ -56,7 +60,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
 
   const handleNotificationClick = async (n: any) => {
     if (!n.isRead) {
-      await markAsRead(n.id);
+      await markAsRead(n.id || n.documentId);
     }
     onClose();
 
@@ -173,7 +177,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
             <div
               key={n.id || n.documentId}
               className={`group p-3.5 transition-all flex items-start justify-between gap-3 ${
-                n.isRead ? 'bg-transparent hover:bg-slate-900/40' : 'bg-indigo-500/5 hover:bg-indigo-500/10'
+                n.isRead ? 'bg-transparent hover:bg-slate-900/40 text-slate-400' : 'bg-indigo-500/10 hover:bg-indigo-500/15 text-white'
               }`}
             >
               <div
@@ -202,7 +206,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                   <div className="flex items-center justify-between gap-2">
                     <h4
                       className={`text-xs font-bold truncate ${
-                        n.isRead ? 'text-slate-300' : 'text-white'
+                        n.isRead ? 'text-slate-300 font-normal' : 'text-white font-extrabold'
                       }`}
                     >
                       {n.title}
@@ -223,7 +227,18 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteNotification(n.id);
+                    toggleRead(n.id || n.documentId, !n.isRead);
+                  }}
+                  aria-label={n.isRead ? 'Als ungelesen markieren' : 'Als gelesen markieren'}
+                  title={n.isRead ? 'Als ungelesen markieren' : 'Als gelesen markieren'}
+                  className="p-1 rounded-lg text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                >
+                  {n.isRead ? <Mail className="w-3.5 h-3.5" /> : <MailOpen className="w-3.5 h-3.5 text-indigo-400" />}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(n.id || n.documentId);
                   }}
                   aria-label="Benachrichtigung löschen"
                   title="Löschen"

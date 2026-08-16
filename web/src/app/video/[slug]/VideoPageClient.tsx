@@ -226,6 +226,28 @@ export default function VideoPageClient({
     loadComments();
   }, [slug]);
 
+  // Smooth scroll and highlight targeted comment if URL anchor hash is present
+  useEffect(() => {
+    if (typeof window === 'undefined' || !comments.length) return;
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#comment-')) {
+      const targetId = hash.replace('#', '');
+      let el = document.getElementById(targetId);
+      if (!el) {
+        el = document.querySelector(`[data-comment-id="${targetId}"]`);
+      }
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-500/20', 'shadow-2xl');
+          setTimeout(() => {
+            el.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-500/20', 'shadow-2xl');
+          }, 3500);
+        }, 300);
+      }
+    }
+  }, [comments]);
+
   // Check stored likes / interaction status
   useEffect(() => {
     if (!video?.slug) return;
