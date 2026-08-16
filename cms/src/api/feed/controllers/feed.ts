@@ -130,10 +130,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       const authHeader = ctx.request.headers['authorization'];
       const providedSecret = payload.workerSecret || secretHeader;
 
-      if (!providedSecret && !authHeader) {
+      const isAuthenticated = !!ctx.state?.user;
+      if (!providedSecret && !isAuthenticated) {
         return ctx.forbidden('Invalid worker secret or authorization');
       }
-      if (providedSecret && providedSecret !== expectedSecret && !authHeader) {
+      if (providedSecret && providedSecret !== expectedSecret) {
         return ctx.forbidden('Invalid worker secret');
       }
 
