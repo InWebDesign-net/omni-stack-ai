@@ -49,19 +49,22 @@ export default factories.createCoreService('api::notification.notification', ({ 
         data: { isRead: true },
       });
     } else if (Array.isArray(notificationIds) && notificationIds.length > 0) {
-      const numIds = notificationIds.map((id) => Number(id)).filter((id) => !isNaN(id));
-      const strIds = notificationIds.map((id) => String(id));
+      const numIds = notificationIds.map((id) => Number(id)).filter((id) => !isNaN(id) && id > 0);
+      const strIds = notificationIds.map((id) => String(id)).filter((id) => isNaN(Number(id)));
 
-      await strapi.db.query('api::notification.notification').updateMany({
-        where: {
-          recipient: { id: userId },
-          $or: [
-            ...(numIds.length > 0 ? [{ id: { $in: numIds } }] : []),
-            ...(strIds.length > 0 ? [{ documentId: { $in: strIds } }] : []),
-          ],
-        },
-        data: { isRead: Boolean(targetIsRead) },
-      });
+      const orConditions: any[] = [];
+      if (numIds.length > 0) orConditions.push({ id: { $in: numIds } });
+      if (strIds.length > 0) orConditions.push({ documentId: { $in: strIds } });
+
+      if (orConditions.length > 0) {
+        await strapi.db.query('api::notification.notification').updateMany({
+          where: {
+            recipient: { id: userId },
+            $or: orConditions,
+          },
+          data: { isRead: Boolean(targetIsRead) },
+        });
+      }
     }
 
     return this.getUserNotifications(userId);

@@ -39,31 +39,31 @@ export async function markNotificationsAsRead(
   notificationIds?: (number | string)[],
   markAll = false,
   isRead = true
-): Promise<NotificationsResponse> {
+): Promise<NotificationsResponse | null> {
   try {
     const res = await fetch('/api/notifications', {
       method: 'POST',
       headers: jsonAuthHeaders(),
       body: JSON.stringify({ notificationIds, markAll, isRead }),
     });
-    if (!res.ok) return { notifications: [], unreadCount: 0 };
+    if (!res.ok) return null;
     return await res.json();
   } catch (error) {
     console.error('Failed to mark notifications read:', error);
-    return { notifications: [], unreadCount: 0 };
+    return null;
   }
 }
 
-export async function deleteNotificationFromApi(id: number | string): Promise<NotificationsResponse> {
+export async function deleteNotificationFromApi(id: number | string): Promise<NotificationsResponse | null> {
   try {
     const res = await fetch(`/api/notifications?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
       headers: jsonAuthHeaders(),
     });
-    if (!res.ok) return { notifications: [], unreadCount: 0 };
+    if (!res.ok) return null;
     return await res.json();
   } catch (error) {
     console.error('Failed to delete notification:', error);
-    return { notifications: [], unreadCount: 0 };
+    return null;
   }
 }

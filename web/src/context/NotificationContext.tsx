@@ -80,8 +80,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setUnreadCount(0);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     const data = await markNotificationsAsRead(undefined, true, true);
-    setNotifications(data.notifications || []);
-    setUnreadCount(data.unreadCount || 0);
+    if (data && Array.isArray(data.notifications)) {
+      setNotifications(data.notifications);
+      setUnreadCount(data.unreadCount ?? 0);
+    }
   };
 
   const markAsRead = async (id: number | string) => {
@@ -90,25 +92,44 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
     const data = await markNotificationsAsRead([id], false, true);
-    setNotifications(data.notifications || []);
-    setUnreadCount(data.unreadCount || 0);
+    if (data && Array.isArray(data.notifications)) {
+      setNotifications(data.notifications);
+      setUnreadCount(data.unreadCount ?? 0);
+    }
   };
 
   const toggleRead = async (id: number | string, isRead: boolean) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id || n.documentId === id ? { ...n, isRead } : n))
     );
-    setUnreadCount((prev) => Math.max(0, isRead ? prev - 1 : prev + 1));
+    setUnreadCount((prev) => {
+      const target = notifications.find((n) => n.id === id || n.documentId === id);
+      if (target && target.isRead !== isRead) {
+        return Math.max(0, isRead ? prev - 1 : prev + 1);
+      }
+      return prev;
+    });
     const data = await markNotificationsAsRead([id], false, isRead);
-    setNotifications(data.notifications || []);
-    setUnreadCount(data.unreadCount || 0);
+    if (data && Array.isArray(data.notifications)) {
+      setNotifications(data.notifications);
+      setUnreadCount(data.unreadCount ?? 0);
+    }
   };
 
   const deleteNotification = async (id: number | string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id && n.documentId !== id));
+    setUnreadCount((prev) => {
+      const target = notifications.find((n) => n.id === id || n.documentId === id);
+      if (target && !target.isRead) {
+        return Math.max(0, prev - 1);
+      }
+      return prev;
+    });
     const data = await deleteNotificationFromApi(id);
-    setNotifications(data.notifications || []);
-    setUnreadCount(data.unreadCount || 0);
+    if (data && Array.isArray(data.notifications)) {
+      setNotifications(data.notifications);
+      setUnreadCount(data.unreadCount ?? 0);
+    }
   };
 
   return (
