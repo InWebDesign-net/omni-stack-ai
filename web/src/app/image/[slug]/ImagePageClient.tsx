@@ -361,12 +361,13 @@ export default function ImagePageClient({
                 {image?.tags && image.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pt-2">
                     {image.tags.map((tag: string) => (
-                      <span
+                      <Link
                         key={tag}
-                        className="px-2.5 py-1 rounded-xl bg-slate-800/90 text-slate-300 text-xs font-medium border border-slate-700/50"
+                        href={`/images?page=1&includetag=${encodeURIComponent(tag)}`}
+                        className="px-2.5 py-1 rounded-xl bg-slate-800/90 text-slate-300 hover:text-teal-300 hover:bg-slate-800 hover:border-teal-500/50 text-xs font-medium border border-slate-700/50 transition-colors"
                       >
                         #{tag}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 )}
