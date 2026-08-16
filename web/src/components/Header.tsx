@@ -226,9 +226,11 @@ export default function Header({
           {showMenuButton && (
             <button
               onClick={handleMenuClick}
-              className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200"
+              className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
               title={t.header.openNav}
               aria-label="Toggle navigation drawer"
+              aria-haspopup="dialog"
+              aria-expanded={universalNavOpen}
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -270,8 +272,9 @@ export default function Header({
           {/* Language Switch */}
           <button
             onClick={handleLanguageClick}
-            className="flex items-center gap-1.5 glass-surface hover:bg-white/6 text-[#dae2fd] px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border border-white/8 hover:border-white/20"
+            className="flex items-center gap-1.5 glass-surface hover:bg-white/6 text-[#dae2fd] px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border border-white/8 hover:border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
             title="Language"
+            aria-label={activeLang === 'de' ? "Sprache wechseln zu Englisch" : "Switch language to German"}
           >
             {activeLang === 'de' ? <GermanFlag /> : <UKFlag />}
             <span className="font-mono text-[11px] font-bold uppercase">{activeLang}</span>
@@ -281,12 +284,15 @@ export default function Header({
           <div ref={notificationRef} className="relative">
             <button
               onClick={toggleNotificationDrawer}
-              className={`relative flex items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+              className={`relative flex items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all duration-200 border focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
                 notificationDrawerOpen
                   ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/25'
                   : 'glass-surface hover:bg-white/6 text-[#dae2fd] border-white/8 hover:border-white/20'
               }`}
               title="Benachrichtigungen"
+              aria-label="Benachrichtigungen"
+              aria-haspopup="dialog"
+              aria-expanded={notificationDrawerOpen}
             >
               <Bell className="h-4 w-4 text-indigo-400" />
               {unreadCount > 0 && (
@@ -308,7 +314,10 @@ export default function Header({
               <button
                 type="button"
                 onClick={toggleUserDropdown}
-                className="flex items-center gap-2 glass-surface hover:bg-white/8 p-1 sm:pr-2.5 rounded-xl border border-white/8 hover:border-white/20 transition-all duration-200 group"
+                className="flex items-center gap-2 glass-surface hover:bg-white/8 p-1 sm:pr-2.5 rounded-xl border border-white/8 hover:border-white/20 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
+                aria-label="Benutzermenü"
+                aria-haspopup="menu"
+                aria-expanded={userDropdownOpen}
               >
                 <img
                   src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
