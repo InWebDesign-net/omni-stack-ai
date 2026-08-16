@@ -387,7 +387,8 @@ export default function CustomVideoPlayer({
             step={0.1}
             value={currentTime}
             onChange={handleSeek}
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:opacity-100 focus-visible:bg-slate-800/50"
+            aria-label={(t.player as any)?.seek || 'Spulen'}
           />
         </div>
 
@@ -397,8 +398,9 @@ export default function CustomVideoPlayer({
           <div className="flex items-center gap-3">
             <button
               onClick={togglePlay}
-              className="p-2 hover:bg-slate-800/80 rounded-xl text-white transition-all active:scale-95"
+              className="p-2 hover:bg-slate-800/80 rounded-xl text-white transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title={isPlaying ? (t.player?.pause || 'Pause') : (t.player?.play || 'Abspielen')}
+              aria-label={isPlaying ? (t.player?.pause || 'Pause') : (t.player?.play || 'Abspielen')}
             >
               {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white" />}
             </button>
@@ -407,8 +409,9 @@ export default function CustomVideoPlayer({
             <div className="flex items-center gap-1 group/vol">
               <button
                 onClick={toggleMute}
-                className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all"
+                className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 title={isMuted ? (t.player?.unmute || 'Ton einschalten') : (t.player?.mute || 'Stummschalten')}
+                aria-label={isMuted ? (t.player?.unmute || 'Ton einschalten') : (t.player?.mute || 'Stummschalten')}
               >
                 {isMuted || volume === 0 ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5" />}
               </button>
@@ -419,7 +422,8 @@ export default function CustomVideoPlayer({
                 step={0.05}
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-0 group-hover/vol:w-20 transition-all duration-300 accent-indigo-500 cursor-pointer h-1 bg-slate-800 rounded-lg overflow-hidden"
+                className="w-0 group-hover/vol:w-20 transition-all duration-300 accent-indigo-500 cursor-pointer h-1 bg-slate-800 rounded-lg overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                aria-label={(t.player as any)?.volume || 'Lautstärke'}
               />
             </div>
 
@@ -436,10 +440,12 @@ export default function CustomVideoPlayer({
               <div className="relative">
                 <button
                   onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                  className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold ${
+                  className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     isSettingsOpen ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800/80 text-slate-300 hover:text-white'
                   }`}
                   title={t.player?.quality || 'Qualität / Auflösung'}
+                  aria-label={t.player?.quality || 'Qualität / Auflösung'}
+                  aria-expanded={isSettingsOpen}
                 >
                   <Settings className="w-4 h-4" />
                   <span className="text-[11px] font-mono">
@@ -482,8 +488,9 @@ export default function CustomVideoPlayer({
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullscreen}
-              className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all"
+              className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title={isFullscreen ? (t.player?.exitFullscreen || 'Vollbild beenden') : (t.player?.fullscreen || 'Vollbild')}
+              aria-label={isFullscreen ? (t.player?.exitFullscreen || 'Vollbild beenden') : (t.player?.fullscreen || 'Vollbild')}
             >
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
             </button>
