@@ -92,7 +92,7 @@ export default function ContentPageClient({
   accessStatus,
 }: ContentPageClientProps) {
   const router = useRouter();
-  const { lang, currentUser, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
+  const { lang, currentUser, openAuthModal, toggleLanguage, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
   const [item, setItem] = useState(initialItem);
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
@@ -229,6 +229,10 @@ export default function ContentPageClient({
 
   const handleLikeToggle = async () => {
     if (!item?.slug) return;
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
     const nextIsLiked = !isLiked;
     const type = nextIsLiked ? 'like' : 'unlike';
     setIsLiked(nextIsLiked);

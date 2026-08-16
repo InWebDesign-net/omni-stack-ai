@@ -40,7 +40,7 @@ export default function ShortsFeedPage() {
   const router = useRouter();
   const params = useParams();
   const initialSlug = params?.slug as string;
-  const { lang, t } = useApp();
+  const { lang, currentUser, openAuthModal, t } = useApp();
 
   // Dynamic shorts list from Strapi with fallback
   const [shortsList, setShortsList] = useState<FeedItem[]>(() => {
@@ -205,6 +205,10 @@ export default function ShortsFeedPage() {
   const activeComments = (activeShort && commentsMap[activeShort.slug]) || [];
 
   const toggleLike = (id: number, currentLikes: number) => {
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
     setLikedMap((prev) => {
       const currentlyLiked = !!prev[id];
       setLikesMap((l) => ({ ...l, [id]: (l[id] ?? currentLikes) + (currentlyLiked ? -1 : 1) }));

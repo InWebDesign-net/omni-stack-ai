@@ -123,7 +123,7 @@ export default function VideoPageClient({
   initialLang = 'de',
 }: VideoPageClientProps) {
   const router = useRouter();
-  const { lang, currentUser, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
+  const { lang, currentUser, openAuthModal, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
   // initialVideo is the full array of localizations (locale=*). Select the one
   // matching the active UI language. On first render (SSR) we honor the server's
@@ -320,6 +320,10 @@ export default function VideoPageClient({
 
   const handleLikeToggle = async () => {
     if (!video?.slug) return;
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
     const nextIsLiked = !isLiked;
     setIsLiked(nextIsLiked);
     setLikesCount((prev: number) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));

@@ -183,6 +183,10 @@ export default function Header({
   };
 
   const handleAlgoClick = () => {
+    if (!activeUser) {
+      openAuthModal();
+      return;
+    }
     if (onToggleAlgoDrawer) {
       onToggleAlgoDrawer();
     } else {
