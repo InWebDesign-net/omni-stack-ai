@@ -450,6 +450,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
               >
                 {/* Aspect ratio image container */}
                 <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
+                  {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, saving bandwidth. */}
                   <img
                     src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
                     alt={img.title}
@@ -476,9 +477,11 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   {/* Creator Avatar Badge */}
                   {img.creator && (
                     <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                      {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                       <img
                         src={img.creator.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
                         alt={img.creator.username || 'Creator'}
+                        loading="lazy"
                         className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0"
                       />
                       <span className="text-[11px] font-semibold text-white drop-shadow truncate max-w-[120px]">

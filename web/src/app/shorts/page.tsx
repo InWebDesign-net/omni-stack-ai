@@ -388,9 +388,11 @@ export default function ShortsFeedPage() {
               <aside className="absolute right-3 sm:right-6 bottom-20 z-30 flex flex-col items-center gap-5">
                 {/* Author Avatar with Subscribe Badge */}
                 <div className="relative">
+                  {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                   <img
                     src={getAuthorAvatar(short)}
                     alt={getAuthorName(short)}
+                    loading="lazy"
                     className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-xl"
                   />
                   <button
@@ -542,7 +544,8 @@ export default function ShortsFeedPage() {
 
                   return (
                     <div key={commentKey} className="bg-[#080e1e] p-3 rounded-xl border border-white/5 flex gap-3 group transition-all">
-                      <img src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 rounded-full object-cover border border-white/10 shrink-0" />
+                      {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
+                      <img src={c.authorAvatar} alt={c.authorName} loading="lazy" className="h-7 w-7 rounded-full object-cover border border-white/10 shrink-0" />
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 flex-wrap">

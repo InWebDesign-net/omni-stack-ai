@@ -187,11 +187,15 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                 {/* Sender Avatar or Icon */}
                 <div className="relative shrink-0 mt-0.5">
                   {n.sender?.avatarUrl ? (
-                    <img
-                      src={n.sender.avatarUrl}
-                      alt={n.sender.username}
-                      className="w-8 h-8 rounded-xl object-cover border border-slate-700"
-                    />
+                    <>
+                      {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
+                      <img
+                        src={n.sender.avatarUrl}
+                        alt={n.sender.username}
+                        loading="lazy"
+                        className="w-8 h-8 rounded-xl object-cover border border-slate-700"
+                      />
+                    </>
                   ) : (
                     <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700">
                       {getIcon(n.type)}
