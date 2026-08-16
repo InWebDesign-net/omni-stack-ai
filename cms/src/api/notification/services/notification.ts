@@ -43,28 +43,36 @@ export default factories.createCoreService('api::notification.notification', ({ 
   async markAsRead(userId: number, notificationIds?: (number | string)[], markAll = false, targetIsRead = true) {
     if (!userId) return { success: false };
 
-    if (markAll) {
-      await strapi.db.query('api::notification.notification').updateMany({
-        where: { recipient: { id: userId } },
-        data: { isRead: true },
-      });
-    } else if (Array.isArray(notificationIds) && notificationIds.length > 0) {
+    let whereClause: any = { recipient: { id: userId } };
+
+    if (!markAll && Array.isArray(notificationIds) && notificationIds.length > 0) {
       const numIds = notificationIds.map((id) => Number(id)).filter((id) => !isNaN(id) && id > 0);
-      const strIds = notificationIds.map((id) => String(id)).filter((id) => isNaN(Number(id)));
+      const strIds = notificationIds.map((id) => String(id));
 
-      const orConditions: any[] = [];
-      if (numIds.length > 0) orConditions.push({ id: { $in: numIds } });
-      if (strIds.length > 0) orConditions.push({ documentId: { $in: strIds } });
+      const orConds: any[] = [];
+      if (numIds.length > 0) orConds.push({ id: { $in: numIds } });
+      if (strIds.length > 0) orConds.push({ documentId: { $in: strIds } });
 
-      if (orConditions.length > 0) {
-        await strapi.db.query('api::notification.notification').updateMany({
-          where: {
-            recipient: { id: userId },
-            $or: orConditions,
-          },
-          data: { isRead: Boolean(targetIsRead) },
-        });
+      if (orConds.length > 0) {
+        whereClause = {
+          recipient: { id: userId },
+          $or: orConds,
+        };
       }
+    }
+
+    const matches = await strapi.db.query('api::notification.notification').findMany({
+      where: whereClause,
+      select: ['id'],
+    });
+
+    const targetIds = matches.map((m: any) => m.id);
+
+    if (targetIds.length > 0) {
+      await strapi.db.query('api::notification.notification').updateMany({
+        where: { id: { $in: targetIds } },
+        data: { isRead: Boolean(targetIsRead) },
+      });
     }
 
     return this.getUserNotifications(userId);
@@ -76,15 +84,24 @@ export default factories.createCoreService('api::notification.notification', ({ 
     const numId = Number(notificationId);
     const strId = String(notificationId);
 
-    await strapi.db.query('api::notification.notification').deleteMany({
+    const matches = await strapi.db.query('api::notification.notification').findMany({
       where: {
         recipient: { id: userId },
         $or: [
-          ...(!isNaN(numId) ? [{ id: numId }] : []),
+          ...(!isNaN(numId) && numId > 0 ? [{ id: numId }] : []),
           { documentId: strId },
         ],
       },
+      select: ['id'],
     });
+
+    const targetIds = matches.map((m: any) => m.id);
+
+    if (targetIds.length > 0) {
+      await strapi.db.query('api::notification.notification').deleteMany({
+        where: { id: { $in: targetIds } },
+      });
+    }
 
     return this.getUserNotifications(userId);
   },

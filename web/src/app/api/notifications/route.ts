@@ -1,18 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jsonAuthHeaders } from '@/lib/affinity';
+
+function getAuthHeaders(req: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  
+  const authHeader = req.headers.get('authorization');
+  if (authHeader) {
+    headers['Authorization'] = authHeader;
+    return headers;
+  }
+
+  const cookieJwt = req.cookies.get('omni_jwt')?.value;
+  if (cookieJwt) {
+    headers['Authorization'] = `Bearer ${cookieJwt}`;
+    return headers;
+  }
+
+  const strapiToken = process.env.STRAPI_API_TOKEN;
+  if (strapiToken) {
+    headers['Authorization'] = `Bearer ${strapiToken}`;
+  }
+
+  return headers;
+}
 
 export async function GET(req: NextRequest) {
   try {
     const strapiUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-    const authHeader = req.headers.get('authorization');
-    const headers = jsonAuthHeaders();
-    if (authHeader) {
-      (headers as any)['Authorization'] = authHeader;
-    }
-
     const res = await fetch(`${strapiUrl}/api/notifications`, {
       method: 'GET',
-      headers,
+      headers: getAuthHeaders(req),
       cache: 'no-store',
     });
 
@@ -32,15 +48,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const strapiUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-    const authHeader = req.headers.get('authorization');
-    const headers = jsonAuthHeaders();
-    if (authHeader) {
-      (headers as any)['Authorization'] = authHeader;
-    }
-
     const res = await fetch(`${strapiUrl}/api/notifications/mark-read`, {
       method: 'POST',
-      headers,
+      headers: getAuthHeaders(req),
       body: JSON.stringify(body),
     });
 
@@ -65,15 +75,9 @@ export async function DELETE(req: NextRequest) {
     }
 
     const strapiUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
-    const authHeader = req.headers.get('authorization');
-    const headers = jsonAuthHeaders();
-    if (authHeader) {
-      (headers as any)['Authorization'] = authHeader;
-    }
-
     const res = await fetch(`${strapiUrl}/api/notifications/${id}`, {
       method: 'DELETE',
-      headers,
+      headers: getAuthHeaders(req),
     });
 
     if (!res.ok) {

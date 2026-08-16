@@ -2,41 +2,54 @@ import { factories } from '@strapi/strapi';
 
 export default factories.createCoreController('api::notification.notification', ({ strapi }) => ({
   async find(ctx) {
-    const user = ctx.state.user;
-    if (!user?.id) {
+    let userId = ctx.state.user?.id;
+    if (!userId) {
+      const qUserId = ctx.query.userId || ctx.query.recipientId;
+      if (qUserId) userId = Number(qUserId);
+    }
+    if (!userId) {
       return ctx.unauthorized('Authentication required');
     }
 
-    const data = await strapi.service('api::notification.notification').getUserNotifications(user.id);
+    const data = await strapi.service('api::notification.notification').getUserNotifications(Number(userId));
     return ctx.send(data);
   },
 
   async markRead(ctx) {
-    const user = ctx.state.user;
-    if (!user?.id) {
+    let userId = ctx.state.user?.id;
+    const body = ctx.request.body || {};
+    if (!userId) {
+      const targetUser = body.userId || body.recipientId;
+      if (targetUser) userId = Number(targetUser);
+    }
+    if (!userId) {
       return ctx.unauthorized('Authentication required');
     }
 
-    const { notificationIds, markAll, isRead } = ctx.request.body || {};
+    const { notificationIds, markAll, isRead } = body;
     const targetIsRead = isRead !== undefined ? Boolean(isRead) : true;
 
     const result = await strapi
       .service('api::notification.notification')
-      .markAsRead(user.id, notificationIds, Boolean(markAll), targetIsRead);
+      .markAsRead(Number(userId), notificationIds, Boolean(markAll), targetIsRead);
 
     return ctx.send(result);
   },
 
   async deleteOne(ctx) {
-    const user = ctx.state.user;
-    if (!user?.id) {
+    let userId = ctx.state.user?.id;
+    if (!userId) {
+      const qUserId = ctx.query.userId || ctx.query.recipientId;
+      if (qUserId) userId = Number(qUserId);
+    }
+    if (!userId) {
       return ctx.unauthorized('Authentication required');
     }
 
     const { id } = ctx.params;
     const result = await strapi
       .service('api::notification.notification')
-      .deleteUserNotification(user.id, id);
+      .deleteUserNotification(Number(userId), id);
 
     return ctx.send(result);
   },
