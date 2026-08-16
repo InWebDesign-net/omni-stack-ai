@@ -36,10 +36,10 @@ You can log in directly via the Quick-Login presets in the login modal or use th
   * **E-Mail / Identifier:** `demogourmet@inwebdesign.net`
   * **Password:** `DemoUser2026!`
 
-#### 2. Strapi CMS Admin Access
+#### 2. Strapi CMS Admin Access (Demo Editor)
 * **Admin URL:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
-* **Identifier:** `admin@inwebdesign.net`
-* **Password:** `AdminSecret2026!`
+* **Identifier:** `demo-editor1@inwebdesign.net`
+* **Password:** `DemoSecret2026!`
 
 ---
 
