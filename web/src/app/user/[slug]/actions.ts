@@ -125,6 +125,20 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     }
     const userVideos = Array.from(profileVideoMap.values());
 
+    // Sort videos: if owner, private/unpublished videos FIRST, followed by creation date (newest first)
+    userVideos.sort((a: any, b: any) => {
+      if (isOwner) {
+        const aPrivate = a.visibility === 'private' ? 1 : 0;
+        const bPrivate = b.visibility === 'private' ? 1 : 0;
+        if (aPrivate !== bPrivate) {
+          return bPrivate - aPrivate; // Private videos first
+        }
+      }
+      const aTime = new Date(a.createdAt || 0).getTime();
+      const bTime = new Date(b.createdAt || 0).getTime();
+      return bTime - aTime; // Newest first
+    });
+
     // 4. Calculate Stats
     let totalViews = 0;
     let totalLikes = 0;

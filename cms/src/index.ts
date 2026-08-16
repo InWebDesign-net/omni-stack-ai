@@ -55,9 +55,10 @@ export default {
         const targetRelId = targetRelFilter?.id?.$eq || targetRelFilter?.id || targetRelFilter;
 
         const isOwnerQuery = uidNum && targetRelId && String(uidNum) === String(targetRelId);
+        const isSpecificItemQuery = Boolean(filters.slug || filters.documentId || filters.id);
 
-        // If explicitly querying for owner's items, allow private access
-        if (isOwnerQuery) {
+        // If explicitly querying for owner's items OR querying for a specific item (slug/documentId) when authenticated, allow query
+        if (isOwnerQuery || (isSpecificItemQuery && uidNum != null)) {
           return next();
         }
 

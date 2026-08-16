@@ -31,10 +31,9 @@ async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
       'Content-Type': 'application/json',
     };
 
-    // Server-side data fetching uses the API token so relations like
-    // `creator` (user data) are visible regardless of the viewer's role.
-    // The user JWT is only needed for user-specific writes (likes/favs),
-    // not for reading public video/profile data.
+    if (process.env.STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+    }
     const { user } = await getCurrentUserFromCookies();
     if (user?.id) {
       headers['x-omni-user-id'] = String(user.id);
