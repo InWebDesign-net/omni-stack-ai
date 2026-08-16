@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
@@ -8,21 +8,7 @@ import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import { useImages } from '@/lib/hooks/useImages';
-
-interface VideoItem {
-  id: string | number;
-  slug: string;
-  title: string;
-  thumbnailUrl: string;
-  duration: number;
-  viewsCount: number;
-  likesCount: number;
-  creator?: {
-    username?: string;
-    handle?: string;
-    avatarUrl?: string;
-  };
-}
+import { useVideos } from '@/lib/hooks/useVideos';
 
 interface ChannelItem {
   id: string | number;
@@ -36,19 +22,52 @@ interface ChannelItem {
 
 export default function HomeClient() {
   const router = useRouter();
-  const { t, lang, openChannelModal } = useApp();
+  const { t, lang, openChannelModal, currentUser } = useApp();
   const { createRoom, openChat } = useChat();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [channels, setChannels] = useState<ChannelItem[]>([]);
-  const [videos, setVideos] = useState<VideoItem[]>([]);
-  const [isLoadingVideos, setIsLoadingVideos] = useState(true);
 
-  const { images, isLoading: isLoadingImages } = useImages({
+  // Hook for Videos: affinity for logged-in, createdatasc for guests
+  const { videos: rawVideos = [], isLoading: isLoadingVideos } = useVideos({
     currentPage: 1,
     pageSize: 6,
+    sort: currentUser ? 'affinity' : 'createdatasc',
     lang,
+    enabled: true,
   });
+
+  // Hook for Images: affinity for logged-in, createdatasc for guests
+  const { images: rawImages = [], isLoading: isLoadingImages } = useImages({
+    currentPage: 1,
+    pageSize: 6,
+    sort: currentUser ? 'affinity' : 'createdatasc',
+    lang,
+    enabled: true,
+  });
+
+  // Dynamic random rotation for guest users (rotates every 5 mins so guests see varied content)
+  const videos = useMemo(() => {
+    if (currentUser || !rawVideos.length) return rawVideos;
+    const copy = [...rawVideos];
+    const seed = Math.floor(Date.now() / 300000);
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.abs((seed + i * 17) % (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }, [rawVideos, currentUser]);
+
+  const images = useMemo(() => {
+    if (currentUser || !rawImages.length) return rawImages;
+    const copy = [...rawImages];
+    const seed = Math.floor(Date.now() / 300000);
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.abs((seed + i * 23) % (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }, [rawImages, currentUser]);
 
   const channelScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -56,7 +75,6 @@ export default function HomeClient() {
 
   useEffect(() => {
     fetchChannels();
-    fetchRecentVideos();
   }, []);
 
   const fetchChannels = async () => {
@@ -82,21 +100,6 @@ export default function HomeClient() {
       }
     } catch (e) {
       console.error('Error loading channels:', e);
-    }
-  };
-
-  const fetchRecentVideos = async () => {
-    setIsLoadingVideos(true);
-    try {
-      const res = await fetch('/api/video/list?pageSize=12');
-      if (res.ok) {
-        const data = await res.json();
-        setVideos(data.videos || []);
-      }
-    } catch (e) {
-      console.error('Error fetching videos:', e);
-    } finally {
-      setIsLoadingVideos(false);
     }
   };
 
@@ -133,7 +136,7 @@ export default function HomeClient() {
     }
   };
 
-  const formatDuration = (sec: number) => {
+  const formatDuration = (sec?: number) => {
     if (!sec) return '0:00';
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
@@ -307,7 +310,16 @@ export default function HomeClient() {
                 <Film className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-extrabold text-lg text-white">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-extrabold text-lg text-white">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
+                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${
+                    currentUser
+                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                      : 'bg-teal-500/20 text-teal-300 border-teal-500/30'
+                  }`}>
+                    {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
+                  </span>
+                </div>
                 <p className="text-xs text-slate-400">{t.home?.videosSubtitle || 'Entdecke die neusten Veröffentlichungen im Katalog'}</p>
               </div>
             </div>
@@ -350,7 +362,7 @@ export default function HomeClient() {
                       </div>
                     </div>
 
-                    {item.duration > 0 && (
+                    {Boolean(item.duration && item.duration > 0) && (
                       <div className="absolute bottom-1.5 right-1.5 sm:bottom-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 rounded bg-slate-950/80 text-[9px] sm:text-[11px] font-mono text-slate-200 border border-slate-800">
                         {formatDuration(item.duration)}
                       </div>
@@ -388,7 +400,16 @@ export default function HomeClient() {
                 <ImageIcon className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-extrabold text-lg text-white">Aktuelle Bilder & Galerie im Network</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-extrabold text-lg text-white">Aktuelle Bilder & Galerie im Network</h2>
+                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${
+                    currentUser
+                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                      : 'bg-teal-500/20 text-teal-300 border-teal-500/30'
+                  }`}>
+                    {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
+                  </span>
+                </div>
                 <p className="text-xs text-slate-400">Entdecke Kunstwerke, Renderings & Fotografie im WebP-Format</p>
               </div>
             </div>
