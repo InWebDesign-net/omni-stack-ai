@@ -1424,8 +1424,11 @@ WICHTIG: Antworte im folgenden JSON-Format:
     const currentItem = videoMatches[0] || imageMatches[0] || feedMatches[0];
     let currentViewsCount = Number(currentItem?.viewsCount || 0);
     let currentLikesCount = Number(currentItem?.likesCount || 0);
+    const targetVideoId = videoMatches[0]?.id || null;
     const targetVideoDocId = videoMatches[0]?.documentId || null;
+    const targetImageId = imageMatches[0]?.id || null;
     const targetImageDocId = imageMatches[0]?.documentId || null;
+    const targetFeedItemId = feedMatches[0]?.id || null;
     const targetFeedItemDocId = feedMatches[0]?.documentId || null;
     const tags: string[] = currentItem?.tags || ['Community'];
 
@@ -1433,7 +1436,7 @@ WICHTIG: Antworte im folgenden JSON-Format:
       const mediaType = currentItem?.mediaType || (imageMatches.length > 0 ? 'image' : 'video');
       const requiredDuration = (mediaType === 'video' || mediaType === 'short') ? 5 : 3;
 
-      if (watchTimeSeconds < requiredDuration) {
+      if (mediaType !== 'image' && watchTimeSeconds < requiredDuration) {
         return {
           success: true,
           counted: false,
@@ -1525,29 +1528,47 @@ WICHTIG: Antworte im folgenden JSON-Format:
         try {
           existingFavs = await strapi.documents('api::favorite.favorite').findMany(favQuery);
         } catch (e) {
-          existingFavs = await strapi.documents('api::fav.fav').findMany(favQuery);
+          existingFavs = await strapi.db.query('api::favorite.favorite').findMany(favQuery);
         }
       } catch (e) {}
 
       if (existingFavs.length === 0) {
-        // Create Fav relation
-        try {
-          const favData: any = { userIdentifier };
-          if (userId) favData.user = userId;
-          if (targetVideoDocId) favData.video = targetVideoDocId;
-          if (targetImageDocId) favData.image = targetImageDocId;
-          if (targetFeedItemDocId) favData.feedItem = targetFeedItemDocId;
+        // Create Favorite relation
+        let createdSuccess = false;
 
+        // Attempt 1: DB Query (direct integer relation mapping)
+        try {
+          const dbData: any = { userIdentifier };
+          if (userId) dbData.user = userId;
+          if (targetVideoId) dbData.video = targetVideoId;
+          if (targetImageId) dbData.image = targetImageId;
+          if (targetFeedItemId) dbData.feedItem = targetFeedItemId;
+
+          await strapi.db.query('api::favorite.favorite').create({
+            data: dbData,
+          });
+          createdSuccess = true;
+        } catch (dbErr: any) {
+          console.warn('DB Query favorite creation warning:', dbErr?.message || dbErr);
+        }
+
+        // Attempt 2: Document Service fallback
+        if (!createdSuccess) {
           try {
+            const favData: any = { userIdentifier };
+            if (userId) favData.user = userId;
+            if (targetVideoDocId) favData.video = targetVideoDocId;
+            if (targetImageDocId) favData.image = targetImageDocId;
+            if (targetFeedItemDocId) favData.feedItem = targetFeedItemDocId;
+
             await strapi.documents('api::favorite.favorite').create({
               data: favData,
             });
-          } catch (e) {
-            await strapi.documents('api::fav.fav').create({
-              data: favData,
-            });
+            createdSuccess = true;
+          } catch (docErr: any) {
+            console.error('Document Service favorite creation error:', docErr?.message || docErr);
           }
-        } catch (e) {}
+        }
 
         currentLikesCount += 1;
 

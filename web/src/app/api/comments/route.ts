@@ -125,6 +125,47 @@ export async function POST(request: Request) {
       }
     }
 
+    // Sync commentsCount on Image / Video entity in Strapi
+    if (feedSlug) {
+      try {
+        const token = process.env.STRAPI_API_TOKEN;
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        // 1. Image check
+        const imgRes = await fetch(`${STRAPI_URL}/api/images?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
+        if (imgRes.ok) {
+          const imgData = await imgRes.json();
+          const items = imgData.data || [];
+          for (const item of items) {
+            const currentCount = Number(item.commentsCount || 0);
+            await fetch(`${STRAPI_URL}/api/images/${item.documentId || item.id}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
+            });
+          }
+        }
+
+        // 2. Video check
+        const vidRes = await fetch(`${STRAPI_URL}/api/videos?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
+        if (vidRes.ok) {
+          const vidData = await vidRes.json();
+          const items = vidData.data || [];
+          for (const item of items) {
+            const currentCount = Number(item.commentsCount || 0);
+            await fetch(`${STRAPI_URL}/api/videos/${item.documentId || item.id}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error updating commentsCount in Strapi:', e);
+      }
+    }
+
     return NextResponse.json({ success: true, data: json.data });
   } catch (error: any) {
     console.error('Error creating comment in Strapi:', error);
