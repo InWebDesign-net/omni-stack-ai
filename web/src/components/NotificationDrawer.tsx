@@ -190,6 +190,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                     <img
                       src={n.sender.avatarUrl}
                       alt={n.sender.username}
+                      loading="lazy"
                       className="w-8 h-8 rounded-xl object-cover border border-slate-700"
                     />
                   ) : (

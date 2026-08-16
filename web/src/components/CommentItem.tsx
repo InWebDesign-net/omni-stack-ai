@@ -99,6 +99,7 @@ export default function CommentItem({
         <img
           src={comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
           alt={comment.authorName}
+          loading="lazy"
           onClick={handleAuthorClick}
           className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-700 hover:border-indigo-400 hover:scale-105 shrink-0 mt-0.5 cursor-pointer transition-all"
           title={`${comment.authorName} - Kanal anzeigen`}
