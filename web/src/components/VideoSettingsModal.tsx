@@ -340,7 +340,6 @@ export default function VideoSettingsModal({
                     className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none transition-all"
                   >
                     <option value="public">{t.videoSettings.visibility.public}</option>
-                    <option value="unlisted">{t.videoSettings.visibility.unlisted}</option>
                     <option value="private">{t.videoSettings.visibility.private}</option>
                   </select>
                 </div>
