@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare, Clock } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
@@ -341,58 +341,88 @@ export default function HomeClient() {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-6">
-              {videos.map((item) => (
-                <div
-                  key={item.slug || item.id}
-                  className="group relative bg-[#0d1528]/80 rounded-xl sm:rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
-                >
-                  <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
-                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
-                    <img
-                      src={item.thumbnailUrl || '/media/thumbnails/default.png'}
-                      alt={item.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+              {videos.map((item: any) => {
+                const creator = item.creator || item.author;
+                const creatorName = creator?.username || creator?.handle || item.authorName || 'Omni Creator';
+                const creatorAvatar = creator?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
 
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-500/90 text-white flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform">
-                        <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
+                return (
+                  <div
+                    key={item.documentId || item.slug || item.id}
+                    className="group bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+                  >
+                    {/* Video Thumbnail & Play Overlay */}
+                    <Link href={`/video/${item.slug}`} className="relative aspect-video w-full overflow-hidden block bg-slate-950">
+                      {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
+                      <img
+                        src={item.thumbnailUrl || '/media/thumbnails/default.png'}
+                        alt={item.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+
+                      {/* Play Icon Badge */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="p-2 sm:p-3 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur-md transform group-hover:scale-110 transition-transform">
+                          <Play className="w-4 h-4 sm:w-6 sm:h-6 fill-white ml-0.5" />
+                        </div>
                       </div>
-                    </div>
 
-                    {Boolean(item.duration && item.duration > 0) && (
-                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 rounded bg-slate-950/80 text-[9px] sm:text-[11px] font-mono text-slate-200 border border-slate-800">
-                        {formatDuration(item.duration)}
-                      </div>
-                    )}
-                  </Link>
-
-                  <div className="p-2.5 sm:p-4 space-y-2 flex-1 flex flex-col justify-between">
-                    <Link href={`/video/${item.slug}`} className="block group-hover:text-indigo-400 transition-colors">
-                      <h3 className="font-bold text-xs sm:text-sm text-slate-100 line-clamp-2 leading-snug">
-                        {item.title}
-                      </h3>
+                      {/* Duration Badge */}
+                      {Boolean(item.duration && item.duration > 0) && (
+                        <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[9px] sm:text-[10px] font-mono text-slate-200 flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-400" />
+                          <span>{formatDuration(item.duration)}</span>
+                        </div>
+                      )}
                     </Link>
 
-                    <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 font-mono border-t border-slate-800/60">
-                      <div className="flex items-center gap-1" title="Aufrufe">
-                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" />
-                        <span>{(item.viewsCount || 0).toLocaleString()}</span>
+                    {/* Card Details */}
+                    <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-between">
+                      <div>
+                        <Link
+                          href={`/video/${item.slug}`}
+                          className="font-semibold text-slate-100 group-hover:text-indigo-300 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
+                        >
+                          {item.title}
+                        </Link>
                       </div>
-                      <div className="flex items-center gap-1" title="Kommentare">
-                        <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400" />
-                        <span>{(item.commentsCount || 0).toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-center gap-1" title="Likes">
-                        <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-500/80" />
-                        <span>{(item.likesCount || 0).toLocaleString()}</span>
+
+                      {/* Creator & Meta */}
+                      <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-800/60 text-[11px] sm:text-xs text-slate-400">
+                        <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0">
+                          {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
+                          <img
+                            src={creatorAvatar}
+                            alt={creatorName}
+                            loading="lazy"
+                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
+                          />
+                          <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
+                        </Link>
+
+                        <div className="flex items-center gap-1.5 sm:gap-2.5 text-slate-400 shrink-0 font-mono text-[10px] sm:text-xs">
+                          {item.viewsCount !== undefined && (
+                            <div className="flex items-center gap-0.5" title="Aufrufe">
+                              <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400" />
+                              <span>{item.viewsCount.toLocaleString()}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-0.5" title="Kommentare">
+                            <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400" />
+                            <span>{(item.commentsCount || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center gap-0.5" title="Likes">
+                            <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-400" />
+                            <span>{(item.likesCount || 0).toLocaleString()}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
