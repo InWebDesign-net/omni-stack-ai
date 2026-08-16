@@ -64,20 +64,6 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       return null;
     }
 
-    // 2. Load videos to populate this profile's feed (full catalog up to 200 items)
-    const videosRes = await fetch(
-      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*`,
-      { headers, cache: 'no-store' }
-    );
-
-    if (!videosRes.ok) {
-      console.error('Failed to fetch videos for profile');
-      return null;
-    }
-
-    const videosData = await videosRes.json();
-    const allVideos = videosData?.data || [];
-
     // 3. Determine ownership
     const isOwner = Boolean(
       viewer &&
@@ -90,7 +76,26 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         )
     );
 
-    // 3. Filter videos for this profile
+    // 4. Fetch videos created by targetProfile (owner gets public + private, visitor gets public only)
+    const creatorParam = targetProfile?.id
+      ? `&filters[creator][id][$eq]=${targetProfile.id}`
+      : (targetProfile?.documentId ? `&filters[creator][documentId][$eq]=${encodeURIComponent(targetProfile.documentId)}` : '');
+    const visibilityParam = isOwner ? '' : '&filters[visibility][$eq]=public';
+
+    const videosRes = await fetch(
+      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*${creatorParam}${visibilityParam}`,
+      { headers, cache: 'no-store' }
+    );
+
+    if (!videosRes.ok) {
+      console.error('Failed to fetch videos for profile');
+      return null;
+    }
+
+    const videosData = await videosRes.json();
+    const allVideos = videosData?.data || [];
+
+    // 5. Filter & deduplicate videos for this profile
     const profileVideoMap = new Map<string, any>();
     for (const v of allVideos) {
       const creator = v.creator || v.author;

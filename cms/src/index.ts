@@ -48,35 +48,29 @@ export default {
           : (koaCtx?.state?.user?.id
               ? Number(koaCtx.state.user.id)
               : (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : null)));
-        const hasExistingFilters = context.params.filters && Object.keys(context.params.filters).length > 0;
 
+        const filters = context.params.filters || {};
         const usesCreator = context.uid === 'api::video.video' || context.uid === 'api::image.image';
-        const ownerFilter = uidNum
-          ? (usesCreator ? { creator: { id: { $eq: uidNum } } } : { author: { id: { $eq: uidNum } } })
-          : null;
+        const targetRelFilter = usesCreator ? filters.creator : filters.author;
+        const targetRelId = targetRelFilter?.id?.$eq || targetRelFilter?.id || targetRelFilter;
 
-        const visibilityFilter = ownerFilter
-          ? {
-              $or: [
-                { visibility: { $eq: 'public' } },
-                { visibility: { $null: true } },
-                ownerFilter,
-              ],
-            }
-          : {
-              $or: [
-                { visibility: { $eq: 'public' } },
-                { visibility: { $null: true } },
-              ],
-            };
+        const isOwnerQuery = uidNum && targetRelId && String(uidNum) === String(targetRelId);
 
-        if (hasExistingFilters) {
-          context.params.filters = {
-            $and: [context.params.filters, visibilityFilter],
-          };
-        } else {
-          context.params.filters = visibilityFilter;
+        // If explicitly querying for owner's items, allow private access
+        if (isOwnerQuery) {
+          return next();
         }
+
+        // If explicitly filtering by visibility, keep existing filter
+        if (filters.visibility) {
+          return next();
+        }
+
+        // Default-deny for general queries: enforce visibility = public
+        context.params.filters = {
+          ...filters,
+          visibility: { $eq: 'public' },
+        };
       }
 
       return next();
