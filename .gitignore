@@ -18,6 +18,11 @@ build
 # Local Utility Scripts & Setup Files (outside versioning)
 converter_lxc
 scripts
+
+# Scan artifacts
+scan_findings.txt
+*findings*.txt
+scan-*.txt
 agy_setup.md
 web/public/media
 
