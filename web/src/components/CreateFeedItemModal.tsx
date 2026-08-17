@@ -32,9 +32,7 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
 
     setIsSubmitting(true);
     try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
       const cleanSlug = form.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `post-${Date.now()}`;
-      
       const payload: any = {
         title: form.title,
         slug: cleanSlug,
