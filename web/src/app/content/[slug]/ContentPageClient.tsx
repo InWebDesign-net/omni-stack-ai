@@ -162,8 +162,7 @@ export default function ContentPageClient({
       } catch (e) {}
 
       try {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
-        const res = await fetch(`${strapiUrl}/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`, {
+        const res = await fetch(`/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`, {
           headers: jsonAuthHeaders(),
         });
         if (res.ok) {
@@ -196,8 +195,7 @@ export default function ContentPageClient({
           : [item.category, item.title].filter(Boolean);
         tracker.track('view', tags, item.type || 'article', item.author?.id);
 
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
-        fetch(`${strapiUrl}/api/feed/interaction`, {
+        fetch('/api/feed/interaction', {
           method: 'POST',
           headers: jsonAuthHeaders(),
           body: JSON.stringify({
@@ -261,8 +259,7 @@ export default function ContentPageClient({
     } catch (e) {}
 
     try {
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
-      const res = await fetch(`${strapiUrl}/api/feed/interaction`, {
+      const res = await fetch('/api/feed/interaction', {
         method: 'POST',
         headers: jsonAuthHeaders(),
         body: JSON.stringify({

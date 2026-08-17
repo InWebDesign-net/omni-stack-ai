@@ -50,7 +50,7 @@ export default function CreateFeedItemModal({ isOpen, onClose }: CreateFeedItemM
         payload.author = currentUser.id;
       }
 
-      await fetch(`${strapiUrl}/api/feed-items`, {
+      await fetch('/api/feed/feed-items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: payload }),
