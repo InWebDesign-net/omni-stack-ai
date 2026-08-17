@@ -14,6 +14,7 @@ interface CustomVideoPlayerProps {
   posterUrl?: string;
   title?: string;
   slug?: string;
+  recommendations?: any[];
   onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
   className?: string;
 }
@@ -24,10 +25,11 @@ export default function CustomVideoPlayer({
   posterUrl,
   title = 'Video',
   slug,
+  recommendations,
   onTimeUpdate,
   className = 'w-full h-full',
 }: CustomVideoPlayerProps) {
-  const { t } = useApp();
+  const { t, currentUser } = useApp();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -39,6 +41,10 @@ export default function CustomVideoPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
+
+  // End-of-video & Recommendation Overlay state
+  const [hasEnded, setHasEnded] = useState(false);
+  const [recommendationsList, setRecommendationsList] = useState<any[]>(recommendations || []);
 
   // UI state
   const [showControls, setShowControls] = useState(true);
@@ -123,10 +129,70 @@ export default function CustomVideoPlayer({
     }
   };
 
+  // Replay Video from start
+  const handleReplay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    setHasEnded(false);
+    video.play().catch(() => {});
+    setIsPlaying(true);
+  }, []);
+
+  // Video Ended Handler
+  const handleVideoEnded = useCallback(() => {
+    if (isLooping) {
+      const video = videoRef.current;
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+      return;
+    }
+    setIsPlaying(false);
+    setHasEnded(true);
+    setShowControls(true);
+  }, [isLooping]);
+
+  // Fetch fallback recommendations if not passed in props
+  useEffect(() => {
+    if (recommendations && recommendations.length > 0) {
+      setRecommendationsList(recommendations);
+      return;
+    }
+
+    let isMounted = true;
+    async function fetchRecommendations() {
+      try {
+        const url = currentUser ? '/api/feed/personalized?pageSize=6' : '/api/video/list?pageSize=6';
+        const res = await fetch(url);
+        if (res.ok) {
+          const json = await res.json();
+          const items = (json.data || json.videos || json.items || []).filter((v: any) => v.slug !== slug);
+          if (isMounted) {
+            setRecommendationsList(items.length > 0 ? items : (json.data || []));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch player recommendations', err);
+      }
+    }
+
+    fetchRecommendations();
+    return () => {
+      isMounted = false;
+    };
+  }, [recommendations, slug, currentUser]);
+
   // Play / Pause Toggle
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    if (hasEnded) {
+      handleReplay();
+      return;
+    }
 
     if (video.paused) {
       video.play().catch(() => {});
@@ -139,7 +205,7 @@ export default function CustomVideoPlayer({
     }
 
     setTimeout(() => setCenterAnimation(null), 600);
-  }, []);
+  }, [hasEnded, handleReplay]);
 
   // Mute Toggle
   const toggleMute = () => {
@@ -166,6 +232,9 @@ export default function CustomVideoPlayer({
     const target = parseFloat(e.target.value);
     video.currentTime = target;
     setCurrentTime(target);
+    if (hasEnded && target < duration) {
+      setHasEnded(false);
+    }
   };
 
   // Timeline Mouse Hover Tooltip
@@ -280,11 +349,93 @@ export default function CustomVideoPlayer({
         playsInline
         loop={isLooping}
         onTimeUpdate={handleTimeUpdateInternal}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+          setIsPlaying(true);
+          setHasEnded(false);
+        }}
         onPause={() => setIsPlaying(false)}
+        onEnded={handleVideoEnded}
         onClick={togglePlay}
         className="w-full h-full object-contain cursor-pointer"
       />
+
+      {/* End-of-Video Recommendation Overlay (YouTube Style) */}
+      {hasEnded && !isLooping && (
+        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col justify-between p-3 sm:p-6 pb-20 select-none animate-fadeIn">
+          {/* Top Bar with Title and Replay Button */}
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5 sm:pb-3 shrink-0">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+              <span className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
+                {currentUser
+                  ? (t.player?.recommendedForYou || 'Empfohlene Videos für dich')
+                  : (t.player?.discoverMore || 'Weitere Empfehlungen entdecken')}
+              </span>
+            </div>
+
+            {/* Replay Button */}
+            <button
+              type="button"
+              onClick={handleReplay}
+              className="px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
+              title={t.player?.replay || 'Erneut abspielen'}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{t.player?.replay || 'Erneut abspielen'}</span>
+            </button>
+          </div>
+
+          {/* Recommendation Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 my-auto py-2 overflow-y-auto max-h-[calc(100%-60px)]">
+            {recommendationsList.slice(0, 3).map((rec: any) => {
+              const creator = rec.creator || rec.author;
+              const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
+              const creatorAvatar = creator?.avatarUrl || rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+
+              return (
+                <a
+                  key={rec.slug || rec.id}
+                  href={`/video/${rec.slug}`}
+                  onClick={() => setHasEnded(false)}
+                  className="group relative bg-[#0d1528] border border-slate-800 hover:border-indigo-500/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
+                >
+                  <div className="relative aspect-video w-full bg-slate-950 overflow-hidden block">
+                    <img
+                      src={rec.thumbnailUrl || '/media/thumbnails/default.png'}
+                      alt={rec.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/40 group-hover:bg-slate-950/20 transition-colors flex items-center justify-center">
+                      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-indigo-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white ml-0.5" />
+                      </div>
+                    </div>
+                    {Boolean(rec.duration && rec.duration > 0) && (
+                      <span className="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 px-1 py-0.5 rounded bg-slate-950/80 text-[8px] sm:text-[9px] font-mono text-slate-200 border border-slate-800">
+                        {formatTime(rec.duration)}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-2 sm:p-2.5 space-y-1">
+                    <h4 className="font-semibold text-[11px] sm:text-xs text-white line-clamp-1 group-hover:text-indigo-300 transition-colors">
+                      {rec.title}
+                    </h4>
+                    <div className="flex items-center gap-1.5 pt-0.5 text-[9px] sm:text-[10px] text-slate-400">
+                      <img
+                        src={creatorAvatar}
+                        alt={creatorName}
+                        className="w-3.5 h-3.5 rounded-full object-cover border border-slate-700 shrink-0"
+                      />
+                      <span className="truncate font-medium">{creatorName}</span>
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Center Play/Pause Animated Splash Indicator */}
       {centerAnimation && (
@@ -329,7 +480,9 @@ export default function CustomVideoPlayer({
             </button>
             <button
               onClick={() => {
-                setIsLooping(!isLooping);
+                const nextLooping = !isLooping;
+                setIsLooping(nextLooping);
+                if (nextLooping) setHasEnded(false);
                 setContextMenu(null);
               }}
               className="w-full px-3 py-2 text-left hover:bg-indigo-600/20 hover:text-indigo-300 rounded-xl flex items-center justify-between transition-colors"

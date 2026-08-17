@@ -516,6 +516,7 @@ export default function VideoPageClient({
                 posterUrl={video.thumbnailUrl || '/media/thumbnails/default.png'}
                 title={video.title}
                 slug={slug}
+                recommendations={initialRelated}
                 onTimeUpdate={handleVideoTimeUpdate}
                 className="w-full h-full"
               />

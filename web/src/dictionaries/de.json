@@ -318,7 +318,10 @@
     "mute": "Stummschalten",
     "unmute": "Ton einschalten",
     "fullscreen": "Vollbild",
-    "exitFullscreen": "Vollbild beenden"
+    "exitFullscreen": "Vollbild beenden",
+    "recommendedForYou": "Empfohlene Videos für dich",
+    "discoverMore": "Weitere Empfehlungen entdecken",
+    "replay": "Erneut abspielen"
   },
   "userProfile": {
     "ownerBadge": "Dein Profil (Eigentümer)",

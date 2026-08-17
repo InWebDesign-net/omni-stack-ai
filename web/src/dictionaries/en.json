@@ -318,7 +318,10 @@
     "mute": "Mute",
     "unmute": "Unmute",
     "fullscreen": "Fullscreen",
-    "exitFullscreen": "Exit Fullscreen"
+    "exitFullscreen": "Exit Fullscreen",
+    "recommendedForYou": "Recommended for you",
+    "discoverMore": "Discover more recommendations",
+    "replay": "Replay video"
   },
   "userProfile": {
     "ownerBadge": "Your Profile (Owner)",
