@@ -371,11 +371,11 @@ export default function VideosPageClient({
               </div>
             </div>
 
-            {/* Tag cloud: height-capped 2-row container with smooth transition */}
+            {/* Tag cloud: height-capped 2-row (collapsed) / 12-row scrollable (expanded) container */}
             <div
               className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
                 isTagCloudExpanded || tagSearch.trim()
-                  ? "max-h-[1200px]"
+                  ? "max-h-[380px] sm:max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700"
                   : "max-h-[68px] sm:max-h-[72px] overflow-hidden"
               }`}
             >

@@ -393,7 +393,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
               <div
                 className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
                   showAllTags || tagSearch.trim()
-                    ? 'max-h-[1200px]'
+                    ? 'max-h-[380px] sm:max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700'
                     : 'max-h-[68px] sm:max-h-[72px] overflow-hidden'
                 }`}
               >
