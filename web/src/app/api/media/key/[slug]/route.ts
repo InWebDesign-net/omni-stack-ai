@@ -6,6 +6,53 @@ export const dynamic = 'force-dynamic';
 
 const MEDIA_ROOT = path.resolve('/root/media');
 
+// Rate limiting via globalThis (persists across requests in the same Node.js process)
+const RATE_WINDOW_MS = 60_000; // 1 minute
+const RATE_MAX = 10;
+
+interface RateEntry { count: number; resetAt: number; }
+
+// Use globalThis to persist rate limit state across requests
+const globalForRateLimit = globalThis as unknown as {
+  rateLimitMap?: Map<string, RateEntry>;
+};
+
+if (!globalForRateLimit.rateLimitMap) {
+  globalForRateLimit.rateLimitMap = new Map();
+}
+const rateMap = globalForRateLimit.rateLimitMap;
+
+function isRateLimited(ip: string, slug: string): boolean {
+  const key = `${ip}:${slug}`;
+  const now = Date.now();
+  const entry = rateMap.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+
+  if (entry.count >= RATE_MAX) {
+    return true;
+  }
+
+  entry.count++;
+  return false;
+}
+
+// Cleanup old entries every 5 minutes
+const globalForCleanup = globalThis as unknown as {
+  rateLimitCleanup?: ReturnType<typeof setInterval>;
+};
+if (!globalForCleanup.rateLimitCleanup) {
+  globalForCleanup.rateLimitCleanup = setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of rateMap) {
+      if (now > v.resetAt) rateMap.delete(k);
+    }
+  }, 300_000);
+}
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -14,6 +61,17 @@ export async function GET(
     const { slug } = await params;
     if (!slug) {
       return new NextResponse('Bad Request', { status: 400 });
+    }
+
+    // Rate limiting per IP + slug
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    if (isRateLimited(clientIp, slug)) {
+      return new NextResponse('Rate limit exceeded', {
+        status: 429,
+        headers: { 'Retry-After': '60' },
+      });
     }
 
     // Sanitize slug
