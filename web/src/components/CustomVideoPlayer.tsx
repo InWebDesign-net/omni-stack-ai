@@ -385,8 +385,59 @@ export default function CustomVideoPlayer({
             </button>
           </div>
 
-          {/* Recommendation Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 my-auto py-2 overflow-y-auto max-h-[calc(100%-60px)]">
+          {/* Mobile Layout: 1 Featured Horizontal Recommendation Card */}
+          <div className="block sm:hidden my-auto py-1">
+            {recommendationsList.slice(0, 1).map((rec: any) => {
+              const creator = rec.creator || rec.author;
+              const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
+              const creatorAvatar = creator?.avatarUrl || rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+
+              return (
+                <a
+                  key={rec.slug || rec.id}
+                  href={`/video/${rec.slug}`}
+                  onClick={() => setHasEnded(false)}
+                  className="group relative bg-[#0d1528]/95 border border-indigo-500/30 hover:border-indigo-500/60 rounded-xl overflow-hidden p-2 flex items-center gap-2.5 shadow-xl transition-all"
+                >
+                  <div className="relative w-28 aspect-video bg-slate-950 rounded-lg overflow-hidden shrink-0">
+                    <img
+                      src={rec.thumbnailUrl || '/media/thumbnails/default.png'}
+                      alt={rec.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-indigo-600/90 text-white flex items-center justify-center shadow">
+                        <Play className="w-3 h-3 fill-white ml-0.5" />
+                      </div>
+                    </div>
+                    {Boolean(rec.duration && rec.duration > 0) && (
+                      <span className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-slate-950/80 text-[8px] font-mono text-slate-200">
+                        {formatTime(rec.duration)}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-400 font-mono">Nächstes Video</span>
+                    <h4 className="font-semibold text-xs text-white line-clamp-2 leading-tight group-hover:text-indigo-300 transition-colors">
+                      {rec.title}
+                    </h4>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                      <img
+                        src={creatorAvatar}
+                        alt={creatorName}
+                        className="w-3.5 h-3.5 rounded-full object-cover border border-slate-700 shrink-0"
+                      />
+                      <span className="truncate font-medium">{creatorName}</span>
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+
+          {/* Desktop & Tablet Layout: 3 Vertical Recommendation Cards Grid */}
+          <div className="hidden sm:grid sm:grid-cols-3 gap-3 md:gap-4 my-auto py-2">
             {recommendationsList.slice(0, 3).map((rec: any) => {
               const creator = rec.creator || rec.author;
               const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
@@ -406,22 +457,22 @@ export default function CustomVideoPlayer({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-slate-950/40 group-hover:bg-slate-950/20 transition-colors flex items-center justify-center">
-                      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-indigo-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white ml-0.5" />
+                      <div className="w-8 h-8 rounded-full bg-indigo-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <Play className="w-4 h-4 fill-white ml-0.5" />
                       </div>
                     </div>
                     {Boolean(rec.duration && rec.duration > 0) && (
-                      <span className="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 px-1 py-0.5 rounded bg-slate-950/80 text-[8px] sm:text-[9px] font-mono text-slate-200 border border-slate-800">
+                      <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-slate-950/80 text-[9px] font-mono text-slate-200 border border-slate-800">
                         {formatTime(rec.duration)}
                       </span>
                     )}
                   </div>
 
-                  <div className="p-2 sm:p-2.5 space-y-1">
-                    <h4 className="font-semibold text-[11px] sm:text-xs text-white line-clamp-1 group-hover:text-indigo-300 transition-colors">
+                  <div className="p-2.5 space-y-1">
+                    <h4 className="font-semibold text-xs text-white line-clamp-1 group-hover:text-indigo-300 transition-colors">
                       {rec.title}
                     </h4>
-                    <div className="flex items-center gap-1.5 pt-0.5 text-[9px] sm:text-[10px] text-slate-400">
+                    <div className="flex items-center gap-1.5 pt-0.5 text-[10px] text-slate-400">
                       <img
                         src={creatorAvatar}
                         alt={creatorName}
