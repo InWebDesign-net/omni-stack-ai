@@ -45,7 +45,8 @@ module.exports = {
       args: "run start",
       env: {
         NODE_ENV: "production",
-        PORT: 4000
+        PORT: 4000,
+        ALLOWED_ORIGINS: "https://omni-web.inwebdesign.net"
       },
       autorestart: true,
       watch: false,
