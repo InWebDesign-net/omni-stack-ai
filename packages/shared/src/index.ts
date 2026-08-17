@@ -1,7 +1,3 @@
-/**
- * Server-side re-export of the canonical AffinityGraph model.
- * The authoritative implementation lives in @omni/shared.
- */
 export {
   type AffinityGraph,
   type TopicAffinity,
@@ -12,4 +8,4 @@ export {
   isCanonicalAffinityGraph,
   topicWeight,
   creatorWeight,
-} from '@omni/shared';
+} from './affinity';

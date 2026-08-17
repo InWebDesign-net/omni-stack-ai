@@ -6,7 +6,8 @@
   "description": "Hyper-Personalized Feed Assembly Monorepo with Strapi, NextJS, Turborepo, PM2 & Ollama AI",
   "workspaces": [
     "cms",
-    "web"
+    "web",
+    "packages/*"
   ],
   "scripts": {
     "dev": "turbo run dev",

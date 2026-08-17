@@ -16,6 +16,7 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
+    "@omni/shared": "1.0.0",
     "@strapi/database": "5.51.1",
     "@strapi/plugin-cloud": "5.51.1",
     "@strapi/plugin-users-permissions": "5.51.1",

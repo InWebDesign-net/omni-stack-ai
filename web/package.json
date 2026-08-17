@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@omni/shared": "1.0.0",
     "date-fns": "^4.4.0",
     "framer-motion": "^12.43.0",
     "hls.js": "^1.7.0",
