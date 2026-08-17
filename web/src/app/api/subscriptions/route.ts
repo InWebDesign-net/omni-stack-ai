@@ -34,7 +34,9 @@ async function resolveTargetUser(targetIdStr: string) {
       if (res.ok) {
         return await res.json();
       }
-    } catch (e) {}
+    } catch (e) {
+        console.error('[route.ts] unhandled error', e);
+      }
   }
 
   try {
@@ -48,7 +50,9 @@ async function resolveTargetUser(targetIdStr: string) {
       const list = await filterRes.json();
       if (Array.isArray(list) && list.length > 0) return list[0];
     }
-  } catch (e) {}
+  } catch (e) {
+        console.error('[route.ts] unhandled error', e);
+      }
 
   return null;
 }

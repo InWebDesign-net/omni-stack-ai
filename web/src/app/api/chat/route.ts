@@ -295,7 +295,9 @@ export async function POST(req: Request) {
                 link: `chat:${room.slug || room.id}`,
               }),
             });
-          } catch (err) {}
+          } catch (err) {
+        console.error('[route.ts] unhandled error', err);
+      }
         }
       }
 

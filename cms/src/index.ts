@@ -115,8 +115,8 @@ export default {
               console.log(`✅ Strapi Admin Editor account created: ${editor.email}`);
             }
           } catch (e) {
-            // Ignored
-          }
+        strapi.log.error('[index.ts] unhandled error', e);
+      }
         }
       }
 
@@ -138,7 +138,9 @@ export default {
               data: { action, role: roleId },
             });
           }
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[index.ts] unhandled error', e);
+      }
       };
 
       // Feed & tracking actions available to everyone (JWT is verified when present)
@@ -156,7 +158,9 @@ export default {
           await strapi.db.query('plugin::users-permissions.permission').deleteMany({
             where: { role: roleId, action },
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[index.ts] unhandled error', e);
+      }
       };
 
       if (publicRole) {
@@ -261,7 +265,9 @@ export default {
                 await strapi.service('api::feed.feed').ingestFinalizedVideo({ slug: base, workerSecret });
               }
             }
-          } catch (e) {}
+          } catch (e) {
+        strapi.log.error('[index.ts] unhandled error', e);
+      }
         }, 3000);
       }
     } catch (error) {

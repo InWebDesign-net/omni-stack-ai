@@ -37,7 +37,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           targetFeedItemDocId = (feedMatches[0] as any).documentId;
         }
       }
-    } catch (e) {}
+    } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
 
     // Query Fav collection relation in database
     try {
@@ -60,7 +62,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       if (favs && favs.length > 0) {
         isLiked = true;
       }
-    } catch (e) {}
+    } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
 
     return {
       slug,
@@ -100,7 +104,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         if (foundUser) {
           userId = foundUser.id;
         }
-      } catch (e) {}
+      } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -195,7 +201,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { viewsCount: currentViewsCount } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       for (const doc of imageMatches) {
@@ -206,7 +214,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { viewsCount: currentViewsCount } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       for (const doc of feedMatches) {
@@ -217,7 +227,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { viewsCount: currentViewsCount } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       if (userId) {
@@ -225,7 +237,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           await strapi.service('api::tracking.tracking').processBatch(userId, [
             { type: 'view', tags, mediaType },
           ]);
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       return {
@@ -257,7 +271,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         } catch (e) {
           existingFavs = await strapi.db.query('api::favorite.favorite').findMany(favQuery);
         }
-      } catch (e) {}
+      } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
 
       if (existingFavs.length === 0) {
         // Create Favorite relation
@@ -308,7 +324,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               status: 'published',
               data: { likesCount: currentLikesCount } as any,
             });
-          } catch (e) {}
+          } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
         }
 
         for (const doc of imageMatches) {
@@ -319,7 +337,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               status: 'published',
               data: { likesCount: currentLikesCount } as any,
             });
-          } catch (e) {}
+          } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
         }
 
         for (const doc of feedMatches) {
@@ -330,7 +350,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               status: 'published',
               data: { likesCount: currentLikesCount } as any,
             });
-          } catch (e) {}
+          } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
         }
 
         if (userId) {
@@ -338,7 +360,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             await strapi.service('api::tracking.tracking').processBatch(userId, [
               { type: 'like', tags, mediaType: currentItem?.mediaType || 'image' },
             ]);
-          } catch (e) {}
+          } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
         }
       }
 
@@ -381,7 +405,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             });
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
 
       currentLikesCount = Math.max(0, currentLikesCount - 1);
 
@@ -393,7 +419,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { likesCount: currentLikesCount } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       for (const doc of imageMatches) {
@@ -404,7 +432,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { likesCount: currentLikesCount } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       for (const doc of feedMatches) {
@@ -415,7 +445,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { likesCount: currentLikesCount } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       if (userId) {
@@ -423,7 +455,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           await strapi.service('api::tracking.tracking').processBatch(userId, [
             { type: 'unlike', tags, mediaType: currentItem?.mediaType || 'image' },
           ]);
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
       }
 
       return {

@@ -28,7 +28,9 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       try {
         body = await req.text();
-      } catch (e) {}
+      } catch (e) {
+        console.error('[route.ts] unhandled error', e);
+      }
     }
 
     const res = await fetch(targetUrl, {

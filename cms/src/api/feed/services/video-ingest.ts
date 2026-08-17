@@ -129,7 +129,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
 
     try {
       const imageMatches = await strapi.documents('api::image.image').findMany({
@@ -152,10 +154,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               data: imgUpdateData as any,
               status: 'published',
             });
-          } catch (e) {}
+          } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
 
     const updateStrapiItem = async () => {
       try {
@@ -175,7 +181,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             } as any,
           });
         }
-      } catch (e) {}
+      } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
     };
 
     await updateStrapiItem();
@@ -195,7 +203,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           where: { documentId },
           populate: ['creator', 'author'],
         });
-      } catch (e) {}
+      } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
 
       if (!doc) {
         try {
@@ -203,7 +213,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             where: { documentId },
             populate: ['author', 'creator'],
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
       }
 
       if (doc) {
@@ -221,7 +233,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         where: { documentId },
       });
       if (vCheck) isVideoModel = true;
-    } catch (e) {}
+    } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
 
     if (isVideoModel) {
       try {
@@ -238,7 +252,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { visibility: targetVisibility } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
         return { success: true, documentId, published: publish, visibility: targetVisibility, data: vUpdated };
       } catch (vErr: any) {
         throw vErr;
@@ -258,7 +274,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             status: 'published',
             data: { visibility: targetVisibility } as any,
           });
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[video-ingest.ts] unhandled error', e);
+      }
         return { success: true, documentId, published: publish, visibility: targetVisibility, data: updatedDe };
       } catch (e: any) {
         throw e;

@@ -20,10 +20,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         console.log('🧹 Force re-seed requested. Deleting existing Feed Items & Video records...');
         try {
           await strapi.db.query('api::feed-item.feed-item').deleteMany({});
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
         try {
           await strapi.db.query('api::video.video').deleteMany({});
-        } catch (e) {}
+        } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
       }
 
       console.log('🌱 Seeding initial bilingual Feed Items with Dynamic Zone Blocks in Strapi...');
@@ -67,7 +71,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                   subscribersCount: creator.subscribersCount,
                 },
               });
-            } catch (e) {}
+            } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
             return existingUser;
           }
 
@@ -91,7 +97,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                   where: { username: creator.username },
                 });
               }
-            } catch (e) {}
+            } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
           }
 
           if (created && created.id) {
@@ -105,7 +113,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                   subscribersCount: creator.subscribersCount,
                 },
               });
-            } catch (e) {}
+            } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
           }
           return created;
         } catch (e) {
@@ -187,7 +197,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                   tags: videoData.tags_de || videoData.tags || ['Video'],
                 } as any,
               });
-            } catch (e) {}
+            } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
           }
           return createdEn;
         } catch (e) {
@@ -275,7 +287,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                     } as any,
                     status: 'published',
                   });
-                } catch (e) {}
+                } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
               }
             }
           }
@@ -423,9 +437,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 } as any,
                 status: 'published',
               });
-            } catch (deErr) {}
+            } catch (deErr) {
+        strapi.log.error('[seed.ts] unhandled error', deErr);
+      }
           }
-        } catch (itemErr) {}
+        } catch (itemErr) {
+        strapi.log.error('[seed.ts] unhandled error', itemErr);
+      }
       }
 
       console.log(`✅ Seed completed: ${seedItems.length * 2} bilingual items linked with Dynamic Zone components created!`);
