@@ -291,7 +291,7 @@ export default function VideoPageClient({
 
   const handleVideoTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
-    if (!hasTrackedView.current && el.currentTime >= 5 && video?.slug) {
+    if (!hasTrackedView.current && el.currentTime >= 5 && video?.slug && currentUser) {
       hasTrackedView.current = true;
       const tags = Array.isArray(video.tags) && video.tags.length > 0
         ? video.tags
