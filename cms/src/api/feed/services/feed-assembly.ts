@@ -6,6 +6,7 @@ import {
   creatorWeight,
   TOPIC_SCORE_MAX,
 } from '../../../lib/affinity';
+import { FeedItem, Video, ContentItem, User } from '../../../types';
 
 /** Creator affinity (0–100) above which an author counts as "network" for the feed. */
 const NETWORK_CREATOR_THRESHOLD = 60;
@@ -17,10 +18,10 @@ export interface FeedAssemblyInput {
   targetSlug?: string;
   activePattern?: 'discovery' | 'deep_dive';
   // Anonymous visitors may send their local affinity graph (any legacy shape accepted):
-  topics?: any;
-  interests?: any;
-  contentTypes?: any;
-  creators?: any;
+  topics?: unknown;
+  interests?: unknown;
+  contentTypes?: unknown;
+  creators?: unknown;
 }
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
@@ -32,12 +33,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // Anonymous visitors rank against the (local) graph they send along.
     let graph: AffinityGraph;
     if (viewerId) {
-      let storedGraph: any = null;
+      let storedGraph: unknown = null;
       try {
         const viewer = await strapi.db.query('plugin::users-permissions.user').findOne({
           where: { id: viewerId },
         });
-        storedGraph = viewer?.affinityGraph || null;
+        storedGraph = (viewer as User | null)?.affinityGraph || null;
       } catch (e) {
         console.error('assembleFeed: failed to load viewer affinityGraph:', e);
       }
@@ -50,7 +51,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
 
     // 1. Fetch items from database matching targetLocale
-    let items: any[] = [];
+    let items: ContentItem[] = [];
     const populateConfig = {
       author: true,
       blocks: {
@@ -68,17 +69,17 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         ...(omniViewer ? { omniViewer } : {}),
       } as any);
 
-      let dbItems = [...primaryItems];
+      let dbItems: ContentItem[] = [...primaryItems as ContentItem[]];
 
       // Fetch standalone video documents and unify into dbItems
       try {
         const videoItems = await strapi.documents('api::video.video').findMany({
           populate: { creator: true } as any,
-          status: (userProfileInput as any)?.includeDrafts ? undefined : 'published',
+          status: userProfileInput?.includeDrafts ? undefined : 'published',
           locale: '*',
           ...(omniViewer ? { omniViewer } : {}),
         } as any);
-        const mappedVideos = videoItems.map((v: any) => ({
+        const mappedVideos = videoItems.map((v: Video) => ({
           ...v,
           author: v.creator || v.author,
           creator: v.creator || v.author,
@@ -87,19 +88,19 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           tags: v.tags || ['Video'],
           summary: v.summary || v.title,
           blocks: v.blocks || [],
-        }));
+        })) as ContentItem[];
         // Avoid duplicates if video is already linked to a feedItem
-        const existingSlugs = new Set(dbItems.map((i: any) => i.slug));
-        const uniqueVideos = mappedVideos.filter((v: any) => !existingSlugs.has(v.slug));
+        const existingSlugs = new Set(dbItems.map((i) => i.slug));
+        const uniqueVideos = mappedVideos.filter((v) => !existingSlugs.has(v.slug));
         dbItems = [...dbItems, ...uniqueVideos];
       } catch (e) {}
 
-      items = dbItems as any;
+      items = dbItems;
     } catch (err) {
       items = [];
     }
 
-    let resolvedTargetMatch: any = null;
+    let resolvedTargetMatch: ContentItem | null = null;
     const target = (userProfileInput as any)?.targetSlug;
     if (target) {
       try {
@@ -115,7 +116,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               populate: populateConfig as any,
               ...(omniViewer ? { omniViewer } : {}),
             } as any);
-            if (matches && matches.length > 0) return matches[0];
+            if (matches && matches.length > 0) return matches[0] as ContentItem;
           } catch (e) {}
 
           // 2. Direct slug match in standalone video
@@ -128,7 +129,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               ...(omniViewer ? { omniViewer } : {}),
             } as any);
             if (videoMatches && videoMatches.length > 0) {
-              const v = videoMatches[0] as any;
+              const v = videoMatches[0] as Video;
               return {
                 ...v,
                 author: v.creator || v.author,
@@ -137,7 +138,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 tags: v.tags || ['Video'],
                 summary: v.summary || v.title,
                 blocks: v.blocks || [],
-              };
+              } as ContentItem;
             }
           } catch (e) {}
 
@@ -150,7 +151,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               populate: populateConfig as any,
               ...(omniViewer ? { omniViewer } : {}),
             } as any);
-            if (doc) return doc;
+            if (doc) return doc as ContentItem;
           } catch (e) {}
 
           // 4. Direct documentId match in standalone video
@@ -163,7 +164,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               ...(omniViewer ? { omniViewer } : {}),
             } as any);
             if (vDoc) {
-              const v = vDoc as any;
+              const v = vDoc as Video;
               return {
                 ...v,
                 author: v.creator || v.author,
@@ -172,7 +173,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 tags: v.tags || ['Video'],
                 summary: v.summary || v.title,
                 blocks: v.blocks || [],
-              };
+              } as ContentItem;
             }
           } catch (e) {}
 
@@ -193,7 +194,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 populate: populateConfig as any,
                 ...(omniViewer ? { omniViewer } : {}),
               } as any);
-              if (localizedDoc) return localizedDoc;
+              if (localizedDoc) return localizedDoc as ContentItem;
             }
           } catch (e) {}
 
@@ -215,7 +216,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 ...(omniViewer ? { omniViewer } : {}),
               } as any);
               if (localizedVDoc) {
-                const v = localizedVDoc as any;
+                const v = localizedVDoc as Video;
                 return {
                   ...v,
                   author: v.creator || v.author,
@@ -224,7 +225,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                   tags: v.tags || ['Video'],
                   summary: v.summary || v.title,
                   blocks: v.blocks || [],
-                };
+                } as ContentItem;
               }
             }
           } catch (e) {}
@@ -248,11 +249,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
         if (resolvedTargetMatch) {
           // Remove any previous versions of this item from items list to prevent stale versions
+          const rtm = resolvedTargetMatch;
           items = items.filter(
-            (i: any) =>
-              i.documentId !== resolvedTargetMatch.documentId &&
-              i.slug !== resolvedTargetMatch.slug &&
-              String(i.id) !== String(resolvedTargetMatch.id)
+            (i) =>
+              i.documentId !== rtm.documentId &&
+              i.slug !== rtm.slug &&
+              String(i.id) !== String(rtm.id)
           );
           // Place the exact resolvedTargetMatch at index 0
           items = [resolvedTargetMatch, ...items];
@@ -260,12 +262,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       } catch (e) {}
     }
 
-    const extractText = (val: any): string => {
+    const extractText = (val: unknown): string => {
       if (!val) return '';
       if (typeof val === 'string') return val;
       if (Array.isArray(val)) {
         return val
-          .map((b: any) => (Array.isArray(b?.children) ? b.children.map((c: any) => c?.text || '').join('') : ''))
+          .map((b: unknown) => (Array.isArray((b as Record<string, unknown>)?.children) ? (b as Record<string, unknown[]>).children.map((c: unknown) => (c as Record<string, unknown>)?.text || '').join('') : ''))
           .filter(Boolean)
           .join('\n');
       }
@@ -273,38 +275,39 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     };
 
     // 2. Score items against Interest Vector
-    const scoredItems = items.map((rawItem: any) => {
+    const scoredItems: ContentItem[] = items.map((rawItem) => {
       const blocks = rawItem.blocks || [];
-      const videoBlock = blocks.find((b: any) => b.__component === 'shared.video' || b.video);
-      const pdfBlock = blocks.find((b: any) => b.__component === 'shared.pdf' || b.pdfUrl);
-      const richTextBlock = blocks.find((b: any) => b.__component === 'shared.rich-text' || b.body);
+      const videoBlock = blocks.find((b) => b.__component === 'shared.video' || b.video) || {} as Record<string, unknown>;
+      const pdfBlock = blocks.find((b) => b.__component === 'shared.pdf' || b.pdfUrl) || {} as Record<string, unknown>;
+      const richTextBlock = blocks.find((b) => b.__component === 'shared.rich-text' || b.body) || {} as Record<string, unknown>;
 
       let derivedMediaType = rawItem.mediaType || 'article';
-      if (videoBlock) derivedMediaType = 'video';
-      else if (pdfBlock) derivedMediaType = 'pdf';
+      if (videoBlock.__component || videoBlock.video) derivedMediaType = 'video';
+      else if (pdfBlock.__component || pdfBlock.pdfUrl) derivedMediaType = 'pdf';
 
-      const videoData = videoBlock?.video || rawItem.video;
+      const videoData = (videoBlock.video as Video | undefined) || rawItem.video || ({} as Record<string, unknown>);
       const parsedSummary = extractText(rawItem.summary);
 
-      const item = {
+      const item: ContentItem = {
         ...rawItem,
         summary: parsedSummary || rawItem.title || '',
         mediaType: derivedMediaType,
-        content: richTextBlock?.body || rawItem.content || parsedSummary || '',
-        mediaUrl: videoData?.mp4Url || videoData?.hlsUrl || pdfBlock?.pdfUrl || rawItem.mediaUrl || '',
-        thumbnailUrl: videoData?.thumbnailUrl || rawItem.thumbnailUrl || '',
-        duration: videoData?.duration || rawItem.duration || 0,
-        isProcessing: videoData?.isProcessing !== undefined ? videoData.isProcessing : (rawItem.isProcessing || false),
-        isForSale: videoData?.isForSale || false,
-        price: videoData?.price || 0,
+        content: (richTextBlock.body as string | undefined) || (rawItem.content as string | undefined) || parsedSummary || '',
+        mediaUrl: (videoData as Video).mp4Url || (videoData as Video).hlsUrl || (pdfBlock.pdfUrl as string | undefined) || rawItem.mediaUrl || '',
+        thumbnailUrl: (videoData as Video).thumbnailUrl || rawItem.thumbnailUrl || '',
+        duration: (videoData as Video).duration || rawItem.duration || 0,
+        isProcessing: (videoData as Video).isProcessing !== undefined ? (videoData as Video).isProcessing : (rawItem.isProcessing || false),
+        isForSale: (videoData as Video).isForSale || false,
+        price: (videoData as Video).price || 0,
       };
 
-      const topicScore = topicWeight(graph, item.tags);
-      const mediaWeight = graph.contentTypes[item.mediaType] ?? 0.5;
-      const recencyHours = (Date.now() - new Date(item.publishedAt).getTime()) / (1000 * 3600);
+      const topicScore = topicWeight(graph, item.tags || []);
+      const mediaWeight = graph.contentTypes[item.mediaType || 'article'] ?? 0.5;
+      const recencyHours = (Date.now() - new Date(item.publishedAt || Date.now()).getTime()) / (1000 * 3600);
       const recencyDecay = Math.max(0.3, 1 - recencyHours / (24 * 30));
       // Creators the viewer interacts with often boost relevance by up to +30%
-      const creatorAffinity = creatorWeight(graph, item.author?.id);
+      const authorId = typeof item.author === 'object' ? item.author?.id : item.author;
+      const creatorAffinity = creatorWeight(graph, authorId);
       const relevanceScore = parseFloat(
         (topicScore * mediaWeight * recencyDecay * (1 + 0.3 * creatorAffinity)).toFixed(3)
       );
@@ -318,32 +321,32 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // 3. Create Buckets
     // Bucket 1: High Intent (relevanceScore >= 0.45)
-    const highIntentBucket = [...scoredItems].filter((i) => i.relevanceScore >= 0.45).sort((a, b) => b.relevanceScore - a.relevanceScore);
+    const highIntentBucket = [...scoredItems].filter((i) => (i.relevanceScore || 0) >= 0.45).sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
     // Bucket 2: Network — creators the viewer is close to (high creator affinity or subscription)
     const networkBucket = [...scoredItems]
-      .filter((i) => i.isSubscribedAuthor || i.creatorAffinity * TOPIC_SCORE_MAX >= NETWORK_CREATOR_THRESHOLD)
-      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+      .filter((i) => i.isSubscribedAuthor || (i.creatorAffinity || 0) * TOPIC_SCORE_MAX >= NETWORK_CREATOR_THRESHOLD)
+      .sort((a, b) => new Date(b.publishedAt || Date.now()).getTime() - new Date(a.publishedAt || Date.now()).getTime());
     // Bucket 3: Exploration (Wildcard / lower score items to test new interests)
     const explorationBucket = [...scoredItems]
-      .filter((i) => i.relevanceScore > 0 && (i.relevanceScore < 0.45 || i.tags.includes('Funny Cat Videos')))
+      .filter((i) => (i.relevanceScore || 0) > 0 && ((i.relevanceScore || 0) < 0.45 || (i.tags || []).includes('Funny Cat Videos')))
       .sort(() => 0.5 - Math.random());
     // Bucket 4: Fresh / Trending (viewsCount + likesCount)
     const trendingBucket = [...scoredItems]
-      .filter((i) => i.relevanceScore > 0)
-      .sort((a, b) => (b.viewsCount + b.likesCount * 2) - (a.viewsCount + a.likesCount * 2));
+      .filter((i) => (i.relevanceScore || 0) > 0)
+      .sort((a, b) => ((b.viewsCount || 0) + (b.likesCount || 0) * 2) - ((a.viewsCount || 0) + (a.likesCount || 0) * 2));
 
     // 4. Interleaving Slot Pattern Strategy
     const patternSlots = graph.activePattern === 'deep_dive'
       ? ['HighIntent', 'HighIntent', 'HighIntent', 'HighIntent', 'Exploration', 'HighIntent', 'HighIntent', 'Trending']
       : ['HighIntent', 'Network', 'HighIntent', 'Exploration', 'Trending', 'HighIntent', 'Exploration', 'Network', 'Trending'];
 
-    const assembledFeed: Array<any & { bucketSource: string; slotIndex: number }> = [];
+    const assembledFeed: ContentItem[] = [];
     // Key on documentId — numeric ids collide between feed-items and videos
-    const itemKey = (i: any) => i.documentId || i.slug || String(i.id);
+    const itemKey = (i: ContentItem) => i.documentId || i.slug || String(i.id);
     const usedIds = new Set<string>();
 
     patternSlots.forEach((slotType, idx) => {
-      let selectedItem: any = null;
+      let selectedItem: ContentItem | undefined = undefined;
       let sourceBucket = slotType;
 
       if (slotType === 'HighIntent') {
@@ -360,7 +363,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // but if none left, pick any remaining item so feed is never empty!
       if (!selectedItem) {
         selectedItem =
-          scoredItems.find((i) => !usedIds.has(itemKey(i)) && i.relevanceScore > 0) ||
+          scoredItems.find((i) => !usedIds.has(itemKey(i)) && (i.relevanceScore || 0) > 0) ||
           scoredItems.find((i) => !usedIds.has(itemKey(i)));
         sourceBucket = `${slotType} (Fallback)`;
       }
@@ -378,7 +381,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // Ensure target preview item (resolvedTargetMatch) is ALWAYS placed strictly at index 0
     if (resolvedTargetMatch) {
       const existingIdx = assembledFeed.findIndex(
-        (i: any) =>
+        (i) =>
           i.documentId === resolvedTargetMatch.documentId ||
           i.slug === resolvedTargetMatch.slug ||
           String(i.id) === String(resolvedTargetMatch.id)
@@ -395,7 +398,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
     } else if (target) {
       const existingIdx = assembledFeed.findIndex(
-        (i: any) => i.slug === target || i.documentId === target || String(i.id) === target
+        (i) => i.slug === target || i.documentId === target || String(i.id) === target
       );
       if (existingIdx > 0) {
         const [targetObj] = assembledFeed.splice(existingIdx, 1);
