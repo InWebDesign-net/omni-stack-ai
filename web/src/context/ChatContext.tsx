@@ -588,7 +588,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           const res = await fetch('/api/ai-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: content, history: targetRoom.messages }),
+            body: JSON.stringify({ prompt: content, history: targetRoom.messages, locale: targetRoom.language || 'de' }),
           });
 
           let replyText = 'Hallo! Wie kann ich dir heute mit Omni und InWebDesign.net weiterhelfen?';
