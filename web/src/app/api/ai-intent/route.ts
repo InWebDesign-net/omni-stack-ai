@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337'}/api/feed/ai-intent`, {
+    const res = await fetch(`${process.env.STRAPI_URL || 'http://127.0.0.1:1337'}/api/feed/ai-intent`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
