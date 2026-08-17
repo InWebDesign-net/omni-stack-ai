@@ -123,6 +123,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       setCurrentUser(userData);
       try {
+        localStorage.setItem('omni_jwt', data.jwt);
         localStorage.setItem('omni_user', JSON.stringify(userData));
       } catch (e) {}
 
@@ -174,6 +175,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       setCurrentUser(userData);
       try {
+        localStorage.setItem('omni_jwt', data.jwt);
         localStorage.setItem('omni_user', JSON.stringify(userData));
       } catch (e) {}
 

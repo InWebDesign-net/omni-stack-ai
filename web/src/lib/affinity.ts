@@ -48,7 +48,7 @@ export function storeAffinityGraph(graph: AffinityGraph) {
   } catch {}
 }
 
-/** JWT of the logged-in user from stored session, cookies or localStorage. */
+/** JWT of the logged-in user from stored session or localStorage. */
 export function getStoredJwt(): string | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -60,9 +60,6 @@ export function getStoredJwt(): string | null {
       const parsed = JSON.parse(savedUser);
       if (parsed?.jwt) return parsed.jwt;
     }
-
-    const m = document.cookie.match(/(?:^|;\s*)omni_jwt=([^;]+)/);
-    if (m?.[1]) return m[1];
 
     return null;
   } catch {

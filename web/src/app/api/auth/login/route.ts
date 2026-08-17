@@ -44,10 +44,11 @@ export async function POST(req: Request) {
     });
 
     response.cookies.set('omni_jwt', jwt, {
-      httpOnly: false,
+      httpOnly: true,
       path: '/',
       maxAge: 2592000, // 30 days
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return response;

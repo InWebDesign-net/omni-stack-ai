@@ -195,16 +195,17 @@ export default function Header({
     }
   };
 
-  const handleLogoutAction = () => {
+  const handleLogoutAction = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) { }
+    try {
+      localStorage.removeItem('omni_user');
+      localStorage.removeItem('omni_jwt');
+    } catch (e) { }
     if (onLogout) {
       onLogout();
     } else {
-      try {
-        localStorage.removeItem('omni_user');
-        localStorage.removeItem('omni_jwt');
-        document.cookie = 'omni_jwt=; path=/; max-age=0';
-        document.cookie = 'omni_user_jwt=; path=/; max-age=0';
-      } catch (e) { }
       window.location.reload();
     }
   };
