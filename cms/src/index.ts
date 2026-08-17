@@ -18,7 +18,8 @@ export default {
       await next();
     });
 
-    // Centralized Document Service Middleware for default-deny visibility enforcement
+    // Centralized Document Service Middleware for default-deny visibility enforcement.
+    // See docs/OMNI_VIEWER.md for the full visibility contract.
     strapi.documents.use(async (context: any, next: any) => {
       const targetUIDs = ['api::video.video', 'api::feed-item.feed-item', 'api::image.image'];
       const action = context.action;
