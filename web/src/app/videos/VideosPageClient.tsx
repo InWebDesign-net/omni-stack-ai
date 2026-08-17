@@ -82,10 +82,7 @@ export default function VideosPageClient({
     return allTags.filter(({ tag }) => tag.toLowerCase().includes(q));
   }, [allTags, tagSearch]);
 
-  const displayedTags = React.useMemo(() => {
-    if (isTagCloudExpanded || tagSearch.trim()) return filteredAllTags;
-    return filteredAllTags.slice(0, 16);
-  }, [filteredAllTags, isTagCloudExpanded, tagSearch]);
+  const displayedTags = filteredAllTags;
 
   // Data fetching via SWR hook
   const {
@@ -357,13 +354,13 @@ export default function VideosPageClient({
                   )}
                 </div>
 
-                {allTags.length > 16 && (
+                {allTags.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setIsTagCloudExpanded((prev) => !prev)}
                     className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 font-medium transition-colors cursor-pointer"
                   >
-                    <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle (${allTags.length})`}</span>
+                    <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle Tags (${allTags.length})`}</span>
                     {isTagCloudExpanded ? (
                       <ChevronUp className="w-3.5 h-3.5" />
                     ) : (
@@ -374,8 +371,14 @@ export default function VideosPageClient({
               </div>
             </div>
 
-            {/* Tag cloud: natural flex-wrap container without hard height truncation */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Tag cloud: height-capped 2-row container with smooth transition */}
+            <div
+              className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
+                isTagCloudExpanded || tagSearch.trim()
+                  ? "max-h-[1200px]"
+                  : "max-h-[68px] sm:max-h-[72px] overflow-hidden"
+              }`}
+            >
               {allTags.length === 0 ? (
                 // Skeleton pills matching exact height
                 Array.from({ length: 12 }).map((_, i) => (

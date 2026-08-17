@@ -193,7 +193,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   const filteredTagList = (allTags || []).filter((tc: any) =>
     (typeof tc === 'string' ? tc : tc?.tag || '').toLowerCase().includes((tagSearch || '').toLowerCase())
   );
-  const displayedTags = showAllTags ? filteredTagList : filteredTagList.slice(0, 16);
+  const displayedTags = filteredTagList;
 
   const { images, total, isLoading } = useImages({
     currentPage,
@@ -369,7 +369,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   )}
                 </div>
 
-                {allTags.length > 16 && (
+                {allTags.length > 0 && (
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
@@ -379,17 +379,24 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                       className="px-2.5 py-1 bg-slate-950/80 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500"
                     />
                     <button
+                      type="button"
                       onClick={() => setShowAllTags(!showAllTags)}
-                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-teal-400 font-medium transition-colors"
+                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-teal-400 font-medium transition-colors cursor-pointer"
                     >
-                      <span>{showAllTags ? 'Weniger anzeigen' : `Alle (${allTags.length})`}</span>
+                      <span>{showAllTags ? 'Weniger anzeigen' : `Alle Tags (${allTags.length})`}</span>
                       {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div
+                className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
+                  showAllTags || tagSearch.trim()
+                    ? 'max-h-[1200px]'
+                    : 'max-h-[68px] sm:max-h-[72px] overflow-hidden'
+                }`}
+              >
                 {displayedTags.map((item: any) => {
                   const tag = typeof item === 'string' ? item : item?.tag || '';
                   const count = typeof item === 'object' ? item?.count : null;
