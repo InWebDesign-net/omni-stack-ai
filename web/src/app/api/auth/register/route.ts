@@ -1,8 +1,19 @@
 import { NextResponse } from 'next/server';
 import { defaultAffinityGraph } from '@/lib/affinity';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: 3 registrations per IP per minute
+    const ip = getClientIp(req);
+    const rateResult = checkRateLimit(`register:${ip}`, 3, 60_000);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many registration attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const { username, email, password, bio } = await req.json();
 
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';

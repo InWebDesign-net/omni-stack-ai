@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: 5 login attempts per IP per minute
+    const ip = getClientIp(req);
+    const rateResult = checkRateLimit(`login:${ip}`, 5, 60_000);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const { identifier, password } = await req.json();
 
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';

@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: 10 AI intent requests per IP per minute
+    const ip = getClientIp(req);
+    const rateResult = checkRateLimit(`ai-intent:${ip}`, 10, 60_000);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many AI requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateResult.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
 
     const headers: Record<string, string> = {

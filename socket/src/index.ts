@@ -7,6 +7,32 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Socket.IO rate limiting for chat messages
+interface SocketRateEntry { count: number; resetAt: number; }
+const SOCKET_RATE_WINDOW_MS = 30_000; // 30 seconds
+const SOCKET_RATE_MAX = 10; // 10 messages per 30s
+const socketRateLimit = new Map<string, SocketRateEntry>();
+
+function isSocketRateLimited(socketId: string): boolean {
+  const now = Date.now();
+  const entry = socketRateLimit.get(socketId);
+  if (!entry || now > entry.resetAt) {
+    socketRateLimit.set(socketId, { count: 1, resetAt: now + SOCKET_RATE_WINDOW_MS });
+    return false;
+  }
+  if (entry.count >= SOCKET_RATE_MAX) return true;
+  entry.count++;
+  return false;
+}
+
+// Cleanup every 2 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of socketRateLimit) {
+    if (now > v.resetAt) socketRateLimit.delete(k);
+  }
+}, 120_000);
+
 const PORT = process.env.PORT || 4000;
 if (!process.env.JWT_SECRET) {
   console.error('🚨 CRITICAL ERROR: JWT_SECRET environment variable is not set. Refusing to start in an insecure state.');
@@ -112,6 +138,12 @@ io.on('connection', (socket: AuthenticatedSocket) => {
     }) => {
       const { roomId, content, messageId, senderName, senderAvatar, recipientId } = data;
       if (!roomId || !content) return;
+
+      // Rate limit: 10 messages per 30 seconds per socket
+      if (isSocketRateLimited(socket.id)) {
+        socket.emit('chat:error', { message: 'Rate limit: too many messages. Slow down.' });
+        return;
+      }
 
       const senderId = user?.id ? String(user.id) : ((data as any).senderId ? String((data as any).senderId) : undefined);
 
