@@ -8,6 +8,7 @@ import AuthModal from '@/components/AuthModal';
 import CreateFeedItemModal from '@/components/CreateFeedItemModal';
 import AlgorithmModal from '@/components/AlgorithmModal';
 import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import { DEMO_CREATORS, DEFAULT_SUBSCRIBED_HANDLES, getDemoCreatorByHandle } from '@/config/demo';
 import {
   AffinityGraph,
   defaultAffinityGraph,
@@ -102,7 +103,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isAlgoModalOpen, setIsAlgoModalOpen] = useState(false);
 
   // Subscriptions
-  const [subscribedChannels, setSubscribedChannels] = useState<string[]>(['@demotech', '@astro']);
+  const [subscribedChannels, setSubscribedChannels] = useState<string[]>(DEFAULT_SUBSCRIBED_HANDLES);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -234,21 +235,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const openChannelModal = (creatorOrItem: any) => {
     if (!creatorOrItem) return;
     if (typeof creatorOrItem === 'string') {
-      const creatorMap: Record<string, { id: string; name: string; avatar: string; bio: string }> = {
-        astro: { id: '10', name: 'Astro-Wissen Magazin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80', bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.' },
-        demotech: { id: '1', name: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'Tech, Datenbanken & AI Engineering.' },
-        demogourmet: { id: '2', name: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80', bio: 'Italienische Küche, feine Rezepte & Kulinarik.' },
-        greenplanet: { id: '3', name: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80', bio: 'Naturdokumentationen & Artenschutz.' },
-        finanzkompass: { id: '4', name: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80', bio: 'Finanzwissen & Vermögensaufbau.' },
-      };
       const normHandle = creatorOrItem.replace(/^@/, '').toLowerCase();
-      const match = creatorMap[normHandle];
+      const match = getDemoCreatorByHandle(normHandle);
+      if (match) {
+        setSelectedChannel({
+          id: match.id,
+          username: match.username,
+          handle: `@${match.handle}`,
+          avatarUrl: match.avatarUrl,
+          bio: match.bio,
+          subscribersCount: 0,
+          allowDirectMessages: 'everyone',
+        });
+        return;
+      }
       setSelectedChannel({
-        id: match?.id,
-        username: match?.name || normHandle,
+        id: undefined,
+        username: normHandle,
         handle: `@${normHandle}`,
-        avatarUrl: match?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-        bio: match?.bio || 'Creator & Content Publisher im Omni Network.',
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        bio: 'Creator & Content Publisher im Omni Network.',
         subscribersCount: 0,
         allowDirectMessages: 'everyone',
       });

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, UserPlus, LogIn, User, Mail, Lock, Sparkles, ChevronRight, ExternalLink, RefreshCw } from 'lucide-react';
 import { useApp, UserProfileSession } from '@/context/AppContext';
+import { DEMO_USER_PRESETS, DEFAULT_AVATAR_URL } from '@/config/demo';
 import { normalizeAffinityGraph, storeAffinityGraph } from '@/lib/affinity';
 
 interface AuthModalProps {
@@ -39,12 +40,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
     setIsAuthLoading(true);
 
     try {
+      const [defaultDemo] = DEMO_USER_PRESETS;
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: 'demotech@inwebdesign.net',
-          password: 'DemoUser2026!',
+          identifier: defaultDemo.identifier,
+          password: defaultDemo.password,
         }),
       });
 
@@ -61,7 +63,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         username: data.user.username,
         email: data.user.email,
         handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+        avatarUrl: data.user.avatarUrl || DEFAULT_AVATAR_URL,
         bio: data.user.bio || t.auth.demoUserBio,
         subscribersCount: Number(data.user.subscribersCount || 0),
         jwt: data.jwt,
@@ -113,7 +115,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         username: data.user.username,
         email: data.user.email,
         handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+        avatarUrl: data.user.avatarUrl || DEFAULT_AVATAR_URL,
         bio: 'Neuer Omni Content Explorer',
         subscribersCount: 0,
         jwt: data.jwt,
@@ -157,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         username: data.user.username,
         email: data.user.email,
         handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-        avatarUrl: data.user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+        avatarUrl: data.user.avatarUrl || DEFAULT_AVATAR_URL,
         bio: data.user.bio || 'Omni Content Explorer',
         subscribersCount: Number(data.user.subscribersCount || 0),
         jwt: data.jwt,
@@ -324,14 +326,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                 Demo Schnell-Login Presets
               </span>
               <div className="flex flex-col gap-1.5">
-                {[
-                  { label: '👨‍💻 DemoTechUser', sub: 'Tech & Science Fokus', creds: { identifier: 'demotech@inwebdesign.net', password: 'DemoUser2026!' } },
-                  { label: '🍳 DemoGourmetUser', sub: 'Kochen & Natur Fokus', creds: { identifier: 'demogourmet@inwebdesign.net', password: 'DemoUser2026!' } },
-                ].map((preset, i) => (
+                {DEMO_USER_PRESETS.map((preset, i) => (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => setLoginForm(preset.creds)}
+                    onClick={() => setLoginForm({ identifier: preset.identifier, password: preset.password })}
                     className="bg-[#121a30] hover:bg-[#192038] border border-white/6 hover:border-[#8083ff]/30 text-left px-3 py-2.5 rounded-xl text-xs transition-all flex justify-between items-center group"
                   >
                     <div>

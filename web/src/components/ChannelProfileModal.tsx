@@ -6,6 +6,7 @@ import { X, CheckCircle2, ArrowUpRight, MessageSquare, Sparkles } from 'lucide-r
 import { ChannelProfileData, useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import SubscribeButton from '@/components/SubscribeButton';
+import { getDemoCreatorByHandle } from '@/config/demo';
 
 interface ChannelProfileModalProps {
   selectedChannel: ChannelProfileData | null;
@@ -29,16 +30,10 @@ export default function ChannelProfileModal({
   );
 
   const cleanHandle = (selectedChannel.handle || '').replace(/^@/, '').toLowerCase();
-  const handleMap: Record<string, string> = {
-    demotech: '1',
-    demogourmet: '2',
-    greenplanet: '3',
-    finanzkompass: '4',
-    astro: '10',
-  };
+  const demoMatch = getDemoCreatorByHandle(cleanHandle);
   const targetId = selectedChannel.id
     ? String(selectedChannel.id)
-    : (handleMap[cleanHandle] || cleanHandle);
+    : (demoMatch?.id || cleanHandle);
 
   const dmSetting = selectedChannel.allowDirectMessages || 'everyone';
   const canSendDM = !isOwner && dmSetting !== 'nobody';

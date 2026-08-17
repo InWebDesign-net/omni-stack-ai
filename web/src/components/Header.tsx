@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { DEMO_CREATORS } from '@/config/demo';
 import NotificationDrawer from '@/components/NotificationDrawer';
 
 export function OmniLogo({ size = 28 }: { size?: number }) {
@@ -503,31 +504,23 @@ export default function Header({
                 <Users className="h-3 w-3 text-[#8083ff]" />
                 <span>{t.header.channelsCreators}</span>
               </p>
-              {[
-                { handle: '@astro', label: 'Astro-Wissen', avatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&q=80' },
-                { handle: '@demotech', label: 'Database Guru', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
-                { handle: '@demogourmet', label: 'Culinary Masterclass', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
-                { handle: '@greenplanet', label: 'Green Planet Doku', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80' },
-                { handle: '@omniarchitect', label: 'Omni Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80' },
-                { handle: '@catmania', label: 'Familie & Tiere', avatar: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80' },
-                { handle: '@finanzkompass', label: 'FinanzKompass', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
-              ].map((creator) => (
+              {DEMO_CREATORS.map((creator) => (
                 <button
                   key={creator.handle}
                   type="button"
                   onClick={() => {
                     setUniversalNavOpen(false);
                     openChannelModal({
-                      username: creator.label,
-                      handle: creator.handle,
-                      avatarUrl: creator.avatar,
+                      username: creator.username,
+                      handle: `@${creator.handle}`,
+                      avatarUrl: creator.avatarUrl,
                     });
                   }}
                   className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-all text-left w-full cursor-pointer"
                 >
-                  <img src={creator.avatar} alt={creator.label} className="h-5 w-5 rounded-full object-cover border border-white/20 shrink-0" />
-                  <span className="font-mono text-[#c0c1ff]">{creator.handle}</span>
-                  <span className="text-[10px] text-[#5c657d] truncate ml-auto">{creator.label}</span>
+                  <img src={creator.avatarUrl} alt={creator.username} className="h-5 w-5 rounded-full object-cover border border-white/20 shrink-0" />
+                  <span className="font-mono text-[#c0c1ff]">@{creator.handle}</span>
+                  <span className="text-[10px] text-[#5c657d] truncate ml-auto">{creator.username}</span>
                 </button>
               ))}
             </div>
