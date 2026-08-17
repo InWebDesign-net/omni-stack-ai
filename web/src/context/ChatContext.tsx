@@ -111,6 +111,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [showReadReceipts, setShowReadReceipts] = useState(true);
 
+  // Track in-flight message posting to prevent double-send and duplicate AI replies
+  const [postingRoomIds, setPostingRoomIds] = useState<Set<string>>(new Set());
+  const [aiPendingRoomIds, setAiPendingRoomIds] = useState<Set<string>>(new Set());
+
+  const withRoomUpdate = (roomIdOrSlug: string, updater: (room: ChatRoom) => ChatRoom) => {
+    setRooms((prev) =>
+      prev.map((r) => {
+        if (r.id === roomIdOrSlug || r.slug === roomIdOrSlug) {
+          return updater(r);
+        }
+        return r;
+      })
+    );
+  };
+
   // Initial Rooms List
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
@@ -521,42 +536,47 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   };
 
   const sendMessage = async (roomId: string, content: string) => {
-    if (!content.trim()) return;
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    // Prevent double-send while a message is being posted to this room
+    let alreadyPosting = false;
+    setPostingRoomIds((prev) => {
+      if (prev.has(roomId)) {
+        alreadyPosting = true;
+        return prev;
+      }
+      return new Set(prev).add(roomId);
+    });
+    if (alreadyPosting) return;
+
+    const targetRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
+    const recipient = targetRoom?.participants?.find((p) => p.username !== 'Nutzer');
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       senderType: 'user',
       senderName: 'Du',
-      content: content.trim(),
+      content: trimmed,
       timestamp: new Date().toISOString(),
     };
 
-    setRooms((prev) =>
-      prev.map((r) => {
-        if (r.id === roomId || r.slug === roomId) {
-          return {
-            ...r,
-            lastMessageAt: userMsg.timestamp,
-            messages: [...r.messages, userMsg],
-          };
-        }
-        return r;
-      })
-    );
+    withRoomUpdate(roomId, (r) => ({
+      ...r,
+      lastMessageAt: userMsg.timestamp,
+      messages: [...r.messages, userMsg],
+    }));
 
     if (soundEnabled) {
       playMessageChime();
     }
-
-    const targetRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
-    const recipient = targetRoom?.participants?.find((p) => p.username !== 'Nutzer');
 
     // Broadcast message instantly via WebSocket Gateway
     const socket = getSocket();
     if (socket) {
       socket.emit('chat:send_message', {
         roomId,
-        content: content.trim(),
+        content: trimmed,
         messageId: userMsg.id,
         senderName: 'Du',
         recipientId: recipient?.id,
@@ -574,24 +594,47 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           action: 'send_message',
           roomId,
           senderType: 'user',
-          content: content.trim(),
+          content: trimmed,
         }),
       });
     } catch (e) {
       console.error('Failed to persist user message:', e);
+    } finally {
+      setPostingRoomIds((prev) => {
+        const next = new Set(prev);
+        next.delete(roomId);
+        return next;
+      });
     }
 
     // Trigger AI response if room is AI enabled
     if (targetRoom && (targetRoom.type === 'ai' || targetRoom.isAiEnabled)) {
+      // Avoid concurrent AI replies for the same room
+      let alreadyAiPending = false;
+      setAiPendingRoomIds((prev) => {
+        if (prev.has(roomId)) {
+          alreadyAiPending = true;
+          return prev;
+        }
+        return new Set(prev).add(roomId);
+      });
+      if (alreadyAiPending) return;
+
       setTimeout(async () => {
         try {
+          // Read the latest messages from state to include the just-sent user message
+          const latestRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
+          const historySnapshot = latestRoom?.messages ?? targetRoom.messages;
+
           const res = await fetch('/api/ai-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: content, history: targetRoom.messages, locale: targetRoom.language || 'de' }),
+            body: JSON.stringify({ prompt: trimmed, history: historySnapshot, locale: targetRoom.language || 'de' }),
           });
 
-          let replyText = 'Hallo! Wie kann ich dir heute mit Omni und InWebDesign.net weiterhelfen?';
+          let replyText = targetRoom.language?.startsWith('en')
+            ? 'Hello! How can I help you today with Omni and InWebDesign.net?'
+            : 'Hallo! Wie kann ich dir heute mit Omni und InWebDesign.net weiterhelfen?';
           let vectorSummary: string | undefined = undefined;
 
           if (res.ok) {
@@ -614,18 +657,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             meta: vectorSummary ? { vectorSummary } : undefined,
           };
 
-          setRooms((prev) =>
-            prev.map((r) => {
-              if (r.id === roomId || r.slug === roomId) {
-                return {
-                  ...r,
-                  lastMessageAt: aiMsg.timestamp,
-                  messages: [...r.messages, aiMsg],
-                };
-              }
-              return r;
-            })
-          );
+          withRoomUpdate(roomId, (r) => {
+            const exists = r.messages.some(
+              (m) =>
+                m.id === aiMsg.id ||
+                (m.senderType === 'ai' && m.content === aiMsg.content && Math.abs(new Date(m.timestamp).getTime() - new Date(aiMsg.timestamp).getTime()) < 3000)
+            );
+            if (exists) return r;
+            return {
+              ...r,
+              lastMessageAt: aiMsg.timestamp,
+              messages: [...r.messages, aiMsg],
+            };
+          });
 
           if (soundEnabled) {
             playMessageChime();
@@ -650,6 +694,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (err) {
           console.error('Error generating AI response:', err);
+        } finally {
+          setAiPendingRoomIds((prev) => {
+            const next = new Set(prev);
+            next.delete(roomId);
+            return next;
+          });
         }
       }, 800);
     }
