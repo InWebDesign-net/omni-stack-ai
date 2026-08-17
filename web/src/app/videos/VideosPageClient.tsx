@@ -8,6 +8,7 @@ import VideoUploadModal from "@/components/VideoUploadModal";
 import { useApp } from "@/context/AppContext";
 import { useVideos, VideoItem } from "@/lib/hooks/useVideos";
 import { TagCount } from "@/lib/videoFilters";
+import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import useSWR from "swr";
 import {
   Search,
@@ -56,33 +57,25 @@ export default function VideosPageClient({
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  // Tag filter state (URL-synced)
-  const includedTags = (searchParams.get("includetag") || "")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
-  const excludedTags = (searchParams.get("excludetag") || "")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
-  const matchMode = (searchParams.get("matchmode") || "any") === "all" ? "all" : "any";
-
   // All available tags (aggregated from Strapi, with counts) for the tag cloud
   const { data: allTags = [] } = useSWR<TagCount[]>("/api/video/tags", (url: string) =>
     fetch(url).then((r) => r.json())
   );
 
-  // Local Tag Search & Expand/Collapse state
-  const [tagSearch, setTagSearch] = useState("");
-  const [isTagCloudExpanded, setIsTagCloudExpanded] = useState(false);
-
-  const filteredAllTags = React.useMemo(() => {
-    if (!tagSearch.trim()) return allTags;
-    const q = tagSearch.trim().toLowerCase();
-    return allTags.filter(({ tag }) => tag.toLowerCase().includes(q));
-  }, [allTags, tagSearch]);
-
-  const displayedTags = filteredAllTags;
+  // URL-synced tag filter state (via shared hook)
+  const {
+    includedTags,
+    excludedTags,
+    matchMode,
+    tagSearch,
+    isTagCloudExpanded,
+    filteredAllTags,
+    hasTagFilters,
+    toggleTag,
+    setMatchMode,
+    setTagSearch,
+    setIsTagCloudExpanded,
+  } = useTagFilter(allTags);
 
   // Data fetching via SWR hook
   const {
@@ -143,34 +136,6 @@ export default function VideosPageClient({
     router.push(pathname);
   };
 
-  // --- Tag filter handlers (URL-synced) ---
-  const toggleTag = (tag: string) => {
-    const isIncluded = includedTags.includes(tag);
-    const isExcluded = excludedTags.includes(tag);
-    let nextIncluded = [...includedTags];
-    let nextExcluded = [...excludedTags];
-    if (isIncluded) {
-      // included -> excluded
-      nextIncluded = nextIncluded.filter((t) => t !== tag);
-      nextExcluded = [...nextExcluded, tag];
-    } else if (isExcluded) {
-      // excluded -> neutral
-      nextExcluded = nextExcluded.filter((t) => t !== tag);
-    } else {
-      // neutral -> included
-      nextIncluded = [...nextIncluded, tag];
-    }
-    updateURL({
-      includetag: nextIncluded.length ? nextIncluded.join(",") : null,
-      excludetag: nextExcluded.length ? nextExcluded.join(",") : null,
-      page: "1",
-    });
-  };
-
-  const setMatchMode = (mode: "any" | "all") => {
-    updateURL({ matchmode: mode === "all" ? "all" : null, page: "1" });
-  };
-
   // Boundary check: redirect to page 1 if page exceeds totalPages ONLY after data loading finishes
   useEffect(() => {
     if (!isLoading && totalVideos > 0 && currentPage > totalPages) {
@@ -192,8 +157,6 @@ export default function VideosPageClient({
     includedTags.length > 0 ||
     excludedTags.length > 0
   );
-
-  const hasTagFilters = includedTags.length > 0 || excludedTags.length > 0;
 
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
@@ -357,7 +320,7 @@ export default function VideosPageClient({
                 {allTags.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => setIsTagCloudExpanded((prev) => !prev)}
+                    onClick={() => setIsTagCloudExpanded(!isTagCloudExpanded)}
                     className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 font-medium transition-colors cursor-pointer"
                   >
                     <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle Tags (${allTags.length})`}</span>
@@ -388,12 +351,12 @@ export default function VideosPageClient({
                     className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
                   />
                 ))
-              ) : displayedTags.length === 0 ? (
+              ) : filteredAllTags.length === 0 ? (
                 <div className="text-xs text-slate-500 italic py-1">
                   {(t.videos?.noTagsFound || 'Keine Tags für "{query}" gefunden.').replace('{query}', tagSearch)}
                 </div>
               ) : (
-                displayedTags.map(({ tag, count }) => {
+                filteredAllTags.map(({ tag, count }) => {
                   const state = includedTags.includes(tag)
                     ? "include"
                     : excludedTags.includes(tag)

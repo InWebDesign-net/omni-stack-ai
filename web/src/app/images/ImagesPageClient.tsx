@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { useApp } from '@/context/AppContext';
 import { useImages, useImageTags, ImageItem } from '@/lib/hooks/useImages';
+import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import {
   Search,
   FilterX,
@@ -110,20 +111,25 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  const includedTags = (searchParams.get('includetag') || '')
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean);
-  const excludedTags = (searchParams.get('excludetag') || '')
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean);
-  const matchMode = (searchParams.get('matchmode') || 'any') === 'all' ? 'all' : 'any';
-
   const { tags: allTags = [] } = useImageTags();
 
-  const [tagSearch, setTagSearch] = useState('');
-  const [showAllTags, setShowAllTags] = useState(false);
+  // URL-synced tag filter state (via shared hook)
+  const {
+    includedTags,
+    excludedTags,
+    matchMode,
+    tagSearch,
+    isTagCloudExpanded: showAllTags,
+    filteredAllTags: filteredTagList,
+    hasTagFilters,
+    toggleTag,
+    setMatchMode: toggleMatchMode,
+    setTagSearch,
+    setIsTagCloudExpanded: setShowAllTags,
+    resetTagFilters: resetAllFilters,
+  } = useTagFilter(allTags);
+
+  const displayedTags = filteredTagList;
 
   const updateURL = (newParams: Record<string, string | null>) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -152,48 +158,6 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   const handleSortChange = (newSort: string) => {
     updateURL({ sort: newSort, page: '1' });
   };
-
-  const toggleTag = (tag: string) => {
-    const isIncluded = includedTags.includes(tag);
-    const isExcluded = excludedTags.includes(tag);
-    let nextIncluded = [...includedTags];
-    let nextExcluded = [...excludedTags];
-
-    if (isIncluded) {
-      // included -> excluded
-      nextIncluded = nextIncluded.filter((t) => t !== tag);
-      nextExcluded = [...nextExcluded, tag];
-    } else if (isExcluded) {
-      // excluded -> neutral
-      nextExcluded = nextExcluded.filter((t) => t !== tag);
-    } else {
-      // neutral -> included
-      nextIncluded = [...nextIncluded, tag];
-    }
-
-    updateURL({
-      includetag: nextIncluded.length > 0 ? nextIncluded.join(',') : null,
-      excludetag: nextExcluded.length > 0 ? nextExcluded.join(',') : null,
-      page: '1',
-    });
-  };
-
-  const toggleMatchMode = (mode: 'any' | 'all') => {
-    updateURL({
-      matchmode: mode === 'any' ? null : 'all',
-      page: '1',
-    });
-  };
-
-  const resetAllFilters = () => {
-    setSearchInput('');
-    router.push(pathname);
-  };
-
-  const filteredTagList = (allTags || []).filter((tc: any) =>
-    (typeof tc === 'string' ? tc : tc?.tag || '').toLowerCase().includes((tagSearch || '').toLowerCase())
-  );
-  const displayedTags = filteredTagList;
 
   const { images, total, isLoading } = useImages({
     currentPage,
