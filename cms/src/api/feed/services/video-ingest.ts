@@ -44,7 +44,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     for (const src of thumbFiles) {
       const dest = path.join(THUMB_DIR, path.basename(src));
       fs.copyFileSync(src, dest);
-      try { fs.unlinkSync(src); } catch (e) {}
+      try { fs.unlinkSync(src); } catch (e: any) {
+        if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup thumb ${src} failed:`, e.message);
+      }
     }
 
     // 2. Move OG image
@@ -53,7 +55,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     if (fs.existsSync(ogSrc)) {
       const ogDest = path.join(OG_DEST_DIR, path.basename(ogSrc));
       fs.copyFileSync(ogSrc, ogDest);
-      try { fs.unlinkSync(ogSrc); } catch (e) {}
+      try { fs.unlinkSync(ogSrc); } catch (e: any) {
+        if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup OG ${ogSrc} failed:`, e.message);
+      }
     }
 
     // 3. Move ABR HLS directory
@@ -62,19 +66,23 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     if (fs.existsSync(hlsSrcDir)) {
       fs.mkdirSync(path.join(FINAL_DIR, 'hls'), { recursive: true });
       fs.cpSync(hlsSrcDir, hlsDestDir, { recursive: true });
-      try { fs.rmSync(hlsSrcDir, { recursive: true, force: true }); } catch (e) {}
+      try { fs.rmSync(hlsSrcDir, { recursive: true, force: true }); } catch (e: any) {
+        if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup HLS dir ${hlsSrcDir} failed:`, e.message);
+      }
     }
 
     // 4. Move MP4 file
     if (fs.existsSync(videoPath)) {
       const targetPath = path.join(FINAL_DIR, base + '.mp4');
       fs.copyFileSync(videoPath, targetPath);
-      try { fs.unlinkSync(videoPath); } catch (e) {}
+      try { fs.unlinkSync(videoPath); } catch (e: any) {
+        if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup MP4 ${videoPath} failed:`, e.message);
+      }
     }
 
     // Clean up markers
-    if (fs.existsSync(donePath)) { try { fs.unlinkSync(donePath); } catch (e) {} }
-    if (fs.existsSync(metaPath)) { try { fs.unlinkSync(metaPath); } catch (e) {} }
+    if (fs.existsSync(donePath)) { try { fs.unlinkSync(donePath); } catch (e: any) { if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup done ${donePath} failed:`, e.message); } }
+    if (fs.existsSync(metaPath)) { try { fs.unlinkSync(metaPath); } catch (e: any) { if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup meta ${metaPath} failed:`, e.message); } }
 
     // 5. Update Strapi DB entries for standalone Video (ALL locales, always published)
     try {
