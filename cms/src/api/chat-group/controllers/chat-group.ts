@@ -63,6 +63,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     try {
       const group = await strapi.documents('api::chat-room.chat-room').findOne({
         documentId,
+        populate: ['adminUser', 'participants'],
       });
 
       if (!group) {
@@ -83,6 +84,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // Add participant
       await strapi.documents('api::chat-room.chat-room').update({
         documentId,
+        populate: ['adminUser', 'participants'],
         data: {
           participants: {
             connect: [targetUserId],
@@ -106,6 +108,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     try {
       const group = await strapi.documents('api::chat-room.chat-room').findOne({
         documentId,
+        populate: ['adminUser', 'participants'],
       });
 
       if (!group) {
@@ -125,6 +128,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // Remove participant
       await strapi.documents('api::chat-room.chat-room').update({
         documentId,
+        populate: ['adminUser', 'participants'],
         data: {
           participants: {
             disconnect: [targetUserId],
@@ -148,6 +152,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     try {
       const group = await strapi.documents('api::chat-room.chat-room').findOne({
         documentId,
+        populate: ['adminUser', 'participants'],
       });
 
       if (!group) {

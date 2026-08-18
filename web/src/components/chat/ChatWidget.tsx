@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import ChatSettingsModal from './ChatSettingsModal';
 import { GroupCreateModal } from './GroupCreateModal';
+import { GroupManageModal } from './GroupManageModal';
 import { RoomHeader } from './RoomHeader';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
@@ -44,6 +45,7 @@ export default function ChatWidget() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [isGroupCreateOpen, setIsGroupCreateOpen] = useState(false);
+  const [isGroupManageOpen, setIsGroupManageOpen] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
@@ -489,6 +491,7 @@ export default function ChatWidget() {
                 onClose={() => setActiveRoomId(null)}
                 onRemoveAi={() => activeRoom && removeParticipantFromRoom(activeRoom.id, 'ai')}
                 onInviteAi={() => activeRoom && addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
+                onManageGroup={() => setIsGroupManageOpen(true)}
                 t={t}
               />
               {activeRoom && (
@@ -584,6 +587,14 @@ export default function ChatWidget() {
         }}
         t={t}
       />
+
+      {activeRoom && isGroupManageOpen && (
+        <GroupManageModal
+          isOpen={isGroupManageOpen}
+          onClose={() => setIsGroupManageOpen(false)}
+          room={activeRoom}
+        />
+      )}
     </>
   );
 }

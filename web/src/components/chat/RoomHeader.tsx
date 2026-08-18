@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bot, Sparkles, ArrowLeft, X, Minimize2, AlertCircle } from 'lucide-react';
+import { Bot, Sparkles, ArrowLeft, X, Minimize2, AlertCircle, Users } from 'lucide-react';
 
 interface RoomHeaderProps {
   roomName: string;
@@ -13,6 +13,7 @@ interface RoomHeaderProps {
   onClose?: () => void;
   onRemoveAi?: () => void;
   onInviteAi?: () => void;
+  onManageGroup?: () => void;
   t?: any;
 }
 
@@ -26,6 +27,7 @@ export function RoomHeader({
   onClose,
   onRemoveAi,
   onInviteAi,
+  onManageGroup,
   t,
 }: RoomHeaderProps) {
   return (
@@ -44,7 +46,7 @@ export function RoomHeader({
           )}
           <div className="relative shrink-0">
             <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center font-bold text-xs text-white shadow-sm">
-              {roomType === 'ai' ? <Bot className="w-4 h-4" /> : roomName.charAt(0)}
+              {roomType === 'ai' ? <Bot className="w-4 h-4" /> : roomType === 'group' ? <Users className="w-4 h-4" /> : roomName.charAt(0)}
             </div>
             {showOnlineStatus && (
               <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
@@ -63,6 +65,17 @@ export function RoomHeader({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
+          {roomType === 'group' && onManageGroup && (
+            <button
+              onClick={onManageGroup}
+              className="px-2 py-0.5 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 hover:text-indigo-200 rounded-lg transition-all flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+              title="Gruppe verwalten & Mitglieder"
+            >
+              <Users className="w-3 h-3 text-indigo-400" />
+              <span>Verwalten</span>
+            </button>
+          )}
+
           {roomType === 'ai' ? (
             <span className="px-2 py-0.5 text-[10px] font-mono bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 rounded-full flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-indigo-400" />

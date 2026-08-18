@@ -27,6 +27,7 @@ export interface ChatRoom {
   lastMessageAt?: string;
   unreadCount?: number;
   ownerId?: string;
+  adminUser?: any;
   participants?: Array<{
     id: string;
     username: string;
@@ -71,6 +72,8 @@ interface ChatContextType {
   searchEligibleUsers: (query: string) => Promise<SearchableUser[]>;
   addParticipantToRoom: (roomId: string, userOrAi: { name: string; type: 'user' | 'ai' }) => Promise<void>;
   removeParticipantFromRoom: (roomId: string, participantId: string) => Promise<void>;
+  addMemberToRoom: (roomId: string, targetUserId: string | number) => Promise<{ success: boolean; error?: string }>;
+  removeMemberFromRoom: (roomId: string, targetUserId: string | number) => Promise<{ success: boolean; error?: string }>;
   setSoundEnabled: (enabled: boolean) => void;
   setShowOnlineStatus: (enabled: boolean) => void;
   setShowReadReceipts: (enabled: boolean) => void;
@@ -152,6 +155,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             language: r.language || 'de',
             isAiEnabled: r.isAiEnabled || r.type === 'ai',
             unreadCount: 0,
+            adminUser: r.adminUser ? {
+              id: String(r.adminUser.id || r.adminUser),
+              username: r.adminUser.username,
+              handle: r.adminUser.handle,
+            } : undefined,
             participants: Array.isArray(r.participants)
               ? r.participants.map((p: any) => ({
                   id: String(p.id),
@@ -756,6 +764,83 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const addMemberToRoom = async (roomId: string, targetUserId: string | number): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          ...jsonAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'add_member',
+          roomId,
+          targetUserId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error };
+
+      if (data.room) {
+        setRooms((prev) =>
+          (prev || []).map((r) => {
+            if (r.id === roomId || r.slug === roomId) {
+              const updatedParts = Array.isArray(data.room.participants)
+                ? data.room.participants.map((p: any) => ({
+                    id: String(p.id),
+                    username: p.username || 'Nutzer',
+                    avatarUrl: p.avatarUrl,
+                    allowDirectMessages: p.allowDirectMessages || 'everyone',
+                  }))
+                : r.participants;
+              return { ...r, participants: updatedParts };
+            }
+            return r;
+          })
+        );
+      }
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  };
+
+  const removeMemberFromRoom = async (roomId: string, targetUserId: string | number): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          ...jsonAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'remove_member',
+          roomId,
+          targetUserId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error };
+
+      if (data.room) {
+        setRooms((prev) =>
+          (prev || []).map((r) => {
+            if (r.id === roomId || r.slug === roomId) {
+              const updatedParts = (r.participants || []).filter(
+                (p) => String(p.id) !== String(targetUserId)
+              );
+              return { ...r, participants: updatedParts };
+            }
+            return r;
+          })
+        );
+      }
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -779,6 +864,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         searchEligibleUsers,
         addParticipantToRoom,
         removeParticipantFromRoom,
+        addMemberToRoom,
+        removeMemberFromRoom,
         setSoundEnabled,
         setShowOnlineStatus,
         setShowReadReceipts,
@@ -813,6 +900,8 @@ export function useChat() {
       searchEligibleUsers: async () => [],
       addParticipantToRoom: async () => {},
       removeParticipantFromRoom: async () => {},
+      addMemberToRoom: async (): Promise<{ success: boolean; error?: string }> => ({ success: false }),
+      removeMemberFromRoom: async (): Promise<{ success: boolean; error?: string }> => ({ success: false }),
       setSoundEnabled: () => {},
       setShowOnlineStatus: () => {},
       setShowReadReceipts: () => {},

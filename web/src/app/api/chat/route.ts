@@ -8,7 +8,8 @@ async function getOrCreateRoomBySlug(
   name: string = 'Omni Chat',
   type: string = 'direct',
   participantIds: (number | string)[] = [],
-  authHeader: string = ''
+  authHeader: string = '',
+  adminUserId?: number | string
 ) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -18,7 +19,7 @@ async function getOrCreateRoomBySlug(
 
   // 1. Try finding room by slug
   const findRes = await fetch(
-    `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(slug)}&populate[participants][populate]=*&populate[messages][populate]=*`,
+    `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(slug)}&populate[participants][populate]=*&populate[adminUser][populate]=*&populate[messages][populate]=*`,
     {
       headers,
       cache: 'no-store',
@@ -46,6 +47,7 @@ async function getOrCreateRoomBySlug(
         type,
         language: 'de',
         isAiEnabled: type === 'ai',
+        ...(adminUserId ? { adminUser: adminUserId } : {}),
         ...(cleanParticipants.length > 0 ? { participants: cleanParticipants } : {}),
       },
     }),
@@ -126,7 +128,7 @@ export async function GET(req: Request) {
 
     // Fetch chat rooms from Strapi REST API with populated participants
     const roomsRes = await fetch(
-      `${STRAPI_URL}/api/chat-rooms?populate[participants][populate]=*&populate[messages][populate]=*&sort=updatedAt:desc&pagination[pageSize]=100`,
+      `${STRAPI_URL}/api/chat-rooms?populate[participants][populate]=*&populate[adminUser][populate]=*&populate[messages][populate]=*&sort=updatedAt:desc&pagination[pageSize]=100`,
       {
         headers,
         cache: 'no-store',
@@ -240,7 +242,8 @@ export async function POST(req: Request) {
         name || (type === 'ai' ? 'Omni KI-Assistent' : 'Neuer Chat'),
         type || 'direct',
         participantsToConnect,
-        authHeader
+        authHeader,
+        user?.id
       );
       return NextResponse.json({ room, success: true });
     }
@@ -322,6 +325,81 @@ export async function POST(req: Request) {
             body: JSON.stringify({
               data: {
                 ...(typeof isAiEnabled === 'boolean' ? { isAiEnabled } : {}),
+              },
+            }),
+          });
+          if (updateRes.ok) {
+            const updated = await updateRes.json();
+            return NextResponse.json({ room: updated.data, success: true });
+          }
+        }
+      }
+      return NextResponse.json({ error: 'Room not found or update failed' }, { status: 400 });
+    }
+
+    // Action 4: Add a member to room
+    if (action === 'add_member') {
+      const { targetUserId } = body;
+      if (!roomId || !targetUserId) {
+        return NextResponse.json({ error: 'roomId and targetUserId are required' }, { status: 400 });
+      }
+
+      const findRes = await fetch(
+        `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(roomId)}&populate[participants][populate]=*&populate[adminUser][populate]=*`,
+        { headers, cache: 'no-store' }
+      );
+      if (findRes.ok) {
+        const findData = await findRes.json();
+        const targetRoom = findData?.data?.[0];
+        if (targetRoom) {
+          const roomDocId = targetRoom.documentId || targetRoom.id;
+          const currentParticipants = (targetRoom.participants || []).map((p: any) => p.id || p.documentId);
+          if (!currentParticipants.map(String).includes(String(targetUserId))) {
+            currentParticipants.push(targetUserId);
+          }
+          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${roomDocId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              data: {
+                participants: currentParticipants,
+              },
+            }),
+          });
+          if (updateRes.ok) {
+            const updated = await updateRes.json();
+            return NextResponse.json({ room: updated.data, success: true });
+          }
+        }
+      }
+      return NextResponse.json({ error: 'Room not found or update failed' }, { status: 400 });
+    }
+
+    // Action 5: Remove a member from room
+    if (action === 'remove_member') {
+      const { targetUserId } = body;
+      if (!roomId || !targetUserId) {
+        return NextResponse.json({ error: 'roomId and targetUserId are required' }, { status: 400 });
+      }
+
+      const findRes = await fetch(
+        `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(roomId)}&populate[participants][populate]=*&populate[adminUser][populate]=*`,
+        { headers, cache: 'no-store' }
+      );
+      if (findRes.ok) {
+        const findData = await findRes.json();
+        const targetRoom = findData?.data?.[0];
+        if (targetRoom) {
+          const roomDocId = targetRoom.documentId || targetRoom.id;
+          const currentParticipants = (targetRoom.participants || [])
+            .map((p: any) => p.id || p.documentId)
+            .filter((id: any) => String(id) !== String(targetUserId));
+          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${roomDocId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              data: {
+                participants: currentParticipants,
               },
             }),
           });
