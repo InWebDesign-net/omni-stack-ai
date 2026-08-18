@@ -100,6 +100,27 @@
     "searchTagsPlaceholder": "Tags durchsuchen...",
     "noTagsFound": "Keine Tags für \"{query}\" gefunden."
   },
+  "articles": {
+    "title": "Artikel & Magazin",
+    "subtitle": "Entdecke Geschichten, Analysen und Wissen aus dem Omni Network.",
+    "searchPlaceholder": "Artikel suchen...",
+    "createArticle": "Artikel erstellen",
+    "sortNewest": "Neueste zuerst",
+    "sortOldest": "Älteste zuerst",
+    "sortMostLiked": "❤️ Beliebteste",
+    "sortMostCommented": "💬 Aktivste",
+    "sortMostPopular": "👑 Populärste",
+    "sortTrending": "🔥 Trending",
+    "sortTitleAsc": "Titel (A-Z)",
+    "sortTitleDesc": "Titel (Z-A)",
+    "allTags": "Alle Tags",
+    "noArticlesFound": "Keine Artikel gefunden",
+    "includeLabel": "Eingeschlossene Tags",
+    "excludeLabel": "Ausgeschlossene Tags",
+    "matchAny": "Irgendein Tag",
+    "matchAll": "Alle Tags",
+    "activeTags": "Aktive Tag-Filter"
+  },
   "videoDetail": {
     "comments": "Kommentare",
     "relatedRecommendations": "Weitere Empfehlungen",

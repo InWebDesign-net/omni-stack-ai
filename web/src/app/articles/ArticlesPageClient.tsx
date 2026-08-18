@@ -1,0 +1,461 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Header from '@/components/Header';
+import { useApp } from '@/context/AppContext';
+import { TagCount } from '@/lib/videoFilters';
+import useSWR from 'swr';
+import {
+  Search,
+  FilterX,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  BookOpen,
+  Clock,
+  Eye,
+  Heart,
+  MessageSquare,
+  Tag,
+  Sparkles,
+  FileText,
+  Play,
+  User as UserIcon,
+} from 'lucide-react';
+import { ActionButton } from '@/components/ActionButton';
+import { useTagFilter } from '@/lib/hooks/useTagFilter';
+import { useArticles, ArticleItem } from '@/lib/hooks/useArticles';
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+export default function ArticlesPageClient() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { currentUser, lang, t } = useApp();
+  const perPage = 24;
+
+  const searchTerm = searchParams.get('q') || '';
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const sort = searchParams.get('sort') || 'createdatasc';
+  const filterFavorites = searchParams.get('fav') || 'false';
+
+  const [searchInput, setSearchInput] = useState(searchTerm);
+
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
+
+  const { data: allTags = [] } = useSWR<TagCount[]>(
+    `/api/article/tags?lang=${lang}`,
+    fetcher
+  );
+
+  const updateURL = useCallback(
+    (newParams: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams);
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value === null || value === '') params.delete(key);
+        else params.set(key, value);
+      });
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
+
+  const {
+    includedTags,
+    excludedTags,
+    matchMode,
+    tagSearch,
+    isTagCloudExpanded,
+    filteredAllTags,
+    hasTagFilters,
+    toggleTag,
+    setMatchMode,
+    setTagSearch,
+    setIsTagCloudExpanded,
+    resetTagFilters,
+  } = useTagFilter(allTags, updateURL);
+
+  const { articles, total: totalArticles, isLoading } = useArticles({
+    currentPage,
+    pageSize: perPage,
+    sort,
+    searchTerm,
+    filterFavorites,
+    includedTags,
+    excludedTags,
+    matchMode,
+    lang,
+    enabled: true,
+  });
+
+  const totalPages = Math.max(1, Math.ceil(totalArticles / perPage));
+
+  const updateURL2 = useCallback(
+    (newParams: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams);
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value === null || value === '') params.delete(key);
+        else params.set(key, value);
+      });
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
+
+  const handleSortChange = useCallback(
+    (value: string) => {
+      updateURL2({ sort: value, page: '1' });
+    },
+    [updateURL2]
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      updateURL2({ page: page.toString() });
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
+    [updateURL2]
+  );
+
+  const handleSearchSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      updateURL2({ q: searchInput.trim() || null, page: '1' });
+    },
+    [searchInput, updateURL2]
+  );
+
+  const clearSearch = useCallback(() => {
+    setSearchInput('');
+    updateURL2({ q: null, page: '1' });
+  }, [updateURL2]);
+
+  const hardReset = useCallback(() => {
+    setSearchInput('');
+    router.push(pathname);
+  }, [pathname, router]);
+
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+      sort !== 'createdatasc' ||
+      filterFavorites === 'true' ||
+      includedTags.length > 0 ||
+      excludedTags.length > 0
+  );
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans">
+      <Header />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">
+        {/* Hero Banner */}
+        <div className="bg-gradient-to-br from-purple-600/20 via-indigo-600/10 to-teal-500/10 border border-indigo-500/20 rounded-2xl p-6 sm:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 border border-indigo-500/30 text-indigo-400">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  {t.articles?.title || 'Artikel & Magazin'}
+                </h1>
+                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">
+                  {isLoading ? '...' : `${totalArticles} ${t.common?.articles || 'Artikel'}`}
+                </span>
+              </div>
+              <p className="text-slate-400 text-sm mt-1">
+                {t.articles?.subtitle || 'Entdecke Geschichten, Analysen und Wissen aus dem Omni Network.'}
+              </p>
+            </div>
+            <div className="flex items-center">
+              <ActionButton
+                isFilterActive={hasActiveFilters}
+                onUpload={() => {/* TODO: Article Create Modal */}}
+                onReset={hardReset}
+                uploadLabel={t.articles?.createArticle || 'Artikel erstellen'}
+                resetLabel={t.common?.resetFilters || 'Filter zurücksetzen'}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Sort Control Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              aria-label={t.common?.searchPlaceholder || 'Suchen...'}
+              placeholder={t.articles?.searchPlaceholder || 'Artikel suchen...'}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 outline-none focus:outline-none focus:border-indigo-500 focus:ring-0 ring-0 transition-all"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-200"
+              >
+                <FilterX className="w-4 h-4" />
+              </button>
+            )}
+          </form>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={sort}
+              onChange={(e) => handleSortChange(e.target.value)}
+              className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500 cursor-pointer"
+            >
+              <option value="createdatasc">{t.articles?.sortNewest || 'Neueste zuerst'}</option>
+              <option value="createdatdesc">{t.articles?.sortOldest || 'Älteste zuerst'}</option>
+              <option value="mostliked">{t.articles?.sortMostLiked || '❤️ Beliebteste'}</option>
+              <option value="mostcommented">{t.articles?.sortMostCommented || '💬 Aktivste'}</option>
+              <option value="mostpopular">{t.articles?.sortMostPopular || '👑 Populärste'}</option>
+              <option value="trending">{t.articles?.sortTrending || '🔥 Trending'}</option>
+              <option value="titleasc">{t.articles?.sortTitleAsc || 'Titel (A-Z)'}</option>
+              <option value="titledesc">{t.articles?.sortTitleDesc || 'Titel (Z-A)'}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Tag Filter */}
+        <div className="pt-4 border-t border-slate-800/60 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                {t.articles?.allTags || 'Alle Tags'}
+              </span>
+              {hasTagFilters && (
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                  {includedTags.length + excludedTags.length} {t.videos?.activeTags || 'aktiv'}
+                </span>
+              )}
+              {matchMode === 'all' && (
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
+                  {t.videos?.matchAll || 'Alle Tags'}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-indigo-500/80 rounded-xl px-2.5 py-1 text-xs transition-all">
+                <input
+                  type="text"
+                  placeholder={t.videos?.searchTagsPlaceholder || 'Tag suchen...'}
+                  value={tagSearch}
+                  onChange={(e) => setTagSearch(e.target.value)}
+                  className="w-28 sm:w-36 bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
+                />
+                {tagSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setTagSearch('')}
+                    className="p-0.5 text-slate-400 hover:text-slate-200 shrink-0 ml-1"
+                  >
+                    <FilterX className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {allTags.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIsTagCloudExpanded(!isTagCloudExpanded)}
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 font-medium transition-colors cursor-pointer"
+                >
+                  <span>{isTagCloudExpanded ? (t.common?.showLess || 'Weniger') : `Alle Tags (${allTags.length})`}</span>
+                  {isTagCloudExpanded ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div
+            className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
+              isTagCloudExpanded || tagSearch.trim()
+                ? 'max-h-[380px] sm:max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700'
+                : 'max-h-[68px] sm:max-h-[72px] overflow-hidden'
+            }`}
+          >
+            {allTags.length === 0 ? (
+              Array.from({ length: 12 }).map((_, i) => (
+                <div
+                  key={`tag-skeleton-${i}`}
+                  style={{ width: `${64 + ((i * 17) % 52)}px` }}
+                  className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
+                />
+              ))
+            ) : filteredAllTags.length === 0 ? (
+              <div className="text-xs text-slate-500 italic py-1">
+                {t.videos?.noTagsFound || 'Keine Tags gefunden'}
+              </div>
+            ) : (
+              filteredAllTags.map(({ tag, count }) => {
+                const state = includedTags.includes(tag)
+                  ? 'include'
+                  : excludedTags.includes(tag)
+                  ? 'exclude'
+                  : 'none';
+
+                const baseClass =
+                  'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border';
+
+                const stateClass =
+                  state === 'include'
+                    ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30'
+                    : state === 'exclude'
+                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
+                    : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60';
+
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={`${baseClass} ${stateClass}`}
+                  >
+                    {state === 'include' && <span className="text-indigo-400">+</span>}
+                    {state === 'exclude' && <span className="text-rose-400">−</span>}
+                    <span>{tag}</span>
+                    <span className="text-[10px] opacity-60">({count})</span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Articles Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden animate-pulse">
+                  <div className="aspect-video bg-slate-800" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-slate-800 rounded w-3/4" />
+                    <div className="h-3 bg-slate-800 rounded w-full" />
+                    <div className="h-3 bg-slate-800 rounded w-1/2" />
+                  </div>
+                </div>
+              ))
+            : articles.length === 0 ? (
+                <div className="col-span-full text-center py-16 space-y-4">
+                  <FileText className="w-12 h-12 mx-auto text-slate-600" />
+                  <p className="text-slate-400">{t.articles?.noArticlesFound || 'Keine Artikel gefunden'}</p>
+                  <button
+                    onClick={hardReset}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold"
+                  >
+                    {t.common?.resetFilters || 'Filter zurücksetzen'}
+                  </button>
+                </div>
+              ) : (
+                articles.map((article) => (
+                  <Link
+                    key={article.documentId || article.slug || article.id}
+                    href={`/article/${article.slug}`}
+                    className="group relative bg-slate-900/60 border border-slate-800 hover:border-indigo-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="relative aspect-video bg-slate-950 overflow-hidden">
+                      {article.thumbnail ? (
+                        <img
+                          src={article.thumbnail}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-tr from-purple-950 via-indigo-950 to-slate-900 flex items-center justify-center">
+                          <BookOpen className="w-10 h-10 text-indigo-400/40" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
+                    </div>
+
+                    <div className="p-4 space-y-2">
+                      <h3 className="font-bold text-sm text-white line-clamp-2 group-hover:text-indigo-300 transition-colors">
+                        {article.title}
+                      </h3>
+                      {article.summary && (
+                        <p className="text-xs text-slate-400 line-clamp-2">
+                          {typeof article.summary === 'string'
+                            ? article.summary
+                            : article.summary
+                                ?.map((b: any) => b.children?.map((c: any) => c.text).join('') || '')
+                                .filter(Boolean)
+                                .join(' ')}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between pt-2 text-[10px] text-slate-500">
+                        <span className="truncate">
+                          {article.creator?.username || article.authorName || 'Omni Creator'}
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-0.5">
+                            <Eye className="w-3 h-3" />
+                            {article.viewsCount || 0}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <Heart className="w-3 h-3" />
+                            {article.likesCount || 0}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <MessageSquare className="w-3 h-3" />
+                            {article.commentsCount || 0}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="p-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 rounded-xl transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-sm text-slate-400">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="p-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 rounded-xl transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
