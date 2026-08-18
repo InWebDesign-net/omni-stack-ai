@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { 
-  Play, Pause, Volume2, VolumeX, Maximize, Minimize, 
-  Settings, Check, RotateCcw, Link2, Sparkles, Shield
-} from 'lucide-react';
+import { Play, Pause, Link2, Sparkles, Shield } from 'lucide-react';
 import Hls from 'hls.js';
 import { useApp } from '@/context/AppContext';
+import { VideoControls } from './VideoControls';
+import { EndOverlay } from './EndOverlay';
 
 interface CustomVideoPlayerProps {
   mp4Url?: string;
@@ -361,131 +360,14 @@ export default function CustomVideoPlayer({
 
       {/* End-of-Video Recommendation Overlay (YouTube Style) */}
       {hasEnded && !isLooping && (
-        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col justify-between p-3 sm:p-6 pb-20 select-none animate-fadeIn">
-          {/* Top Bar with Title and Replay Button */}
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5 sm:pb-3 shrink-0">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
-              <span className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
-                {currentUser
-                  ? (t.player?.recommendedForYou || 'Empfohlene Videos für dich')
-                  : (t.player?.discoverMore || 'Weitere Empfehlungen entdecken')}
-              </span>
-            </div>
-
-            {/* Replay Button */}
-            <button
-              type="button"
-              onClick={handleReplay}
-              className="px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
-              title={t.player?.replay || 'Erneut abspielen'}
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t.player?.replay || 'Erneut abspielen'}</span>
-            </button>
-          </div>
-
-          {/* Mobile Layout: 1 Featured Horizontal Recommendation Card */}
-          <div className="block sm:hidden my-auto py-1">
-            {recommendationsList.slice(0, 1).map((rec: any) => {
-              const creator = rec.creator || rec.author;
-              const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
-              const creatorAvatar = creator?.avatarUrl || rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
-
-              return (
-                <a
-                  key={rec.slug || rec.id}
-                  href={`/video/${rec.slug}`}
-                  onClick={() => setHasEnded(false)}
-                  className="group relative bg-[#0d1528]/95 border border-indigo-500/30 hover:border-indigo-500/60 rounded-xl overflow-hidden p-2 flex items-center gap-2.5 shadow-xl transition-all"
-                >
-                  <div className="relative w-28 aspect-video bg-slate-950 rounded-lg overflow-hidden shrink-0">
-                    <img
-                      src={rec.thumbnailUrl || '/media/thumbnails/default.png'}
-                      alt={rec.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center">
-                      <div className="w-6 h-6 rounded-full bg-indigo-600/90 text-white flex items-center justify-center shadow">
-                        <Play className="w-3 h-3 fill-white ml-0.5" />
-                      </div>
-                    </div>
-                    {Boolean(rec.duration && rec.duration > 0) && (
-                      <span className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-slate-950/80 text-[8px] font-mono text-slate-200">
-                        {formatTime(rec.duration)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-400 font-mono">Nächstes Video</span>
-                    <h4 className="font-semibold text-xs text-white line-clamp-2 leading-tight group-hover:text-indigo-300 transition-colors">
-                      {rec.title}
-                    </h4>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                      <img
-                        src={creatorAvatar}
-                        alt={creatorName}
-                        className="w-3.5 h-3.5 rounded-full object-cover border border-slate-700 shrink-0"
-                      />
-                      <span className="truncate font-medium">{creatorName}</span>
-                    </div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-
-          {/* Desktop & Tablet Layout: 3 Vertical Recommendation Cards Grid */}
-          <div className="hidden sm:grid sm:grid-cols-3 gap-3 md:gap-4 my-auto py-2">
-            {recommendationsList.slice(0, 3).map((rec: any) => {
-              const creator = rec.creator || rec.author;
-              const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
-              const creatorAvatar = creator?.avatarUrl || rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
-
-              return (
-                <a
-                  key={rec.slug || rec.id}
-                  href={`/video/${rec.slug}`}
-                  onClick={() => setHasEnded(false)}
-                  className="group relative bg-[#0d1528] border border-slate-800 hover:border-indigo-500/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
-                >
-                  <div className="relative aspect-video w-full bg-slate-950 overflow-hidden block">
-                    <img
-                      src={rec.thumbnailUrl || '/media/thumbnails/default.png'}
-                      alt={rec.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/40 group-hover:bg-slate-950/20 transition-colors flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-indigo-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <Play className="w-4 h-4 fill-white ml-0.5" />
-                      </div>
-                    </div>
-                    {Boolean(rec.duration && rec.duration > 0) && (
-                      <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-slate-950/80 text-[9px] font-mono text-slate-200 border border-slate-800">
-                        {formatTime(rec.duration)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-2.5 space-y-1">
-                    <h4 className="font-semibold text-xs text-white line-clamp-1 group-hover:text-indigo-300 transition-colors">
-                      {rec.title}
-                    </h4>
-                    <div className="flex items-center gap-1.5 pt-0.5 text-[10px] text-slate-400">
-                      <img
-                        src={creatorAvatar}
-                        alt={creatorName}
-                        className="w-3.5 h-3.5 rounded-full object-cover border border-slate-700 shrink-0"
-                      />
-                      <span className="truncate font-medium">{creatorName}</span>
-                    </div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
+        <EndOverlay
+          recommendations={recommendationsList}
+          currentUser={currentUser}
+          onReplay={handleReplay}
+          onSelectRecommendation={() => {}}
+          formatTime={formatTime}
+          t={t}
+        />
       )}
 
       {/* Center Play/Pause Animated Splash Indicator */}
@@ -497,210 +379,63 @@ export default function CustomVideoPlayer({
         </div>
       )}
 
-      {/* Copy Toast Notification */}
-      {copyToast && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900/90 border border-indigo-500/40 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 backdrop-blur-md">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span>{t.player?.linkCopied || 'Videolink mit Zeitstempel kopiert!'}</span>
-        </div>
-      )}
+      {/* Controls Bar */}
+      <VideoControls
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        buffered={buffered}
+        volume={volume}
+        isMuted={isMuted}
+        isFullscreen={isFullscreen}
+        isLooping={isLooping}
+        levels={levels}
+        currentLevel={currentLevel}
+        isSettingsOpen={isSettingsOpen}
+        showControls={showControls}
+        hoverTime={hoverTime}
+        hoverPosition={hoverPosition}
+        onTogglePlay={togglePlay}
+        onToggleMute={toggleMute}
+        onVolumeChange={handleVolumeChange}
+        onSeek={handleSeek}
+        onTimelineMouseMove={handleTimelineMouseMove}
+        onToggleFullscreen={toggleFullscreen}
+        onToggleLoop={() => setIsLooping(!isLooping)}
+        onToggleSettings={() => setIsSettingsOpen(!isSettingsOpen)}
+        onQualityChange={handleQualityChange}
+        formatTime={formatTime}
+        t={t}
+      />
 
-      {/* Custom Right-Click YouTube-Style Context Menu */}
+      {/* Custom Context Menu (Right-Click) */}
       {contextMenu && (
         <div
-          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
-          className="absolute z-50 bg-[#0b0f19]/95 border border-slate-800 rounded-2xl p-2 w-64 shadow-2xl backdrop-blur-xl text-xs text-slate-200 divide-y divide-slate-800/60"
+          className="absolute z-30 bg-slate-900 border border-slate-700 rounded-xl p-2 shadow-xl min-w-[200px]"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
         >
-          {/* Header Branding */}
-          <div className="px-3 py-2 space-y-0.5">
-            <div className="font-bold text-white flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-indigo-400" />
-              <span>© 2026 Omni by InWebDesign.net</span>
-            </div>
-            <p className="text-[10px] text-slate-400">Plattform-Preview & HLS Video Engine</p>
-          </div>
-
-          {/* Action Items */}
-          <div className="py-1">
-            <button
-              onClick={copyTimestampLink}
-              className="w-full px-3 py-2 text-left hover:bg-indigo-600/20 hover:text-indigo-300 rounded-xl flex items-center gap-2 transition-colors"
-            >
-              <Link2 className="w-3.5 h-3.5 text-indigo-400" />
-              <span>{copyLabel}</span>
-            </button>
-            <button
-              onClick={() => {
-                const nextLooping = !isLooping;
-                setIsLooping(nextLooping);
-                if (nextLooping) setHasEnded(false);
-                setContextMenu(null);
-              }}
-              className="w-full px-3 py-2 text-left hover:bg-indigo-600/20 hover:text-indigo-300 rounded-xl flex items-center justify-between transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <RotateCcw className="w-3.5 h-3.5 text-teal-400" />
-                <span>{t.player?.loop || 'Wiederholen (Schleife)'}</span>
-              </div>
-              {isLooping && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-            </button>
+          <button
+            onClick={copyTimestampLink}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Link2 className="w-3.5 h-3.5" />
+            <span>{copyLabel}</span>
+          </button>
+          <div className="border-t border-slate-800 my-1" />
+          <div className="flex items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
+            <Shield className="w-3 h-3" />
+            <span>Omni Player v2.0</span>
           </div>
         </div>
       )}
 
-      {/* Bottom Controls Bar Overlay */}
-      <div
-        className={`absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 transition-opacity duration-300 z-30 ${
-          showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Scrub Bar / Timeline Progress */}
-        <div
-          className="relative w-full h-3 mb-3 cursor-pointer flex items-center group/timeline"
-          onMouseMove={handleTimelineMouseMove}
-          onMouseLeave={() => setHoverTime(null)}
-        >
-          {/* Hover Tooltip */}
-          {hoverTime !== null && (
-            <div
-              style={{ left: `${hoverPosition}px` }}
-              className="absolute -top-8 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-[10px] font-mono px-2 py-0.5 rounded-lg shadow-md pointer-events-none"
-            >
-              {formatTime(hoverTime)}
-            </div>
-          )}
-
-          {/* Background Track */}
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden relative group-hover/timeline:h-2.5 transition-all">
-            {/* Buffer Track */}
-            <div
-              style={{ width: `${(buffered / (duration || 1)) * 100}%` }}
-              className="absolute top-0 bottom-0 left-0 bg-slate-600/60 transition-all"
-            />
-            {/* Progress Track */}
-            <div
-              style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
-              className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-indigo-500 to-teal-400 rounded-full"
-            />
-          </div>
-
-          <input
-            type="range"
-            min={0}
-            max={duration || 100}
-            step={0.1}
-            value={currentTime}
-            onChange={handleSeek}
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:opacity-100 focus-visible:bg-slate-800/50"
-            aria-label={(t.player as any)?.seek || 'Spulen'}
-          />
+      {/* Copy Toast */}
+      {copyToast && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl shadow-xl animate-fadeIn flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5" />
+          {t.player?.linkCopied || 'Link kopiert!'}
         </div>
-
-        {/* Controls Buttons Row */}
-        <div className="flex items-center justify-between text-slate-200">
-          {/* Left Controls (Play, Volume, Time) */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={togglePlay}
-              className="p-2 hover:bg-slate-800/80 rounded-xl text-white transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              title={isPlaying ? (t.player?.pause || 'Pause') : (t.player?.play || 'Abspielen')}
-              aria-label={isPlaying ? (t.player?.pause || 'Pause') : (t.player?.play || 'Abspielen')}
-            >
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white" />}
-            </button>
-
-            {/* Volume Control */}
-            <div className="flex items-center gap-1 group/vol">
-              <button
-                onClick={toggleMute}
-                className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                title={isMuted ? (t.player?.unmute || 'Ton einschalten') : (t.player?.mute || 'Stummschalten')}
-                aria-label={isMuted ? (t.player?.unmute || 'Ton einschalten') : (t.player?.mute || 'Stummschalten')}
-              >
-                {isMuted || volume === 0 ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5" />}
-              </button>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="w-0 group-hover/vol:w-20 transition-all duration-300 accent-indigo-500 cursor-pointer h-1 bg-slate-800 rounded-lg overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                aria-label={(t.player as any)?.volume || 'Lautstärke'}
-              />
-            </div>
-
-            {/* Time Display */}
-            <div className="text-xs font-mono text-slate-400 tracking-tight">
-              <span className="text-white">{formatTime(currentTime)}</span> / {formatTime(duration)}
-            </div>
-          </div>
-
-          {/* Right Controls (Quality Selector & Fullscreen) */}
-          <div className="flex items-center gap-2 relative">
-            {/* HLS Resolution / Settings Dropdown */}
-            {levels.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                  className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                    isSettingsOpen ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800/80 text-slate-300 hover:text-white'
-                  }`}
-                  title={t.player?.quality || 'Qualität / Auflösung'}
-                  aria-label={t.player?.quality || 'Qualität / Auflösung'}
-                  aria-expanded={isSettingsOpen}
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="text-[11px] font-mono">
-                    {currentLevel === -1 ? (t.player?.autoRecommended?.split(' ')[0] || 'Auto') : levels[currentLevel]?.label}
-                  </span>
-                </button>
-
-                {/* Quality Popover */}
-                {isSettingsOpen && (
-                  <div className="absolute bottom-12 right-0 bg-[#0b0f19]/95 border border-slate-800 rounded-2xl p-2 w-44 shadow-2xl backdrop-blur-xl text-xs space-y-1 z-50">
-                    <div className="px-2 py-1 text-[10px] font-mono text-slate-400 border-b border-slate-800">
-                      {t.player?.selectQuality || 'Qualität wählen'}
-                    </div>
-                    <button
-                      onClick={() => handleQualityChange(-1)}
-                      className={`w-full px-2.5 py-1.5 text-left rounded-xl flex items-center justify-between transition-colors ${
-                        currentLevel === -1 ? 'bg-indigo-600/20 text-indigo-300 font-bold' : 'hover:bg-slate-800 text-slate-300'
-                      }`}
-                    >
-                      <span>{t.player?.autoRecommended || 'Auto (Empfohlen)'}</span>
-                      {currentLevel === -1 && <Check className="w-3.5 h-3.5 text-indigo-400" />}
-                    </button>
-                    {levels.map((lvl) => (
-                      <button
-                        key={lvl.index}
-                        onClick={() => handleQualityChange(lvl.index)}
-                        className={`w-full px-2.5 py-1.5 text-left rounded-xl flex items-center justify-between transition-colors ${
-                          currentLevel === lvl.index ? 'bg-indigo-600/20 text-indigo-300 font-bold' : 'hover:bg-slate-800 text-slate-300'
-                        }`}
-                      >
-                        <span>{lvl.label}</span>
-                        {currentLevel === lvl.index && <Check className="w-3.5 h-3.5 text-indigo-400" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Fullscreen Button */}
-            <button
-              onClick={toggleFullscreen}
-              className="p-2 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              title={isFullscreen ? (t.player?.exitFullscreen || 'Vollbild beenden') : (t.player?.fullscreen || 'Vollbild')}
-              aria-label={isFullscreen ? (t.player?.exitFullscreen || 'Vollbild beenden') : (t.player?.fullscreen || 'Vollbild')}
-            >
-              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
