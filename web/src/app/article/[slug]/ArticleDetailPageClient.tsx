@@ -15,14 +15,29 @@ import { ArticleBlockRenderer } from '@/components/article/ArticleBlockRenderer'
 import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
 import Image from 'next/image';
 
+function pickLocalized(source: any, useLang: string) {
+  if (!source) return null;
+  if (Array.isArray(source)) {
+    return source.find((v: any) => v.locale === useLang) || source[0] || null;
+  }
+  return source;
+}
+
 export default function ArticleDetailPageClient({ initialItem, slug }: { initialItem: any; slug: string }) {
   const { t, lang, currentUser, openAuthModal } = useApp();
-  const [item] = useState(initialItem);
+  const [item, setItem] = useState(() => pickLocalized(initialItem, lang));
   const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(initialItem?.likesCount || 0);
+  const [likesCount, setLikesCount] = useState(item?.likesCount || 0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [viewsCount, setViewsCount] = useState(initialItem?.viewsCount || 0);
+  const [viewsCount, setViewsCount] = useState(item?.viewsCount || 0);
+
+  useEffect(() => {
+    const active = pickLocalized(initialItem, lang);
+    setItem(active);
+    setLikesCount(active?.likesCount || 0);
+    setViewsCount(active?.viewsCount || 0);
+  }, [initialItem, lang]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
