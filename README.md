@@ -184,6 +184,17 @@ Services will be online:
 
 ---
 
+## 📚 Technical Documentation & Service Guides
+
+Detailed architectural guides and setup instructions for external microservices and AI modules:
+
+- 🎞️ **[Media Converter Service Guide](docs/CONVERTER_SERVICE.md)**: HLS Transcoding pipeline, FFmpeg specs, folder-in/out patterns vs. production button/queue integrations.
+- 📝 **[Content Fill Service Guide](docs/CONTENT_FILL_SERVICE.md)**: Automated metadata generation pipeline, SQLite state DB, dev/demo auto-filling vs. production human-in-the-loop admin workflows.
+- 🧠 **[Local AI Integration Guide](docs/AI_VISION_AND_LLM_SERVICES.md)**: Ollama setup, Moondream2 Computer Vision, Llama 3.1 bilingual JSON generation, and model swapping guidelines.
+- 🔒 **[Omni Viewer Visibility Guide](docs/OMNI_VIEWER.md)**: Default-deny visibility middleware and user access policy architecture.
+
+---
+
 ## 🌐 Managed Hosting & Consulting
 
 For enterprise deployments, custom AI prompt engineering, or managed Proxmox LXC clustering:
