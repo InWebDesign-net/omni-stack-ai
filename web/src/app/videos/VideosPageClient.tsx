@@ -12,7 +12,6 @@ import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import useSWR from "swr";
 import {
   Search,
-  FilterX,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -30,6 +29,7 @@ import {
   Upload,
   User as UserIcon,
 } from "lucide-react";
+import { ActionButton } from '@/components/ActionButton';
 
 export default function VideosPageClient({
   initialParams,
@@ -184,25 +184,15 @@ export default function VideosPageClient({
               </p>
             </div>
 
-            {/* Quick Actions & Video Upload Button */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/20 shrink-0"
-              >
-                <Upload className="w-4 h-4" />
-                <span>{t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}</span>
-              </button>
-
-              {hasActiveFilters && (
-                <button
-                  onClick={hardReset}
-                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all shadow-sm shrink-0"
-                >
-                  <FilterX className="w-3.5 h-3.5 text-rose-400" />
-                  <span>{t.common.resetFilters}</span>
-                </button>
-              )}
+            {/* Quick Actions: Single animated toggle button (Upload / Reset) */}
+            <div className="flex items-center">
+              <ActionButton
+                isFilterActive={hasActiveFilters}
+                onUpload={() => setIsUploadModalOpen(true)}
+                onReset={hardReset}
+                uploadLabel={t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}
+                resetLabel={t.common.resetFilters || 'Filter zurücksetzen'}
+              />
             </div>
           </div>
 

@@ -10,7 +10,6 @@ import { useImages, useImageTags, ImageItem } from '@/lib/hooks/useImages';
 import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import {
   Search,
-  FilterX,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -25,6 +24,7 @@ import {
   Upload,
   User as UserIcon,
 } from 'lucide-react';
+import { ActionButton } from '@/components/ActionButton';
 
 import { jsonAuthHeaders } from '@/lib/affinity';
 
@@ -208,24 +208,14 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="px-4 py-2.5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-teal-500/20"
-              >
-                <Upload className="w-4 h-4" />
-                <span>{t.upload?.uploadImage || (lang === 'de' ? 'Bild hochladen' : 'Upload Image')}</span>
-              </button>
-
-              {hasActiveFilters && (
-                <button
-                  onClick={resetAllFilters}
-                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition-all shadow-sm shrink-0"
-                >
-                  <FilterX className="w-3.5 h-3.5 text-rose-400" />
-                  <span>{t.common.resetFilters}</span>
-                </button>
-              )}
+            <div className="flex items-center">
+              <ActionButton
+                isFilterActive={hasActiveFilters}
+                onUpload={() => setIsUploadModalOpen(true)}
+                onReset={resetAllFilters}
+                uploadLabel={t.upload?.uploadImage || (lang === 'de' ? 'Bild hochladen' : 'Upload Image')}
+                resetLabel={t.common.resetFilters || 'Filter zurücksetzen'}
+              />
             </div>
           </div>
 
