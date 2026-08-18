@@ -78,7 +78,6 @@ interface HeaderProps {
   onOpenAuthModal?: () => void;
   onOpenProfileModal?: () => void;
   onOpenSettingsModal?: () => void;
-  onOpenCreateModal?: () => void;
   onOpenVideoUploadModal?: () => void;
   onLogout?: () => void;
   showMenuButton?: boolean;
@@ -94,7 +93,6 @@ export default function Header({
   onOpenAuthModal,
   onOpenProfileModal,
   onOpenSettingsModal,
-  onOpenCreateModal,
   onOpenVideoUploadModal,
   onLogout,
   showMenuButton = true,
@@ -108,7 +106,6 @@ export default function Header({
     openChannelModal,
     openSettingsModal,
     openAuthModal,
-    openCreateItemModal,
     openAlgoModal,
     t,
   } = useApp();
@@ -376,22 +373,6 @@ export default function Header({
                   >
                     <User className="h-4 w-4 text-[#44e2cd]" />
                     <span>{t.header.settings}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      if (onOpenCreateModal) {
-                        onOpenCreateModal();
-                      } else {
-                        openCreateItemModal();
-                      }
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
-                  >
-                    <Sparkles className="h-4 w-4 text-[#ffb783]" />
-                    <span>{activeLang === 'de' ? t.header.createPost : t.header.createPost}</span>
                   </button>
 
                   <div className="my-1 border-t border-white/5" />

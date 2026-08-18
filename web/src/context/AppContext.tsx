@@ -5,7 +5,6 @@ import VideoUploadModal from '@/components/VideoUploadModal';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import UserSettingsModal from '@/components/UserSettingsModal';
 import AuthModal from '@/components/AuthModal';
-import CreateFeedItemModal from '@/components/CreateFeedItemModal';
 import AlgorithmModal from '@/components/AlgorithmModal';
 import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import { DEMO_CREATORS, DEFAULT_SUBSCRIBED_HANDLES, getDemoCreatorByHandle } from '@/config/demo';
@@ -73,10 +72,6 @@ interface AppContextType {
   openAuthModal: (mode?: 'login' | 'register') => void;
   closeAuthModal: () => void;
 
-  isCreateItemOpen: boolean;
-  openCreateItemModal: () => void;
-  closeCreateItemModal: () => void;
-
   isAlgoModalOpen: boolean;
   openAlgoModal: () => void;
   closeAlgoModal: () => void;
@@ -99,7 +94,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
-  const [isCreateItemOpen, setIsCreateItemOpen] = useState(false);
   const [isAlgoModalOpen, setIsAlgoModalOpen] = useState(false);
 
   // Subscriptions
@@ -330,9 +324,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         authMode,
         openAuthModal,
         closeAuthModal: () => setIsAuthModalOpen(false),
-        isCreateItemOpen,
-        openCreateItemModal: () => setIsCreateItemOpen(true),
-        closeCreateItemModal: () => setIsCreateItemOpen(false),
         isAlgoModalOpen,
         openAlgoModal: () => setIsAlgoModalOpen(true),
         closeAlgoModal: () => setIsAlgoModalOpen(false),
@@ -364,11 +355,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authMode}
-      />
-
-      <CreateFeedItemModal
-        isOpen={isCreateItemOpen}
-        onClose={() => setIsCreateItemOpen(false)}
       />
 
       <AlgorithmModal
