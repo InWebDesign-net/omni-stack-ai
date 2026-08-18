@@ -73,6 +73,14 @@
     "commentsLabel": "Comments",
     "shortLinkCopied": "Short link copied!"
   },
+  "images": {
+    "editImage": "Edit Image",
+    "deleteImage": "Delete Image",
+    "deleteConfirm": "Really delete?",
+    "deleteWarning": "This action cannot be undone.",
+    "softDelete": "Soft Delete",
+    "hardDelete": "Delete Permanently"
+  },
   "videos": {
       "title": "Video Library",
       "subtitle": "Search and sort all available videos directly without algorithmic filtering.",

@@ -73,6 +73,14 @@
     "commentsLabel": "Kommentare",
     "shortLinkCopied": "Short Link kopiert!"
   },
+  "images": {
+    "editImage": "Bild bearbeiten",
+    "deleteImage": "Bild löschen",
+    "deleteConfirm": "Wirklich löschen?",
+    "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "softDelete": "Soft Delete",
+    "hardDelete": "Endgültig löschen"
+  },
   "videos": {
     "title": "Video-Bibliothek",
     "subtitle": "Durchsuche und sortiere alle verfügbaren Videos direkt ohne Algorithmus-Filterung.",

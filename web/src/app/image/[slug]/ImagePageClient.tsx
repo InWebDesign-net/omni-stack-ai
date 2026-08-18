@@ -19,6 +19,7 @@ import {
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
+import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { useApp } from '@/context/AppContext';
 import { useImages } from '@/lib/hooks/useImages';
 import { getRotatedRecommendations } from '@/lib/recommendations';
@@ -59,6 +60,50 @@ export default function ImagePageClient({
   // Channel Profile Modal
   const [selectedChannel, setSelectedChannel] = useState<any>(null);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
+
+  // Image Edit Modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const isOwner = Boolean(
+    currentUser && image?.creator && String(currentUser.id) === String(image.creator.id)
+  );
+
+  const handleSaveImage = async (data: { title: string; summary: string; tags: string[]; visibility: string }) => {
+    try {
+      const res = await fetch(`/api/image/settings?documentId=${image.documentId}`, {
+        method: 'PUT',
+        headers: {
+          ...jsonAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        setImage((prev: any) => ({ ...prev, ...data }));
+        setIsEditModalOpen(false);
+      }
+    } catch (e) {
+      console.error('Failed to save image:', e);
+    }
+  };
+
+  const handleDeleteImage = async (hardDelete: boolean) => {
+    try {
+      const res = await fetch(`/api/image/settings?documentId=${image.documentId}&hard=${hardDelete}`, {
+        method: 'DELETE',
+        headers: jsonAuthHeaders(),
+      });
+      if (res.ok) {
+        setIsEditModalOpen(false);
+        if (hardDelete) {
+          router.push('/images');
+        } else {
+          setImage((prev: any) => ({ ...prev, visibility: 'private' }));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to delete image:', e);
+    }
+  };
 
   // Comments
   const [commentsTree, setCommentsTree] = useState<CommentItemType[]>([]);
@@ -334,6 +379,14 @@ export default function ImagePageClient({
                   </h1>
 
                   <div className="flex items-center gap-3 shrink-0">
+                    {isOwner && (
+                      <button
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-slate-800/80 border border-slate-700 text-slate-200 hover:border-teal-500/50 transition-all"
+                      >
+                        {t?.images?.editImage || 'Bild bearbeiten'}
+                      </button>
+                    )}
                     <button
                       onClick={handleLike}
                       className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-md ${
@@ -522,6 +575,16 @@ export default function ImagePageClient({
       <ChannelProfileModal
         onClose={() => setIsChannelModalOpen(false)}
         selectedChannel={isChannelModalOpen ? selectedChannel : null}
+      />
+
+      {/* Image Edit Modal */}
+      <ImageEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveImage}
+        onDelete={handleDeleteImage}
+        image={image}
+        t={t}
       />
     </div>
   );
