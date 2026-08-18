@@ -36,15 +36,23 @@
       }
     },
     "summary": {
-      "type": "text",
+      "type": "blocks",
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       }
     },
-    "content": {
-      "type": "blocks",
+    "blocks": {
+      "type": "dynamiczone",
+      "components": [
+        "shared.rich-text",
+        "shared.video",
+        "shared.media",
+        "shared.quote",
+        "shared.headline",
+        "shared.pdf"
+      ],
       "pluginOptions": {
         "i18n": {
           "localized": true

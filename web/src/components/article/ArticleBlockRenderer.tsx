@@ -37,29 +37,41 @@ export function ArticleBlockRenderer({ blocks }: ArticleBlockRendererProps) {
   );
 }
 
-function Block({ block }: { block: Block }) {
-  switch (block.type) {
-    case 'heading':
-      return <HeadingBlock block={block} />;
-    case 'paragraph':
-      return <ParagraphBlock block={block} />;
-    case 'quote':
-      return <QuoteBlock block={block} />;
-    case 'image':
-      return <ImageBlock block={block} />;
-    case 'gallery':
-      return <GalleryBlock block={block} />;
-    case 'video':
-      return <VideoBlock block={block} />;
-    case 'code':
-      return <CodeBlock block={block} />;
-    case 'list':
-      return <ListBlock block={block} />;
-    case 'divider':
-      return <hr className="border-slate-700 my-6" />;
-    default:
-      return <ParagraphBlock block={block} />;
+function Block({ block }: { block: any }) {
+  const componentType = block.__component || block.type;
+
+  if (componentType === 'shared.headline' || block.type === 'heading') {
+    return <HeadingBlock block={block} />;
   }
+  if (componentType === 'shared.rich-text' || block.type === 'paragraph') {
+    return <ParagraphBlock block={block} />;
+  }
+  if (componentType === 'shared.quote' || block.type === 'quote') {
+    return <QuoteBlock block={block} />;
+  }
+  if (componentType === 'shared.media' || block.type === 'image') {
+    return <ImageBlock block={block} />;
+  }
+  if (componentType === 'shared.gallery' || block.type === 'gallery') {
+    return <GalleryBlock block={block} />;
+  }
+  if (componentType === 'shared.video' || block.type === 'video') {
+    return <VideoBlock block={block} />;
+  }
+  if (componentType === 'shared.pdf') {
+    return <PdfBlock block={block} />;
+  }
+  if (block.type === 'code') {
+    return <CodeBlock block={block} />;
+  }
+  if (block.type === 'list') {
+    return <ListBlock block={block} />;
+  }
+  if (block.type === 'divider') {
+    return <hr className="border-slate-700 my-6" />;
+  }
+
+  return <ParagraphBlock block={block} />;
 }
 
 function HeadingBlock({ block }: { block: Block }) {
@@ -230,6 +242,33 @@ function ListBlock({ block }: { block: Block }) {
         <li key={i}>{item}</li>
       ))}
     </ListTag>
+  );
+}
+
+function PdfBlock({ block }: { block: any }) {
+  const fileUrl = block.fileUrl || block.url;
+  const fileName = block.title || block.name || 'Dokument.pdf';
+
+  if (!fileUrl) return null;
+
+  return (
+    <div className="my-6 p-4 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <FileText className="w-6 h-6 text-purple-400" />
+        <div>
+          <h4 className="text-sm font-bold text-white">{fileName}</h4>
+          <p className="text-xs text-slate-400">PDF-Dokument</p>
+        </div>
+      </div>
+      <a
+        href={fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors"
+      >
+        Öffnen / Herunterladen
+      </a>
+    </div>
   );
 }
 

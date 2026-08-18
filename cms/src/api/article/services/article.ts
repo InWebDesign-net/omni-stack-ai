@@ -69,7 +69,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
       locale: docQueryLocale,
       status: 'published',
       filters,
-      populate: ['creator'],
+      populate: ['creator', 'blocks'],
       sort: strapiSort,
     });
 
@@ -78,7 +78,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
         locale: '*',
         status: 'published',
         filters,
-        populate: ['creator'],
+        populate: ['creator', 'blocks'],
         sort: strapiSort,
       });
     }
