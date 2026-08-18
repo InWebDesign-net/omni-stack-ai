@@ -267,10 +267,31 @@ export default function ArticlesPageClient() {
                   {includedTags.length + excludedTags.length} {t.videos?.activeTags || 'aktiv'}
                 </span>
               )}
-              {matchMode === 'all' && (
-                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
-                  {t.videos?.matchAll || 'Alle Tags'}
-                </span>
+              {includedTags.length > 1 && (
+                <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-[11px] ml-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setMatchMode('any')}
+                    className={`px-2 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
+                      matchMode === 'any'
+                        ? 'bg-indigo-500/20 text-indigo-300 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {t.videos?.matchAny || 'Irgendein Tag'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMatchMode('all')}
+                    className={`px-2 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
+                      matchMode === 'all'
+                        ? 'bg-indigo-500/20 text-indigo-300 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {t.videos?.matchAll || 'Alle Tags'}
+                  </button>
+                </div>
               )}
             </div>
 
