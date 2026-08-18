@@ -45,7 +45,7 @@ interface UserPageClientProps {
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const router = useRouter();
     const { profile, isOwner, videos, images, articles, favorites, stats } = profileDataInit;
-    const { t, lang, currentUser, openAuthModal, openVideoUploadModal } = useApp();
+    const { t, lang, currentUser, openAuthModal, openVideoUploadModal, openSettingsModal } = useApp();
     const { createRoom, openChat } = useChat();
 
     const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'favorites' | 'about'>('articles');
@@ -146,43 +146,31 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 </div>
 
                                 {/* Header Action Buttons */}
-                                <div className="flex items-center gap-3">
-                                    {isOwner ? (
-                                        <>
-                                            <button
-                                                onClick={openVideoUploadModal}
-                                                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-teal-500 hover:from-indigo-600 hover:to-teal-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-95"
-                                            >
-                                                <Upload className="w-4 h-4" />
-                                                <span>{(t as any).channel?.newVideo || 'Neues Video'}</span>
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <SubscribeButton
-                                                targetId={String(profile.id)}
-                                                initialIsSubscribed={isSubscribed}
-                                                initialCount={subscriberCount}
-                                                size="md"
-                                                showCount={false}
-                                                onStatusChange={(newSubscribed, newCount) => {
-                                                    setIsSubscribed(newSubscribed);
-                                                    setSubscriberCount(newCount);
-                                                }}
-                                            />
+                                {!isOwner && (
+                                    <div className="flex items-center gap-3">
+                                        <SubscribeButton
+                                            targetId={String(profile.id)}
+                                            initialIsSubscribed={isSubscribed}
+                                            initialCount={subscriberCount}
+                                            size="md"
+                                            showCount={false}
+                                            onStatusChange={(newSubscribed, newCount) => {
+                                                setIsSubscribed(newSubscribed);
+                                                setSubscriberCount(newCount);
+                                            }}
+                                        />
 
-                                            {canSendDM && (
-                                                <button
-                                                    onClick={handleStartChat}
-                                                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
-                                                >
-                                                    <MessageSquare className="w-4 h-4" />
-                                                    <span>{(t as any).channel?.messageBtn || (t as any).common?.message || 'Nachricht'}</span>
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
+                                        {canSendDM && (
+                                            <button
+                                                onClick={handleStartChat}
+                                                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+                                            >
+                                                <MessageSquare className="w-4 h-4" />
+                                                <span>{(t as any).channel?.messageBtn || (t as any).common?.message || 'Nachricht'}</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
@@ -229,11 +217,11 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             </div>
                         </div>
                         <button
-                            onClick={openVideoUploadModal}
-                            className="px-4 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/50 text-indigo-300 font-semibold text-xs transition-all flex items-center gap-2"
+                            onClick={openSettingsModal}
+                            className="px-4 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/50 text-indigo-300 font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer"
                         >
-                            <Upload className="w-4 h-4" />
-                            <span>{(t as any).userProfile?.newUpload || 'Neuer Upload'}</span>
+                            <Settings className="w-4 h-4 text-indigo-400" />
+                            <span>{(t as any).header?.settings || 'Einstellungen'}</span>
                         </button>
                     </div>
                 )}
