@@ -35,7 +35,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { currentUser, openAuthModal, lang, t } = useApp();
+  const { currentUser, openAuthModal, lang, t, openChannelModal } = useApp();
   const perPage = 24;
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -454,16 +454,26 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
                   {/* Creator Avatar Badge */}
                   {img.creator && (
-                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openChannelModal(img.creator);
+                      }}
+                      className="absolute bottom-3 left-3 flex items-center gap-2 hover:opacity-80 transition-opacity z-10 cursor-pointer text-left"
+                    >
                       <Image
                         src={img.creator.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
                         alt={img.creator.username || 'Creator'}
+                        width={24}
+                        height={24}
                         className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0"
                       />
                       <span className="text-[11px] font-semibold text-white drop-shadow truncate max-w-[120px]">
                         {img.creator.username || 'Creator'}
                       </span>
-                    </div>
+                    </button>
                   )}
                 </div>
 

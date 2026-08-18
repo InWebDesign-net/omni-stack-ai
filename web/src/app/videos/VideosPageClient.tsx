@@ -42,7 +42,7 @@ export default function VideosPageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { currentUser, lang, t } = useApp();
+  const { currentUser, lang, t, openChannelModal } = useApp();
   const perPage = 24;
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -506,16 +506,31 @@ export default function VideosPageClient({
 
                     {/* Creator & Meta */}
                     <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-800/60 text-[11px] sm:text-xs text-slate-400">
-                      <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const targetCreator = creator || {
+                            username: creatorName,
+                            handle: `@${creatorName.toLowerCase().replace(/\s+/g, '')}`,
+                            avatarUrl: creatorAvatar,
+                          };
+                          openChannelModal(targetCreator);
+                        }}
+                        className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0 text-left cursor-pointer z-10"
+                      >
                         {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                         <Image
                           src={creatorAvatar}
                           alt={creatorName}
                           loading="lazy"
+                          width={24}
+                          height={24}
                           className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
                         />
                         <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
-                      </Link>
+                      </button>
 
                       <div className="flex items-center gap-1.5 sm:gap-2.5 text-slate-400 shrink-0 font-mono text-[10px] sm:text-xs">
                         {video.viewsCount !== undefined && (
