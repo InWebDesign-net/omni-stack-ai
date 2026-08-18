@@ -1,58 +1,58 @@
 # Omni Stack Media Converter Service & Transcoding Pipeline
 
-Diese Dokumentation beschreibt die Funktionsweise, Architektur und Anpassungsmöglichkeiten des **Media Converter Services** zur automatisierten Konvertierung von Videos und Bildern im Omni Stack AI Ökosystem.
+This document details the architecture, internal mechanics, and production adaptation guidelines for the **Media Converter Service** within the Omni Stack AI ecosystem.
 
 ---
 
-## 🎯 Überblick & Zweck
+## 🎯 Overview & Purpose
 
-Der **Media Converter Service** verwandelt rohes Bild- und Videomaterial (z. B. hochgeladene `.mp4`, `.mov`, `.png`, `.jpg` Dateien) in hochkomprimierte, weboptimierte Formate:
+The **Media Converter Service** transforms raw media uploads (`.mp4`, `.mov`, `.png`, `.jpg`, etc.) into optimized, web-ready formats:
 
-1. **HLS Multi-Bitrate Streams**: Erzeugung von `.m3u8` Master-Playlists und HLS-Segmenten für unterbrechungsfreies Video-Streaming im Frontend (`CustomVideoPlayer.tsx`).
-2. **WebP Thumbnails & OG Images**: Automatische Generierung von WebP-Vorschaubildern (z. B. Frame-Extraktion bei 25 %, 50 %, 75 % der Videodauer) und Social-Media OpenGraph Bildern (`/media/og/`).
-3. **Metadaten-Extraktion**: Auslesen von Auflösung, Bildrate, Dauer, Dateigröße und Audio-Streams mittels `ffprobe`.
+1. **HLS Multi-Bitrate Streams**: Generates `.m3u8` master playlists and segmented TS files for seamless video playback in the frontend (`CustomVideoPlayer.tsx`).
+2. **WebP Thumbnails & OG Images**: Extracts high-quality WebP video thumbnails (at keyframes such as 25%, 50%, 75% of duration) and OpenGraph social preview images (`/media/og/`).
+3. **Metadata Extraction**: Reads resolution, frame rate, duration, file size, and audio streams using `ffprobe`.
 
 ---
 
-## 🏗️ Referenz-Architektur (Ordner-basiertes LXC Muster)
+## 🏗️ Reference Architecture (Folder-Based LXC Pattern)
 
-In der Entwicklungs- und Evaluierungsumgebung läuft der Converter als isolierter Hintergrund-Dienst (z. B. in einem LXC-Container) mit folgendem Ordner-basierten Workflow:
+In development and demo environments, the converter operates as an isolated background service (e.g., inside a LXC container or dedicated LXC node) utilizing an event-driven folder watcher pattern:
 
 ```
                   ┌───────────────────────────────┐
-                  │ 1. Datei ablegen in           │
+                  │ 1. File Upload to             │
                   │    /mnt/media/in/ (Raw Input) │
                   └──────────────┬────────────────┘
                                  │
                                  ▼
                   ┌───────────────────────────────┐
-                  │ 2. Chokidar Watcher erkennt   │
-                  │    Schreib-Stabilisierung     │
+                  │ 2. Chokidar Watcher Detects   │
+                  │    Write Stabilization        │
                   └──────────────┬────────────────┘
                                  │
                                  ▼
                   ┌───────────────────────────────┐
-                  │ 3. Worker-Prozess startet     │
+                  │ 3. Worker Process Triggers    │
                   │    FFmpeg / FFprobe           │
                   └──────────────┬────────────────┘
                                  │
                                  ▼
                   ┌───────────────────────────────┐
-                  │ 4. Output schreiben nach      │
+                  │ 4. Output Rendered to         │
                   │    /mnt/media/out/            │
                   │    (.mp4, .m3u8, .webp)       │
                   └───────────────────────────────┘
 ```
 
-### Komponenten im Detail:
-- **`watch-and-process.js`**: Nutzt [Chokidar](https://github.com/paulmillr/chokidar) mit `awaitWriteFinish` (Stability Threshold 3s), um zu verhindern, dass unvollständig hochgeladene Dateien verarbeitet werden.
-- **`process-videos.js`**: Führt die eigentliche Transkodierung via FFmpeg aus, erstellt HLS-Streams, Thumbnails und Metadaten-JSON-Dateien.
+### Key Components:
+- **`watch-and-process.js`**: Utilizes [Chokidar](https://github.com/paulmillr/chokidar) with `awaitWriteFinish` (stability threshold 3s) to prevent processing incomplete uploads.
+- **`process-videos.js`**: Executes the core FFmpeg transcode pipeline, generates HLS streams, extracts WebP frames, and produces JSON metadata payloads.
 
 ---
 
-## ⚙️ Transkodierungs-Spezifikationen
+## ⚙️ Transcoding Specifications
 
-### 1. Video HLS-Streaming (FFmpeg)
+### 1. HLS Video Stream Transcoding (FFmpeg)
 ```bash
 ffmpeg -i input.mp4 \
   -c:v libx264 -crf 22 -preset medium -g 48 -keyint_min 48 \
@@ -62,7 +62,7 @@ ffmpeg -i input.mp4 \
   "/path/to/hls/master.m3u8"
 ```
 
-### 2. Vorschaubild-Extraktion (WebP)
+### 2. WebP Preview Thumbnail Extraction
 ```bash
 ffmpeg -ss 00:00:02 -i input.mp4 \
   -vframes 1 -vf "scale=1280:-1" -c:v libwebp -quality 85 \
@@ -71,42 +71,42 @@ ffmpeg -ss 00:00:02 -i input.mp4 \
 
 ---
 
-## 🔄 Anpassung für den Produktionsbetrieb (Customization)
+## 🔄 Adapting for Production Environments
 
-Das Ordner-basierte In-Out-Muster eignet sich hervorragend zur Entwicklung und für entkoppelte Serverumgebungen. Im Produktivbetrieb kann und sollte die Integration an die eigenen Anforderungen angepasst werden:
+While the folder-watcher pattern provides clean decoupling for standalone converter containers, production systems can adapt or swap this architecture based on scale and operational preference:
 
-### 💡 Mögliche Produktions-Integrationen:
+### 💡 Production Customization Patterns:
 
-1. **Button-basierter Trigger im Admin-Dashboard**:
-   - Statt eines dauerhaften Ordner-Watchers löst ein Klick im Strapi CMS Admin-Panel oder Next.js Admin-Dashboard ein Konvertierungs-Event aus (`POST /api/convert-media`).
+1. **Admin Panel Button-Triggered Workflows**:
+   - Replace the persistent folder watcher with an explicit API action in the Strapi Admin Panel or Next.js admin UI (`POST /api/convert-media`), allowing editors to initiate conversion on demand.
 
-2. **Async Queue Worker (BullMQ / Redis)**:
-   - Beim Datei-Upload wird ein Job in eine Redis Queue (BullMQ) gepusht. Ein Worker-Knoten arbeitet die Queue ab und benachrichtigt das Frontend via WebSockets (`omni-socket`).
+2. **Asynchronous Queue Workers (BullMQ / Redis)**:
+   - File uploads push a job to a Redis Queue (BullMQ). Distributed worker nodes process jobs asynchronously and push status updates via WebSockets (`omni-socket`).
 
 3. **Cloud Event Pipelines (AWS S3 / Lambda / Cloudflare Stream)**:
-   - Datei-Upload direkt in S3 Bucket -> S3 Event-Notification startet Lambda / Elemental MediaConvert -> Speicher-Benachrichtigung an Webhook.
+   - Direct-to-S3 uploads trigger Lambda functions or AWS Elemental MediaConvert, posting completion webhooks back to the CMS.
 
 ---
 
-## 🚀 Setup & Betrieb der Beispiel-Umgebung
+## 🚀 Setup & Execution
 
-### Voraussetzungen:
+### Prerequisites:
 - Node.js >= 18
-- `ffmpeg` und `ffprobe` im `PATH` installiert.
+- `ffmpeg` and `ffprobe` installed and available in system `PATH`.
 
-### Befehle:
+### Commands:
 ```bash
 cd /root/omni-root/example_converter_lxc
 npm install
 
-# Einmaliger Durchlauf aller Dateien in /mnt/media/in:
+# Single-pass execution over /mnt/media/in:
 node process-videos.js
 
-# Dauerhafter Watcher-Service:
+# Persistent Watcher Service:
 node watch-and-process.js
 ```
 
-### PM2 Service Einbindung (`ecosystem.config.js`):
+### PM2 Process Configuration (`ecosystem.config.js`):
 ```javascript
 module.exports = {
   apps: [{

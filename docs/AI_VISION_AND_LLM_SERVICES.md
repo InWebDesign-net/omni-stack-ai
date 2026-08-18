@@ -1,42 +1,42 @@
 # Omni Stack Local AI Integration: Ollama, Moondream & Llama
 
-Diese Dokumentation beschreibt die Einbindung, Architektur und Anpassungsmöglichkeiten der lokalen KI-Dienste (**Ollama**, **Moondream** & **Llama**) im Omni Stack AI Ökosystem.
+This document describes the integration, architecture, and model swapping options for the local AI services (**Ollama**, **Moondream**, and **Llama**) in the Omni Stack AI ecosystem.
 
 ---
 
-## 🎯 Überblick & Zweck
+## 🎯 Overview & Purpose
 
-Das Omni Stack AI System setzt auf eine datenschutzkonforme, lokale KI-Infrastruktur ohne Abhängigkeiten von externen Cloud-APIs (wie OpenAI oder Anthropic). Alle KI-Aufgaben – von der Bild-Erkennung über die Sprach-Intent-Analyse bis hin zu interaktiven Chatbots – werden über lokale Open-Source-Modelle ausgeführt:
+Omni Stack AI relies on a privacy-first, zero-latency local AI infrastructure without external cloud API dependencies (such as OpenAI or Anthropic). All AI tasks—ranging from computer vision to natural language intent parsing and interactive chat—run on self-hosted open-source models:
 
-1. **Computer Vision & Bildanalyse**: Erkennung von Bildinhalten, Objekten und Szenen mit **Moondream2**.
-2. **Sprachverständnis & Textgenerierung**: Generierung strukturierter JSON-Metadaten und Sprachantworten mit **Llama 3.1 / Llama 3.2**.
-3. **Intent-Erkennung & Empfehlungen**: Intelligente Aufbereitung von Benutzereingaben im Frontend und CMS (`ai-intent.ts`).
+1. **Computer Vision & Image Analysis**: Scene description, object detection, and visual captioning with **Moondream2**.
+2. **Natural Language Processing & Text Generation**: Structured JSON metadata synthesis and conversational responses with **Llama 3.1 / Llama 3.2**.
+3. **Intent Parsing & Recommendation Tuning**: Dynamic user intent analysis in the CMS (`ai-intent.ts`).
 
 ---
 
-## 🧠 Eingesetzte KI-Modelle im Detail
+## 🧠 Integrated AI Models
 
 ### 1. Moondream2 (`moondream:latest`)
-- **Typ**: Leichtgewichtiges Computer-Vision-Modell (ca. 1.8B Parameter).
-- **Einsatzbereich**:
-  - Analyse von Videoframes und Vorschaubildern.
-  - Erstellung präziser englischer Inhaltsbeschreibungen (*Captioning*).
-  - Schnelle Ausführungszeit (ca. 2–8 Sekunden pro Bild auf gängiger Hardware).
+- **Type**: Lightweight Computer Vision Model (~1.8B parameters).
+- **Use Cases**:
+  - Video frame and image thumbnail analysis.
+  - Generating concise English visual descriptions (*Captioning*).
+  - Fast inference time (~2–8 seconds per frame on standard GPU/CPU hardware).
 
 ### 2. Llama 3.1 / Llama 3.2 (`llama3.1:latest`)
-- **Typ**: Leistungsfähiges Large Language Model (LLM).
-- **Einsatzbereich**:
-  - **Bilinguale Metadaten-Generierung**: Transformation der Moondream-Bildbeschreibung in deutsche/englische Titel, Summaries und Tags im JSON-Format (`format: 'json'`).
-  - **Benutzer-Intent-Erkennung**: Parsen von Suchanfragen und Freitext-Prompts im CMS (`ai-intent.ts`) unter Berücksichtigung der Benutzer-Sprache (`de` / `en`).
-  - **KI-Chat-Assistent**: Interaktiver Chatbot (`ChatWidget.tsx`) im System.
+- **Type**: High-performance Large Language Model (LLM).
+- **Use Cases**:
+  - **Bilingual Metadata Generation**: Transforming Moondream descriptions into structured German/English titles, summaries, and tags using JSON mode (`format: 'json'`).
+  - **User Intent Classification**: Parsing search queries and freeform prompts in `ai-intent.ts` with locale awareness (`de` / `en`).
+  - **Conversational Assistant**: Interactive AI assistant in [`ChatWidget.tsx`](file:///root/omni-stack-ai/web/src/components/chat/ChatWidget.tsx).
 
 ---
 
-## 🛰️ Schnittstellen & API-Integration
+## 🛰️ API Contracts & Endpoint Specification
 
-Die Anbindung an Ollama erfolgt über die standardisierte REST-API des Ollama-Daemons (`http://10.0.0.6:11434` oder konfigurierbarer Host):
+Communication with Ollama occurs via standard REST API endpoints (`http://10.0.0.6:11434` or configured host):
 
-### 1. Vision-Request (Moondream)
+### 1. Vision Request (Moondream)
 ```json
 POST /api/generate
 {
@@ -47,7 +47,7 @@ POST /api/generate
 }
 ```
 
-### 2. Strukturiertes JSON-LLM-Request (Llama 3.1)
+### 2. Structured JSON LLM Request (Llama 3.1)
 ```json
 POST /api/generate
 {
@@ -60,35 +60,35 @@ POST /api/generate
 
 ---
 
-## 🔄 Anpassung & Modell-Austausch (Customization)
+## 🔄 Customization & Swapping AI Models
 
-Einer der größten Vorteile der Architektur ist die flexible Austauschbarkeit der KI-Komponenten. Je nach verfügbarer Hardware (GPU-VRAM) oder Produktiv-Anforderungen können Modellauswahl und Anbieter angepasst werden:
+The modular architecture allows developers to swap models or providers seamlessly based on available GPU VRAM or production requirements:
 
-### 💡 Alternativen für den Produktivbetrieb:
+### 💡 Production Alternatives:
 
-1. **Austausch von Vision-Modellen**:
-   - **Llama 3.2 Vision** (`llama3.2-vision`): Ersetzt Moondream für noch detailliertere Bild- und Dokumentenanalysen bei höherer Modellgröße.
-   - **Qwen2-VL** (`qwen2-vl`): Hervorragende Unterstützung für mehrsprachige OCR und Texterkennung auf Bildern.
+1. **Swapping Vision Models**:
+   - **Llama 3.2 Vision** (`llama3.2-vision`): Replaces Moondream for detailed document/image comprehension at higher model weight.
+   - **Qwen2-VL** (`qwen2-vl`): Excellent support for multilingual OCR and text-heavy visual assets.
 
-2. **Austausch von Text-LLMs**:
-   - **DeepSeek-R1 / Qwen 2.5**: Für komplexe logische Argumentation und präzise Tag-Klassifizierungen.
-   - **Mistral 7B / Llama 3 8B**: Guter Kompromiss aus Geschwindigkeit und Ausgabequalität.
+2. **Swapping Text LLMs**:
+   - **DeepSeek-R1 / Qwen 2.5**: Optimized for complex reasoning, logic, and precise tag classification.
+   - **Mistral 7B / Llama 3 8B**: Balanced inference speed and output accuracy.
 
-3. **Anbindung von Cloud-APIs (Optional)**:
-   - Der `ollama.js` Client kann durch einen Adapter für **OpenAI GPT-4o**, **Claude 3.5 Sonnet** oder **Google Gemini API** ersetzt werden, falls keine lokale Hardware betrieben werden soll.
+3. **Cloud API Integration (Optional)**:
+   - The `ollama.js` client can be replaced with adapters for **OpenAI GPT-4o**, **Claude 3.5 Sonnet**, or **Google Gemini API** if self-hosted GPU hardware is not utilized.
 
 ---
 
-## 🚀 Hardware- & Performance-Empfehlungen
+## 🚀 Hardware & Performance Reference
 
-| Modell | VRAM Bedarf (GPU) | CPU Fallback | Typische Antwortzeit |
+| Model | VRAM Requirement (GPU) | CPU Fallback | Typical Response Time |
 | :--- | :--- | :--- | :--- |
-| **Moondream2** | ~2 - 4 GB VRAM | Möglich | 2 – 8 Sekunden |
-| **Llama 3.1 (8B)** | ~6 - 8 GB VRAM | Möglich (langsamer) | 3 – 12 Sekunden |
-| **Llama 3.2 Vision (11B)** | ~10 - 12 GB VRAM | Nicht empfohlen | 5 – 15 Sekunden |
+| **Moondream2** | ~2 - 4 GB VRAM | Supported | 2 – 8 seconds |
+| **Llama 3.1 (8B)** | ~6 - 8 GB VRAM | Supported (Slower) | 3 – 12 seconds |
+| **Llama 3.2 Vision (11B)** | ~10 - 12 GB VRAM | Not Recommended | 5 – 15 seconds |
 
-### System-Konfiguration:
-In der `.env`-Datei des CMS oder Content-Fill-Services wird der Ollama-Host definiert:
+### System Configuration:
+Set the Ollama host URL in your `.env` configuration:
 ```env
 OLLAMA_HOST=http://10.0.0.6:11434
 ```
