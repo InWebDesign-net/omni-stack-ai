@@ -9,6 +9,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const viewKey = `view:${slug}:${userIdentifier}:${today}`;
     const hasViewedToday = dailyViewsSet.has(viewKey);
 
+    let parsedUserId = userId;
+    if (!parsedUserId && userIdentifier && userIdentifier !== 'anonymous') {
+      if (String(userIdentifier).startsWith('user-')) {
+        const num = parseInt(String(userIdentifier).replace('user-', ''), 10);
+        if (!isNaN(num)) parsedUserId = num;
+      }
+    }
+
     let viewsCount = 0;
     let likesCount = 0;
     let isLiked = false;
@@ -65,7 +73,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // Query Fav collection relation in database
     try {
       const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
-      if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+      if (parsedUserId) favFilters.push({ user: { id: { $eq: parsedUserId } } });
 
       const favQuery: any = {
         filters: {
@@ -115,22 +123,28 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const userIdentifier = payload?.userIdentifier || 'anonymous';
 
     if (!userId && userIdentifier && userIdentifier !== 'anonymous') {
-      try {
-        const cleanIdent = String(userIdentifier).trim().replace(/^@/, '');
-        const foundUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-          where: {
-            $or: [
-              { handle: cleanIdent },
-              { username: cleanIdent },
-              { email: cleanIdent },
-            ],
-          },
-        });
-        if (foundUser) {
-          userId = foundUser.id;
+      if (String(userIdentifier).startsWith('user-')) {
+        const num = parseInt(String(userIdentifier).replace('user-', ''), 10);
+        if (!isNaN(num)) userId = num;
+      }
+      if (!userId) {
+        try {
+          const cleanIdent = String(userIdentifier).trim().replace(/^@/, '');
+          const foundUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+            where: {
+              $or: [
+                { handle: cleanIdent },
+                { username: cleanIdent },
+                { email: cleanIdent },
+              ],
+            },
+          });
+          if (foundUser) {
+            userId = foundUser.id;
+          }
+        } catch (e) {
+          strapi.log.error('[interaction.ts] unhandled error', e);
         }
-      } catch (e) {
-        strapi.log.error('[interaction.ts] unhandled error', e);
       }
     }
 
@@ -231,56 +245,29 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       dailyViewsSet.add(viewKey);
       currentViewsCount += 1;
 
-      for (const doc of videoMatches) {
-        try {
-          await strapi.documents('api::video.video').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { viewsCount: currentViewsCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (videoMatches.length > 0) {
+        await strapi.db.query('api::video.video').updateMany({
+          where: { slug },
+          data: { viewsCount: currentViewsCount },
+        });
       }
-
-      for (const doc of imageMatches) {
-        try {
-          await strapi.documents('api::image.image').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { viewsCount: currentViewsCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (imageMatches.length > 0) {
+        await strapi.db.query('api::image.image').updateMany({
+          where: { slug },
+          data: { viewsCount: currentViewsCount },
+        });
       }
-
-      for (const doc of articleMatches) {
-        try {
-          await strapi.documents('api::article.article').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { viewsCount: currentViewsCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (articleMatches.length > 0) {
+        await strapi.db.query('api::article.article').updateMany({
+          where: { slug },
+          data: { viewsCount: currentViewsCount },
+        });
       }
-
-      for (const doc of feedMatches) {
-        try {
-          await strapi.documents('api::feed-item.feed-item').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { viewsCount: currentViewsCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (feedMatches.length > 0) {
+        await strapi.db.query('api::feed-item.feed-item').updateMany({
+          where: { slug },
+          data: { viewsCount: currentViewsCount },
+        });
       }
 
       if (userId) {
@@ -369,63 +356,36 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
         currentLikesCount += 1;
 
-        // Update Published entities
-        for (const doc of videoMatches) {
-          try {
-            await strapi.documents('api::video.video').update({
-              documentId: doc.documentId,
-              locale: doc.locale || 'de',
-              status: 'published',
-              data: { likesCount: currentLikesCount } as any,
-            });
-          } catch (e) {
-            strapi.log.error('[interaction.ts] unhandled error', e);
-          }
+        // Update Published & Draft entities atomically in DB
+        if (videoMatches.length > 0) {
+          await strapi.db.query('api::video.video').updateMany({
+            where: { slug },
+            data: { likesCount: currentLikesCount },
+          });
         }
-
-        for (const doc of imageMatches) {
-          try {
-            await strapi.documents('api::image.image').update({
-              documentId: doc.documentId,
-              locale: doc.locale || 'de',
-              status: 'published',
-              data: { likesCount: currentLikesCount } as any,
-            });
-          } catch (e) {
-            strapi.log.error('[interaction.ts] unhandled error', e);
-          }
+        if (imageMatches.length > 0) {
+          await strapi.db.query('api::image.image').updateMany({
+            where: { slug },
+            data: { likesCount: currentLikesCount },
+          });
         }
-
-        for (const doc of articleMatches) {
-          try {
-            await strapi.documents('api::article.article').update({
-              documentId: doc.documentId,
-              locale: doc.locale || 'de',
-              status: 'published',
-              data: { likesCount: currentLikesCount } as any,
-            });
-          } catch (e) {
-            strapi.log.error('[interaction.ts] unhandled error', e);
-          }
+        if (articleMatches.length > 0) {
+          await strapi.db.query('api::article.article').updateMany({
+            where: { slug },
+            data: { likesCount: currentLikesCount },
+          });
         }
-
-        for (const doc of feedMatches) {
-          try {
-            await strapi.documents('api::feed-item.feed-item').update({
-              documentId: doc.documentId,
-              locale: doc.locale || 'de',
-              status: 'published',
-              data: { likesCount: currentLikesCount } as any,
-            });
-          } catch (e) {
-            strapi.log.error('[interaction.ts] unhandled error', e);
-          }
+        if (feedMatches.length > 0) {
+          await strapi.db.query('api::feed-item.feed-item').updateMany({
+            where: { slug },
+            data: { likesCount: currentLikesCount },
+          });
         }
 
         if (userId) {
           try {
             await strapi.service('api::tracking.tracking').processBatch(userId, [
-              { type: 'like', tags, mediaType: currentItem?.mediaType || 'article' },
+              { type: 'like', tags, mediaType: currentItem?.mediaType || (articleMatches.length > 0 ? 'article' : 'image') },
             ]);
           } catch (e) {
             strapi.log.error('[interaction.ts] unhandled error', e);
@@ -479,62 +439,35 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
       currentLikesCount = Math.max(0, currentLikesCount - 1);
 
-      for (const doc of videoMatches) {
-        try {
-          await strapi.documents('api::video.video').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { likesCount: currentLikesCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (videoMatches.length > 0) {
+        await strapi.db.query('api::video.video').updateMany({
+          where: { slug },
+          data: { likesCount: currentLikesCount },
+        });
       }
-
-      for (const doc of imageMatches) {
-        try {
-          await strapi.documents('api::image.image').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { likesCount: currentLikesCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (imageMatches.length > 0) {
+        await strapi.db.query('api::image.image').updateMany({
+          where: { slug },
+          data: { likesCount: currentLikesCount },
+        });
       }
-
-      for (const doc of articleMatches) {
-        try {
-          await strapi.documents('api::article.article').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { likesCount: currentLikesCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (articleMatches.length > 0) {
+        await strapi.db.query('api::article.article').updateMany({
+          where: { slug },
+          data: { likesCount: currentLikesCount },
+        });
       }
-
-      for (const doc of feedMatches) {
-        try {
-          await strapi.documents('api::feed-item.feed-item').update({
-            documentId: doc.documentId,
-            locale: doc.locale || 'de',
-            status: 'published',
-            data: { likesCount: currentLikesCount } as any,
-          });
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
-        }
+      if (feedMatches.length > 0) {
+        await strapi.db.query('api::feed-item.feed-item').updateMany({
+          where: { slug },
+          data: { likesCount: currentLikesCount },
+        });
       }
 
       if (userId) {
         try {
           await strapi.service('api::tracking.tracking').processBatch(userId, [
-            { type: 'unlike', tags, mediaType: currentItem?.mediaType || 'article' },
+            { type: 'unlike', tags, mediaType: currentItem?.mediaType || (articleMatches.length > 0 ? 'article' : 'image') },
           ]);
         } catch (e) {
           strapi.log.error('[interaction.ts] unhandled error', e);
@@ -588,12 +521,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
-  /**
-   * Resolve a user profile by its unique handle (e.g. "demotech").
-   * Used by the public /user/[slug] page so any profile is reachable
-   * regardless of whether it has uploaded videos. Runs server-side with
-   * the API token, so it is not bound by the public role's user permissions.
-   */
   async getUserByHandle(handle: string) {
     if (!handle) return null;
     const clean = String(handle).trim().replace(/^@/, '');

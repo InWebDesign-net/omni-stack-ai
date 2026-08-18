@@ -16,9 +16,9 @@
     "showMore": "Show more",
     "showLess": "Show less",
     "linkCopied": "Link copied to clipboard!",
-    "likeAdded": "Added to your liked videos",
-    "likeRemoved": "Like removed",
-    "bookmarkAdded": "Video bookmarked",
+    "likeAdded": "Added to your favorites",
+    "likeRemoved": "Removed from your favorites",
+    "bookmarkAdded": "Saved to bookmarks",
     "bookmarkRemoved": "Bookmark removed",
     "close": "Close",
     "save": "Save",
@@ -308,8 +308,8 @@
     "openPdf": "Open PDF"
   },
   "content": {
-    "likeAdded": "❤️ Added to your liked items",
-    "likeRemoved": "🤍 Removed from liked items",
+    "likeAdded": "Added to your favorites",
+    "likeRemoved": "Removed from your favorites",
     "draftModeActive": "⚡ Live Draft Mode Active (Strapi CMS Preview)",
     "exitPreview": "Exit Preview",
     "aiRelevance": "AI Relevance: {score}% Match",

@@ -176,7 +176,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     tracker.track(nextIsLiked ? 'like' : 'unlike', tags, 'article', creator?.id);
 
     if (nextIsLiked) {
-      showToast(t.common?.likeAdded || 'Geliked!');
+      showToast(effectiveLang === 'de' ? 'Zu deinen Favoriten hinzugefügt!' : 'Added to your favorites!');
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (!storedLikes.includes(item.slug)) {
@@ -184,7 +184,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         }
       } catch (e) {}
     } else {
-      showToast(t.common?.likeRemoved || 'Like entfernt.');
+      showToast(effectiveLang === 'de' ? 'Aus deinen Favoriten entfernt.' : 'Removed from favorites.');
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         localStorage.setItem(
@@ -195,7 +195,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     }
 
     try {
-      await fetch('/api/feed/interaction', {
+      const res = await fetch('/api/feed/interaction', {
         method: 'POST',
         headers: jsonAuthHeaders(),
         body: JSON.stringify({
@@ -205,6 +205,12 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           targetType: 'article',
         }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.likesCount === 'number') {
+          setLikesCount(data.likesCount);
+        }
+      }
     } catch (e) {}
   };
 
