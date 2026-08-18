@@ -11,17 +11,19 @@ function buildHeaders(req: Request, requireUserAuth = false): Record<string, str
     'Content-Type': 'application/json',
   };
   const authHeader = req.headers.get('authorization');
-  if (authHeader) {
+  if (authHeader && authHeader !== 'Bearer null' && authHeader !== 'Bearer undefined') {
     headers['Authorization'] = authHeader;
+    return headers;
+  }
+
+  const token = process.env.STRAPI_API_TOKEN || process.env.STRAPI_TOKEN;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
     return headers;
   }
 
   if (requireUserAuth) {
     return null;
-  }
-
-  if (process.env.STRAPI_API_TOKEN) {
-    headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
   }
   return headers;
 }

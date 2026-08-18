@@ -79,28 +79,16 @@ export default function ImagePageClient({
           visibility: data.visibility,
         }),
       });
-      if (res.ok) {
-        // Update local active title/summary if current locale matches
-        const currentLocUpdate = data.localeUpdates?.find((u: any) => u.locale === lang)?.data;
-        if (currentLocUpdate) {
-          setImage((prev: any) => ({
-            ...prev,
-            title: currentLocUpdate.title || prev.title,
-            summary: currentLocUpdate.summary || prev.summary,
-            tags: currentLocUpdate.tags || prev.tags,
-            visibility: data.visibility || prev.visibility,
-          }));
-        } else {
-          setImage((prev: any) => ({ ...prev, ...data }));
-        }
-        setIsEditModalOpen(false);
-        showToast('Bild-Einstellungen gespeichert!');
-      } else {
-        showToast('Fehler beim Speichern');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Speichern des Bildes fehlgeschlagen');
       }
-    } catch (e) {
+      showToast('Bild erfolgreich aktualisiert!');
+      setIsEditModalOpen(false);
+      if (typeof window !== 'undefined') window.location.reload();
+    } catch (e: any) {
       console.error('Failed to save image:', e);
-      showToast('Fehler beim Speichern');
+      throw e;
     }
   };
 

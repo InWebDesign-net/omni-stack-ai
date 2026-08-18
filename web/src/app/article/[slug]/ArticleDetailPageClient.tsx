@@ -551,10 +551,12 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                 visibility,
               }),
             });
-            if (res.ok) {
-              showToast('Artikel erfolgreich aktualisiert!');
-              if (typeof window !== 'undefined') window.location.reload();
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.error || 'Speichern des Artikels fehlgeschlagen');
             }
+            showToast('Artikel erfolgreich aktualisiert!');
+            if (typeof window !== 'undefined') window.location.reload();
           }}
           onDelete={async (hardDelete) => {
             const url = `/api/article/settings?documentId=${encodeURIComponent(item.documentId)}${
