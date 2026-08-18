@@ -172,6 +172,19 @@ export default {
         await enablePermission(publicRole.id, 'api::comment.comment.create');
         await enablePermission(publicRole.id, 'api::video.video.find');
         await enablePermission(publicRole.id, 'api::video.video.findOne');
+        await enablePermission(publicRole.id, 'api::video.video.filtered');
+        await enablePermission(publicRole.id, 'api::video.video.tags');
+
+        await enablePermission(publicRole.id, 'api::image.image.find');
+        await enablePermission(publicRole.id, 'api::image.image.findOne');
+        await enablePermission(publicRole.id, 'api::image.image.filtered');
+        await enablePermission(publicRole.id, 'api::image.image.tags');
+
+        await enablePermission(publicRole.id, 'api::article.article.find');
+        await enablePermission(publicRole.id, 'api::article.article.findOne');
+        await enablePermission(publicRole.id, 'api::article.article.filtered');
+        await enablePermission(publicRole.id, 'api::article.article.tags');
+
         await enablePermission(publicRole.id, 'api::chat-room.chat-room.find');
         await enablePermission(publicRole.id, 'api::chat-room.chat-room.findOne');
         await enablePermission(publicRole.id, 'api::chat-room.chat-room.create');
@@ -196,7 +209,25 @@ export default {
         await enablePermission(authRole.id, 'api::comment.comment.delete');
         await enablePermission(authRole.id, 'api::video.video.find');
         await enablePermission(authRole.id, 'api::video.video.findOne');
+        await enablePermission(authRole.id, 'api::video.video.filtered');
+        await enablePermission(authRole.id, 'api::video.video.tags');
         await enablePermission(authRole.id, 'api::video.video.update');
+
+        await enablePermission(authRole.id, 'api::image.image.find');
+        await enablePermission(authRole.id, 'api::image.image.findOne');
+        await enablePermission(authRole.id, 'api::image.image.filtered');
+        await enablePermission(authRole.id, 'api::image.image.tags');
+        await enablePermission(authRole.id, 'api::image.image.create');
+        await enablePermission(authRole.id, 'api::image.image.update');
+        await enablePermission(authRole.id, 'api::image.image.delete');
+
+        await enablePermission(authRole.id, 'api::article.article.find');
+        await enablePermission(authRole.id, 'api::article.article.findOne');
+        await enablePermission(authRole.id, 'api::article.article.filtered');
+        await enablePermission(authRole.id, 'api::article.article.tags');
+        await enablePermission(authRole.id, 'api::article.article.create');
+        await enablePermission(authRole.id, 'api::article.article.update');
+        await enablePermission(authRole.id, 'api::article.article.delete');
         await enablePermission(authRole.id, 'api::chat-room.chat-room.find');
         await enablePermission(authRole.id, 'api::chat-room.chat-room.findOne');
         await enablePermission(authRole.id, 'api::chat-room.chat-room.create');
