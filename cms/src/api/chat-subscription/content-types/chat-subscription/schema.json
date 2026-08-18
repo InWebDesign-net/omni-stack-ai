@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "chat_subscriptions",
+  "info": {
+    "singularName": "chat-subscription",
+    "pluralName": "chat-subscriptions",
+    "displayName": "Chat Subscription"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "room": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chat-room.chat-room"
+    },
+    "isSubscribed": {
+      "type": "boolean",
+      "default": true
+    },
+    "lastNotifiedAt": {
+      "type": "datetime"
+    }
+  }
+}

@@ -12,6 +12,10 @@ interface SocketRateEntry { count: number; resetAt: number; }
 const SOCKET_RATE_WINDOW_MS = 30_000; // 30 seconds
 const SOCKET_RATE_MAX = 10; // 10 messages per 30s
 const socketRateLimit = new Map<string, SocketRateEntry>();
+  
+// Notification debounce: room + user → last notified timestamp
+const notificationDebounce = new Map<string, number>();
+const NOTIFICATION_DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes
 
 function isSocketRateLimited(socketId: string): boolean {
   const now = Date.now();
@@ -162,33 +166,217 @@ io.on('connection', (socket: AuthenticatedSocket) => {
       console.log(`✉️ Broadcasting chat:message_received to ${roomKey}:`, messagePayload.content);
       io.to(roomKey).emit('chat:message_received', messagePayload);
 
-      // If 1:1 message, push notification to recipient's private room
-      if (recipientId && String(recipientId) !== String(user?.id)) {
-        const recipientRoom = `user:${recipientId}`;
-        const notificationPayload = {
-          id: `notif-${Date.now()}`,
-          type: 'chat_message',
-          title: `Neue Nachricht von ${user?.username || senderName || 'Nutzer'}`,
-          message: content.length > 80 ? content.slice(0, 77) + '...' : content,
-          link: `chat:${roomId}`,
-          createdAt: new Date().toISOString(),
-          isRead: false,
-          sender: user
-            ? {
-                id: Number(user.id),
-                username: user.username,
-                avatarUrl: senderAvatar,
-              }
-            : null,
-        };
-
-        console.log(`🔔 Direct notification pushed to ${recipientRoom}`);
-        io.to(recipientRoom).emit('notification:new', notificationPayload);
-      }
+      // Notification logic (debounce + subscription check)
+      const notifyParticipants = async () => {
+        try {
+          const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+          
+          // Get room details to find participants
+          const roomRes = await fetch(`${strapiUrl}/api/chat-rooms/${roomId}?populate=participants,adminUser`);
+          if (!roomRes.ok) return;
+          const roomData = await roomRes.json();
+          const participants = roomData.data?.participants || [];
+          
+          const now = Date.now();
+          
+          for (const participant of participants) {
+            const participantId = participant.id;
+            // Skip sender
+            if (participantId === user?.id) continue;
+            
+            // Check subscription
+            const subRes = await fetch(`${strapiUrl}/api/chat-subscriptions?filters[user][id][$eq]=${participantId}&filters[room][id][$eq]=${roomId}`);
+            if (!subRes.ok) continue;
+            const subData = await subRes.json();
+            const subscription = subData.data?.[0];
+            
+            // Skip if unsubscribed
+            if (subscription && subscription.attributes?.isSubscribed === false) continue;
+            
+            // Debounce check
+            const debounceKey = `${roomId}:${participantId}`;
+            const lastNotified = notificationDebounce.get(debounceKey) || 0;
+            if (now - lastNotified < NOTIFICATION_DEBOUNCE_MS) continue;
+            
+            // Update debounce timestamp
+            notificationDebounce.set(debounceKey, now);
+            
+            // Send notification
+            const recipientRoom = `user:${participantId}`;
+            const notificationPayload = {
+              id: `notif-${Date.now()}-${participantId}`,
+              type: 'chat_message',
+              title: `Neue Nachricht in ${roomData.data?.name || 'einem Raum'}`,
+              message: `${user?.username || 'Jemand'}: ${content.length > 60 ? content.slice(0, 57) + '...' : content}`,
+              link: `chat:${roomId}`,
+              createdAt: new Date().toISOString(),
+              isRead: false,
+              sender: user
+                ? { id: Number(user.id), username: user.username, avatarUrl: senderAvatar }
+                : null,
+            };
+            
+            io.to(recipientRoom).emit('notification:new', notificationPayload);
+          }
+        } catch (err) {
+          console.error('Notification error:', err);
+        }
+      };
+      
+      // Fire notifications asynchronously (don't block message delivery)
+      notifyParticipants();
     }
   );
 
-  // 4. Typing Indicator
+  // 4. Group Management Events
+  socket.on('chat:create_group', async (data: { name: string; userId: number }) => {
+    const { name, userId } = data;
+    if (!name || !userId) return;
+    
+    try {
+      const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/chat-groups/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, userId }),
+      });
+      
+      if (res.ok) {
+        const result = await res.json();
+        socket.emit('chat:group_created', result);
+      } else {
+        socket.emit('chat:error', { message: 'Failed to create group' });
+      }
+    } catch (err) {
+      socket.emit('chat:error', { message: 'Network error' });
+    }
+  });
+
+  socket.on('chat:invite_user', async (data: { documentId: string; userId: number; targetUserId: number }) => {
+    const { documentId, userId, targetUserId } = data;
+    if (!documentId || !userId || !targetUserId) return;
+    
+    try {
+      const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/chat-groups/${documentId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId, userId, targetUserId }),
+      });
+      
+      if (res.ok) {
+        socket.emit('chat:user_invited', { documentId, targetUserId });
+        // Notify invited user
+        const targetRoom = `user:${targetUserId}`;
+        io.to(targetRoom).emit('notification:new', {
+          id: `notif-invite-${Date.now()}`,
+          type: 'group_invite',
+          title: 'Du wurdest eingeladen!',
+          message: 'Du wurdest zu einer Gruppe eingeladen.',
+          link: `chat:${documentId}`,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      } else {
+        const err = await res.json();
+        socket.emit('chat:error', { message: err.error?.message || 'Failed to invite user' });
+      }
+    } catch (err) {
+      socket.emit('chat:error', { message: 'Network error' });
+    }
+  });
+
+  socket.on('chat:kick_user', async (data: { documentId: string; userId: number; targetUserId: number }) => {
+    const { documentId, userId, targetUserId } = data;
+    if (!documentId || !userId || !targetUserId) return;
+    
+    try {
+      const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/chat-groups/${documentId}/kick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId, userId, targetUserId }),
+      });
+      
+      if (res.ok) {
+        socket.emit('chat:user_kicked', { documentId, targetUserId });
+        // Notify kicked user
+        const targetRoom = `user:${targetUserId}`;
+        io.to(targetRoom).emit('notification:new', {
+          id: `notif-kick-${Date.now()}`,
+          type: 'group_kick',
+          title: 'Du wurdest entfernt',
+          message: 'Du wurdest aus einer Gruppe entfernt.',
+          link: `chat:${documentId}`,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      } else {
+        const err = await res.json();
+        socket.emit('chat:error', { message: err.error?.message || 'Failed to kick user' });
+      }
+    } catch (err) {
+      socket.emit('chat:error', { message: 'Network error' });
+    }
+  });
+
+  socket.on('chat:close_group', async (data: { documentId: string; userId: number }) => {
+    const { documentId, userId } = data;
+    if (!documentId || !userId) return;
+    
+    try {
+      const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/chat-groups/${documentId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId, userId }),
+      });
+      
+      if (res.ok) {
+        socket.emit('chat:group_closed', { documentId });
+        // Notify all participants
+        const roomKey = `room:${documentId}`;
+        io.to(roomKey).emit('notification:new', {
+          id: `notif-close-${Date.now()}`,
+          type: 'group_closed',
+          title: 'Gruppe geschlossen',
+          message: 'Diese Gruppe wurde vom Admin geschlossen.',
+          link: `chat:${documentId}`,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      } else {
+        const err = await res.json();
+        socket.emit('chat:error', { message: err.error?.message || 'Failed to close group' });
+      }
+    } catch (err) {
+      socket.emit('chat:error', { message: 'Network error' });
+    }
+  });
+
+  socket.on('chat:subscribe_room', async (data: { documentId: string; userId: number; isSubscribed?: boolean }) => {
+    const { documentId, userId, isSubscribed } = data;
+    if (!documentId || !userId) return;
+    
+    try {
+      const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+      const res = await fetch(`${strapiUrl}/api/chat-groups/${documentId}/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId, userId, isSubscribed }),
+      });
+      
+      if (res.ok) {
+        socket.emit('chat:subscription_updated', { documentId, userId, isSubscribed });
+      } else {
+        socket.emit('chat:error', { message: 'Failed to update subscription' });
+      }
+    } catch (err) {
+      socket.emit('chat:error', { message: 'Network error' });
+    }
+  });
+
+  // 5. Typing Indicator
   socket.on(
     'chat:typing',
     ({ roomId, isTyping }: { roomId: string; isTyping: boolean }) => {

@@ -40,6 +40,15 @@
       "type": "boolean",
       "default": false
     },
+    "adminUser": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
     "aiSystemPrompt": {
       "type": "text"
     },
