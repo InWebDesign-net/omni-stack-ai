@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Plus, X } from 'lucide-react';
 
 interface GroupCreateModalProps {
@@ -15,7 +16,7 @@ export function GroupCreateModal({ isOpen, onClose, onCreate, onNavigateToGroup,
   const [groupName, setGroupName] = useState('');
   const [creating, setCreating] = useState(false);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof window === 'undefined') return null;
 
   const handleCreate = async () => {
     if (!groupName.trim()) return;
@@ -31,16 +32,16 @@ export function GroupCreateModal({ isOpen, onClose, onCreate, onNavigateToGroup,
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-lg text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-400" />
             {t?.chat?.createGroup || 'Gruppe erstellen'}
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl">
-            <X className="w-5 h-5 text-slate-400" />
+          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -79,6 +80,7 @@ export function GroupCreateModal({ isOpen, onClose, onCreate, onNavigateToGroup,
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
