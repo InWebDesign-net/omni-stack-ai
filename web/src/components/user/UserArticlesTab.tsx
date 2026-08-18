@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FileText, Eye, Heart, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 
@@ -8,6 +8,55 @@ interface UserArticlesTabProps {
   articles: any[];
   slug: string;
   t?: any;
+}
+
+function ArticleItemCard({ article }: { article: any }) {
+  const [imgError, setImgError] = useState(false);
+  const rawThumb = article.thumbnailUrl || article.thumbnail || article.imageUrl;
+  const hasThumb = Boolean(rawThumb && typeof rawThumb === 'string' && rawThumb.trim() !== '' && !imgError);
+
+  return (
+    <a
+      href={`/article/${article.slug}`}
+      className="group relative bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+    >
+      <div className="relative aspect-video bg-slate-950 overflow-hidden">
+        {hasThumb ? (
+          <Image
+            src={rawThumb}
+            alt={article.title || 'Article'}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-tr from-purple-950 via-indigo-950 to-slate-900 flex items-center justify-center">
+            <FileText className="w-10 h-10 text-purple-400/40" />
+          </div>
+        )}
+      </div>
+      <div className="p-4 space-y-2">
+        <h3 className="font-bold text-sm text-white line-clamp-2 group-hover:text-purple-300 transition-colors">
+          {article.title}
+        </h3>
+        <div className="flex items-center gap-3 text-[10px] text-slate-500">
+          <span className="flex items-center gap-0.5">
+            <Eye className="w-3 h-3" />
+            {article.viewsCount || 0}
+          </span>
+          <span className="flex items-center gap-0.5">
+            <Heart className="w-3 h-3" />
+            {article.likesCount || 0}
+          </span>
+          <span className="flex items-center gap-0.5">
+            <MessageSquare className="w-3 h-3" />
+            {article.commentsCount || 0}
+          </span>
+        </div>
+      </div>
+    </a>
+  );
 }
 
 export function UserArticlesTab({ articles, slug, t }: UserArticlesTabProps) {
@@ -22,47 +71,8 @@ export function UserArticlesTab({ articles, slug, t }: UserArticlesTabProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {articles.map((article) => (
-        <a
-          key={article.documentId || article.id}
-          href={`/article/${article.slug}`}
-          className="group relative bg-slate-900/60 border border-slate-800 hover:border-indigo-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
-        >
-          <div className="relative aspect-video bg-slate-950 overflow-hidden">
-            {article.thumbnail ? (
-              <Image
-                src={article.thumbnail}
-                alt={article.title || 'Article'}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-tr from-purple-950 via-indigo-950 to-slate-900 flex items-center justify-center">
-                <FileText className="w-10 h-10 text-indigo-400/40" />
-              </div>
-            )}
-          </div>
-          <div className="p-4 space-y-2">
-            <h3 className="font-bold text-sm text-white line-clamp-2 group-hover:text-indigo-300 transition-colors">
-              {article.title}
-            </h3>
-            <div className="flex items-center gap-3 text-[10px] text-slate-500">
-              <span className="flex items-center gap-0.5">
-                <Eye className="w-3 h-3" />
-                {article.viewsCount || 0}
-              </span>
-              <span className="flex items-center gap-0.5">
-                <Heart className="w-3 h-3" />
-                {article.likesCount || 0}
-              </span>
-              <span className="flex items-center gap-0.5">
-                <MessageSquare className="w-3 h-3" />
-                {article.commentsCount || 0}
-              </span>
-            </div>
-          </div>
-        </a>
+      {articles.map((article, idx) => (
+        <ArticleItemCard key={article.documentId || article.id || article.slug || idx} article={article} />
       ))}
     </div>
   );
