@@ -193,18 +193,21 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
       <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">
         {/* Top Control Header */}
-        <div className="flex flex-col gap-6 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-2xl space-y-4 sm:space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
-                  <ImageIcon className="w-5 h-5" />
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-tr from-teal-500/20 to-indigo-500/20 border border-teal-500/30 text-teal-400">
+                  <ImageIcon className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Omni Galerie & Fotografie
+                  {t.header?.images || 'Images'}
                 </h1>
+                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 font-mono">
+                  {isLoading ? '...' : `${total} ${lang === 'de' ? 'Bilder' : 'Images'}`}
+                </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-400">
+              <p className="text-slate-400 text-sm mt-1">
                 Entdecke hochauflösende Kunstwerke, Fotografien & Renderings im WebP-Format.
               </p>
             </div>

@@ -22,6 +22,8 @@ import {
   Tag,
   Sparkles,
   FileText,
+  SlidersHorizontal,
+  X,
   Play,
   User as UserIcon,
 } from 'lucide-react';
@@ -172,76 +174,83 @@ export default function ArticlesPageClient() {
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">
-        {/* Hero Banner */}
-        <div className="bg-gradient-to-br from-purple-600/20 via-indigo-600/10 to-teal-500/10 border border-indigo-500/20 rounded-2xl p-6 sm:p-8">
+      <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">
+        {/* Top Control Header */}
+        <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-2xl space-y-4 sm:space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 border border-indigo-500/30 text-indigo-400">
-                  <BookOpen className="w-6 h-6" />
+                <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 border border-purple-500/30 text-purple-400">
+                  <FileText className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  {t.articles?.title || 'Artikel & Magazin'}
+                  {t.header?.articles || 'Articles'}
                 </h1>
-                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">
-                  {isLoading ? '...' : `${totalArticles} ${t.common?.articles || 'Artikel'}`}
+                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono">
+                  {isLoading ? '...' : `${totalArticles} ${lang === 'de' ? 'Artikel' : 'Articles'}`}
                 </span>
               </div>
               <p className="text-slate-400 text-sm mt-1">
                 {t.articles?.subtitle || 'Entdecke Geschichten, Analysen und Wissen aus dem Omni Network.'}
               </p>
             </div>
+
             <div className="flex items-center">
               <ActionButton
                 isFilterActive={hasActiveFilters}
-                onUpload={() => {/* TODO: Article Create Modal */}}
+                onUpload={() => {/* Article Create Modal */}}
                 onReset={hardReset}
                 uploadLabel={t.articles?.createArticle || 'Artikel erstellen'}
                 resetLabel={t.common?.resetFilters || 'Filter zurücksetzen'}
               />
             </div>
           </div>
-        </div>
 
-        {/* Search & Sort Control Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
-          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              aria-label={t.common?.searchPlaceholder || 'Suchen...'}
-              placeholder={t.articles?.searchPlaceholder || 'Artikel suchen...'}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 outline-none focus:outline-none focus:border-indigo-500 focus:ring-0 ring-0 transition-all"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-200"
-              >
-                <FilterX className="w-4 h-4" />
-              </button>
-            )}
-          </form>
+          {/* Search & Sort Control Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
+            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                id="articles-search-input"
+                type="text"
+                aria-label={t.common?.searchPlaceholder || 'Suchen...'}
+                placeholder={t.articles?.searchPlaceholder || 'Artikel suchen...'}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 outline-none focus:outline-none focus:border-purple-500 transition-all"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  aria-label="Suche zurücksetzen"
+                  title="Suche zurücksetzen"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </form>
 
-          <div className="flex items-center gap-2">
-            <select
-              value={sort}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500 cursor-pointer"
-            >
-              <option value="createdatasc">{t.articles?.sortNewest || 'Neueste zuerst'}</option>
-              <option value="createdatdesc">{t.articles?.sortOldest || 'Älteste zuerst'}</option>
-              <option value="mostliked">{t.articles?.sortMostLiked || '❤️ Beliebteste'}</option>
-              <option value="mostcommented">{t.articles?.sortMostCommented || '💬 Aktivste'}</option>
-              <option value="mostpopular">{t.articles?.sortMostPopular || '👑 Populärste'}</option>
-              <option value="trending">{t.articles?.sortTrending || '🔥 Trending'}</option>
-              <option value="titleasc">{t.articles?.sortTitleAsc || 'Titel (A-Z)'}</option>
-              <option value="titledesc">{t.articles?.sortTitleDesc || 'Titel (Z-A)'}</option>
-            </select>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5">
+                <SlidersHorizontal className="w-4 h-4 text-purple-400 shrink-0" />
+                <select
+                  id="articles-sort-select"
+                  aria-label="Sortierung"
+                  value={sort}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
+                >
+                  <option value="createdatasc" className="bg-slate-900 text-slate-200">✨ Neueste zuerst</option>
+                  <option value="trending" className="bg-slate-900 text-slate-200">🔥 Trending</option>
+                  <option value="mostliked" className="bg-slate-900 text-slate-200">❤️ Beliebteste</option>
+                  <option value="mostcommented" className="bg-slate-900 text-slate-200">💬 Aktivste</option>
+                  <option value="titleasc" className="bg-slate-900 text-slate-200">Titel (A-Z)</option>
+                  <option value="titledesc" className="bg-slate-900 text-slate-200">Titel (Z-A)</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
