@@ -68,41 +68,71 @@ export default function ImagePageClient({
     currentUser && image?.creator && String(currentUser.id) === String(image.creator.id)
   );
 
-  const handleSaveImage = async (data: { title: string; summary: string; tags: string[]; visibility: string }) => {
+  const handleSaveImage = async (data: any) => {
     try {
-      const res = await fetch(`/api/image/settings?documentId=${image.documentId}`, {
+      const res = await fetch(`/api/image/settings`, {
         method: 'PUT',
         headers: {
           ...jsonAuthHeaders(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          documentId: image.documentId,
+          localeUpdates: data.localeUpdates,
+          title: data.title,
+          summary: data.summary,
+          tags: data.tags,
+          visibility: data.visibility,
+        }),
       });
       if (res.ok) {
-        setImage((prev: any) => ({ ...prev, ...data }));
+        // Update local active title/summary if current locale matches
+        const currentLocUpdate = data.localeUpdates?.find((u: any) => u.locale === lang)?.data;
+        if (currentLocUpdate) {
+          setImage((prev: any) => ({
+            ...prev,
+            title: currentLocUpdate.title || prev.title,
+            summary: currentLocUpdate.summary || prev.summary,
+            tags: currentLocUpdate.tags || prev.tags,
+            visibility: data.visibility || prev.visibility,
+          }));
+        } else {
+          setImage((prev: any) => ({ ...prev, ...data }));
+        }
         setIsEditModalOpen(false);
+        showToast('Bild-Einstellungen gespeichert!');
+      } else {
+        showToast('Fehler beim Speichern');
       }
     } catch (e) {
       console.error('Failed to save image:', e);
+      showToast('Fehler beim Speichern');
     }
   };
 
   const handleDeleteImage = async (hardDelete: boolean) => {
     try {
-      const res = await fetch(`/api/image/settings?documentId=${image.documentId}&hard=${hardDelete}`, {
+      const res = await fetch(`/api/image/settings?documentId=${encodeURIComponent(image.documentId)}&hard=${hardDelete}`, {
         method: 'DELETE',
         headers: jsonAuthHeaders(),
       });
       if (res.ok) {
         setIsEditModalOpen(false);
         if (hardDelete) {
-          router.push('/images');
+          showToast('Bild endgültig gelöscht.');
+          setTimeout(() => {
+            router.push('/images');
+          }, 1000);
         } else {
           setImage((prev: any) => ({ ...prev, visibility: 'private' }));
+          showToast('Bild als privat archiviert.');
         }
+      } else {
+        showToast('Fehler beim Löschen');
       }
     } catch (e) {
       console.error('Failed to delete image:', e);
+      showToast('Fehler beim Löschen');
     }
   };
 

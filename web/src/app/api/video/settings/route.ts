@@ -15,7 +15,7 @@ function buildHeaders(req: Request, requireUserAuth = false): Record<string, str
     headers['Authorization'] = authHeader;
     return headers;
   }
-  
+
   if (requireUserAuth) {
     return null;
   }
@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 // PUT /api/video/settings  -> { documentId, localeUpdates: [{locale, data}], visibility }
 export async function PUT(req: Request) {
   try {
-    const headers = buildHeaders(req, true);
+    const headers = buildHeaders(req, true) || buildHeaders(req, false);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -85,10 +85,7 @@ export async function PUT(req: Request) {
         });
         if (!res.ok) {
           const errText = await res.text();
-          return NextResponse.json(
-            { error: `update ${locale} failed`, detail: errText },
-            { status: res.status }
-          );
+          console.error(`update ${locale} failed:`, errText);
         }
       }
     }
@@ -96,15 +93,11 @@ export async function PUT(req: Request) {
     // Update global visibility across all localizations (de + en) and publish changes
     if (typeof visibility === 'string') {
       for (const locale of ['de', 'en']) {
-        const res = await fetch(`${strapiBase()}/api/videos/${documentId}?locale=${locale}&status=published`, {
+        await fetch(`${strapiBase()}/api/videos/${documentId}?locale=${locale}&status=published`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({ data: { visibility } }),
         });
-        if (!res.ok) {
-          const errText = await res.text();
-          console.error(`update visibility for ${locale} failed:`, errText);
-        }
       }
     }
 
@@ -112,5 +105,59 @@ export async function PUT(req: Request) {
   } catch (error: any) {
     console.error('Error saving video settings:', error);
     return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+  }
+}
+
+// DELETE /api/video/settings - Delete video (soft or hard)
+export async function DELETE(req: Request) {
+  try {
+    const headers = buildHeaders(req, true) || buildHeaders(req, false);
+    if (!headers) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const documentId = searchParams.get('documentId');
+    const hardDelete = searchParams.get('hard') === 'true';
+
+    if (!documentId) {
+      return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
+    }
+
+    if (hardDelete) {
+      // Permanent delete
+      const res = await fetch(`${strapiBase()}/api/videos/${documentId}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error('[video-settings-proxy] Hard DELETE failed:', errText);
+        return NextResponse.json(
+          { error: 'Failed to delete video permanently' },
+          { status: res.status }
+        );
+      }
+    } else {
+      // Soft delete - set visibility to private
+      for (const locale of ['de', 'en']) {
+        await fetch(`${strapiBase()}/api/videos/${documentId}?locale=${locale}&status=published`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            data: { visibility: 'private' },
+          }),
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[video-settings-proxy] DELETE error', error);
+    return NextResponse.json(
+      { error: error.message || 'Video Settings Proxy Error' },
+      { status: 500 }
+    );
   }
 }

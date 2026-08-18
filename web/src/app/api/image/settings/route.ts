@@ -1,46 +1,118 @@
 import { NextResponse } from 'next/server';
 
-const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+export const dynamic = 'force-dynamic';
 
-// PUT /api/image/settings - Update image metadata
+function strapiBase() {
+  return process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+}
+
+function buildHeaders(req: Request, requireUserAuth = false): Record<string, string> | null {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  const authHeader = req.headers.get('authorization');
+  if (authHeader) {
+    headers['Authorization'] = authHeader;
+    return headers;
+  }
+
+  if (requireUserAuth) {
+    return null;
+  }
+
+  if (process.env.STRAPI_API_TOKEN) {
+    headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+  }
+  return headers;
+}
+
+// GET /api/image/settings?documentId=... -> load both locales (de + en)
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const documentId = searchParams.get('documentId');
+    if (!documentId) {
+      return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
+    }
+    const headers = buildHeaders(req, false);
+    if (!headers) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const targetUrl = `${strapiBase()}/api/images?filters[documentId][$eq]=${encodeURIComponent(
+      documentId
+    )}&locale=*&populate=creator&status=draft`;
+
+    const res = await fetch(targetUrl, {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      return NextResponse.json({ data: [] }, { status: res.status });
+    }
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('[image-settings-proxy] GET error', error);
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+  }
+}
+
+// PUT /api/image/settings - Update image metadata for all locales
 export async function PUT(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
+    const headers = buildHeaders(req, true) || buildHeaders(req, false);
+    if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
-    const documentId = searchParams.get('documentId');
+    const body = await req.json();
+    const { documentId, localeUpdates, visibility, title, summary, tags } = body;
 
     if (!documentId) {
       return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { title, summary, tags, visibility } = body;
-
-    const res = await fetch(`${STRAPI_URL}/api/images/${documentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader,
-      },
-      body: JSON.stringify({
-        data: { title, summary, tags, visibility },
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: data.error?.message || 'Failed to update image' },
-        { status: res.status }
-      );
+    // Handle localized updates (de + en) if provided
+    if (Array.isArray(localeUpdates)) {
+      for (const { locale, data } of localeUpdates) {
+        const res = await fetch(`${strapiBase()}/api/images/${documentId}?locale=${locale}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ data }),
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error(`[image-settings-proxy] update ${locale} failed:`, errText);
+        }
+      }
+    } else if (title !== undefined) {
+      // Fallback single locale update
+      const res = await fetch(`${strapiBase()}/api/images/${documentId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ data: { title, summary, tags, visibility } }),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        return NextResponse.json({ error: errText }, { status: res.status });
+      }
     }
 
-    return NextResponse.json({ success: true, image: data.data });
+    // Update global visibility across all localizations (de + en)
+    if (typeof visibility === 'string') {
+      for (const locale of ['de', 'en']) {
+        await fetch(`${strapiBase()}/api/images/${documentId}?locale=${locale}&status=published`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ data: { visibility } }),
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('[image-settings-proxy] PUT error', error);
     return NextResponse.json(
@@ -53,8 +125,8 @@ export async function PUT(req: Request) {
 // DELETE /api/image/settings - Delete image (soft or hard)
 export async function DELETE(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
+    const headers = buildHeaders(req, true) || buildHeaders(req, false);
+    if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -67,38 +139,30 @@ export async function DELETE(req: Request) {
     }
 
     if (hardDelete) {
-      // Hard delete - permanently remove
-      const res = await fetch(`${STRAPI_URL}/api/images/${documentId}`, {
+      // Permanent delete - remove document completely from Strapi
+      const res = await fetch(`${strapiBase()}/api/images/${documentId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': authHeader },
+        headers,
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const errText = await res.text();
+        console.error('[image-settings-proxy] Hard DELETE failed:', errText);
         return NextResponse.json(
-          { error: data.error?.message || 'Failed to delete image' },
+          { error: 'Failed to delete image permanently' },
           { status: res.status }
         );
       }
     } else {
-      // Soft delete - set visibility to private
-      const res = await fetch(`${STRAPI_URL}/api/images/${documentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader,
-        },
-        body: JSON.stringify({
-          data: { visibility: 'private' },
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        return NextResponse.json(
-          { error: data.error?.message || 'Failed to soft-delete image' },
-          { status: res.status }
-        );
+      // Soft delete - set visibility to private for all localizations
+      for (const locale of ['de', 'en']) {
+        await fetch(`${strapiBase()}/api/images/${documentId}?locale=${locale}&status=published`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            data: { visibility: 'private' },
+          }),
+        });
       }
     }
 
