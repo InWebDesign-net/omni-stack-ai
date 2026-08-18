@@ -194,16 +194,18 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         const profileArticleMap = new Map<string, any>();
         for (const art of allArticles) {
           const creator = art.creator || art.author;
-          const belongsToProfile = Boolean(
-            creator &&
-              targetProfile &&
-              (
-                (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
-                (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
-                (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
-                (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
-              )
-          );
+          const belongsToProfile =
+            Boolean(creatorParam) ||
+            Boolean(
+              creator &&
+                targetProfile &&
+                (
+                  (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
+                  (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
+                  (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
+                  (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
+                )
+            );
 
           if (belongsToProfile) {
             const key = art.slug || art.documentId || art.id;
