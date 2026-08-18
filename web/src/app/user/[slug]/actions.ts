@@ -22,6 +22,8 @@ export interface ProfileData {
   profile: UserProfile;
   isOwner: boolean;
   videos: any[];
+  images: any[];
+  articles: any[];
   favorites: any[];
   stats: ProfileStats;
 }
@@ -203,6 +205,8 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       },
       isOwner,
       videos: userVideos,
+      images: [],
+      articles: [],
       favorites,
       stats: {
         totalVideos: userVideos.length,

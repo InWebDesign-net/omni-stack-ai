@@ -18,6 +18,8 @@ import {
     Bookmark,
     Share2,
     Clock,
+    Image as ImageIcon,
+    FileText,
 } from 'lucide-react';
 import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
@@ -25,6 +27,9 @@ import { useChat } from '@/context/ChatContext';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
+import { UserImagesTab } from '@/components/user/UserImagesTab';
+import { UserArticlesTab } from '@/components/user/UserArticlesTab';
+import { UserFavoritesTab } from '@/components/user/UserFavoritesTab';
 import { formatAbsoluteDate } from '@/lib/date';
 
 import { useRouter } from 'next/navigation';
@@ -35,11 +40,11 @@ interface UserPageClientProps {
 
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const router = useRouter();
-    const { profile, isOwner, videos, favorites, stats } = profileDataInit;
+    const { profile, isOwner, videos, images, articles, favorites, stats } = profileDataInit;
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal } = useApp();
     const { createRoom, openChat } = useChat();
 
-    const [activeTab, setActiveTab] = useState<'videos' | 'favorites' | 'about'>('videos');
+    const [activeTab, setActiveTab] = useState<'videos' | 'images' | 'articles' | 'favorites' | 'about'>('videos');
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscriberCount, setSubscriberCount] = useState(profile.subscribersCount || 0);
     const [editingVideo, setEditingVideo] = useState<any | null>(null);
@@ -222,10 +227,10 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                 )}
 
                 {/* Navigation Tabs */}
-                <div className="flex items-center border-b border-slate-800 gap-8">
+                <div className="flex items-center border-b border-slate-800 gap-4 sm:gap-8 overflow-x-auto">
                     <button
                         onClick={() => setActiveTab('videos')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'videos'
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'videos'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-slate-400 hover:text-slate-200'
                             }`}
@@ -235,8 +240,30 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     </button>
 
                     <button
+                        onClick={() => setActiveTab('images')}
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'images'
+                                ? 'border-indigo-500 text-indigo-400'
+                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                    >
+                        <ImageIcon className="w-4 h-4" />
+                        <span>{(t as any).userProfile?.tabs?.images || t.header?.images || 'Bilder'} ({images.length})</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab('articles')}
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'articles'
+                                ? 'border-indigo-500 text-indigo-400'
+                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                    >
+                        <FileText className="w-4 h-4" />
+                        <span>{(t as any).userProfile?.tabs?.articles || t.header?.articles || 'Artikel'} ({articles.length})</span>
+                    </button>
+
+                    <button
                         onClick={() => setActiveTab('favorites')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'favorites'
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'favorites'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-slate-400 hover:text-slate-200'
                             }`}
@@ -247,7 +274,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                     <button
                         onClick={() => setActiveTab('about')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'about'
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'about'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-slate-400 hover:text-slate-200'
                             }`}
@@ -367,74 +394,22 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     </div>
                 )}
 
-                {/* TAB 2: Favorites Grid */}
-                {activeTab === 'favorites' && (
-                    <div>
-                        {favorites.length === 0 ? (
-                            <div className="text-center py-16 bg-slate-900/30 rounded-3xl border border-slate-800/80 p-8 space-y-3">
-                                <Heart className="w-12 h-12 text-slate-600 mx-auto" />
-                                <h3 className="text-lg font-bold text-slate-300">{(t as any).userProfile?.emptyFavorites?.title || 'Keine Favoriten vorhanden'}</h3>
-                                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                                    {isOwner
-                                        ? ((t as any).userProfile?.emptyFavorites?.ownerSub || 'Videos, die du mit dem Herz-Button likest, erscheinen hier.')
-                                        : ((t as any).userProfile?.emptyFavorites?.guestSub || 'Dieser Nutzer hat noch keine öffentlichen Favoriten geteilt.')}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {favorites.map((item: any) => {
-                                    const thumb = item.thumbnailUrl || item.imageUrl || '/media/thumbnails/default.png';
-                                    const itemHref = item.mediaType === 'image'
-                                        ? `/image/${item.slug}`
-                                        : item.mediaType === 'content'
-                                        ? `/content/${item.slug}`
-                                        : `/video/${item.slug}`;
-
-                                    return (
-                                        <div
-                                            key={(item.slug || item.id) + (item.mediaType || 'video')}
-                                            className="group relative bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden hover:border-rose-500/50 transition-all duration-300 shadow-lg flex flex-col"
-                                        >
-                                            <Link href={itemHref} className="relative aspect-video bg-slate-950 overflow-hidden block">
-                                                <img
-                                                    src={thumb}
-                                                    alt={item.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
-                                                {item.mediaType === 'video' && (
-                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
-                                                        {formatDuration(item.duration)}
-                                                    </div>
-                                                )}
-                                                {item.mediaType === 'image' && (
-                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-teal-950/80 text-[11px] font-mono text-teal-300 border border-teal-800/80">
-                                                        Bild / Galerie
-                                                    </div>
-                                                )}
-                                                {item.mediaType === 'content' && (
-                                                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/80 text-[11px] font-mono text-slate-200 border border-slate-800">
-                                                        Content
-                                                    </div>
-                                                )}
-                                            </Link>
-
-                                            <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                                                <Link href={itemHref} className="block group-hover:text-rose-400 transition-colors">
-                                                    <h3 className="font-bold text-sm text-slate-100 line-clamp-2 leading-snug">
-                                                        {item.title}
-                                                    </h3>
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
+                {/* TAB 2: Images Grid */}
+                {activeTab === 'images' && (
+                    <UserImagesTab images={images} slug={profile.handle || profile.username} t={t} />
                 )}
 
-                {/* TAB 3: About Channel Info */}
+                {/* TAB 3: Articles Grid */}
+                {activeTab === 'articles' && (
+                    <UserArticlesTab articles={articles} slug={profile.handle || profile.username} t={t} />
+                )}
+
+                {/* TAB 4: Favorites Grid */}
+                {activeTab === 'favorites' && (
+                    <UserFavoritesTab favorites={favorites} slug={profile.handle || profile.username} t={t} />
+                )}
+
+                {/* TAB 5: About Channel Info */}
                 {activeTab === 'about' && (
                     <div className="bg-slate-900/60 rounded-3xl border border-slate-800/80 p-8 space-y-6">
                         <div>
