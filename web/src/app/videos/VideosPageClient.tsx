@@ -25,6 +25,8 @@ import {
   Sparkles,
   Film,
   Tag,
+  Plus,
+  Minus,
   X,
   Upload,
   User as UserIcon,
@@ -377,36 +379,33 @@ export default function VideosPageClient({
               ) : (
                 filteredAllTags.map(({ tag, count }) => {
                   const state = includedTags.includes(tag)
-                    ? "include"
+                    ? 'include'
                     : excludedTags.includes(tag)
-                    ? "exclude"
-                    : "neutral";
-                  const base =
-                    "px-3 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer select-none flex items-center gap-1.5 shrink-0";
-                  const tone =
-                    state === "include"
-                      ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
-                      : state === "exclude"
-                      ? "bg-rose-500/15 border-rose-500/40 text-rose-300"
-                      : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700";
+                    ? 'exclude'
+                    : 'none';
+
+                  const baseClass =
+                    'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border select-none group shrink-0';
+
+                  const stateClass =
+                    state === 'include'
+                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30'
+                      : state === 'exclude'
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
+                      : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:border-indigo-500/40 hover:text-white';
+
                   return (
                     <button
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      title={
-                        state === "include"
-                          ? `${t.videos.includeLabel}: ${tag}`
-                          : state === "exclude"
-                          ? `${t.videos.excludeLabel}: ${tag}`
-                          : tag
-                      }
-                      className={`${base} ${tone}`}
+                      className={`${baseClass} ${stateClass}`}
                     >
+                      {state === 'include' && <Plus className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                      {state === 'exclude' && <Minus className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
+                      {state === 'none' && <Plus className="w-3.5 h-3.5 text-slate-500 opacity-60 group-hover:opacity-100 shrink-0" />}
                       <span>{tag}</span>
-                      <span className="text-[10px] font-mono opacity-60">({count})</span>
-                      {state === "include" && <span className="text-emerald-400">✓</span>}
-                      {state === "exclude" && <X className="w-3 h-3 text-rose-400" />}
+                      <span className="text-[10px] opacity-60 font-mono">({count})</span>
                     </button>
                   );
                 })

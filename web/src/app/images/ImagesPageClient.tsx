@@ -20,6 +20,8 @@ import {
   SlidersHorizontal,
   Sparkles,
   Tag,
+  Plus,
+  Minus,
   X,
   Upload,
   User as UserIcon,
@@ -368,27 +370,31 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   const count = typeof item === 'object' ? item?.count : null;
                   const isInc = includedTags.includes(tag);
                   const isExc = excludedTags.includes(tag);
-                  const state = isInc ? 'include' : isExc ? 'exclude' : 'neutral';
-                  const base =
-                    'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border';
-                  const tone =
+                  const state = isInc ? 'include' : isExc ? 'exclude' : 'none';
+
+                  const baseClass =
+                    'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border select-none group shrink-0';
+
+                  const stateClass =
                     state === 'include'
-                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold shadow-md shadow-emerald-500/10'
+                      ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 hover:bg-teal-500/30'
                       : state === 'exclude'
-                      ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 font-bold shadow-md shadow-rose-500/10'
-                      : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-teal-500/50 hover:text-white';
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
+                      : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:border-teal-500/40 hover:text-white';
+
                   return (
                     <button
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      className={`${base} ${tone}`}
+                      className={`${baseClass} ${stateClass}`}
                     >
-                      <span>#{tag}</span>
+                      {state === 'include' && <Plus className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
+                      {state === 'exclude' && <Minus className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
+                      {state === 'none' && <Plus className="w-3.5 h-3.5 text-slate-500 opacity-60 group-hover:opacity-100 shrink-0" />}
+                      <span>{tag}</span>
                       {count !== null && count !== undefined && (
-                        <span className={`text-[10px] font-mono ${state !== 'neutral' ? 'opacity-90' : 'text-slate-500'}`}>
-                          {count}
-                        </span>
+                        <span className="text-[10px] opacity-60 font-mono">({count})</span>
                       )}
                     </button>
                   );

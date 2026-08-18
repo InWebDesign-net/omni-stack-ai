@@ -20,6 +20,8 @@ import {
   Heart,
   MessageSquare,
   Tag,
+  Plus,
+  Minus,
   Sparkles,
   FileText,
   SlidersHorizontal,
@@ -258,12 +260,12 @@ export default function ArticlesPageClient() {
         <div className="pt-4 border-t border-slate-800/60 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
+              <Tag className="w-4 h-4 text-purple-400 shrink-0" />
               <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 {t.articles?.allTags || 'Alle Tags'}
               </span>
               {hasTagFilters && (
-                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300">
                   {includedTags.length + excludedTags.length} {t.videos?.activeTags || 'aktiv'}
                 </span>
               )}
@@ -274,7 +276,7 @@ export default function ArticlesPageClient() {
                     onClick={() => setMatchMode('any')}
                     className={`px-2 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
                       matchMode === 'any'
-                        ? 'bg-indigo-500/20 text-indigo-300 font-bold'
+                        ? 'bg-purple-500/20 text-purple-300 font-bold'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
@@ -285,7 +287,7 @@ export default function ArticlesPageClient() {
                     onClick={() => setMatchMode('all')}
                     className={`px-2 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
                       matchMode === 'all'
-                        ? 'bg-indigo-500/20 text-indigo-300 font-bold'
+                        ? 'bg-purple-500/20 text-purple-300 font-bold'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
@@ -296,7 +298,7 @@ export default function ArticlesPageClient() {
             </div>
 
             <div className="flex items-center gap-2 self-end sm:self-auto">
-              <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-indigo-500/80 rounded-xl px-2.5 py-1 text-xs transition-all">
+              <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-purple-500/80 rounded-xl px-2.5 py-1 text-xs transition-all">
                 <input
                   type="text"
                   placeholder={t.videos?.searchTagsPlaceholder || 'Tag suchen...'}
@@ -319,7 +321,7 @@ export default function ArticlesPageClient() {
                 <button
                   type="button"
                   onClick={() => setIsTagCloudExpanded(!isTagCloudExpanded)}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 font-medium transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-purple-400 font-medium transition-colors cursor-pointer"
                 >
                   <span>{isTagCloudExpanded ? (t.common?.showLess || 'Weniger') : `Alle Tags (${allTags.length})`}</span>
                   {isTagCloudExpanded ? (
@@ -360,14 +362,14 @@ export default function ArticlesPageClient() {
                   : 'none';
 
                 const baseClass =
-                  'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border';
+                  'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border select-none group shrink-0';
 
                 const stateClass =
                   state === 'include'
-                    ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30'
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
                     : state === 'exclude'
                     ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
-                    : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60';
+                    : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:border-purple-500/40 hover:text-white';
 
                 return (
                   <button
@@ -376,10 +378,11 @@ export default function ArticlesPageClient() {
                     onClick={() => toggleTag(tag)}
                     className={`${baseClass} ${stateClass}`}
                   >
-                    {state === 'include' && <span className="text-indigo-400">+</span>}
-                    {state === 'exclude' && <span className="text-rose-400">−</span>}
+                    {state === 'include' && <Plus className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
+                    {state === 'exclude' && <Minus className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
+                    {state === 'none' && <Plus className="w-3.5 h-3.5 text-slate-500 opacity-60 group-hover:opacity-100 shrink-0" />}
                     <span>{tag}</span>
-                    <span className="text-[10px] opacity-60">({count})</span>
+                    <span className="text-[10px] opacity-60 font-mono">({count})</span>
                   </button>
                 );
               })
