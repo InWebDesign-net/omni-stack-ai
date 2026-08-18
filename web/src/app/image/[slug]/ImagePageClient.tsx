@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   User as UserIcon,
   Tag,
+  Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
@@ -355,7 +356,17 @@ export default function ImagePageClient({
                     </div>
                   </div>
 
-                  <SubscribeButton targetId={creatorObj.handle || creatorObj.documentId || String(creatorObj.id || '1')} />
+                  {isOwner ? (
+                    <button
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-slate-800/80 border border-slate-700 text-slate-200 hover:border-teal-500/50 transition-all cursor-pointer"
+                    >
+                      <Settings className="w-4 h-4 text-teal-400" />
+                      <span>{lang === 'de' ? 'Bild bearbeiten' : 'Edit image'}</span>
+                    </button>
+                  ) : (
+                    <SubscribeButton targetId={creatorObj.handle || creatorObj.documentId || String(creatorObj.id || '1')} />
+                  )}
                 </div>
 
                 {/* Description & Tags */}

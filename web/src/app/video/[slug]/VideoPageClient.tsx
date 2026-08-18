@@ -474,7 +474,7 @@ export default function VideoPageClient({
                     className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     <Settings className="w-4 h-4 text-indigo-400" />
-                    <span>{t.header.settings}</span>
+                    <span>{effectiveLang === 'de' ? 'Video bearbeiten' : 'Edit video'}</span>
                   </button>
                 ) : (
                   <SubscribeButton

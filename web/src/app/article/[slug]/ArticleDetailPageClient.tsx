@@ -308,13 +308,13 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                   <span>Omni Magazine & Articles</span>
                 </div>
 
-                {isOwner && (
+                {isEffectiveOwner && (
                   <button
                     onClick={() => setShowSettingsModal(true)}
                     className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Settings className="w-4 h-4" />
-                    <span>{t.common?.settings || 'Bearbeiten'}</span>
+                    <Settings className="w-4 h-4 text-purple-400" />
+                    <span>{effectiveLang === 'de' ? 'Artikel bearbeiten' : 'Edit article'}</span>
                   </button>
                 )}
               </div>
@@ -367,12 +367,11 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                 <div className="flex items-center gap-3">
                   {isEffectiveOwner ? (
                     <button
-                      type="button"
+                      onClick={() => setShowSettingsModal(true)}
                       className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
-                      title={effectiveLang === 'de' ? 'Einstellungen' : 'Settings'}
                     >
                       <Settings className="w-4 h-4 text-purple-400" />
-                      <span>{effectiveLang === 'de' ? 'Einstellungen' : 'Settings'}</span>
+                      <span>{effectiveLang === 'de' ? 'Artikel bearbeiten' : 'Edit article'}</span>
                     </button>
                   ) : (
                     <SubscribeButton targetId={creatorHandle} size="md" />
