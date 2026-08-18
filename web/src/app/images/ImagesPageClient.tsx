@@ -111,7 +111,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  const { tags: allTags = [] } = useImageTags();
+  const { tags: allTags = [] } = useImageTags(lang);
 
   const updateURL = (newParams: Record<string, string | null>) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));

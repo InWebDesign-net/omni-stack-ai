@@ -58,7 +58,7 @@ export default function VideosPageClient({
   }, [searchTerm]);
 
   // All available tags (aggregated from Strapi, with counts) for the tag cloud
-  const { data: allTags = [] } = useSWR<TagCount[]>("/api/video/tags", (url: string) =>
+  const { data: allTags = [] } = useSWR<TagCount[]>(`/api/video/tags?lang=${lang}`, (url: string) =>
     fetch(url).then((r) => r.json())
   );
 

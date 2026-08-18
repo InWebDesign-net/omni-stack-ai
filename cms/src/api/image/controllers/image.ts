@@ -14,7 +14,7 @@ export default factories.createCoreController('api::image.image', ({ strapi }) =
 
   async tags(ctx: any) {
     try {
-      const result = await (strapi.service('api::image.image') as any).getAllTags();
+      const result = await (strapi.service('api::image.image') as any).getAllTags(ctx.query);
       ctx.body = { data: result };
     } catch (err: any) {
       ctx.status = 500;

@@ -116,6 +116,15 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       });
     }
 
+    // Deduplicate by documentId so duplicate localizations never appear in search
+    const seenDocIds = new Set<string>();
+    items = (items as any[]).filter((it) => {
+      const docId = it.documentId || it.id || it.slug;
+      if (docId && seenDocIds.has(docId)) return false;
+      if (docId) seenDocIds.add(docId);
+      return true;
+    });
+
     // Also collect tags across all localizations of each document for robust matching
     if (includeList.length > 0 || excludeList.length > 0) {
       const docIds = (items as any[]).map((it) => it.documentId).filter(Boolean);
@@ -235,19 +244,22 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
   },
 
   /**
-   * Aggregates all unique tags across video items with their frequency.
-   * Reads only the `tags` column (cheap, no full video payloads) and counts
-   * occurrences. This powers the filter tag-cloud in the frontend.
-   * A tag can only exist if it is attached to at least one video.
+   * Aggregates all unique tags across video items with their frequency for the specified language.
    */
-  async getAllTags() {
+  async getAllTags(params: any = {}) {
+    const targetLocale = params.lang || params.locale || 'de';
+    const whereClause: any = {
+      visibility: 'public',
+      isProcessing: false,
+      publishedAt: { $notNull: true },
+    };
+    if (targetLocale !== '*') {
+      whereClause.locale = targetLocale;
+    }
+
     const items = await strapi.db.query('api::video.video').findMany({
       select: ['documentId', 'tags' as any],
-      where: {
-        visibility: 'public',
-        isProcessing: false,
-        publishedAt: { $notNull: true },
-      },
+      where: whereClause,
     });
 
     // Deduplicate tags per document to avoid counting multiple localizations

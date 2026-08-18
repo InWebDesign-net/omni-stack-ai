@@ -90,7 +90,7 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
       ];
     }
 
-    const docQueryLocale = (targetLocale === '*' || Boolean(searchTerm)) ? '*' : targetLocale;
+    const docQueryLocale = targetLocale === '*' ? '*' : targetLocale;
 
     let items = await strapi.documents('api::image.image').findMany({
       locale: docQueryLocale,
@@ -100,15 +100,24 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
       sort: strapiSort,
     });
 
-    if ((!items || items.length === 0) && docQueryLocale !== '*') {
+    if ((!items || items.length === 0) && docQueryLocale !== 'de' && docQueryLocale !== '*') {
       items = await strapi.documents('api::image.image').findMany({
-        locale: '*',
+        locale: 'de',
         status: 'published',
         filters,
         populate: ['creator'],
         sort: strapiSort,
       });
     }
+
+    // Deduplicate by documentId so duplicate localizations never appear in search
+    const seenDocIds = new Set<string>();
+    items = (items as any[]).filter((it) => {
+      const docId = it.documentId || it.id || it.slug;
+      if (docId && seenDocIds.has(docId)) return false;
+      if (docId) seenDocIds.add(docId);
+      return true;
+    });
 
     // Collect tags across localizations for matching
     if (includeList.length > 0 || excludeList.length > 0) {
@@ -218,16 +227,22 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
   },
 
   /**
-   * Aggregates all unique tags across Image items with their frequency.
+   * Aggregates all unique tags across Image items with their frequency for the specified language.
    */
-  async getAllTags() {
+  async getAllTags(params: any = {}) {
+    const targetLocale = params.lang || params.locale || 'de';
+    const whereClause: any = {
+      visibility: 'public',
+      isProcessing: false,
+      publishedAt: { $notNull: true },
+    };
+    if (targetLocale !== '*') {
+      whereClause.locale = targetLocale;
+    }
+
     const items = await strapi.db.query('api::image.image').findMany({
       select: ['documentId', 'tags' as any],
-      where: {
-        visibility: 'public',
-        isProcessing: false,
-        publishedAt: { $notNull: true },
-      },
+      where: whereClause,
     });
 
     const docTagsMap = new Map<string, Set<string>>();

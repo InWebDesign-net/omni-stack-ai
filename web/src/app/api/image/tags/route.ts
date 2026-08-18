@@ -4,8 +4,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
-    const targetUrl = `${strapiUrl}/api/images/tags`;
+    const targetUrl = `${strapiUrl}/api/images/tags?${searchParams.toString()}`;
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

@@ -142,9 +142,9 @@ export function useImages(params: UseImagesParams = {}): UseImagesResult {
   };
 }
 
-export function useImageTags() {
+export function useImageTags(lang: string = 'de') {
   const { data, error, isLoading } = useSWR<{ data: { tag: string; count: number }[] }>(
-    '/api/image/tags',
+    `/api/image/tags?lang=${lang}`,
     fetcher,
     { revalidateOnFocus: false }
   );
