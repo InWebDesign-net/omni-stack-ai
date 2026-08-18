@@ -25,15 +25,8 @@ import { useImages } from '@/lib/hooks/useImages';
 import { getRotatedRecommendations } from '@/lib/recommendations';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { formatRelativeDate } from '@/lib/date';
-import CommentItem from '@/components/CommentItem';
+import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
 import Image from 'next/image';
-import {
-  fetchCommentsForSlug,
-  createCommentInStrapi,
-  updateCommentInStrapi,
-  deleteCommentFromStrapi,
-  CommentItem as CommentItemType,
-} from '@/lib/comments';
 
 interface ImagePageClientProps {
   initialImage: any;
@@ -136,12 +129,6 @@ export default function ImagePageClient({
     }
   };
 
-  // Comments
-  const [commentsTree, setCommentsTree] = useState<CommentItemType[]>([]);
-  const [commentText, setCommentText] = useState('');
-  const [isLoadingComments, setIsLoadingComments] = useState(true);
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-
   // Related Recommendations Hook with excludeSlug & rotation
   const { images: hookRelated = [] } = useImages({
     pageSize: 12,
@@ -164,43 +151,8 @@ export default function ImagePageClient({
         setIsLiked(true);
       }
     } catch (e) {}
-    loadComments();
     trackView();
   }, [slug]);
-
-  const loadComments = async () => {
-    setIsLoadingComments(true);
-    try {
-      const tree = await fetchCommentsForSlug(slug);
-      setCommentsTree(tree);
-    } catch (e) {
-      console.error('Error loading comments:', e);
-    } finally {
-      setIsLoadingComments(false);
-    }
-  };
-
-  // Smooth scroll and highlight targeted comment if URL anchor hash is present
-  useEffect(() => {
-    if (typeof window === 'undefined' || !commentsTree.length) return;
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#comment-')) {
-      const targetId = hash.replace('#', '');
-      let el = document.getElementById(targetId);
-      if (!el) {
-        el = document.querySelector(`[data-comment-id="${targetId}"]`);
-      }
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-500/20', 'shadow-2xl');
-          setTimeout(() => {
-            el.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-500/20', 'shadow-2xl');
-          }, 3500);
-        }, 300);
-      }
-    }
-  }, [commentsTree]);
 
   const trackView = async () => {
     try {
@@ -264,65 +216,6 @@ export default function ImagePageClient({
     } catch (e) {
       console.error('Failed to sync image like interaction:', e);
     }
-  };
-
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    if (!currentUser) {
-      openAuthModal();
-      return;
-    }
-
-    setIsSubmittingComment(true);
-    try {
-      const newComment = await createCommentInStrapi({
-        text: commentText.trim(),
-        feedSlug: slug,
-        authorName: currentUser.username,
-        authorHandle: currentUser.handle,
-        authorAvatar: currentUser.avatarUrl,
-      });
-
-      if (newComment) {
-        setCommentsTree((prev) => [newComment, ...prev]);
-        setCommentText('');
-      }
-    } catch (e) {
-      console.error('Error posting comment:', e);
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
-
-  const handleReplySubmit = async (parentCommentId: number | string, text: string): Promise<boolean> => {
-    if (!currentUser) {
-      openAuthModal();
-      return false;
-    }
-    const created = await createCommentInStrapi({
-      text: text,
-      feedSlug: slug,
-      authorName: currentUser.username,
-      authorHandle: currentUser.handle,
-      authorAvatar: currentUser.avatarUrl,
-      parentId: parentCommentId,
-    });
-    if (created) {
-      await loadComments();
-      return true;
-    }
-    return false;
-  };
-
-  const handleEditComment = async (commentId: number | string, text: string) => {
-    const updated = await updateCommentInStrapi(commentId, text);
-    if (updated) loadComments();
-  };
-
-  const handleDeleteComment = async (commentId: number | string) => {
-    const success = await deleteCommentFromStrapi(commentId);
-    if (success) loadComments();
   };
 
   const creatorObj = image?.creator || { username: 'Omni Creator', handle: '@omni' };
@@ -480,74 +373,8 @@ export default function ImagePageClient({
               </div>
             </div>
 
-            {/* Comments Tree */}
-            <div className="bg-[#0d1528] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6">
-              <h3 className="font-extrabold text-base text-white flex items-center gap-2">
-                <span>Kommentare</span>
-                <span className="text-xs font-mono text-teal-400">({commentsTree.length})</span>
-              </h3>
-
-              {/* Add Comment Input */}
-              <form onSubmit={handleAddComment} className="flex gap-3">
-                <input
-                  id="image-comment-input"
-                  type="text"
-                  aria-label="Kommentar eingeben"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder={
-                    currentUser
-                      ? `Als ${currentUser.username} kommentieren...`
-                      : 'Schreibe einen Kommentar...'
-                  }
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmittingComment || !commentText.trim()}
-                  aria-label="Kommentar absenden"
-                  title="Kommentar absenden"
-                  className="px-4 py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all disabled:opacity-50"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Senden</span>
-                </button>
-              </form>
-
-              {/* Comments List */}
-              {isLoadingComments ? (
-                <div className="py-8 text-center text-xs font-mono text-slate-500 animate-pulse">
-                  Lade Kommentare...
-                </div>
-              ) : commentsTree.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">
-                  Noch keine Kommentare vorhanden. Schreibe den ersten Kommentar!
-                </div>
-              ) : (
-                <div className="space-y-4 pt-2">
-                  {commentsTree.map((comment) => (
-                    <div key={comment.id} className="pt-3">
-                      <CommentItem
-                        comment={comment}
-                        currentUser={currentUser}
-                        onAddReply={handleReplySubmit}
-                        onEditComment={async (id, text) => {
-                          const ok = await updateCommentInStrapi(id, text);
-                          if (ok) await loadComments();
-                          return ok;
-                        }}
-                        onDeleteComment={async (id) => {
-                          const ok = await deleteCommentFromStrapi(id);
-                          if (ok) await loadComments();
-                          return ok;
-                        }}
-                        t={t}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Unified Comments Section */}
+            <UnifiedCommentsSection slug={slug} lang={lang} t={t} accentColor="teal" />
           </div>
 
           {/* Related Images Sidebar (1 Column) */}

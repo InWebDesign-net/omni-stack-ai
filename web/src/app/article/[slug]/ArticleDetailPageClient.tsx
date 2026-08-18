@@ -12,7 +12,7 @@ import { useApp } from '@/context/AppContext';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { ArticleBlockRenderer } from '@/components/article/ArticleBlockRenderer';
-import { fetchCommentsForSlug, createCommentInStrapi, updateCommentInStrapi, deleteCommentFromStrapi } from '@/lib/comments';
+import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
 import Image from 'next/image';
 
 export default function ArticleDetailPageClient({ initialItem, slug }: { initialItem: any; slug: string }) {
@@ -20,12 +20,9 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   const [item] = useState(initialItem);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(initialItem?.likesCount || 0);
-  const [viewsCount, setViewsCount] = useState(initialItem?.viewsCount || 0);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [viewsCount, setViewsCount] = useState(initialItem?.viewsCount || 0);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -39,21 +36,10 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
   useEffect(() => {
     if (!slug) return;
-
-    const loadComments = async () => {
-      try {
-        const items = await fetchCommentsForSlug(slug, lang);
-        setComments(items);
-      } catch (e) {
-        console.error('Failed to load comments:', e);
-      }
-    };
-    loadComments();
-
     if (item?.tags) {
       tracker.track('view', item.tags, item.type || 'article', creator?.id);
     }
-  }, [slug, lang, item?.tags, creator?.id]);
+  }, [slug, item?.tags, creator?.id]);
 
   const handleLikeToggle = async () => {
     if (!currentUser) {
@@ -84,33 +70,6 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
       showToast(t.common?.linkCopied || 'Link kopiert!');
-    }
-  };
-
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) {
-      openAuthModal();
-      return;
-    }
-    if (!newComment.trim()) return;
-    setIsSubmittingComment(true);
-    try {
-      const created = await createCommentInStrapi({
-        feedSlug: slug,
-        text: newComment.trim(),
-        authorName: currentUser?.username || 'Gast',
-        authorAvatar: currentUser?.avatarUrl,
-      });
-      if (created) {
-        setComments([created, ...comments]);
-        setNewComment('');
-        showToast(t.common?.commentAdded || 'Kommentar hinzugefügt');
-      }
-    } catch (e) {
-      showToast(t.common?.commentError || 'Fehler');
-    } finally {
-      setIsSubmittingComment(false);
     }
   };
 
@@ -170,7 +129,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
             </span>
             <span className="flex items-center gap-1">
               <MessageSquare className="w-4 h-4" />
-              {comments.length} {t.common?.comments || 'Kommentare'}
+              {item.commentsCount || 0} {t.common?.comments || 'Kommentare'}
             </span>
             {item.createdAt && (
               <span className="flex items-center gap-1">
@@ -244,50 +203,9 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           </button>
         </div>
 
-        {/* Comments Section */}
-        <section className="space-y-4">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-indigo-400" />
-            {t.common?.comments || 'Kommentare'} ({comments.length})
-          </h3>
-
-          <form onSubmit={handleCommentSubmit} className="flex gap-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={currentUser ? (t.common?.writeComment || 'Kommentar schreiben...') : (t.common?.loginToComment || 'Anmelden zum Kommentieren...')}
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-            />
-            <button
-              type="submit"
-              disabled={isSubmittingComment || !newComment.trim()}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-colors"
-            >
-              <MessageSquare className="w-4 h-4" />
-            </button>
-          </form>
-
-          {comments.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">{t.common?.noComments || 'Noch keine Kommentare'}</div>
-          ) : (
-            <div className="space-y-3">
-              {comments.map((comment) => (
-                <div key={comment.id} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Image
-                      src={comment.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
-                      alt={comment.authorName}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                    <span className="text-xs font-semibold text-white">{comment.authorName}</span>
-                    <span className="text-[10px] text-slate-500">{comment.createdAt}</span>
-                  </div>
-                  <p className="text-sm text-slate-300">{comment.text}</p>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Unified Comments Section */}
+        <section className="pt-4">
+          <UnifiedCommentsSection slug={slug} lang={lang} t={t} accentColor="purple" />
         </section>
       </main>
 
