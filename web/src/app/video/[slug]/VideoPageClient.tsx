@@ -32,7 +32,7 @@ import SubscribeButton from '@/components/SubscribeButton';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
-import CommentItem from '@/components/CommentItem';
+import { VideoInfo, VideoComments, RelatedVideos } from './VideoComponents';
 import { useApp } from '@/context/AppContext';
 import { useVideos } from '@/lib/hooks/useVideos';
 import { getRotatedRecommendations } from '@/lib/recommendations';
