@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FileText, Eye, Heart, MessageSquare } from 'lucide-react';
+import Image from 'next/image';
 
 interface UserArticlesTabProps {
   articles: any[];
@@ -29,7 +30,7 @@ export function UserArticlesTab({ articles, slug, t }: UserArticlesTabProps) {
         >
           <div className="relative aspect-video bg-slate-950 overflow-hidden">
             {article.thumbnail ? (
-              <img
+              <Image
                 src={article.thumbnail}
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

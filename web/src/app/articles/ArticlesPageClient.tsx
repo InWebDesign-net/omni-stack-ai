@@ -28,6 +28,7 @@ import {
 import { ActionButton } from '@/components/ActionButton';
 import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import { useArticles, ArticleItem } from '@/lib/hooks/useArticles';
+import Image from 'next/image';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -389,7 +390,7 @@ export default function ArticlesPageClient() {
                   >
                     <div className="relative aspect-video bg-slate-950 overflow-hidden">
                       {article.thumbnail ? (
-                        <img
+                        <Image
                           src={article.thumbnail}
                           alt={article.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

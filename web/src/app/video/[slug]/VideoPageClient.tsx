@@ -40,6 +40,7 @@ import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { formatRelativeDate } from '@/lib/date';
+import Image from 'next/image';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -106,7 +107,7 @@ function CardThumbnail({
   }
 
   return (
-    <img
+    <Image
       src={item.thumbnailUrl}
       alt={item.title}
       onError={() => setHasError(true)}
@@ -580,7 +581,7 @@ export default function VideoPageClient({
                   onClick={() => openChannelModal(creator || fallbackCreator)}
                   className="flex items-center gap-3 cursor-pointer group"
                 >
-                  <img
+                  <Image
                     src={creatorAvatar}
                     alt={creatorName}
                     className="w-11 h-11 rounded-full object-cover border-2 border-indigo-500/40 group-hover:scale-105 transition-transform"

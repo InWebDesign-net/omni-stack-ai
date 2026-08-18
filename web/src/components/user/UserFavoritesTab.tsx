@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play, Image as ImageIcon, FileText, Heart } from 'lucide-react';
+import Image from 'next/image';
 
 interface UserFavoritesTabProps {
   favorites: any[];
@@ -34,7 +35,7 @@ export function UserFavoritesTab({ favorites, slug, t }: UserFavoritesTabProps) 
             className="group relative bg-slate-900/60 border border-slate-800 hover:border-indigo-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
           >
             <div className="relative aspect-video bg-slate-950 overflow-hidden">
-              <img
+              <Image
                 src={thumb}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

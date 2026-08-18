@@ -33,6 +33,7 @@ import { UserFavoritesTab } from '@/components/user/UserFavoritesTab';
 import { formatAbsoluteDate } from '@/lib/date';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface UserPageClientProps {
     profileDataInit: ProfileData;
@@ -96,8 +97,8 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         {/* Avatar with Glow */}
                         <div className="relative group">
                             <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl p-1 bg-gradient-to-tr from-indigo-500 via-teal-400 to-indigo-600 shadow-xl">
-                                <img
-                                    src={profile.avatarUrl}
+                                <Image
+                                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                                     alt={profile.username}
                                     className="w-full h-full object-cover rounded-[22px] bg-slate-950"
                                 />
@@ -319,7 +320,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                         >
                                             {/* Thumbnail Container */}
                                             <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
-                                                <img
+                                                <Image
                                                     src={thumb}
                                                     alt={item.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

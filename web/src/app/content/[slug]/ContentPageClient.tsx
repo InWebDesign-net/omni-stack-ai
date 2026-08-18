@@ -37,6 +37,7 @@ import { loadStoredAffinityGraph, getStoredJwt, jsonAuthHeaders } from '@/lib/af
 import { tracker } from '@/lib/tracking';
 import { ContentInfo, ContentComments, RelatedContent } from './ContentComponents';
 import CommentItem from '@/components/CommentItem';
+import Image from 'next/image';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -77,10 +78,9 @@ function CardThumbnail({
   }
 
   return (
-    <img
+    <Image
       src={item.thumbnailUrl}
       alt={item.title}
-      onError={() => setHasError(true)}
       className={className}
     />
   );
@@ -505,7 +505,7 @@ export default function ContentPageClient({
                     className="flex items-center gap-3 cursor-pointer group/author transition-all"
                     title={t.content.openProfileTitle.replace('{name}', authorName)}
                   >
-                    <img src={authorAvatar} alt={authorName} className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" />
+                    <Image src={authorAvatar} alt={authorName} className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" />
                     <div>
                       <div className="flex items-center gap-1">
                         <p className="text-sm font-bold text-white group-hover/author:text-[#44e2cd] transition-colors">{authorName}</p>
@@ -567,7 +567,7 @@ export default function ContentPageClient({
                       if (comp === 'shared.media' || block.imageUrl) {
                         return (
                           <figure key={idx} className="my-4">
-                            <img src={block.imageUrl} alt={block.caption || ''} className="rounded-2xl border border-white/10 w-full object-cover max-h-[500px]" />
+                            <Image src={block.imageUrl} alt={block.caption || ''} className="rounded-2xl border border-white/10 w-full object-cover max-h-[500px]" />
                             {block.caption && <figcaption className="text-xs text-[#9ba4bf] mt-2 text-center">{block.caption}</figcaption>}
                           </figure>
                         );
@@ -594,7 +594,7 @@ export default function ContentPageClient({
 
               {/* Add Comment Form */}
               <form onSubmit={handleAddComment} className="flex gap-3">
-                <img
+                <Image
                   src={userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                   alt="Dein Avatar"
                   className="h-9 w-9 rounded-full object-cover border border-white/10 shrink-0 mt-1"

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import SubscribeButton from '@/components/SubscribeButton';
 import { formatRelativeDate } from '@/lib/date';
+import Image from 'next/image';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -119,7 +120,7 @@ export function VideoInfo({
           onClick={onOpenChannel}
           className="flex items-center gap-3 hover:bg-white/5 rounded-xl p-2 -ml-2 transition-colors"
         >
-          <img
+          <Image
             src={creator.avatarUrl}
             alt={creator.username}
             className="w-10 h-10 rounded-full object-cover border-2 border-slate-700"
@@ -284,7 +285,7 @@ export function VideoComments({
             <div key={comment.id} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <img
+                  <Image
                     src={comment.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                     alt={comment.authorName}
                     className="w-6 h-6 rounded-full object-cover"
@@ -367,7 +368,7 @@ export function RelatedVideos({ items, t }: RelatedVideosProps) {
           >
             <div className="relative aspect-video bg-slate-950">
               {item.thumbnailUrl ? (
-                <img
+                <Image
                   src={item.thumbnailUrl}
                   alt={item.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

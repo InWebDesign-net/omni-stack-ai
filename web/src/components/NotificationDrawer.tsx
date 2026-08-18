@@ -20,6 +20,7 @@ import {
 import { useNotifications } from '@/context/NotificationContext';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
+import Image from 'next/image';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -187,7 +188,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                 {/* Sender Avatar or Icon */}
                 <div className="relative shrink-0 mt-0.5">
                   {n.sender?.avatarUrl ? (
-                    <img
+                    <Image
                       src={n.sender.avatarUrl}
                       alt={n.sender.username}
                       loading="lazy"

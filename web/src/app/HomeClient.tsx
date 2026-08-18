@@ -9,6 +9,7 @@ import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import { useImages } from '@/lib/hooks/useImages';
 import { useVideos } from '@/lib/hooks/useVideos';
+import Image from 'next/image';
 
 interface ChannelItem {
   id: string | number;
@@ -270,7 +271,7 @@ export default function HomeClient() {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
-                    <img
+                    <Image
                       src={channel.avatarUrl}
                       alt={channel.username}
                       loading="lazy"
@@ -354,7 +355,7 @@ export default function HomeClient() {
                     {/* Video Thumbnail & Play Overlay */}
                     <Link href={`/video/${item.slug}`} className="relative aspect-video w-full overflow-hidden block bg-slate-950">
                       {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
-                      <img
+                      <Image
                         src={item.thumbnailUrl || '/media/thumbnails/default.png'}
                         alt={item.title}
                         loading="lazy"
@@ -393,7 +394,7 @@ export default function HomeClient() {
                       <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-800/60 text-[11px] sm:text-xs text-slate-400">
                         <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0">
                           {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
-                          <img
+                          <Image
                             src={creatorAvatar}
                             alt={creatorName}
                             loading="lazy"
@@ -472,7 +473,7 @@ export default function HomeClient() {
                   className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
                 >
                   <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
-                    <img
+                    <Image
                       src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
                       alt={img.title}
                       loading="lazy"

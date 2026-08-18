@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play, FileText, Image as ImageIcon, Quote, Code, List, CheckSquare } from 'lucide-react';
+import Image from 'next/image';
 
 interface Block {
   id?: string | number;
@@ -143,7 +144,7 @@ function ImageBlock({ block }: { block: Block }) {
   return (
     <figure className="my-6">
       <div className="relative bg-slate-950 rounded-xl overflow-hidden">
-        <img
+        <Image
           src={image.url}
           alt={image.alternativeText || ''}
           className="w-full h-auto object-contain max-h-[600px]"
@@ -165,7 +166,7 @@ function GalleryBlock({ block }: { block: Block }) {
     <div className="my-6 grid grid-cols-2 sm:grid-cols-3 gap-2">
       {images.map((img: any, i: number) => (
         <div key={i} className="relative aspect-square bg-slate-950 rounded-xl overflow-hidden group">
-          <img
+          <Image
             src={img.url}
             alt={img.alternativeText || ''}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -27,11 +27,13 @@ import {
 import { useApp } from '@/context/AppContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { DEMO_CREATORS } from '@/config/demo';
+import Image from 'next/image';
+
 import NotificationDrawer from '@/components/NotificationDrawer';
 
 export function OmniLogo({ size = 28 }: { size?: number }) {
   return (
-    <img
+    <Image
       src="/android-chrome-192x192.png"
       alt="Omni Logo"
       width={size}
@@ -321,7 +323,7 @@ export default function Header({
                 aria-haspopup="menu"
                 aria-expanded={userDropdownOpen}
               >
-                <img
+                <Image
                   src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                   alt={activeUser.username}
                   className="w-7 h-7 rounded-lg object-cover border border-white/20 shrink-0"
@@ -519,7 +521,7 @@ export default function Header({
                   }}
                   className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-all text-left w-full cursor-pointer"
                 >
-                  <img src={creator.avatarUrl} alt={creator.username} className="h-5 w-5 rounded-full object-cover border border-white/20 shrink-0" />
+                  <Image src={creator.avatarUrl} alt={creator.username} className="h-5 w-5 rounded-full object-cover border border-white/20 shrink-0" />
                   <span className="font-mono text-[#c0c1ff]">@{creator.handle}</span>
                   <span className="text-[10px] text-[#5c657d] truncate ml-auto">{creator.username}</span>
                 </button>

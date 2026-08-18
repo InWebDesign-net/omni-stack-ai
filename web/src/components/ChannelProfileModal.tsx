@@ -7,6 +7,7 @@ import { ChannelProfileData, useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import SubscribeButton from '@/components/SubscribeButton';
 import { getDemoCreatorByHandle } from '@/config/demo';
+import Image from 'next/image';
 
 interface ChannelProfileModalProps {
   selectedChannel: ChannelProfileData | null;
@@ -70,7 +71,7 @@ export default function ChannelProfileModal({
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="relative shrink-0">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-[#8083ff] to-teal-400 opacity-60 blur-sm" />
-              <img
+              <Image
                 src={selectedChannel.avatarUrl}
                 alt={selectedChannel.username}
                 className="relative h-14 w-14 rounded-full object-cover border-2 border-white/20 shadow-xl"

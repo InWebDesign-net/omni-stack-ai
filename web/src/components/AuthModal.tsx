@@ -5,6 +5,7 @@ import { X, UserPlus, LogIn, User, Mail, Lock, Sparkles, ChevronRight, ExternalL
 import { useApp, UserProfileSession } from '@/context/AppContext';
 import { DEMO_USER_PRESETS, DEFAULT_AVATAR_URL } from '@/config/demo';
 import { normalizeAffinityGraph, storeAffinityGraph } from '@/lib/affinity';
+import Image from 'next/image';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface AuthModalProps {
 
 function OmniLogo({ size = 32 }: { size?: number }) {
   return (
-    <img
+    <Image
       src="/android-chrome-192x192.png"
       alt="Omni Logo"
       width={size}

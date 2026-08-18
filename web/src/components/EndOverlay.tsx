@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play, RotateCcw, Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 interface EndCard {
   slug: string;
@@ -70,7 +71,7 @@ export function EndOverlay({
               className="group relative bg-[#0d1528]/95 border border-indigo-500/30 hover:border-indigo-500/60 rounded-xl overflow-hidden p-2 flex items-center gap-2.5 shadow-xl transition-all"
             >
               <div className="relative w-28 aspect-video bg-slate-950 rounded-lg overflow-hidden shrink-0">
-                <img
+                <Image
                   src={rec.thumbnailUrl || '/media/thumbnails/default.png'}
                   alt={rec.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -93,7 +94,7 @@ export function EndOverlay({
                   {rec.title}
                 </h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                  <img
+                  <Image
                     src={creatorAvatar}
                     alt={creatorName}
                     className="w-3.5 h-3.5 rounded-full object-cover border border-slate-700 shrink-0"
@@ -121,7 +122,7 @@ export function EndOverlay({
               className="group relative bg-[#0d1528] border border-slate-800 hover:border-indigo-500/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
             >
               <div className="relative aspect-video w-full bg-slate-950 overflow-hidden block">
-                <img
+                <Image
                   src={rec.thumbnailUrl || '/media/thumbnails/default.png'}
                   alt={rec.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -143,7 +144,7 @@ export function EndOverlay({
                   {rec.title}
                 </h4>
                 <div className="flex items-center gap-1.5 pt-0.5 text-[10px] text-slate-400">
-                  <img
+                  <Image
                     src={creatorAvatar}
                     alt={creatorName}
                     className="w-3.5 h-3.5 rounded-full object-cover border border-slate-700 shrink-0"

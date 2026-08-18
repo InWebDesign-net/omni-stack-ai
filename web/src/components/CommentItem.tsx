@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { CommentItem as CommentItemType } from '@/lib/comments';
 import { useApp } from '@/context/AppContext';
+import Image from 'next/image';
 
 interface CommentItemProps {
   comment: CommentItemType;
@@ -96,7 +97,7 @@ export default function CommentItem({
       className={`space-y-3 transition-all scroll-mt-24 p-2 rounded-xl transition-all duration-700 ${getDepthStyle()}`}
     >
       <div className="flex items-start gap-2.5 sm:gap-3 group">
-        <img
+        <Image
           src={comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
           alt={comment.authorName}
           loading="lazy"

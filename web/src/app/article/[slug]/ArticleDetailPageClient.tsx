@@ -13,6 +13,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { ArticleBlockRenderer } from '@/components/article/ArticleBlockRenderer';
 import { fetchCommentsForSlug, createCommentInStrapi, updateCommentInStrapi, deleteCommentFromStrapi } from '@/lib/comments';
+import Image from 'next/image';
 
 export default function ArticleDetailPageClient({ initialItem, slug }: { initialItem: any; slug: string }) {
   const { t, lang, currentUser, openAuthModal } = useApp();
@@ -181,7 +182,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
           {/* Creator */}
           <div className="flex items-center gap-3">
-            <img
+            <Image
               src={creatorAvatar}
               alt={creatorName}
               className="w-10 h-10 rounded-full object-cover border-2 border-slate-700"
@@ -196,7 +197,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         {/* Thumbnail */}
         {item.thumbnail && (
           <div className="relative aspect-video bg-slate-950 rounded-2xl overflow-hidden">
-            <img
+            <Image
               src={item.thumbnail}
               alt={item.title}
               className="w-full h-full object-cover"
@@ -274,7 +275,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               {comments.map((comment) => (
                 <div key={comment.id} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <img
+                    <Image
                       src={comment.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                       alt={comment.authorName}
                       className="w-6 h-6 rounded-full object-cover"

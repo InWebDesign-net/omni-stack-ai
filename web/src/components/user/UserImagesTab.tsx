@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play, Image as ImageIcon, FileText, Heart, Info, User } from 'lucide-react';
+import Image from 'next/image';
 
 interface UserImagesTabProps {
   images: any[];
@@ -27,7 +28,7 @@ export function UserImagesTab({ images, slug, t }: UserImagesTabProps) {
           href={`/image/${img.slug}`}
           className="group relative aspect-square bg-slate-900 rounded-xl overflow-hidden border border-slate-800 hover:border-indigo-500/50 transition-all"
         >
-          <img
+          <Image
             src={img.thumbnailUrl || img.imageUrl || '/media/thumbnails/default.png'}
             alt={img.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

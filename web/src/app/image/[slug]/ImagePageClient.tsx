@@ -26,6 +26,7 @@ import { getRotatedRecommendations } from '@/lib/recommendations';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { formatRelativeDate } from '@/lib/date';
 import CommentItem from '@/components/CommentItem';
+import Image from 'next/image';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -339,7 +340,7 @@ export default function ImagePageClient({
             {/* Image Viewer Container */}
             <div className="relative bg-[#0d1528] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
               <div className="relative flex items-center justify-center min-h-[400px] max-h-[70vh] bg-slate-950 p-4">
-                <img
+                <Image
                   src={image?.imageUrl || image?.thumbnailUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80'}
                   alt={image?.title || 'Omni Image'}
                   className="max-h-[65vh] w-auto object-contain rounded-xl shadow-2xl"
@@ -404,7 +405,7 @@ export default function ImagePageClient({
                 {/* Creator Header */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-800/80">
                   <div className="flex items-center gap-3">
-                    <img
+                    <Image
                       src={creatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
                       alt={creatorObj.username}
                       onClick={() => handleOpenChannel(creatorObj)}
@@ -535,7 +536,7 @@ export default function ImagePageClient({
                     className="group flex gap-3 bg-slate-950/60 border border-slate-800/80 hover:border-teal-500/40 rounded-2xl p-2 transition-all"
                   >
                     <div className="w-20 h-16 rounded-xl bg-slate-900 overflow-hidden shrink-0">
-                      <img
+                      <Image
                         src={rel.thumbnailUrl || rel.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80'}
                         alt={rel.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
@@ -563,7 +564,7 @@ export default function ImagePageClient({
           onClick={() => setIsFullscreen(false)}
           className="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out animate-fadeIn"
         >
-          <img
+          <Image
             src={image?.imageUrl || image?.thumbnailUrl}
             alt={image?.title}
             className="max-h-[95vh] max-w-[95vw] object-contain rounded-2xl shadow-2xl"
