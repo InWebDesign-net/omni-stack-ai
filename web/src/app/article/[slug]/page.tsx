@@ -41,7 +41,7 @@ async function getArticleData(slug: string, lang: string = 'de') {
     // Fallback to standard articles query if filtered returned no items
     if (!items || items.length === 0) {
       res = await fetch(
-        `${strapiUrl}/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator,blocks&locale=*`,
+        `${strapiUrl}/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&populate[creator]=true&populate[blocks][populate][video][populate][creator]=true&populate[blocks][populate][image][populate][creator]=true&locale=*`,
         { headers: reqHeaders, cache: 'no-store' }
       );
       if (res.ok) {

@@ -62,11 +62,36 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
 
     const docQueryLocale = (targetLocale === '*' || Boolean(searchTerm)) ? '*' : targetLocale;
 
+    const articlePopulate: any = {
+      creator: true,
+      blocks: {
+        on: {
+          'shared.rich-text': { populate: '*' },
+          'shared.headline': { populate: '*' },
+          'shared.quote': { populate: '*' },
+          'shared.video': {
+            populate: {
+              video: {
+                populate: ['creator']
+              }
+            }
+          },
+          'shared.image': {
+            populate: {
+              image: {
+                populate: ['creator']
+              }
+            }
+          }
+        }
+      }
+    };
+
     let items = await strapi.documents('api::article.article').findMany({
       locale: docQueryLocale,
       status: 'published',
       filters,
-      populate: ['creator', 'blocks'],
+      populate: articlePopulate,
       sort: strapiSort,
     });
 
@@ -75,7 +100,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
         locale: '*',
         status: 'published',
         filters,
-        populate: ['creator', 'blocks'],
+        populate: articlePopulate,
         sort: strapiSort,
       });
     }

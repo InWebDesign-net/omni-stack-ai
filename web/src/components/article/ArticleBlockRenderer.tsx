@@ -1,26 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Play, FileText, Image as ImageIcon, Quote, Code, List, CheckSquare } from 'lucide-react';
+import Link from 'next/link';
+import { Play, Image as ImageIcon, Quote, Heading, Film, Eye, Heart } from 'lucide-react';
 import Image from 'next/image';
 
-interface Block {
-  id?: string | number;
-  type: string;
-  children?: { text: string; bold?: boolean; italic?: boolean; code?: boolean }[];
-  content?: any;
-  image?: { url: string; alternativeText?: string; width?: number; height?: number; mimeType?: string };
-  video?: { url: string; mimeType?: string };
-  language?: string;
-  code?: string;
-  title?: string;
-  items?: string[];
-  ordered?: boolean;
-  level?: number;
-}
-
 interface ArticleBlockRendererProps {
-  blocks: Block[];
+  blocks: any[];
 }
 
 export function ArticleBlockRenderer({ blocks }: ArticleBlockRendererProps) {
@@ -29,246 +15,287 @@ export function ArticleBlockRenderer({ blocks }: ArticleBlockRendererProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {blocks.map((block, index) => (
-        <Block key={block.id || index} block={block} />
+        <SingleBlock key={block.id || index} block={block} />
       ))}
     </div>
   );
 }
 
-function Block({ block }: { block: any }) {
+function SingleBlock({ block }: { block: any }) {
   const componentType = block.__component || block.type;
 
   if (componentType === 'shared.headline' || block.type === 'heading') {
     return <HeadingBlock block={block} />;
   }
   if (componentType === 'shared.rich-text' || block.type === 'paragraph') {
-    return <ParagraphBlock block={block} />;
+    return <RichTextBlock block={block} />;
   }
   if (componentType === 'shared.quote' || block.type === 'quote') {
     return <QuoteBlock block={block} />;
   }
-  if (componentType === 'shared.media' || block.type === 'image') {
-    return <ImageBlock block={block} />;
-  }
-  if (componentType === 'shared.gallery' || block.type === 'gallery') {
-    return <GalleryBlock block={block} />;
-  }
   if (componentType === 'shared.video' || block.type === 'video') {
-    return <VideoBlock block={block} />;
+    return <VideoRelationBlock block={block} />;
   }
-  if (componentType === 'shared.pdf') {
-    return <PdfBlock block={block} />;
-  }
-  if (block.type === 'code') {
-    return <CodeBlock block={block} />;
-  }
-  if (block.type === 'list') {
-    return <ListBlock block={block} />;
-  }
-  if (block.type === 'divider') {
-    return <hr className="border-slate-700 my-6" />;
+  if (componentType === 'shared.image' || block.type === 'image') {
+    return <ImageRelationBlock block={block} />;
   }
 
-  return <ParagraphBlock block={block} />;
+  return <RichTextBlock block={block} />;
 }
 
-function HeadingBlock({ block }: { block: Block }) {
-  const level = block.level || block.content?.level || 2;
-  const text = block.children?.map((c) => c.text).join('') || '';
-  
-  const sizeClass: Record<number, string> = {
-    1: 'text-3xl font-extrabold',
-    2: 'text-2xl font-bold',
-    3: 'text-xl font-bold',
-    4: 'text-lg font-semibold',
-    5: 'text-base font-semibold',
-    6: 'text-sm font-semibold',
-  };
-  
-  const Tag = `h${Math.min(level, 6)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+function HeadingBlock({ block }: { block: any }) {
+  const title = block.title || (Array.isArray(block.children) ? block.children.map((c: any) => c.text).join('') : '');
+  const levelStr = String(block.level || 'h2').toLowerCase();
+  const subtitle = block.subtitle;
 
-  return <Tag className={`${sizeClass[level] || 'text-xl font-bold'} text-white mt-8 mb-4`}>{text}</Tag>;
-}
+  if (!title) return null;
 
-function ParagraphBlock({ block }: { block: Block }) {
-  const text = block.children?.map((c) => c.text).join('') || '';
-  
-  if (!text.trim()) return null;
-  
-  return (
-    <p className="text-slate-300 leading-relaxed mb-4">
-      {block.children?.map((child, i) => {
-        if (child.bold && child.italic) {
-          return <strong key={i} className="font-bold italic text-white">{child.text}</strong>;
-        }
-        if (child.bold) {
-          return <strong key={i} className="font-bold text-white">{child.text}</strong>;
-        }
-        if (child.italic) {
-          return <em key={i} className="italic">{child.text}</em>;
-        }
-        if (child.code) {
-          return <code key={i} className="bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300 text-sm font-mono">{child.text}</code>;
-        }
-        return <React.Fragment key={i}>{child.text}</React.Fragment>;
-      })}
-    </p>
-  );
-}
-
-function QuoteBlock({ block }: { block: Block }) {
-  const text = block.children?.map((c) => c.text).join('') || '';
-  
-  return (
-    <blockquote className="border-l-4 border-indigo-500 pl-4 py-2 my-6 bg-indigo-500/5 rounded-r-xl">
-      <Quote className="w-5 h-5 text-indigo-400 mb-2" />
-      <p className="text-slate-300 italic">{text}</p>
-    </blockquote>
-  );
-}
-
-function ImageBlock({ block }: { block: Block }) {
-  const image = block.image;
-  if (!image?.url) return null;
-  
-  const isVideo = image.mimeType?.startsWith('video/') || image.url.match(/\.(mp4|webm|mov)$/i);
-  
-  if (isVideo) {
+  if (levelStr === 'h3') {
     return (
-      <figure className="my-6">
-        <div className="relative aspect-video bg-slate-950 rounded-xl overflow-hidden">
-          <video
-            src={image.url}
-            controls
-            className="w-full h-full object-contain"
-            playsInline
-          />
-        </div>
-        {image.alternativeText && (
-          <figcaption className="text-xs text-slate-500 mt-2 text-center">{image.alternativeText}</figcaption>
-        )}
-      </figure>
+      <div className="pt-4 pb-2 space-y-1">
+        <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <span className="w-1.5 h-5 bg-purple-500 rounded-full" />
+          <span>{title}</span>
+        </h3>
+        {subtitle && <p className="text-sm text-slate-400 font-medium pl-3.5">{subtitle}</p>}
+      </div>
     );
   }
-  
-  return (
-    <figure className="my-6">
-      <div className="relative bg-slate-950 rounded-xl overflow-hidden">
-        <Image
-          src={image.url}
-          alt={image.alternativeText || ''}
-          className="w-full h-auto object-contain max-h-[600px]"
-          loading="lazy"
-        />
+
+  if (levelStr === 'h4') {
+    return (
+      <div className="pt-3 pb-1 space-y-1">
+        <h4 className="text-lg font-semibold text-slate-200">{title}</h4>
+        {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
       </div>
-      {image.alternativeText && (
-        <figcaption className="text-xs text-slate-500 mt-2 text-center">{image.alternativeText}</figcaption>
+    );
+  }
+
+  // Default H2
+  return (
+    <div className="pt-6 pb-2 space-y-1 border-b border-slate-800/80">
+      <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+        <span className="w-2 h-7 bg-gradient-to-b from-purple-400 to-indigo-600 rounded-full" />
+        <span>{title}</span>
+      </h2>
+      {subtitle && <p className="text-sm text-purple-300/80 font-medium pl-4">{subtitle}</p>}
+    </div>
+  );
+}
+
+function RichTextBlock({ block }: { block: any }) {
+  const bodyData = block.body || block.content || block.text;
+
+  // 1. Array of blocks or children format
+  if (Array.isArray(bodyData)) {
+    return (
+      <div className="space-y-3">
+        {bodyData.map((node: any, idx: number) => {
+          if (node.type === 'paragraph' || node.children) {
+            const text = node.children ? node.children.map((c: any) => c.text).join('') : '';
+            if (!text.trim()) return null;
+            return (
+              <p key={idx} className="text-slate-300 text-base leading-relaxed">
+                {node.children ? (
+                  node.children.map((child: any, i: number) => {
+                    if (child.bold && child.italic) return <strong key={i} className="font-bold italic text-white">{child.text}</strong>;
+                    if (child.bold) return <strong key={i} className="font-bold text-white">{child.text}</strong>;
+                    if (child.italic) return <em key={i} className="italic text-slate-200">{child.text}</em>;
+                    if (child.code) return <code key={i} className="bg-slate-800/90 text-purple-300 px-1.5 py-0.5 rounded text-sm font-mono">{child.text}</code>;
+                    return <React.Fragment key={i}>{child.text}</React.Fragment>;
+                  })
+                ) : (
+                  text
+                )}
+              </p>
+            );
+          }
+          if (typeof node === 'string') {
+            return <p key={idx} className="text-slate-300 text-base leading-relaxed">{node}</p>;
+          }
+          return null;
+        })}
+      </div>
+    );
+  }
+
+  // 2. Direct children array on block
+  if (Array.isArray(block.children) && block.children.length > 0) {
+    return (
+      <p className="text-slate-300 text-base leading-relaxed">
+        {block.children.map((child: any, i: number) => {
+          if (child.bold && child.italic) return <strong key={i} className="font-bold italic text-white">{child.text}</strong>;
+          if (child.bold) return <strong key={i} className="font-bold text-white">{child.text}</strong>;
+          if (child.italic) return <em key={i} className="italic text-slate-200">{child.text}</em>;
+          if (child.code) return <code key={i} className="bg-slate-800/90 text-purple-300 px-1.5 py-0.5 rounded text-sm font-mono">{child.text}</code>;
+          return <React.Fragment key={i}>{child.text}</React.Fragment>;
+        })}
+      </p>
+    );
+  }
+
+  // 3. String content (Markdown or HTML string or plain text)
+  if (typeof bodyData === 'string' && bodyData.trim().length > 0) {
+    const paragraphs = bodyData.split(/\n\s*\n/).filter(Boolean);
+    return (
+      <div className="space-y-4">
+        {paragraphs.map((pText, i) => (
+          <p key={i} className="text-slate-300 text-base leading-relaxed">
+            {pText}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function QuoteBlock({ block }: { block: any }) {
+  const text = block.quote || (Array.isArray(block.children) ? block.children.map((c: any) => c.text).join('') : block.text || '');
+  const author = block.author;
+
+  if (!text) return null;
+
+  return (
+    <figure className="my-6 relative bg-gradient-to-r from-purple-950/40 to-slate-900/60 border-l-4 border-purple-500 rounded-r-2xl p-5 shadow-xl space-y-2">
+      <Quote className="w-8 h-8 text-purple-400/30 absolute top-4 right-4" />
+      <blockquote className="text-base sm:text-lg text-purple-100 italic leading-relaxed font-serif">
+        "{text}"
+      </blockquote>
+      {author && (
+        <figcaption className="text-xs font-semibold text-purple-300 flex items-center gap-2 pt-1">
+          <span className="w-4 h-0.5 bg-purple-500/60" />
+          <span>{author}</span>
+        </figcaption>
       )}
     </figure>
   );
 }
 
-function GalleryBlock({ block }: { block: Block }) {
-  const images = block.content?.images || [];
-  if (!images.length) return null;
-  
+function VideoRelationBlock({ block }: { block: any }) {
+  const vidObj = block.video;
+  const caption = block.caption;
+
+  if (!vidObj) return null;
+
+  const videoData = vidObj.attributes || vidObj;
+  const videoUrl = videoData.videoUrl || videoData.url;
+  const title = videoData.title || 'Video Block';
+  const slug = videoData.slug;
+  const thumbnail = videoData.thumbnail || videoData.thumbnailUrl || 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&q=80';
+  const creatorName = videoData.creator?.username || videoData.authorName || 'Omni Creator';
+
   return (
-    <div className="my-6 grid grid-cols-2 sm:grid-cols-3 gap-2">
-      {images.map((img: any, i: number) => (
-        <div key={i} className="relative aspect-square bg-slate-950 rounded-xl overflow-hidden group">
-          <Image
-            src={img.url}
-            alt={img.alternativeText || ''}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
+    <figure className="my-6 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl space-y-0">
+      {videoUrl ? (
+        <div className="relative aspect-video bg-black">
+          <video
+            src={videoUrl}
+            controls
+            poster={thumbnail}
+            className="w-full h-full object-contain"
+            playsInline
           />
         </div>
-      ))}
-    </div>
-  );
-}
+      ) : (
+        <div className="relative aspect-video bg-slate-900 overflow-hidden group">
+          <Image
+            src={thumbnail}
+            alt={title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-slate-950/50 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+              <Play className="w-6 h-6 fill-current ml-1" />
+            </div>
+          </div>
+        </div>
+      )}
 
-function VideoBlock({ block }: { block: Block }) {
-  const video = block.video;
-  if (!video?.url) return null;
-  
-  return (
-    <figure className="my-6">
-      <div className="relative aspect-video bg-slate-950 rounded-xl overflow-hidden">
-        <video
-          src={video.url}
-          controls
-          className="w-full h-full object-contain"
-          playsInline
-        />
+      <div className="p-4 flex items-center justify-between gap-4 bg-slate-900/90">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-purple-400 uppercase tracking-wider">
+            <Film className="w-3.5 h-3.5" />
+            <span>Video Content</span>
+          </div>
+          <h4 className="text-sm font-bold text-white truncate">{title}</h4>
+          <p className="text-xs text-slate-400 truncate">{creatorName}</p>
+        </div>
+
+        {slug && (
+          <Link
+            href={`/video/${slug}`}
+            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl shrink-0 transition-colors"
+          >
+            Video ansehen
+          </Link>
+        )}
       </div>
+
+      {caption && (
+        <figcaption className="text-xs text-slate-400 p-3 bg-slate-950 border-t border-slate-800 text-center italic">
+          {caption}
+        </figcaption>
+      )}
     </figure>
   );
 }
 
-function CodeBlock({ block }: { block: Block }) {
-  const code = block.code || block.children?.map((c) => c.text).join('') || '';
-  const language = block.language || 'javascript';
-  
+function ImageRelationBlock({ block }: { block: any }) {
+  const imgObj = block.image;
+  const caption = block.caption;
+
+  if (!imgObj) return null;
+
+  const imageData = imgObj.attributes || imgObj;
+  const imageUrl = imageData.imageUrl || imageData.thumbnailUrl || imageData.url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80';
+  const title = imageData.title || 'Image Block';
+  const slug = imageData.slug;
+  const creatorName = imageData.creator?.username || imageData.authorName || 'Omni Creator';
+
   return (
-    <div className="my-6 rounded-xl overflow-hidden border border-slate-800">
-      <div className="flex items-center justify-between bg-slate-900 px-4 py-2 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <Code className="w-4 h-4 text-indigo-400" />
-          <span className="text-xs font-mono text-slate-400">{language}</span>
-        </div>
+    <figure className="my-6 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl space-y-0">
+      <div className="relative bg-slate-950 flex items-center justify-center max-h-[500px]">
+        <Image
+          src={imageUrl}
+          alt={title}
+          width={1200}
+          height={800}
+          className="w-full h-auto max-h-[500px] object-contain"
+          loading="lazy"
+        />
       </div>
-      <pre className="bg-[#0d1528] p-4 overflow-x-auto">
-        <code className="text-sm text-slate-300 font-mono whitespace-pre-wrap">{code}</code>
-      </pre>
-    </div>
-  );
-}
 
-function ListBlock({ block }: { block: Block }) {
-  const items = block.items || [];
-  const ordered = block.ordered || false;
-  
-  if (!items.length) return null;
-  
-  const ListTag = ordered ? 'ol' : 'ul';
-  const listClass = ordered ? 'list-decimal' : 'list-disc';
-  
-  return (
-    <ListTag className={`${listClass} list-inside text-slate-300 my-4 space-y-1`}>
-      {items.map((item, i) => (
-        <li key={i}>{item}</li>
-      ))}
-    </ListTag>
-  );
-}
-
-function PdfBlock({ block }: { block: any }) {
-  const fileUrl = block.fileUrl || block.url;
-  const fileName = block.title || block.name || 'Dokument.pdf';
-
-  if (!fileUrl) return null;
-
-  return (
-    <div className="my-6 p-4 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <FileText className="w-6 h-6 text-purple-400" />
-        <div>
-          <h4 className="text-sm font-bold text-white">{fileName}</h4>
-          <p className="text-xs text-slate-400">PDF-Dokument</p>
+      <div className="p-4 flex items-center justify-between gap-4 bg-slate-900/90 border-t border-slate-800">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-teal-400 uppercase tracking-wider">
+            <ImageIcon className="w-3.5 h-3.5" />
+            <span>Bild Content</span>
+          </div>
+          <h4 className="text-sm font-bold text-white truncate">{title}</h4>
+          <p className="text-xs text-slate-400 truncate">{creatorName}</p>
         </div>
+
+        {slug && (
+          <Link
+            href={`/image/${slug}`}
+            className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shrink-0 transition-colors"
+          >
+            Bild ansehen
+          </Link>
+        )}
       </div>
-      <a
-        href={fileUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors"
-      >
-        Öffnen / Herunterladen
-      </a>
-    </div>
+
+      {caption && (
+        <figcaption className="text-xs text-slate-400 p-3 bg-slate-950 border-t border-slate-800 text-center italic">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
   );
 }
 

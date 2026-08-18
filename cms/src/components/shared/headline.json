@@ -10,6 +10,18 @@
     "title": {
       "type": "string",
       "required": true
+    },
+    "level": {
+      "type": "enumeration",
+      "enum": [
+        "h2",
+        "h3",
+        "h4"
+      ],
+      "default": "h2"
+    },
+    "subtitle": {
+      "type": "string"
     }
   }
 }

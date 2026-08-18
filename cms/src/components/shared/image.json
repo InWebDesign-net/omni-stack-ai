@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_shared_images",
+  "info": {
+    "displayName": "Image Block",
+    "icon": "picture",
+    "description": "Embedded Image block referencing an Image entity"
+  },
+  "options": {},
+  "attributes": {
+    "image": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::image.image"
+    },
+    "caption": {
+      "type": "string"
+    }
+  }
+}

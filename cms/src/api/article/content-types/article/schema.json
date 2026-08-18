@@ -48,10 +48,9 @@
       "components": [
         "shared.rich-text",
         "shared.video",
-        "shared.media",
+        "shared.image",
         "shared.quote",
-        "shared.headline",
-        "shared.pdf"
+        "shared.headline"
       ],
       "pluginOptions": {
         "i18n": {
