@@ -45,7 +45,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal } = useApp();
     const { createRoom, openChat } = useChat();
 
-    const [activeTab, setActiveTab] = useState<'videos' | 'images' | 'articles' | 'favorites' | 'about'>('videos');
+    const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'favorites' | 'about'>('articles');
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscriberCount, setSubscriberCount] = useState(profile.subscribersCount || 0);
     const [editingVideo, setEditingVideo] = useState<any | null>(null);
@@ -229,63 +229,73 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* Navigation Tabs */}
                 <div className="flex items-center border-b border-slate-800 gap-4 sm:gap-8 overflow-x-auto">
-                    <button
-                        onClick={() => setActiveTab('videos')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'videos'
-                                ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
-                            }`}
-                    >
-                        <Video className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.videos || t.header.videos || 'Videos'} ({videos.length})</span>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveTab('images')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'images'
-                                ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
-                            }`}
-                    >
-                        <ImageIcon className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.images || t.header?.images || 'Bilder'} ({images.length})</span>
-                    </button>
-
+                    {/* TAB 1: Articles */}
                     <button
                         onClick={() => setActiveTab('articles')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'articles'
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'articles'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-slate-400 hover:text-slate-200'
                             }`}
                     >
                         <FileText className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.articles || t.header?.articles || 'Artikel'} ({articles.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.articles || 'Articles'} ({articles.length})</span>
                     </button>
 
+                    {/* TAB 2: Videos */}
+                    <button
+                        onClick={() => setActiveTab('videos')}
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'videos'
+                                ? 'border-indigo-500 text-indigo-400'
+                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                    >
+                        <Video className="w-4 h-4" />
+                        <span>{(t as any).userProfile?.tabs?.videos || 'Videos'} ({videos.length})</span>
+                    </button>
+
+                    {/* TAB 3: Images */}
+                    <button
+                        onClick={() => setActiveTab('images')}
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'images'
+                                ? 'border-indigo-500 text-indigo-400'
+                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                    >
+                        <ImageIcon className="w-4 h-4" />
+                        <span>{(t as any).userProfile?.tabs?.images || 'Images'} ({images.length})</span>
+                    </button>
+
+                    {/* TAB 4: Favorites */}
                     <button
                         onClick={() => setActiveTab('favorites')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'favorites'
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'favorites'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-slate-400 hover:text-slate-200'
                             }`}
                     >
                         <Heart className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.favorites || t.common.favorites || 'Favoriten'} ({favorites.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.favorites || 'Favorites'} ({favorites.length})</span>
                     </button>
 
+                    {/* TAB 5: About Channel */}
                     <button
                         onClick={() => setActiveTab('about')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${activeTab === 'about'
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'about'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-slate-400 hover:text-slate-200'
                             }`}
                     >
                         <UserCheck className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.about || 'Kanal-Info'}</span>
+                        <span>{(t as any).userProfile?.tabs?.about || 'About Channel'}</span>
                     </button>
                 </div>
 
-                {/* TAB 1: Videos Grid */}
+                {/* TAB 1: Articles Grid */}
+                {activeTab === 'articles' && (
+                    <UserArticlesTab articles={articles} slug={profile.handle || profile.username} t={t} />
+                )}
+
+                {/* TAB 2: Videos Grid */}
                 {activeTab === 'videos' && (
                     <div>
                         {videos.length === 0 ? (
@@ -323,7 +333,9 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 <Image
                                                     src={thumb}
                                                     alt={item.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    fill
+                                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
@@ -395,14 +407,9 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     </div>
                 )}
 
-                {/* TAB 2: Images Grid */}
+                {/* TAB 3: Images Grid */}
                 {activeTab === 'images' && (
                     <UserImagesTab images={images} slug={profile.handle || profile.username} t={t} />
-                )}
-
-                {/* TAB 3: Articles Grid */}
-                {activeTab === 'articles' && (
-                    <UserArticlesTab articles={articles} slug={profile.handle || profile.username} t={t} />
                 )}
 
                 {/* TAB 4: Favorites Grid */}

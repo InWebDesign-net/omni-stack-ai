@@ -30,8 +30,10 @@ export function UserImagesTab({ images, slug, t }: UserImagesTabProps) {
         >
           <Image
             src={img.thumbnailUrl || img.imageUrl || '/media/thumbnails/default.png'}
-            alt={img.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            alt={img.title || 'Image'}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">

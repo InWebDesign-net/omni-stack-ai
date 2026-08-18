@@ -141,15 +141,103 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       return bTime - aTime; // Newest first
     });
 
-    // 4. Calculate Stats
+    // 5. Fetch images created by targetProfile
+    let userImages: any[] = [];
+    try {
+      const imagesRes = await fetch(
+        `${strapiUrl}/api/images?populate=creator&pagination[pageSize]=200&locale=*${creatorParam}${visibilityParam}`,
+        { headers, cache: 'no-store' }
+      );
+      if (imagesRes.ok) {
+        const imagesData = await imagesRes.json();
+        const allImages = imagesData?.data || [];
+        const profileImageMap = new Map<string, any>();
+        for (const img of allImages) {
+          const creator = img.creator || img.author;
+          const belongsToProfile = Boolean(
+            creator &&
+              targetProfile &&
+              (
+                (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
+                (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
+                (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
+                (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
+              )
+          );
+
+          if (belongsToProfile) {
+            const key = img.slug || img.documentId || img.id;
+            const canView = isOwner || img.visibility === 'public';
+            if (canView) {
+              if (!profileImageMap.has(key)) {
+                profileImageMap.set(key, img);
+              }
+            }
+          }
+        }
+        userImages = Array.from(profileImageMap.values());
+      }
+    } catch (e) {
+      console.error('Error fetching images for profile:', e);
+    }
+
+    // 6. Fetch articles created by targetProfile
+    let userArticles: any[] = [];
+    try {
+      const articlesRes = await fetch(
+        `${strapiUrl}/api/articles?populate=creator&pagination[pageSize]=200&locale=*${creatorParam}${visibilityParam}`,
+        { headers, cache: 'no-store' }
+      );
+      if (articlesRes.ok) {
+        const articlesData = await articlesRes.json();
+        const allArticles = articlesData?.data || [];
+        const profileArticleMap = new Map<string, any>();
+        for (const art of allArticles) {
+          const creator = art.creator || art.author;
+          const belongsToProfile = Boolean(
+            creator &&
+              targetProfile &&
+              (
+                (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
+                (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
+                (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
+                (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
+              )
+          );
+
+          if (belongsToProfile) {
+            const key = art.slug || art.documentId || art.id;
+            const canView = isOwner || art.visibility === 'public';
+            if (canView) {
+              if (!profileArticleMap.has(key)) {
+                profileArticleMap.set(key, art);
+              }
+            }
+          }
+        }
+        userArticles = Array.from(profileArticleMap.values());
+      }
+    } catch (e) {
+      console.error('Error fetching articles for profile:', e);
+    }
+
+    // 7. Calculate Stats
     let totalViews = 0;
     let totalLikes = 0;
     for (const v of userVideos) {
       totalViews += Number(v.viewsCount || 0);
       totalLikes += Number(v.likesCount || 0);
     }
+    for (const img of userImages) {
+      totalViews += Number(img.viewsCount || 0);
+      totalLikes += Number(img.likesCount || 0);
+    }
+    for (const art of userArticles) {
+      totalViews += Number(art.viewsCount || 0);
+      totalLikes += Number(art.likesCount || 0);
+    }
 
-    // 5. Fetch Favorites for this profile (videos, images AND feed-items / content)
+    // 8. Fetch Favorites for this profile
     let favorites: any[] = [];
     try {
       const handleFilter = encodeURIComponent(targetProfile.handle || targetProfile.username || '');
@@ -173,7 +261,6 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
               mediaType: 'image',
             });
           } else if (f.feedItem) {
-            // Normalize feed-item shape to the card format expected by the UI
             const fi = f.feedItem;
             favorites.push({
               documentId: fi.documentId,
@@ -205,8 +292,8 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
       },
       isOwner,
       videos: userVideos,
-      images: [],
-      articles: [],
+      images: userImages,
+      articles: userArticles,
       favorites,
       stats: {
         totalVideos: userVideos.length,
