@@ -251,7 +251,7 @@ export default function Header({
               <span className="font-extrabold text-[17px] tracking-[-0.04em] text-white leading-tight">
                 Omni
               </span>
-              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
+              <span className="hidden sm:inline-block text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
                 BY INWEBDESIGN
               </span>
             </div>
