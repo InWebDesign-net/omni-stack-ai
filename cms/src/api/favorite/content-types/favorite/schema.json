@@ -33,6 +33,11 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::image.image"
+    },
+    "article": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::article.article"
     }
   }
 }
