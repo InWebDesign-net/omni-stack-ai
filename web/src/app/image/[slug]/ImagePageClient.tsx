@@ -250,11 +250,19 @@ export default function ImagePageClient({
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2"
+            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.common?.back || (lang === 'de' ? 'Zurück' : 'Back')}</span>
           </button>
+
+          <Link
+            href="/images"
+            className="flex items-center gap-2 text-xs text-teal-400 hover:text-teal-300 font-semibold transition-colors"
+          >
+            <ImageIcon className="w-4 h-4" />
+            <span>{lang === 'de' ? 'Alle Bilder durchsuchen' : 'Browse all images'}</span>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

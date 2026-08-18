@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Heart, Share2, Bookmark, Eye, Clock, MessageSquare,
   BookOpen, User as UserIcon, Settings, Tag, Sparkles, FileText, CheckCircle2,
@@ -29,6 +30,7 @@ function pickLocalized(source: any, useLang: string) {
 }
 
 export default function ArticleDetailPageClient({ initialItem, slug }: { initialItem: any; slug: string }) {
+  const router = useRouter();
   const { t, lang, currentUser, openAuthModal, subscribedChannels } = useApp();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -266,64 +268,56 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         </div>
       )}
 
-      <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content Column (2 Cols) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Back Navigation Bar & Actions */}
-          <div className="flex items-center justify-between">
-            <Link
-              href="/articles"
-              className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{t.common?.back || 'Zurück zu Articles'}</span>
-            </Link>
+      <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6">
+        {/* Navigation Top Bar */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all text-xs font-semibold cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{t.common?.back || (effectiveLang === 'de' ? 'Zurück' : 'Back')}</span>
+          </button>
 
-            {isOwner && (
-              <button
-                onClick={() => setShowSettingsModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 text-xs font-bold transition-all flex items-center gap-1.5"
-              >
-                <Settings className="w-4 h-4" />
-                <span>{t.common?.settings || 'Bearbeiten'}</span>
-              </button>
-            )}
-          </div>
+          <Link
+            href="/articles"
+            className="flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>{effectiveLang === 'de' ? 'Alle Artikel durchsuchen' : 'Browse all articles'}</span>
+          </Link>
+        </div>
 
-          {/* Article Header Card */}
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
-              <FileText className="w-4 h-4" />
-              <span>Omni Magazine & Articles</span>
-            </div>
+        {/* 3-Column Grid Layout (2 Cols Main, 1 Col Sidebar) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Main Content Column (2 Cols) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Article Header Card */}
+            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                  <FileText className="w-4 h-4" />
+                  <span>Omni Magazine & Articles</span>
+                </div>
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              {item.title}
-            </h1>
+                {isOwner && (
+                  <button
+                    onClick={() => setShowSettingsModal(true)}
+                    className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>{t.common?.settings || 'Bearbeiten'}</span>
+                  </button>
+                )}
+              </div>
 
-            {/* Creator Row */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-800/60">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveChannelModal({
-                      username: creatorName,
-                      handle: creatorHandle,
-                      avatarUrl: creatorAvatar,
-                    })
-                  }
-                  className="relative cursor-pointer group"
-                >
-                  <Image
-                    src={creatorAvatar}
-                    alt={creatorName}
-                    width={44}
-                    height={44}
-                    className="w-11 h-11 rounded-full object-cover border-2 border-purple-500/30 group-hover:border-purple-400 transition-colors"
-                  />
-                </button>
-                <div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                {item.title}
+              </h1>
+
+              {/* Creator Row */}
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-800/60">
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() =>
@@ -333,187 +327,151 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                         avatarUrl: creatorAvatar,
                       })
                     }
-                    className="text-sm font-bold text-white hover:text-purple-300 transition-colors text-left flex items-center gap-1.5"
+                    className="relative cursor-pointer group"
                   >
-                    <span>{creatorName}</span>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
+                    <Image
+                      src={creatorAvatar}
+                      alt={creatorName}
+                      width={44}
+                      height={44}
+                      className="w-11 h-11 rounded-full object-cover border-2 border-purple-500/30 group-hover:border-purple-400 transition-colors"
+                    />
                   </button>
-                  <div className="text-xs font-mono text-slate-400">{creatorHandle}</div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveChannelModal({
+                          username: creatorName,
+                          handle: creatorHandle,
+                          avatarUrl: creatorAvatar,
+                        })
+                      }
+                      className="text-sm font-bold text-white hover:text-purple-300 transition-colors text-left flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>{creatorName}</span>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
+                    </button>
+                    <div className="text-xs font-mono text-slate-400">{creatorHandle}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <SubscribeButton targetId={creatorHandle} size="md" />
+
+                  <button
+                    onClick={handleLikeToggle}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
+                      isLiked
+                        ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/20'
+                        : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                    }`}
+                  >
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-rose-400' : ''}`} />
+                    <span>{likesCount}</span>
+                  </button>
+
+                  <button
+                    onClick={handleShare}
+                    className="p-2.5 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:text-white hover:border-slate-700 transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    title="Teilen"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <SubscribeButton targetId={creatorHandle} size="md" />
-
-                <button
-                  onClick={handleLikeToggle}
-                  className={`p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold ${
-                    isLiked
-                      ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/20'
-                      : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-rose-400' : ''}`} />
-                  <span>{likesCount}</span>
-                </button>
-
-                <button
-                  onClick={handleShare}
-                  className="p-2.5 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:text-white hover:border-slate-700 transition-colors text-xs font-bold flex items-center gap-1.5"
-                  title="Teilen"
-                >
-                  <Share2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero Thumbnail */}
-          {item.thumbnail && (
-            <div className="relative aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
-              <Image
-                src={item.thumbnail}
-                alt={item.title}
-                fill
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
-
-          {/* Summary / Lead Quote Box */}
-          {summaryText && (
-            <div className="bg-purple-950/20 border border-purple-500/30 rounded-2xl p-5 shadow-xl">
-              <p className="text-base text-purple-200/90 italic leading-relaxed">
-                "{summaryText}"
-              </p>
-            </div>
-          )}
-
-          {/* Article Main Body Content Blocks */}
-          <article className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
-            <ArticleBlockRenderer blocks={item.blocks || item.content || []} />
-          </article>
-
-          {/* Tags */}
-          {Array.isArray(item.tags) && item.tags.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap pt-2">
-              <Tag className="w-4 h-4 text-purple-400 shrink-0" />
-              {item.tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-purple-300"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Unified Comments Section */}
-          <section className="pt-4">
-            <UnifiedCommentsSection slug={slug} lang={effectiveLang} t={t} accentColor="purple" onCommentsCountChange={setCommentsCount} />
-          </section>
-        </div>
-
-        {/* Sidebar Column (1 Col) */}
-        <div className="space-y-6">
-          {/* Article Stats Card */}
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-purple-400" />
-              <span>Artikel Informationen</span>
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                <div className="text-slate-400 flex items-center gap-1.5">
-                  <Eye className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Aufrufe</span>
+              {/* Article Information Grid (Left Column) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-800/60 text-xs">
+                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+                  <div className="text-slate-400 flex items-center gap-1.5">
+                    <Eye className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Aufrufe</span>
+                  </div>
+                  <div className="text-base font-extrabold text-white font-mono">{viewsCount}</div>
                 </div>
-                <div className="text-base font-extrabold text-white font-mono">{viewsCount}</div>
-              </div>
 
-              <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                <div className="text-slate-400 flex items-center gap-1.5">
-                  <Heart className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Likes</span>
+                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+                  <div className="text-slate-400 flex items-center gap-1.5">
+                    <Heart className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Likes</span>
+                  </div>
+                  <div className="text-base font-extrabold text-white font-mono">{likesCount}</div>
                 </div>
-                <div className="text-base font-extrabold text-white font-mono">{likesCount}</div>
-              </div>
 
-              <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                <div className="text-slate-400 flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Kommentare</span>
+                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+                  <div className="text-slate-400 flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Kommentare</span>
+                  </div>
+                  <div className="text-base font-extrabold text-white font-mono">{commentsCount}</div>
                 </div>
-                <div className="text-base font-extrabold text-white font-mono">{commentsCount}</div>
-              </div>
 
-              <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                <div className="text-slate-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-teal-400" />
-                  <span>Datum</span>
-                </div>
-                <div className="text-xs font-semibold text-slate-200 truncate">
-                  {formatDate(item.createdAt)}
+                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+                  <div className="text-slate-400 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-teal-400" />
+                    <span>Datum</span>
+                  </div>
+                  <div className="text-xs font-semibold text-slate-200 truncate">
+                    {formatDate(item.createdAt)}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Creator Channel Card */}
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  setActiveChannelModal({
-                    username: creatorName,
-                    handle: creatorHandle,
-                    avatarUrl: creatorAvatar,
-                  })
-                }
-                className="relative group cursor-pointer"
-              >
+            {/* Hero Thumbnail */}
+            {item.thumbnail && (
+              <div className="relative aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
                 <Image
-                  src={creatorAvatar}
-                  alt={creatorName}
-                  width={52}
-                  height={52}
-                  className="w-13 h-13 rounded-full object-cover border-2 border-purple-500/40 group-hover:border-purple-400 transition-colors"
+                  src={item.thumbnail}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 66vw"
+                  className="object-cover"
+                  priority
                 />
-              </button>
-              <div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveChannelModal({
-                      username: creatorName,
-                      handle: creatorHandle,
-                      avatarUrl: creatorAvatar,
-                    })
-                  }
-                  className="font-bold text-white hover:text-purple-300 text-sm transition-colors text-left"
-                >
-                  {creatorName}
-                </button>
-                <div className="text-xs font-mono text-slate-400">{creatorHandle}</div>
               </div>
-            </div>
+            )}
 
-            <p className="text-xs text-slate-400 leading-relaxed">
-              {creator?.bio || fallbackCreator.bio}
-            </p>
+            {/* Summary / Lead Quote Box */}
+            {summaryText && (
+              <div className="bg-purple-950/20 border border-purple-500/30 rounded-2xl p-5 shadow-xl">
+                <p className="text-base text-purple-200/90 italic leading-relaxed">
+                  "{summaryText}"
+                </p>
+              </div>
+            )}
 
-            <div className="pt-2">
-              <SubscribeButton targetId={creatorHandle} size="md" className="w-full justify-center" />
-            </div>
+            {/* Article Main Body Content Blocks */}
+            <article className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+              <ArticleBlockRenderer blocks={item.blocks || item.content || []} />
+            </article>
+
+            {/* Tags */}
+            {Array.isArray(item.tags) && item.tags.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap pt-2">
+                <Tag className="w-4 h-4 text-purple-400 shrink-0" />
+                {item.tags.map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-purple-300"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Unified Comments Section */}
+            <section className="pt-4">
+              <UnifiedCommentsSection slug={slug} lang={effectiveLang} t={t} accentColor="purple" onCommentsCountChange={setCommentsCount} />
+            </section>
           </div>
 
-          {/* Related Articles Sidebar */}
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-xl space-y-4">
+          {/* Sidebar Column (1 Col - Flush at top) */}
+          <div className="space-y-6">
+            {/* Related Articles Sidebar */}
+            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-xl space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-purple-400" />
               <span>Weitere Artikel</span>
@@ -558,7 +516,8 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
             </div>
           </div>
         </div>
-      </main>
+      </div>
+    </main>
 
       {/* Channel Profile Modal */}
       {activeChannelModal && (
