@@ -121,6 +121,10 @@
     "matchAll": "Alle Tags",
     "activeTags": "Aktive Tag-Filter"
   },
+  "article": {
+    "notFound": "Artikel nicht gefunden",
+    "createArticle": "Artikel erstellen"
+  },
   "videoDetail": {
     "comments": "Kommentare",
     "relatedRecommendations": "Weitere Empfehlungen",
