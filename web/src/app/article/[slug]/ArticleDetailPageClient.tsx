@@ -95,6 +95,11 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         subscribedChannels.includes(creatorHandle.replace(/^@/, '')))
   );
 
+  const isEffectiveOwner =
+    isOwner ||
+    (Boolean(currentUser?.id) && Boolean(creator?.id) && Number(currentUser?.id) === Number(creator?.id)) ||
+    (Boolean(currentUser?.handle) && Boolean(creatorHandle) && currentUser?.handle.replace(/^@/, '').toLowerCase() === creatorHandle.replace(/^@/, '').toLowerCase());
+
   const userIdent = useMemo(() => {
     return currentUser?.id ? `user-${currentUser.id}` : 'anon-session';
   }, [currentUser?.id]);
@@ -357,7 +362,18 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <SubscribeButton targetId={creatorHandle} size="md" />
+                  {isEffectiveOwner ? (
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                      title={effectiveLang === 'de' ? 'Einstellungen' : 'Settings'}
+                    >
+                      <Settings className="w-4 h-4 text-purple-400" />
+                      <span>{effectiveLang === 'de' ? 'Einstellungen' : 'Settings'}</span>
+                    </button>
+                  ) : (
+                    <SubscribeButton targetId={creatorHandle} size="md" />
+                  )}
 
                   <button
                     onClick={handleLikeToggle}
