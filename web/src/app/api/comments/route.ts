@@ -112,18 +112,20 @@ export async function POST(request: Request) {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (token) headers.Authorization = `Bearer ${token}`;
 
-        let isImage = false;
+        let mediaKind: 'article' | 'image' | 'video' | 'feed-item' = 'video';
         let contentTitle = '';
         let creatorHandle = '';
         let creatorId: number | undefined;
+        let matched = false;
 
-        // 1. Check Image
-        const imgRes = await fetch(`${STRAPI_URL}/api/images?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&populate[creator]=true&locale=*`, { headers });
-        if (imgRes.ok) {
-          const imgData = await imgRes.json();
-          const items = imgData.data || [];
+        // 1. Check Article
+        const artRes = await fetch(`${STRAPI_URL}/api/articles?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&populate[creator]=true&locale=*`, { headers });
+        if (artRes.ok) {
+          const artData = await artRes.json();
+          const items = artData.data || [];
           if (items.length > 0) {
-            isImage = true;
+            matched = true;
+            mediaKind = 'article';
             const item = items[0];
             contentTitle = item.title || '';
             if (item.creator) {
@@ -132,7 +134,7 @@ export async function POST(request: Request) {
             }
             for (const it of items) {
               const currentCount = Number(it.commentsCount || 0);
-              await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}`, {
+              await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
@@ -141,13 +143,42 @@ export async function POST(request: Request) {
           }
         }
 
-        // 2. Check Video
-        if (!isImage) {
+        // 2. Check Image
+        if (!matched) {
+          const imgRes = await fetch(`${STRAPI_URL}/api/images?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&populate[creator]=true&locale=*`, { headers });
+          if (imgRes.ok) {
+            const imgData = await imgRes.json();
+            const items = imgData.data || [];
+            if (items.length > 0) {
+              matched = true;
+              mediaKind = 'image';
+              const item = items[0];
+              contentTitle = item.title || '';
+              if (item.creator) {
+                creatorHandle = item.creator.handle || item.creator.username;
+                creatorId = item.creator.id;
+              }
+              for (const it of items) {
+                const currentCount = Number(it.commentsCount || 0);
+                await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}`, {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
+                });
+              }
+            }
+          }
+        }
+
+        // 3. Check Video
+        if (!matched) {
           const vidRes = await fetch(`${STRAPI_URL}/api/videos?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&populate[creator]=true&locale=*`, { headers });
           if (vidRes.ok) {
             const vidData = await vidRes.json();
             const items = vidData.data || [];
             if (items.length > 0) {
+              matched = true;
+              mediaKind = 'video';
               const item = items[0];
               contentTitle = item.title || '';
               if (item.creator) {
@@ -166,7 +197,7 @@ export async function POST(request: Request) {
           }
         }
 
-        const basePath = isImage ? `/image/${feedSlug}` : `/video/${feedSlug}`;
+        const basePath = mediaKind === 'article' ? `/article/${feedSlug}` : mediaKind === 'image' ? `/image/${feedSlug}` : `/video/${feedSlug}`;
         const anchorLink = commentId ? `${basePath}#comment-${commentId}` : basePath;
         const senderTag = authorName || (authorHandle ? `@${authorHandle.replace(/^@/, '')}` : 'Jemand');
 
@@ -262,6 +293,19 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, error: 'id or documentId required' }, { status: 400 });
     }
 
+    let feedSlug: string | null = null;
+    try {
+      const getRes = await fetch(`${STRAPI_URL}/api/comments/${id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+      });
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        feedSlug = getJson.data?.feedSlug || null;
+      }
+    } catch (e) {}
+
     const res = await fetch(`${STRAPI_URL}/api/comments/${id}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -270,6 +314,56 @@ export async function DELETE(request: Request) {
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
       return NextResponse.json({ success: false, error: json.error }, { status: res.status });
+    }
+
+    if (feedSlug) {
+      try {
+        const token = process.env.STRAPI_API_TOKEN;
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        // Decrement on article
+        const artRes = await fetch(`${STRAPI_URL}/api/articles?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
+        if (artRes.ok) {
+          const artData = await artRes.json();
+          for (const it of artData.data || []) {
+            const currentCount = Number(it.commentsCount || 0);
+            await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ data: { commentsCount: Math.max(0, currentCount - 1) } }),
+            });
+          }
+        }
+
+        // Decrement on image
+        const imgRes = await fetch(`${STRAPI_URL}/api/images?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
+        if (imgRes.ok) {
+          const imgData = await imgRes.json();
+          for (const it of imgData.data || []) {
+            const currentCount = Number(it.commentsCount || 0);
+            await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ data: { commentsCount: Math.max(0, currentCount - 1) } }),
+            });
+          }
+        }
+
+        // Decrement on video
+        const vidRes = await fetch(`${STRAPI_URL}/api/videos?filters[slug][$eq]=${encodeURIComponent(feedSlug)}&locale=*`, { headers });
+        if (vidRes.ok) {
+          const vidData = await vidRes.json();
+          for (const it of vidData.data || []) {
+            const currentCount = Number(it.commentsCount || 0);
+            await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ data: { commentsCount: Math.max(0, currentCount - 1) } }),
+            });
+          }
+        }
+      } catch (e) {}
     }
 
     return NextResponse.json({ success: true });
