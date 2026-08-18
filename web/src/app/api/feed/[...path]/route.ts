@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
-// Mutating HTTP methods that require client authentication
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
-
-// Safe (read-only) methods that may use the server STRAPI_API_TOKEN
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 interface AuthValidation {
@@ -14,13 +12,13 @@ interface AuthValidation {
   statusCode?: number;
 }
 
-/**
- * Validates whether the request is allowed based on method and auth state.
- * - Safe methods (GET/HEAD/OPTIONS): allowed without client JWT
- * - Mutating methods (POST/PUT/DELETE/PATCH): require a client JWT in the Authorization header
- */
-function validateRequest(method: string, authHeader: string | null): AuthValidation {
+function validateRequest(method: string, pathStr: string, authHeader: string | null): AuthValidation {
   if (SAFE_METHODS.has(method)) {
+    return { valid: true };
+  }
+
+  // /api/feed/interaction is an interaction endpoint allowed without raw client JWT
+  if (pathStr === 'interaction') {
     return { valid: true };
   }
 
@@ -58,7 +56,7 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
 
     // Authentication & method validation
     const authHeader = req.headers.get('authorization');
-    const validation = validateRequest(req.method, authHeader);
+    const validation = validateRequest(req.method, pathStr, authHeader);
     if (!validation.valid) {
       return NextResponse.json(
         { error: validation.error },
@@ -71,30 +69,43 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
       'Content-Type': req.headers.get('content-type') || 'application/json',
     };
 
-    // Authentication strategy:
-    // 1. Client JWT present → forward it (Strapi validates it upstream)
-    // 2. No JWT + safe method → use server STRAPI_API_TOKEN (read-only admin access)
-    // 3. No JWT + mutating method → rejected by validateRequest above
     if (authHeader) {
       headers['authorization'] = authHeader;
-    } else if (process.env.STRAPI_API_TOKEN && SAFE_METHODS.has(req.method)) {
+    } else if (process.env.STRAPI_API_TOKEN) {
       headers['authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
     }
 
+    const { user } = await getCurrentUserFromCookies();
+    if (user?.id) {
+      headers['x-omni-user-id'] = String(user.id);
+    }
+
     // Read body for mutating requests
-    let body: string | null = null;
+    let bodyText: string | null = null;
     if (MUTATING_METHODS.has(req.method)) {
       try {
-        body = await req.text();
+        bodyText = await req.text();
       } catch (e) {
         console.error('[feed-proxy] error reading request body', e);
       }
     }
 
+    // If interaction payload lacks userId / userIdentifier, enrich from user session
+    if (pathStr === 'interaction' && bodyText && user?.id) {
+      try {
+        const parsed = JSON.parse(bodyText);
+        if (!parsed.userId) parsed.userId = user.id;
+        if (!parsed.userIdentifier || parsed.userIdentifier === 'anonymous' || parsed.userIdentifier === 'anon-session') {
+          parsed.userIdentifier = user.handle || user.username || `user-${user.id}`;
+        }
+        bodyText = JSON.stringify(parsed);
+      } catch (e) {}
+    }
+
     const res = await fetch(targetUrl, {
       method: req.method,
       headers,
-      body: body || undefined,
+      body: bodyText || undefined,
     });
 
     const dataText = await res.text();

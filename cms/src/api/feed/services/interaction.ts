@@ -73,7 +73,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // Query Fav collection relation in database
     try {
       const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
-      if (parsedUserId) favFilters.push({ user: { id: { $eq: parsedUserId } } });
+      if (parsedUserId) {
+        favFilters.push({ user: { id: { $eq: parsedUserId } } });
+        favFilters.push({ userIdentifier: { $eq: `user-${parsedUserId}` } });
+      }
 
       const favQuery: any = {
         filters: {
@@ -120,31 +123,43 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const type = payload?.type;
     const watchTimeSeconds = Number(payload?.watchTimeSeconds || 0);
     let userId = payload?.userId;
-    const userIdentifier = payload?.userIdentifier || 'anonymous';
+    let userIdentifier = payload?.userIdentifier || 'anonymous';
 
     if (!userId && userIdentifier && userIdentifier !== 'anonymous') {
       if (String(userIdentifier).startsWith('user-')) {
         const num = parseInt(String(userIdentifier).replace('user-', ''), 10);
         if (!isNaN(num)) userId = num;
       }
-      if (!userId) {
-        try {
-          const cleanIdent = String(userIdentifier).trim().replace(/^@/, '');
-          const foundUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-            where: {
-              $or: [
-                { handle: cleanIdent },
-                { username: cleanIdent },
-                { email: cleanIdent },
-              ],
-            },
-          });
-          if (foundUser) {
-            userId = foundUser.id;
-          }
-        } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
+    }
+
+    if (userId) {
+      try {
+        const foundUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+          where: { id: userId },
+        });
+        if (foundUser && (foundUser.handle || foundUser.username)) {
+          userIdentifier = foundUser.handle || foundUser.username;
         }
+      } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
+      }
+    } else if (userIdentifier && userIdentifier !== 'anonymous') {
+      try {
+        const cleanIdent = String(userIdentifier).trim().replace(/^@/, '');
+        const foundUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+          where: {
+            $or: [
+              { handle: cleanIdent },
+              { username: cleanIdent },
+              { email: cleanIdent },
+            ],
+          },
+        });
+        if (foundUser) {
+          userId = foundUser.id;
+        }
+      } catch (e) {
+        strapi.log.error('[interaction.ts] unhandled error', e);
       }
     }
 
@@ -293,7 +308,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       let existingFavs: any[] = [];
       try {
         const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
-        if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+        if (userId) {
+          favFilters.push({ user: { id: { $eq: userId } } });
+          favFilters.push({ userIdentifier: { $eq: `user-${userId}` } });
+        }
 
         const favQuery: any = {
           filters: {
@@ -405,7 +423,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // Find & delete Fav relation
       try {
         const favFilters: any[] = [{ userIdentifier: { $eq: userIdentifier } }];
-        if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+        if (userId) {
+          favFilters.push({ user: { id: { $eq: userId } } });
+          favFilters.push({ userIdentifier: { $eq: `user-${userId}` } });
+        }
 
         const favQuery: any = {
           filters: {
@@ -489,7 +510,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     try {
       const favFilters: any[] = [];
       if (userIdentifier) favFilters.push({ userIdentifier: { $eq: userIdentifier } });
-      if (userId) favFilters.push({ user: { id: { $eq: userId } } });
+      if (userId) {
+        favFilters.push({ user: { id: { $eq: userId } } });
+        favFilters.push({ userIdentifier: { $eq: `user-${userId}` } });
+      }
 
       if (favFilters.length === 0) {
         return { success: false, error: 'userIdentifier or userId is required' };

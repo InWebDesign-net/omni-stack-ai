@@ -241,7 +241,7 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     let favorites: any[] = [];
     try {
       const handleFilter = encodeURIComponent(targetProfile.handle || targetProfile.username || '');
-      const userFavUrl = `${strapiUrl}/api/favorites?filters[$or][0][user][id][$eq]=${targetProfile.id}&filters[$or][1][userIdentifier][$eq]=${handleFilter}&populate=video,image,feedItem,article&pagination[pageSize]=50`;
+      const userFavUrl = `${strapiUrl}/api/favorites?filters[$or][0][user][id][$eq]=${targetProfile.id}&filters[$or][1][userIdentifier][$eq]=${handleFilter}&filters[$or][2][userIdentifier][$eq]=user-${targetProfile.id}&populate=video,image,feedItem,article&pagination[pageSize]=50`;
       const favRes = await fetch(userFavUrl, { headers, cache: 'no-store' });
       if (favRes.ok) {
         const favData = await favRes.json();
