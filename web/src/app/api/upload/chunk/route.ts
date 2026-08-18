@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       }
 
       // Create bilingual entity via Strapi backend endpoint
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+      const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
       const authHeader = req.headers.get('authorization');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',

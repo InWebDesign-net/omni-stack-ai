@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     const { username, email, password, bio } = await req.json();
 
-    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+    const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
     // Register User in Strapi users-permissions plugin
     const regRes = await fetch(`${strapiUrl}/api/auth/local/register`, {

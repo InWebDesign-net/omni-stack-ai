@@ -25,7 +25,7 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 
 export async function GET(req: NextRequest) {
   try {
-    const strapiUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+    const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
     const res = await fetch(`${strapiUrl}/api/notifications`, {
       method: 'GET',
       headers: getAuthHeaders(req),
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const strapiUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+    const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
     const res = await fetch(`${strapiUrl}/api/notifications/mark-read`, {
       method: 'POST',
       headers: getAuthHeaders(req),
@@ -74,7 +74,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
-    const strapiUrl = process.env.STRAPI_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+    const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
     const res = await fetch(`${strapiUrl}/api/notifications/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(req),

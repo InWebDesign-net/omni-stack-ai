@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     const { identifier, password } = await req.json();
 
-    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+    const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
     // Login user with Strapi users-permissions plugin
     const loginRes = await fetch(`${strapiUrl}/api/auth/local`, {
