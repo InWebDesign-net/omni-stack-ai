@@ -275,8 +275,8 @@ export default function VideosPageClient({
           {/* Tag filter (same control panel as search/sort) */}
           <div className="pt-4 border-t border-slate-800/60 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              {/* Left Side: Title + Active Filter Count */}
-              <div className="flex items-center gap-2">
+              {/* Left Side: Title + Active Filter Count + Match Mode Toggle */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
                 <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{t.videos.allTags}</span>
                 {hasTagFilters && (
@@ -284,10 +284,31 @@ export default function VideosPageClient({
                     {includedTags.length + excludedTags.length} {t.videos.activeTags || 'aktiv'}
                   </span>
                 )}
-                {matchMode === 'all' && (
-                  <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
-                    {t.videos?.matchAll || 'Alle Tags'}
-                  </span>
+                {includedTags.length > 1 && (
+                  <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-[11px] ml-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setMatchMode('any')}
+                      className={`px-2 py-0.5 rounded-md font-medium transition-all ${
+                        matchMode === 'any'
+                          ? 'bg-indigo-500/20 text-indigo-300 font-bold'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {t.videos?.matchAny || 'Irgendein Tag'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMatchMode('all')}
+                      className={`px-2 py-0.5 rounded-md font-medium transition-all ${
+                        matchMode === 'all'
+                          ? 'bg-indigo-500/20 text-indigo-300 font-bold'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {t.videos?.matchAll || 'Alle Tags'}
+                    </button>
+                  </div>
                 )}
               </div>
 
