@@ -44,7 +44,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           adminUser: userId,
           participants: [userId],
           isActive: true,
-        },
+        } as any,
       });
 
       return { success: true, group };
@@ -87,7 +87,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           participants: {
             connect: [targetUserId],
           },
-        },
+        } as any,
       });
 
       return { success: true };
@@ -129,7 +129,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           participants: {
             disconnect: [targetUserId],
           },
-        },
+        } as any,
       });
 
       return { success: true };
@@ -163,7 +163,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         documentId,
         data: {
           isActive: false,
-        },
+        } as any,
       });
 
       return { success: true };
@@ -208,7 +208,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           data: {
             isSubscribed: isSubscribed !== undefined ? isSubscribed : !existing[0].isSubscribed,
             lastNotifiedAt: new Date().toISOString(),
-          },
+          } as any,
         });
       } else {
         await strapi.documents('api::chat-subscription.chat-subscription').create({
@@ -217,7 +217,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             room: documentId,
             isSubscribed: isSubscribed !== undefined ? isSubscribed : true,
             lastNotifiedAt: new Date().toISOString(),
-          },
+          } as any,
         });
       }
 

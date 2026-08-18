@@ -265,10 +265,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       };
 
       socket.on('chat:message_received', handleIncomingMessage);
+      
+      socket.on('chat:group_created', (data: any) => {
+        console.log('Group created:', data);
+      });
 
       return () => {
         active = false;
         socket.off('chat:message_received', handleIncomingMessage);
+        socket.off('chat:group_created');
       };
     }
 

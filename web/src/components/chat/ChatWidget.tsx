@@ -4,15 +4,17 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   MessageCircle, X, Maximize2, Minimize2, Settings,
   Search, Send, Sparkles, AlertCircle, Bot, ArrowLeft,
-  Plus, UserPlus, CheckCheck
+  Plus, UserPlus, CheckCheck, Users, Bell, BellOff, UserMinus, Trash2,
 } from 'lucide-react';
 import ChatSettingsModal from './ChatSettingsModal';
+import { GroupCreateModal } from './GroupCreateModal';
 import { RoomHeader } from './RoomHeader';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { useApp } from '@/context/AppContext';
 import { useChat, SearchableUser } from '@/context/ChatContext';
 import { useDebouncedCallback } from 'use-debounce';
+import { getSocket } from '@/lib/socket';
 
 export default function ChatWidget() {
   const { currentUser, openAuthModal, t } = useApp();
@@ -40,10 +42,12 @@ export default function ChatWidget() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+  const [isGroupCreateOpen, setIsGroupCreateOpen] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [privacyError, setPrivacyError] = useState<string | null>(null);
+  const [groupError, setGroupError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -177,6 +181,31 @@ export default function ChatWidget() {
     if (res.error) setPrivacyError(res.error);
   };
 
+  const handleCreateGroup = async (name: string) => {
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
+    setGroupError(null);
+    try {
+      const socket = getSocket();
+      if (socket) {
+        socket.emit('chat:create_group', { name, userId: currentUser.id });
+      } else {
+        // Fallback: HTTP if socket not available
+        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
+        const res = await fetch(`${strapiUrl}/api/chat-groups/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, userId: currentUser.id }),
+        });
+        if (!res.ok) throw new Error('Failed to create group');
+      }
+    } catch (err: any) {
+      setGroupError(err.message || 'Failed to create group');
+    }
+  };
+
   // 1. Floating Support Button (Collapsed Launcher)
   if (!isOpen) {
     return (
@@ -249,6 +278,10 @@ export default function ChatWidget() {
                   <button onClick={() => setIsNewChatOpen(true)} className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700">
                     <UserPlus className="w-4 h-4 text-teal-400" />
                     <span>{t.chat?.startDirectUserChat || 'Nutzer anschreiben'}</span>
+                  </button>
+                  <button onClick={() => setIsGroupCreateOpen(true)} className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700">
+                    <Users className="w-4 h-4 text-indigo-400" />
+                    <span>{t.chat?.createGroup || 'Gruppe erstellen'}</span>
                   </button>
                 </div>
               </div>
@@ -530,6 +563,13 @@ export default function ChatWidget() {
               <Bot className="w-5 h-5" />
               <span>{t.chat?.startAiChat || 'KI-Assistenten starten'}</span>
             </button>
+            <button
+              onClick={() => { setIsNewChatOpen(false); setIsGroupCreateOpen(true); }}
+              className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border border-slate-700"
+            >
+              <Users className="w-5 h-5 text-indigo-400" />
+              <span>{t.chat?.createGroup || 'Gruppe erstellen'}</span>
+            </button>
             <div className="text-xs text-slate-400 text-center">Nach Nutzern suchen:</div>
             <input
               type="text"
@@ -559,6 +599,25 @@ export default function ChatWidget() {
           </div>
         </div>
       )}
+      {/* Group Error */}
+      {groupError && (
+        <div className="m-4 p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{groupError}</span>
+        </div>
+      )}
+
+      {/* Group Create Modal */}
+      <GroupCreateModal
+        isOpen={isGroupCreateOpen}
+        onClose={() => setIsGroupCreateOpen(false)}
+        onCreate={handleCreateGroup}
+        onNavigateToGroup={(groupId) => {
+          setIsGroupCreateOpen(false);
+          setActiveRoomId(groupId);
+        }}
+        t={t}
+      />
     </div>
   );
 }
