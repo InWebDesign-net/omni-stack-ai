@@ -108,8 +108,9 @@ export default function ChatWidget() {
       return (
         <button
           onClick={() => openChat()}
-          className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30"
+          className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
           title={t.chat?.title || 'Omni Chat'}
+          aria-label={t.chat?.title || 'Omni Chat öffnen'}
         >
           <MessageCircle className="w-6 h-6" />
         </button>
@@ -130,7 +131,8 @@ export default function ChatWidget() {
           </div>
           <button
             onClick={() => closeChat()}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            aria-label={t.common?.close || 'Schließen'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -233,8 +235,9 @@ export default function ChatWidget() {
     return (
       <button
         onClick={() => openChat()}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30"
+        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
         title={t.chat?.title || 'Omni Chat'}
+        aria-label={t.chat?.title || 'Omni Chat öffnen'}
       >
         <MessageCircle className="w-6 h-6" />
         {totalUnreadCount > 0 && (
@@ -259,16 +262,16 @@ export default function ChatWidget() {
                 {t.chat?.title || 'Omni Chat'}
               </h2>
               <div className="flex items-center gap-1">
-                <button onClick={() => setIsNewChatOpen(true)} className="p-2 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-all" title={t.chat?.newChatTitle || 'Neuen Chat erstellen'}>
+                <button onClick={() => setIsNewChatOpen(true)} className="p-2 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.chat?.newChatTitle || 'Neuen Chat erstellen'} aria-label={t.chat?.newChatTitle || 'Neuen Chat erstellen'}>
                   <Plus className="w-5 h-5" />
                 </button>
-                <button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'}>
+                <button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'} aria-label={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'}>
                   <Settings className="w-5 h-5" />
                 </button>
-                <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Fenster verkleinern">
+                <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title="Fenster verkleinern" aria-label="Fenster verkleinern">
                   <Minimize2 className="w-5 h-5" />
                 </button>
-                <button onClick={closeChat} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title={t.common?.close || 'Schließen'}>
+                <button onClick={closeChat} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.common?.close || 'Schließen'} aria-label={t.common?.close || 'Schließen'}>
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -400,16 +403,16 @@ export default function ChatWidget() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setIsNewChatOpen(true)} className="p-1.5 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-all" title={t.chat?.newChatTitle || 'Neuen Chat erstellen'}>
+              <button onClick={() => setIsNewChatOpen(true)} className="p-1.5 hover:bg-slate-800 text-indigo-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.chat?.newChatTitle || 'Neuen Chat erstellen'} aria-label={t.chat?.newChatTitle || 'Neuen Chat erstellen'}>
                 <Plus className="w-4 h-4" />
               </button>
-              <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'}>
+              <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'} aria-label={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'}>
                 <Settings className="w-4 h-4" />
               </button>
-              <button onClick={toggleExpand} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title="Maximieren">
+              <button onClick={toggleExpand} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title="Maximieren" aria-label="Maximieren">
                 <Maximize2 className="w-4 h-4" />
               </button>
-              <button onClick={closeChat} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title={t.common?.close || 'Schließen'}>
+              <button onClick={closeChat} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.common?.close || 'Schließen'} aria-label={t.common?.close || 'Schließen'}>
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -515,7 +518,7 @@ export default function ChatWidget() {
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-white">{t.chat?.newChatTitle || 'Neuen Chat erstellen'}</h3>
-              <button onClick={() => setIsNewChatOpen(false)} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => setIsNewChatOpen(false)} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" aria-label={t.common?.close || 'Schließen'}>
                 <X className="w-5 h-5" />
               </button>
             </div>
