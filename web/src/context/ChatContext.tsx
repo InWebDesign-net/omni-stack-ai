@@ -268,6 +268,36 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       
       socket.on('chat:group_created', (data: any) => {
         console.log('Group created:', data);
+        const g = data?.group || data;
+        if (g && (g.slug || g.id || g.documentId)) {
+          const realSlug = g.slug || `room-group-${g.id || Date.now()}`;
+          const newRoom: ChatRoom = {
+            id: realSlug,
+            slug: realSlug,
+            documentId: g.documentId,
+            name: g.name || 'Gruppe',
+            type: 'group',
+            language: 'de',
+            isAiEnabled: false,
+            unreadCount: 0,
+            participants: Array.isArray(g.participants) ? g.participants.map((p: any) => ({
+              id: String(p.id || p.documentId),
+              username: p.username || 'Nutzer',
+              avatarUrl: p.avatarUrl,
+              allowDirectMessages: p.allowDirectMessages || 'everyone',
+            })) : [],
+            messages: [],
+          };
+          setRooms((prev) => {
+            const exists = prev.some((r) => r.id === realSlug || r.slug === realSlug);
+            if (exists) {
+              return prev.map((r) => (r.id === realSlug || r.slug === realSlug ? { ...r, ...newRoom } : r));
+            }
+            return [newRoom, ...prev];
+          });
+          setActiveRoomId(realSlug);
+          setIsOpen(true);
+        }
       });
 
       return () => {

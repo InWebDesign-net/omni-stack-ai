@@ -188,19 +188,25 @@ export default function ChatWidget() {
     }
     setGroupError(null);
     try {
+      // 1. Create group room via ChatContext
+      const res = await createRoom({
+        name,
+        type: 'group',
+      });
+      if (res.error) {
+        setGroupError(res.error);
+        return;
+      }
+
+      // 2. Notify Socket.IO server if connected
       const socket = getSocket();
       if (socket) {
         socket.emit('chat:create_group', { name, userId: currentUser.id });
-      } else {
-        // Fallback: HTTP if socket not available
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || '';
-        const res = await fetch(`${strapiUrl}/api/chat-groups/create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, userId: currentUser.id }),
-        });
-        if (!res.ok) throw new Error('Failed to create group');
       }
+
+      // 3. Close group create and new chat modals
+      setIsGroupCreateOpen(false);
+      setIsNewChatOpen(false);
     } catch (err: any) {
       setGroupError(err.message || 'Failed to create group');
     }
@@ -361,61 +367,6 @@ export default function ChatWidget() {
             </div>
           )}
         </div>
-
-        {/* Modals */}
-        {isSettingsOpen && (
-          <ChatSettingsModal
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-          />
-        )}
-
-        {/* New Chat Modal (simplified inline) */}
-        {isNewChatOpen && (
-          <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg text-white">{t.chat?.newChatTitle || 'Neuen Chat erstellen'}</h3>
-                <button onClick={() => setIsNewChatOpen(false)} className="p-2 hover:bg-slate-800 rounded-xl">
-                  <X className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
-              <button
-                onClick={handleStartAiChat}
-                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-              >
-                <Bot className="w-5 h-5" />
-                <span>{t.chat?.startAiChat || 'KI-Assistenten starten'}</span>
-              </button>
-              <div className="text-xs text-slate-400 text-center">Nach Nutzern suchen:</div>
-              <input
-                type="text"
-                value={userSearchQuery}
-                onChange={(e) => handleUserSearchChange(e.target.value)}
-                placeholder={t.chat?.searchPlaceholder || 'Name eingeben...'}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200"
-              />
-              {isSearchingUsers && <div className="text-xs text-slate-500 text-center">Suche...</div>}
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {userSearchResults.map((user) => (
-                  <button
-                    key={user.id}
-                    onClick={() => handleStartDirectUserChat(user)}
-                    className="w-full flex items-center gap-3 p-3 hover:bg-slate-800 rounded-xl transition-all"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold">
-                      {user.username.charAt(0)}
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-semibold text-white">{user.username}</div>
-                      <div className="text-xs text-slate-400">{user.handle}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
