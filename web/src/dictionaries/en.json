@@ -34,7 +34,12 @@
     "sendMessage": "Send Message",
     "edited": "(edited)",
     "commentEdit": "Edit comment",
-    "commentDelete": "Delete comment",
+    "commentDelete": "Delete Comment",
+    "commentAdded": "Comment added",
+    "commentError": "Error commenting",
+    "writeComment": "Write a comment...",
+    "loginToComment": "Login to comment...",
+    "noComments": "No comments yet",
     "share": "Share"
   },
   "header": {
@@ -42,6 +47,7 @@
     "feed": "My Feed",
     "videos": "Videos",
     "images": "Images & Gallery",
+    "articles": "Articles & Magazine",
     "shorts": "Shorts",
     "login": "Sign In",
     "register": "Register",
@@ -129,7 +135,11 @@
       "matchAll": "All Tags",
       "activeTags": "Active Tag Filters"
     },
-  "videoDetail": {
+    "article": {
+      "notFound": "Article not found",
+      "createArticle": "Create Article"
+    },
+    "videoDetail": {
     "comments": "Comments",
     "relatedRecommendations": "More Recommendations",
     "noComments": "No comments yet. Be the first!",

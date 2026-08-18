@@ -35,6 +35,11 @@
     "edited": "(bearbeitet)",
     "commentEdit": "Kommentar bearbeiten",
     "commentDelete": "Kommentar löschen",
+    "commentAdded": "Kommentar hinzugefügt",
+    "commentError": "Fehler beim Kommentieren",
+    "writeComment": "Kommentar schreiben...",
+    "loginToComment": "Anmelden zum Kommentieren...",
+    "noComments": "Noch keine Kommentare",
     "share": "Teilen"
   },
   "header": {
@@ -42,6 +47,7 @@
     "feed": "Mein Feed",
     "videos": "Videos",
     "images": "Bilder & Galerie",
+    "articles": "Artikel & Magazin",
     "shorts": "Shorts",
     "login": "Anmelden",
     "register": "Registrieren",

@@ -3,7 +3,9 @@ import en from '@/dictionaries/en.json';
 
 export type Locale = 'de' | 'en';
 
-export type Dictionary = typeof de;
+export type Dictionary = {
+  [key: string]: any;
+};
 
 const dictionaries: Record<Locale, Dictionary> = {
   de,

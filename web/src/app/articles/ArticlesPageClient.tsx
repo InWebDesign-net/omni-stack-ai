@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -373,7 +375,7 @@ export default function ArticlesPageClient() {
                   </button>
                 </div>
               ) : (
-                articles.map((article) => (
+                articles.map((article: any) => (
                   <Link
                     key={article.documentId || article.slug || article.id}
                     href={`/article/${article.slug}`}
