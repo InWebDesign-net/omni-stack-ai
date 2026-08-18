@@ -27,10 +27,13 @@ import { useChat } from '@/context/ChatContext';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
+import { ArticleEditModal } from '@/components/article/ArticleEditModal';
+import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { UserImagesTab } from '@/components/user/UserImagesTab';
 import { UserArticlesTab } from '@/components/user/UserArticlesTab';
 import { UserFavoritesTab } from '@/components/user/UserFavoritesTab';
 import { formatAbsoluteDate } from '@/lib/date';
+import { jsonAuthHeaders } from '@/lib/affinity';
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -49,6 +52,14 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscriberCount, setSubscriberCount] = useState(profile.subscribersCount || 0);
     const [editingVideo, setEditingVideo] = useState<any | null>(null);
+    const [editingArticle, setEditingArticle] = useState<any | null>(null);
+    const [editingImage, setEditingImage] = useState<any | null>(null);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+    const showToast = (msg: string) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 3000);
+    };
 
     const dmSetting = profile.allowDirectMessages || 'everyone';
     const canSendDM = !isOwner && (
@@ -292,7 +303,13 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* TAB 1: Articles Grid */}
                 {activeTab === 'articles' && (
-                    <UserArticlesTab articles={articles} slug={profile.handle || profile.username} t={t} />
+                    <UserArticlesTab
+                        articles={articles}
+                        slug={profile.handle || profile.username}
+                        t={t}
+                        isOwner={isOwner}
+                        onEditArticle={(art) => setEditingArticle(art)}
+                    />
                 )}
 
                 {/* TAB 2: Videos Grid */}
@@ -409,7 +426,13 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* TAB 3: Images Grid */}
                 {activeTab === 'images' && (
-                    <UserImagesTab images={images} slug={profile.handle || profile.username} t={t} />
+                    <UserImagesTab
+                        images={images}
+                        slug={profile.handle || profile.username}
+                        t={t}
+                        isOwner={isOwner}
+                        onEditImage={(img) => setEditingImage(img)}
+                    />
                 )}
 
                 {/* TAB 4: Favorites Grid */}
@@ -448,7 +471,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     </div>
                 )}
 
-            {/* Video Settings Modal (opened from "Mein Kanal" video cards) */}
+            {/* Video Settings Modal */}
             {editingVideo && (
                 <VideoSettingsModal
                     documentId={editingVideo.documentId}
@@ -456,6 +479,102 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     onClose={() => setEditingVideo(null)}
                     onSave={() => router.refresh()}
                 />
+            )}
+
+            {/* Article Edit Modal */}
+            {editingArticle && (
+                <ArticleEditModal
+                    isOpen={Boolean(editingArticle)}
+                    onClose={() => setEditingArticle(null)}
+                    article={editingArticle}
+                    t={t}
+                    onSave={async ({ localeUpdates, visibility }: { localeUpdates: any[]; visibility: string }) => {
+                        const res = await fetch('/api/article/settings', {
+                            method: 'PUT',
+                            headers: jsonAuthHeaders(),
+                            body: JSON.stringify({
+                                documentId: editingArticle.documentId,
+                                localeUpdates,
+                                visibility,
+                            }),
+                        });
+                        if (!res.ok) {
+                            const errData = await res.json().catch(() => ({}));
+                            throw new Error(errData.error || 'Speichern fehlgeschlagen');
+                        }
+                        showToast('Artikel erfolgreich aktualisiert!');
+                        setEditingArticle(null);
+                        router.refresh();
+                    }}
+                    onDelete={async (hardDelete: boolean) => {
+                        const url = `/api/article/settings?documentId=${encodeURIComponent(editingArticle.documentId)}${
+                            hardDelete ? '&hard=true' : ''
+                        }`;
+                        const res = await fetch(url, {
+                            method: 'DELETE',
+                            headers: jsonAuthHeaders(),
+                        });
+                        if (!res.ok) {
+                            const errData = await res.json().catch(() => ({}));
+                            throw new Error(errData.error || 'Löschen fehlgeschlagen');
+                        }
+                        showToast('Artikel gelöscht.');
+                        setEditingArticle(null);
+                        router.refresh();
+                    }}
+                />
+            )}
+
+            {/* Image Edit Modal */}
+            {editingImage && (
+                <ImageEditModal
+                    isOpen={Boolean(editingImage)}
+                    onClose={() => setEditingImage(null)}
+                    image={editingImage}
+                    t={t}
+                    onSave={async (data: { localeUpdates: any[]; visibility: string }) => {
+                        const res = await fetch('/api/image/settings', {
+                            method: 'PUT',
+                            headers: jsonAuthHeaders(),
+                            body: JSON.stringify({
+                                documentId: editingImage.documentId,
+                                localeUpdates: data.localeUpdates,
+                                title: (data as any).title,
+                                summary: (data as any).summary,
+                                tags: (data as any).tags,
+                                visibility: data.visibility,
+                            }),
+                        });
+                        if (!res.ok) {
+                            const errData = await res.json().catch(() => ({}));
+                            throw new Error(errData.error || 'Speichern fehlgeschlagen');
+                        }
+                        showToast('Bild erfolgreich aktualisiert!');
+                        setEditingImage(null);
+                        router.refresh();
+                    }}
+                    onDelete={async (hardDelete: boolean) => {
+                        const url = `/api/image/settings?documentId=${encodeURIComponent(editingImage.documentId)}&hard=${hardDelete}`;
+                        const res = await fetch(url, {
+                            method: 'DELETE',
+                            headers: jsonAuthHeaders(),
+                        });
+                        if (!res.ok) {
+                            const errData = await res.json().catch(() => ({}));
+                            throw new Error(errData.error || 'Löschen fehlgeschlagen');
+                        }
+                        showToast('Bild gelöscht.');
+                        setEditingImage(null);
+                        router.refresh();
+                    }}
+                />
+            )}
+
+            {/* Toast Notification */}
+            {toastMessage && (
+                <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 bg-slate-950/90 text-white font-medium text-xs rounded-xl shadow-2xl border border-slate-700/60 backdrop-blur-md animate-fadeIn">
+                    {toastMessage}
+                </div>
             )}
         </main>
         </div>
