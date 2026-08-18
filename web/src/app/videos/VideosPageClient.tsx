@@ -409,37 +409,6 @@ export default function VideosPageClient({
                 })
               )}
             </div>
-
-            {/* Match mode toggle (only when ≥2 include tags) */}
-            {includedTags.length >= 2 && (
-              <div className="flex items-center gap-2 pt-1">
-                <span className="text-xs text-slate-400">{t.videos.includeLabel}:</span>
-                <div className="inline-flex rounded-lg border border-slate-800 overflow-hidden text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setMatchMode("any")}
-                    className={`px-3 py-1.5 transition-all ${
-                      matchMode === "any"
-                        ? "bg-indigo-500/20 text-indigo-300"
-                        : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    {t.videos.matchAny}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMatchMode("all")}
-                    className={`px-3 py-1.5 transition-all border-l border-slate-800 ${
-                      matchMode === "all"
-                        ? "bg-indigo-500/20 text-indigo-300"
-                        : "bg-slate-950/80 text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    {t.videos.matchAll}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
