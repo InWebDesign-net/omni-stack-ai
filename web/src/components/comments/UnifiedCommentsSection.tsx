@@ -18,6 +18,7 @@ interface UnifiedCommentsSectionProps {
   lang?: string;
   t?: any;
   accentColor?: string; // e.g. "indigo", "teal", "purple"
+  onCommentsCountChange?: (count: number) => void;
 }
 
 export function UnifiedCommentsSection({
@@ -25,6 +26,7 @@ export function UnifiedCommentsSection({
   lang = 'de',
   t,
   accentColor = 'indigo',
+  onCommentsCountChange,
 }: UnifiedCommentsSectionProps) {
   const { currentUser, openAuthModal, t: globalT } = useApp();
   const translations = t || globalT;
@@ -46,12 +48,15 @@ export function UnifiedCommentsSection({
     try {
       const items = await fetchCommentsForSlug(slug, lang as 'de' | 'en');
       setCommentsTree(items);
+      if (onCommentsCountChange) {
+        onCommentsCountChange(countTotalComments(items));
+      }
     } catch (e) {
       console.error('Failed to load comments for slug:', slug, e);
     } finally {
       setLoading(false);
     }
-  }, [slug, lang]);
+  }, [slug, lang, onCommentsCountChange]);
 
   useEffect(() => {
     loadComments();

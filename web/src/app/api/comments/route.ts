@@ -134,11 +134,14 @@ export async function POST(request: Request) {
             }
             for (const it of items) {
               const currentCount = Number(it.commentsCount || 0);
-              await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}`, {
-                method: 'PUT',
-                headers,
-                body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
-              });
+              const nextCount = currentCount + 1;
+              for (const statusParam of ['', '?status=published']) {
+                await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}${statusParam}`, {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({ data: { commentsCount: nextCount } }),
+                }).catch(() => {});
+              }
             }
           }
         }
@@ -160,11 +163,14 @@ export async function POST(request: Request) {
               }
               for (const it of items) {
                 const currentCount = Number(it.commentsCount || 0);
-                await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}`, {
-                  method: 'PUT',
-                  headers,
-                  body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
-                });
+                const nextCount = currentCount + 1;
+                for (const statusParam of ['', '?status=published']) {
+                  await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}${statusParam}`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ data: { commentsCount: nextCount } }),
+                  }).catch(() => {});
+                }
               }
             }
           }
@@ -187,11 +193,14 @@ export async function POST(request: Request) {
               }
               for (const it of items) {
                 const currentCount = Number(it.commentsCount || 0);
-                await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}`, {
-                  method: 'PUT',
-                  headers,
-                  body: JSON.stringify({ data: { commentsCount: currentCount + 1 } }),
-                });
+                const nextCount = currentCount + 1;
+                for (const statusParam of ['', '?status=published']) {
+                  await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}${statusParam}`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ data: { commentsCount: nextCount } }),
+                  }).catch(() => {});
+                }
               }
             }
           }
@@ -328,11 +337,14 @@ export async function DELETE(request: Request) {
           const artData = await artRes.json();
           for (const it of artData.data || []) {
             const currentCount = Number(it.commentsCount || 0);
-            await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}`, {
-              method: 'PUT',
-              headers,
-              body: JSON.stringify({ data: { commentsCount: Math.max(0, currentCount - 1) } }),
-            });
+            const nextCount = Math.max(0, currentCount - 1);
+            for (const statusParam of ['', '?status=published']) {
+              await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}${statusParam}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ data: { commentsCount: nextCount } }),
+              }).catch(() => {});
+            }
           }
         }
 
@@ -342,11 +354,14 @@ export async function DELETE(request: Request) {
           const imgData = await imgRes.json();
           for (const it of imgData.data || []) {
             const currentCount = Number(it.commentsCount || 0);
-            await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}`, {
-              method: 'PUT',
-              headers,
-              body: JSON.stringify({ data: { commentsCount: Math.max(0, currentCount - 1) } }),
-            });
+            const nextCount = Math.max(0, currentCount - 1);
+            for (const statusParam of ['', '?status=published']) {
+              await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}${statusParam}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ data: { commentsCount: nextCount } }),
+              }).catch(() => {});
+            }
           }
         }
 
@@ -356,11 +371,14 @@ export async function DELETE(request: Request) {
           const vidData = await vidRes.json();
           for (const it of vidData.data || []) {
             const currentCount = Number(it.commentsCount || 0);
-            await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}`, {
-              method: 'PUT',
-              headers,
-              body: JSON.stringify({ data: { commentsCount: Math.max(0, currentCount - 1) } }),
-            });
+            const nextCount = Math.max(0, currentCount - 1);
+            for (const statusParam of ['', '?status=published']) {
+              await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}${statusParam}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ data: { commentsCount: nextCount } }),
+              }).catch(() => {});
+            }
           }
         }
       } catch (e) {}

@@ -46,12 +46,15 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
   const effectiveLang = mounted ? lang : 'de';
 
+  const [commentsCount, setCommentsCount] = useState(initialItem?.commentsCount || 0);
+
   useEffect(() => {
     const active = pickLocalized(initialItem, effectiveLang);
     setItem(active);
     if (active) {
       setLikesCount(active.likesCount || 0);
       setViewsCount(active.viewsCount || 0);
+      setCommentsCount(active.commentsCount || 0);
     }
   }, [initialItem, effectiveLang]);
 
@@ -410,7 +413,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
           {/* Unified Comments Section */}
           <section className="pt-4">
-            <UnifiedCommentsSection slug={slug} lang={effectiveLang} t={t} accentColor="purple" />
+            <UnifiedCommentsSection slug={slug} lang={effectiveLang} t={t} accentColor="purple" onCommentsCountChange={setCommentsCount} />
           </section>
         </div>
 
@@ -445,7 +448,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                   <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Kommentare</span>
                 </div>
-                <div className="text-base font-extrabold text-white font-mono">{item.commentsCount || 0}</div>
+                <div className="text-base font-extrabold text-white font-mono">{commentsCount}</div>
               </div>
 
               <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
