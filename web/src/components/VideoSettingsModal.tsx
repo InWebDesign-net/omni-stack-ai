@@ -198,11 +198,18 @@ export default function VideoSettingsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h2 className="text-lg font-bold text-white">{t?.videoSettings?.title || 'Video bearbeiten'}</h2>
+        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+              <span>{t?.videoSettings?.title || 'Video bearbeiten'}</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Sprachversionen (DE/EN) und Sichtbarkeit für dieses Video anpassen.
+            </p>
+          </div>
           <button
             onClick={requestClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -224,16 +231,17 @@ export default function VideoSettingsModal({
 
         {!loading && !showDeleteConfirm && (
           <>
-            {/* Language Tabs for translatable content */}
-            <div className="flex items-center gap-1 p-1 bg-slate-950/80 border border-slate-800 rounded-xl w-fit">
+            {/* Language Tabs for translatable content (Full Width) */}
+            <div className="flex items-center gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full">
               {(['de', 'en'] as const).map((loc) => (
                 <button
                   key={loc}
+                  type="button"
                   onClick={() => setActiveLocale(loc)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeLocale === loc
-                      ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <Globe className="w-3.5 h-3.5" />
