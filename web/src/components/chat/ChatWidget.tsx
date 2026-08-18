@@ -87,6 +87,21 @@ export default function ChatWidget() {
     }
   }, [isNewChatOpen]);
 
+  // Lock body scroll on mobile when full-screen chat is open
+  useEffect(() => {
+    if (isOpen && isExpanded) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isOpen, isExpanded]);
+
   // Guest view (Unauthenticated User)
   if (!currentUser) {
     if (!isOpen) {
@@ -235,10 +250,10 @@ export default function ChatWidget() {
   return (
     <>
       {isExpanded ? (
-        <div className="fixed inset-0 z-50 bg-[#080e1e] text-[#dae2fd] flex flex-col md:flex-row font-sans">
+        <div className="fixed inset-0 h-full h-[100dvh] max-h-[100dvh] w-full z-50 bg-[#080e1e] text-[#dae2fd] flex flex-col md:flex-row font-sans overflow-hidden">
           {/* Left Column - Rooms Sidebar */}
-          <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-800 bg-slate-900/60 ${activeRoomId ? 'hidden md:flex' : 'flex'}`}>
-            <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+          <div className={`w-full md:w-80 lg:w-96 flex flex-col min-h-0 h-full overflow-hidden border-r border-slate-800 bg-slate-900/60 ${activeRoomId ? 'hidden md:flex' : 'flex'}`}>
+            <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center justify-between shrink-0">
               <h2 className="font-bold text-lg text-white flex items-center gap-2">
                 <MessageCircle className="w-5 h-5 text-indigo-400" />
                 {t.chat?.title || 'Omni Chat'}
@@ -258,7 +273,7 @@ export default function ChatWidget() {
                 </button>
               </div>
             </div>
-            <div className="p-3 border-b border-slate-800">
+            <div className="p-3 border-b border-slate-800 shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -270,7 +285,7 @@ export default function ChatWidget() {
                 />
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y divide-slate-800/40">
               {filteredRooms.length === 0 ? (
                 <div className="p-6 text-center space-y-4">
                   <Sparkles className="w-10 h-10 mx-auto text-indigo-400 opacity-40 animate-pulse" />
@@ -340,7 +355,7 @@ export default function ChatWidget() {
           </div>
 
           {/* Right Column - Active Main Chat Conversation */}
-          <div className={`flex-1 flex flex-col bg-[#080e1e] ${!activeRoomId ? 'hidden md:flex' : 'flex'}`}>
+          <div className={`flex-1 flex flex-col min-h-0 h-full overflow-hidden bg-[#080e1e] ${!activeRoomId ? 'hidden md:flex' : 'flex'}`}>
             {activeRoom ? (
               <>
                 <RoomHeader
