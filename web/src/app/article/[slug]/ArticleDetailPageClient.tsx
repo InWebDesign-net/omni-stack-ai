@@ -458,12 +458,13 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               <div className="flex items-center gap-2 flex-wrap pt-2">
                 <Tag className="w-4 h-4 text-purple-400 shrink-0" />
                 {item.tags.map((tag: string) => (
-                  <span
+                  <Link
                     key={tag}
-                    className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-purple-300"
+                    href={`/articles?page=1&includetag=${encodeURIComponent(tag)}`}
+                    className="px-3 py-1 bg-slate-900 border border-slate-800 hover:border-purple-500/50 hover:bg-slate-800 rounded-xl text-xs font-mono text-purple-300 hover:text-purple-200 transition-all cursor-pointer"
                   >
                     #{tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}
