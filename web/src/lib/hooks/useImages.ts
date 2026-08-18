@@ -101,6 +101,9 @@ export function useImages(params: UseImagesParams = {}): UseImagesResult {
   if (safeExcluded.length > 0) {
     queryParams.set('excludetag', safeExcluded.join(','));
   }
+  if (matchMode === 'all') {
+    queryParams.set('matchmode', 'all');
+  }
   if (params.excludeSlug) {
     const excludes = Array.isArray(params.excludeSlug) ? params.excludeSlug.join(',') : params.excludeSlug;
     if (excludes) queryParams.set('excludeSlug', excludes);

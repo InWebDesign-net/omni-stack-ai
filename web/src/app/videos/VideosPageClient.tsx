@@ -294,6 +294,11 @@ export default function VideosPageClient({
                     {includedTags.length + excludedTags.length} {t.videos.activeTags || 'aktiv'}
                   </span>
                 )}
+                {matchMode === 'all' && (
+                  <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
+                    {t.videos?.matchAll || 'Alle Tags'}
+                  </span>
+                )}
               </div>
 
               {/* Right Side: Tag Search Input + Count & Expand/Collapse Toggle Button */}
