@@ -372,16 +372,16 @@ export default function ChatWidget() {
         </div>
       ) : (
         /* Compact Floating Window (Telegram Style) */
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col w-[360px] sm:w-[400px] h-[500px] bg-[#080e1e] border border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col w-[360px] sm:w-[420px] h-[580px] sm:h-[620px] max-h-[85vh] bg-[#080e1e] border border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
           {/* Header */}
-          <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+          <div className="p-3 px-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-400 text-white shadow-md">
-                <Bot className="w-5 h-5" />
+              <div className="p-1.5 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-400 text-white shadow-md">
+                <Bot className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-extrabold text-sm text-white">{t.chat?.title || 'Omni Chat'}</h3>
-                <p className="text-[10px] text-teal-400 font-mono">Community & AI Hub</p>
+                <h3 className="font-extrabold text-xs sm:text-sm text-white">{t.chat?.title || 'Omni Chat'}</h3>
+                <p className="text-[9px] text-teal-400 font-mono">Community & AI Hub</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -395,7 +395,7 @@ export default function ChatWidget() {
                 <Maximize2 className="w-4 h-4" />
               </button>
               <button onClick={closeChat} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all" title={t.common?.close || 'Schließen'}>
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -468,8 +468,7 @@ export default function ChatWidget() {
                 isAiEnabled={activeRoom?.isAiEnabled}
                 showOnlineStatus={showOnlineStatus}
                 privacyError={privacyError}
-                onToggleExpand={toggleExpand}
-                onClose={closeChat}
+                onClose={() => setActiveRoomId(null)}
                 onRemoveAi={() => activeRoom && removeParticipantFromRoom(activeRoom.id, 'ai')}
                 onInviteAi={() => activeRoom && addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
                 t={t}
