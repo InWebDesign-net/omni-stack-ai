@@ -46,8 +46,8 @@
     "searchPlaceholder": "Was möchtest du heute entdecken?",
     "feed": "Mein Feed",
     "videos": "Videos",
-    "images": "Images",
-    "articles": "Articles",
+    "images": "Bilder",
+    "articles": "Artikel",
     "shorts": "Shorts",
     "login": "Anmelden",
     "register": "Registrieren",
@@ -379,11 +379,11 @@
     "newUpload": "Neuer Upload",
     "newVideo": "Neues Video",
     "tabs": {
-      "articles": "Articles",
+      "articles": "Artikel",
       "videos": "Videos",
-      "images": "Images",
-      "favorites": "Favorites",
-      "about": "About Channel"
+      "images": "Bilder",
+      "favorites": "Favoriten",
+      "about": "Über den Kanal"
     },
     "stats": {
       "videos": "Videos",
