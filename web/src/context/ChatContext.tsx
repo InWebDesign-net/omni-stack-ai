@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { getSocket } from '@/lib/socket';
+import { useApp } from '@/context/AppContext';
 
 export interface ChatMessage {
   id: string;
@@ -74,6 +75,7 @@ interface ChatContextType {
   removeParticipantFromRoom: (roomId: string, participantId: string) => Promise<void>;
   addMemberToRoom: (roomId: string, targetUserId: string | number) => Promise<{ success: boolean; error?: string }>;
   removeMemberFromRoom: (roomId: string, targetUserId: string | number) => Promise<{ success: boolean; error?: string }>;
+  refreshRooms: () => Promise<void>;
   setSoundEnabled: (enabled: boolean) => void;
   setShowOnlineStatus: (enabled: boolean) => void;
   setShowReadReceipts: (enabled: boolean) => void;
@@ -106,6 +108,7 @@ function playMessageChime() {
 }
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
+  const { currentUser } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
@@ -132,103 +135,82 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Initial Rooms List
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
+  const fetchRooms = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chat?roomId=${encodeURIComponent(activeRoomId || '')}`, {
+        headers: jsonAuthHeaders(),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (Array.isArray(data.rooms) && data.rooms.length > 0) {
+        const loadedRooms: ChatRoom[] = data.rooms.map((r: any) => ({
+          id: r.slug || r.id || String(r.documentId),
+          documentId: r.documentId,
+          slug: r.slug || String(r.id),
+          name: r.name || 'Chatraum',
+          type: r.type || 'direct',
+          language: r.language || 'de',
+          isAiEnabled: r.isAiEnabled || r.type === 'ai',
+          unreadCount: 0,
+          adminUser: r.adminUser ? {
+            id: String(r.adminUser.id || r.adminUser),
+            username: r.adminUser.username,
+            handle: r.adminUser.handle,
+          } : undefined,
+          participants: Array.isArray(r.participants)
+            ? r.participants.map((p: any) => ({
+                id: String(p.id),
+                username: p.username || 'Nutzer',
+                avatarUrl: p.avatarUrl,
+                allowDirectMessages: p.allowDirectMessages || 'everyone',
+              }))
+            : [],
+          messages: Array.isArray(r.messages)
+            ? r.messages.map((m: any) => ({
+                id: m.documentId || String(m.id),
+                senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
+                senderType: m.senderType || 'user',
+                senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
+                content: m.content || '',
+                timestamp: m.createdAt || new Date().toISOString(),
+                meta: m.meta,
+              }))
+            : [],
+        }));
+
+        setRooms((prev) => {
+          const map = new Map<string, ChatRoom>();
+          for (const item of loadedRooms) {
+            if (item && item.id) map.set(item.id, item);
+          }
+          for (const item of prev || []) {
+            if (!item || !item.id) continue;
+            const existing = map.get(item.id);
+            if (existing) {
+              const itemMsgs = Array.isArray(item.messages) ? item.messages : [];
+              const itemParts = Array.isArray(item.participants) ? item.participants : [];
+              map.set(item.id, {
+                ...existing,
+                adminUser: existing.adminUser || item.adminUser,
+                messages: itemMsgs.length > 0 ? itemMsgs : (existing.messages || []),
+                participants: itemParts.length > 0 ? itemParts : (existing.participants || []),
+              });
+            } else {
+              map.set(item.id, item);
+            }
+          }
+          return Array.from(map.values());
+        });
+      }
+    } catch (err) {
+      console.error('Error loading chat rooms:', err);
+    }
+  }, [activeRoomId]);
+
   // Load real rooms from Strapi and listen for real-time WebSocket events
   useEffect(() => {
     let active = true;
-
-    const fetchRooms = async () => {
-      try {
-        const res = await fetch(`/api/chat?roomId=${encodeURIComponent(activeRoomId || '')}`, {
-          headers: jsonAuthHeaders(),
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!active) return;
-
-        if (Array.isArray(data.rooms) && data.rooms.length > 0) {
-          const loadedRooms: ChatRoom[] = data.rooms.map((r: any) => ({
-            id: r.slug || r.id || String(r.documentId),
-            documentId: r.documentId,
-            slug: r.slug || String(r.id),
-            name: r.name || 'Chatraum',
-            type: r.type || 'direct',
-            language: r.language || 'de',
-            isAiEnabled: r.isAiEnabled || r.type === 'ai',
-            unreadCount: 0,
-            adminUser: r.adminUser ? {
-              id: String(r.adminUser.id || r.adminUser),
-              username: r.adminUser.username,
-              handle: r.adminUser.handle,
-            } : undefined,
-            participants: Array.isArray(r.participants)
-              ? r.participants.map((p: any) => ({
-                  id: String(p.id),
-                  username: p.username || 'Nutzer',
-                  avatarUrl: p.avatarUrl,
-                  allowDirectMessages: p.allowDirectMessages || 'everyone',
-                }))
-              : [],
-            messages: Array.isArray(r.messages)
-              ? r.messages.map((m: any) => ({
-                  id: m.documentId || String(m.id),
-                  senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
-                  senderType: m.senderType || 'user',
-                  senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
-                  content: m.content || '',
-                  timestamp: m.createdAt || new Date().toISOString(),
-                  meta: m.meta,
-                }))
-              : [],
-          }));
-
-          if (activeRoomId && Array.isArray(data.messages)) {
-            const serverMsgs: ChatMessage[] = data.messages.map((m: any) => ({
-              id: m.documentId || String(m.id),
-              senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
-              senderType: m.senderType || 'user',
-              senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
-              content: m.content || '',
-              timestamp: m.createdAt || new Date().toISOString(),
-              meta: m.meta,
-            }));
-
-            setRooms((prev) =>
-              (prev || []).map((r) => {
-                if (r && (r.id === activeRoomId || r.slug === activeRoomId)) {
-                  return { ...r, messages: serverMsgs };
-                }
-                return r;
-              })
-            );
-          }
-
-          setRooms((prev) => {
-            const map = new Map<string, ChatRoom>();
-            for (const item of loadedRooms) {
-              if (item && item.id) map.set(item.id, item);
-            }
-            for (const item of prev || []) {
-              if (!item || !item.id) continue;
-              const existing = map.get(item.id);
-              if (existing) {
-                const itemMsgs = Array.isArray(item.messages) ? item.messages : [];
-                const itemParts = Array.isArray(item.participants) ? item.participants : [];
-                map.set(item.id, {
-                  ...existing,
-                  messages: itemMsgs.length > 0 ? itemMsgs : (existing.messages || []),
-                  participants: itemParts.length > 0 ? itemParts : (existing.participants || []),
-                });
-              } else {
-                map.set(item.id, item);
-              }
-            }
-            return Array.from(map.values());
-          });
-        }
-      } catch (err) {
-        console.error('Error loading chat rooms:', err);
-      }
-    };
 
     fetchRooms();
 
@@ -318,7 +300,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [activeRoomId, soundEnabled]);
+  }, [activeRoomId, soundEnabled, currentUser?.id, fetchRooms]);
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId || r.slug === activeRoomId) || null;
 
@@ -866,6 +848,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         removeParticipantFromRoom,
         addMemberToRoom,
         removeMemberFromRoom,
+        refreshRooms: fetchRooms,
         setSoundEnabled,
         setShowOnlineStatus,
         setShowReadReceipts,
@@ -902,6 +885,7 @@ export function useChat() {
       removeParticipantFromRoom: async () => {},
       addMemberToRoom: async (): Promise<{ success: boolean; error?: string }> => ({ success: false }),
       removeMemberFromRoom: async (): Promise<{ success: boolean; error?: string }> => ({ success: false }),
+      refreshRooms: async () => {},
       setSoundEnabled: () => {},
       setShowOnlineStatus: () => {},
       setShowReadReceipts: () => {},

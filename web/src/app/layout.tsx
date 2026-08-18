@@ -148,8 +148,8 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#080e1e] text-[#dae2fd] min-h-screen selection:bg-[#8083ff] selection:text-white" suppressHydrationWarning>
-        <ChatProvider>
-          <AppProvider>
+        <AppProvider>
+          <ChatProvider>
             <UploadProvider>
               <NotificationProvider>
                 {children}
@@ -157,8 +157,8 @@ export default function RootLayout({
                 <GlobalUploadManager />
               </NotificationProvider>
             </UploadProvider>
-          </AppProvider>
-        </ChatProvider>
+          </ChatProvider>
+        </AppProvider>
       </body>
     </html>
   );
