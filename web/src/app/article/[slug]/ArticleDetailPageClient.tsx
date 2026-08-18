@@ -82,7 +82,10 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     };
   }, []);
 
-  const creator = item?.creator || item?.author;
+  const creator =
+    item?.creator ||
+    item?.author ||
+    (Array.isArray(initialItem) ? initialItem.find((it: any) => it?.creator || it?.author)?.creator : null);
   const rawHandle = creator?.handle || item?.authorHandle;
   const creatorName =
     creator?.username || creator?.name || item?.authorName || (rawHandle ? rawHandle.replace(/^@/, '') : fallbackCreator.username);
