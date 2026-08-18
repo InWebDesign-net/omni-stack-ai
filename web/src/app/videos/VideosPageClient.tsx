@@ -235,37 +235,39 @@ export default function VideosPageClient({
                   className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
                 >
                   <option value="createdatasc" className="bg-slate-900 text-slate-200">
-                    {t.videos.sortNewest}
+                    ✨ Neueste zuerst
                   </option>
                   <option value="trending" className="bg-slate-900 text-slate-200">
-                    {(t.videos as any).sortTrending || '🔥 Trendinhalt (Trending)'}
+                    🔥 Trending (Beliebt & Neu)
                   </option>
+                  {currentUser && (
+                    <option value="affinity" className="bg-slate-900 text-slate-200">
+                      🎯 KI-Interessen Profil
+                    </option>
+                  )}
                   <option value="mostliked" className="bg-slate-900 text-slate-200">
-                    {(t.videos as any).sortMostLiked || '❤️ Beliebteste / Likes'}
+                    ❤️ Beliebteste / Likes
                   </option>
                   <option value="mostcommented" className="bg-slate-900 text-slate-200">
-                    {(t.videos as any).sortMostCommented || '💬 Aktivste / Diskussionen'}
+                    💬 Meist-Kommentiert (Aktivität)
                   </option>
                   <option value="mostpopular" className="bg-slate-900 text-slate-200">
-                    {(t.videos as any).sortMostPopular || '👑 Höchste Reichweite (Popular)'}
-                  </option>
-                  <option value="affinity" className="bg-slate-900 text-slate-200">
-                    {(t.videos as any).sortAffinity || '🎯 Persönliches Interesse (KI-Graph)'}
+                    👑 Höchste Reichweite (Popular)
                   </option>
                   <option value="createdatdesc" className="bg-slate-900 text-slate-200">
-                    {t.videos.sortOldest}
+                    ⌛ Älteste zuerst
                   </option>
                   <option value="titleasc" className="bg-slate-900 text-slate-200">
-                    {t.videos.sortTitleAsc}
+                    🔤 Titel (A → Z)
                   </option>
                   <option value="titledesc" className="bg-slate-900 text-slate-200">
-                    {t.videos.sortTitleDesc}
+                    🔤 Titel (Z → A)
                   </option>
                   <option value="durationasc" className="bg-slate-900 text-slate-200">
-                    {t.videos.sortDurationAsc}
+                    ⚡ Kürzeste zuerst
                   </option>
                   <option value="durationdesc" className="bg-slate-900 text-slate-200">
-                    {t.videos.sortDurationDesc}
+                    🎬 Längste zuerst
                   </option>
                 </select>
               </div>

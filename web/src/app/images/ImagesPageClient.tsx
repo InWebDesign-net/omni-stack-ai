@@ -258,22 +258,30 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
                 >
                   <option value="createdatasc" className="bg-slate-900 text-slate-200">
-                    ✨ Neueste Bilder (Default)
+                    ✨ Neueste zuerst
                   </option>
                   <option value="trending" className="bg-slate-900 text-slate-200">
                     🔥 Trending (Beliebt & Neu)
                   </option>
-                  <option value="affinity" className="bg-slate-900 text-slate-200">
-                    🎯 KI-Interessen Profil (Personalized)
-                  </option>
+                  {currentUser && (
+                    <option value="affinity" className="bg-slate-900 text-slate-200">
+                      🎯 KI-Interessen Profil
+                    </option>
+                  )}
                   <option value="mostliked" className="bg-slate-900 text-slate-200">
-                    ❤️ Meist-Favorisiert / Liked
+                    ❤️ Meist-Favorisiert / Likes
                   </option>
                   <option value="mostcommented" className="bg-slate-900 text-slate-200">
                     💬 Meist-Kommentiert (Aktivität)
                   </option>
                   <option value="createdatdesc" className="bg-slate-900 text-slate-200">
                     ⌛ Älteste zuerst
+                  </option>
+                  <option value="titleasc" className="bg-slate-900 text-slate-200">
+                    🔤 Titel (A → Z)
+                  </option>
+                  <option value="titledesc" className="bg-slate-900 text-slate-200">
+                    🔤 Titel (Z → A)
                   </option>
                 </select>
               </div>
