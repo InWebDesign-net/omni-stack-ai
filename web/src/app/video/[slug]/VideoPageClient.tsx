@@ -174,13 +174,6 @@ export default function VideoPageClient({
   const [descExpanded, setDescExpanded] = useState(false);
   const hasTrackedView = useRef(false);
 
-  // Comment section state connected to Strapi
-  const [comments, setComments] = useState<CommentItemType[]>([]);
-  const [loadingComments, setLoadingComments] = useState(true);
-  const [newCommentText, setNewCommentText] = useState('');
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
-  const [editCommentText, setEditCommentText] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -209,45 +202,6 @@ export default function VideoPageClient({
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
-
-  // Load comments for this video
-  const loadComments = async () => {
-    setLoadingComments(true);
-    try {
-      const items = await fetchCommentsForSlug(slug, effectiveLang);
-      setComments(items);
-    } catch (e) {
-      console.error('Failed to load comments:', e);
-    } finally {
-      setLoadingComments(false);
-    }
-  };
-
-  useEffect(() => {
-    loadComments();
-  }, [slug]);
-
-  // Smooth scroll and highlight targeted comment if URL anchor hash is present
-  useEffect(() => {
-    if (typeof window === 'undefined' || !comments.length) return;
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#comment-')) {
-      const targetId = hash.replace('#', '');
-      let el = document.getElementById(targetId);
-      if (!el) {
-        el = document.querySelector(`[data-comment-id="${targetId}"]`);
-      }
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-500/20', 'shadow-2xl');
-          setTimeout(() => {
-            el.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-500/20', 'shadow-2xl');
-          }, 3500);
-        }, 300);
-      }
-    }
-  }, [comments]);
 
   // Check stored likes / interaction status
   useEffect(() => {
@@ -370,89 +324,6 @@ export default function VideoPageClient({
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
       showToast(t.common.linkCopied);
-    }
-  };
-
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCommentText.trim() || isSubmittingComment) return;
-
-    const authorName = currentUser?.username || 'Anonymer Zuseher';
-    setIsSubmittingComment(true);
-
-    try {
-      const created = await createCommentInStrapi({
-        feedSlug: slug,
-        authorName,
-        text: newCommentText.trim(),
-        authorAvatar: currentUser?.avatarUrl,
-      });
-
-      if (created) {
-        await loadComments();
-        setNewCommentText('');
-        showToast(t.videoDetail.commentPublished);
-      } else {
-        showToast(t.videoDetail.commentPublishError);
-      }
-    } catch (err) {
-      showToast(t.videoDetail.commentCreateError);
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
-
-  const handleAddReply = async (parentId: string | number, text: string): Promise<boolean> => {
-    try {
-      const created = await createCommentInStrapi({
-        feedSlug: slug,
-        text,
-        authorName: currentUser?.username || 'Gast',
-        authorHandle: currentUser?.handle || '@gast',
-        authorAvatar: currentUser?.avatarUrl,
-        parentId,
-      });
-
-      if (created) {
-        await loadComments();
-        showToast((t.videoDetail as any)?.replyPublished || 'Antwort veröffentlicht!');
-        return true;
-      } else {
-        showToast(t.videoDetail?.commentPublishError || 'Fehler beim Veröffentlichen der Antwort.');
-        return false;
-      }
-    } catch (err) {
-      showToast(t.videoDetail?.commentCreateError || 'Fehler beim Senden der Antwort.');
-      return false;
-    }
-  };
-
-  const handleEditComment = async (commentId: string | number) => {
-    if (!editCommentText.trim()) return;
-    try {
-      const success = await updateCommentInStrapi(commentId, editCommentText.trim());
-      if (success) {
-        setComments((prev) =>
-          prev.map((c) => (c.id === commentId ? { ...c, text: editCommentText.trim() } : c))
-        );
-        setEditingCommentId(null);
-        setEditCommentText('');
-        showToast(t.videoDetail.commentUpdated);
-      }
-    } catch (e) {
-      showToast(t.videoDetail.commentEditError);
-    }
-  };
-
-  const handleDeleteComment = async (commentId: string | number) => {
-    try {
-      const success = await deleteCommentFromStrapi(commentId);
-      if (success) {
-        setComments((prev) => prev.filter((c) => c.id !== commentId));
-        showToast(t.videoDetail.commentDeleted);
-      }
-    } catch (e) {
-      showToast(t.videoDetail.commentDeleteError);
     }
   };
 
@@ -660,63 +531,12 @@ export default function VideoPageClient({
               })()}
             </div>
 
-            {/* Comments Section */}
-            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-indigo-400" />
-                <h2 className="text-lg font-bold text-white">
-                  {(t.videoDetail as any).comments || t.common.comments || 'Kommentare'} ({comments.length})
-                </h2>
-              </div>
-
-              {/* New Comment Input Form */}
-              <form onSubmit={handleAddComment} className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder={
-                    currentUser
-                      ? t.videoDetail.writeCommentPlaceholder
-                      : t.videoDetail.writeCommentGuestPlaceholder
-                  }
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  className="flex-1 px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/80 transition-all"
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmittingComment || !newCommentText.trim()}
-                  className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold disabled:opacity-40 transition-all flex items-center gap-2 shrink-0"
-                >
-                  {isSubmittingComment ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                  <span>{t.common.send}</span>
-                </button>
-              </form>
-
-              {/* Comments List */}
-              {loadingComments ? (
-                <div className="space-y-3 pt-2">
-                  <div className="h-12 bg-slate-800/50 rounded-xl animate-pulse" />
-                  <div className="h-12 bg-slate-800/30 rounded-xl animate-pulse" />
-                </div>
-              ) : comments.length === 0 ? (
-                <p className="text-slate-500 text-xs py-4 text-center">
-                  {t.videoDetail.noComments}
-                </p>
-              ) : (
-                <VideoComments
-                  slug={slug}
-                  lang={effectiveLang}
-                  currentUser={currentUser}
-                  onOpenAuth={openAuthModal}
-                  showToast={showToast}
-                  t={t}
-                />
-              )}
-            </div>
+            {/* Unified Comments Section */}
+            <VideoComments
+              slug={slug}
+              lang={effectiveLang}
+              t={t}
+            />
           </div>
 
           {/* Related Videos Sidebar */}

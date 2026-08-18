@@ -155,10 +155,10 @@ export function VideoInfo({
 
 interface VideoCommentsProps {
   slug: string;
-  lang: string;
+  lang: 'de' | 'en';
   currentUser?: any;
-  onOpenAuth: () => void;
-  showToast: (msg: string) => void;
+  onOpenAuth?: () => void;
+  showToast?: (msg: string) => void;
   t?: any;
 }
 
