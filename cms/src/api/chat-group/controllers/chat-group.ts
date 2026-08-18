@@ -194,29 +194,27 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         return ctx.unauthorized('Only participants can subscribe');
       }
 
-      // Find or create subscription
-      const existing = await strapi.documents('api::chat-subscription.chat-subscription').findMany({
+      // Find or create subscription using unified Subscription content type
+      const existing = await strapi.documents('api::subscription.subscription').findMany({
         filters: {
-          user: { id: { $eq: userId } },
-          room: { id: { $eq: documentId } },
+          subscriber: { id: { $eq: userId } },
+          targetChatRoom: { id: { $eq: documentId } },
+          type: { $eq: 'chat_room' },
         },
       });
 
       if (existing && existing.length > 0) {
-        await strapi.documents('api::chat-subscription.chat-subscription').update({
-          documentId: existing[0].documentId,
+        if (isSubscribed === false) {
+          await strapi.documents('api::subscription.subscription').delete({
+            documentId: existing[0].documentId,
+          });
+        }
+      } else if (isSubscribed !== false) {
+        await strapi.documents('api::subscription.subscription').create({
           data: {
-            isSubscribed: isSubscribed !== undefined ? isSubscribed : !existing[0].isSubscribed,
-            lastNotifiedAt: new Date().toISOString(),
-          } as any,
-        });
-      } else {
-        await strapi.documents('api::chat-subscription.chat-subscription').create({
-          data: {
-            user: userId,
-            room: documentId,
-            isSubscribed: isSubscribed !== undefined ? isSubscribed : true,
-            lastNotifiedAt: new Date().toISOString(),
+            type: 'chat_room',
+            subscriber: userId,
+            targetChatRoom: documentId,
           } as any,
         });
       }

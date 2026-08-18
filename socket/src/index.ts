@@ -184,14 +184,14 @@ io.on('connection', (socket: AuthenticatedSocket) => {
             // Skip sender
             if (participantId === user?.id) continue;
             
-            // Check subscription
-            const subRes = await fetch(`${strapiUrl}/api/chat-subscriptions?filters[user][id][$eq]=${participantId}&filters[room][id][$eq]=${roomId}`);
-            if (!subRes.ok) continue;
-            const subData = await subRes.json();
-            const subscription = subData.data?.[0];
-            
-            // Skip if unsubscribed
-            if (subscription && subscription.attributes?.isSubscribed === false) continue;
+            // Check subscription in unified subscriptions collection
+            const subRes = await fetch(`${strapiUrl}/api/subscriptions?filters[subscriber][id][$eq]=${participantId}&filters[targetChatRoom][id][$eq]=${roomId}&filters[type][$eq]=chat_room`);
+            if (subRes.ok) {
+              const subData = await subRes.json();
+              const items = subData.data || [];
+              // If there are subscription records for chat_rooms, ensure user is subscribed
+              if (items.length > 0 && items[0].attributes?.type === 'unsubscribed') continue;
+            }
             
             // Debounce check
             const debounceKey = `${roomId}:${participantId}`;
