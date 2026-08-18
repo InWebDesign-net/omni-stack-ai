@@ -62,6 +62,17 @@ export default function VideosPageClient({
     fetch(url).then((r) => r.json())
   );
 
+  const updateURL = (newParams: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null || value === "") params.delete(key);
+      else params.set(key, value);
+    });
+    router.push(`${pathname}?${params.toString()}`, {
+      scroll: false,
+    });
+  };
+
   // URL-synced tag filter state (via shared hook)
   const {
     includedTags,
@@ -75,7 +86,7 @@ export default function VideosPageClient({
     setMatchMode,
     setTagSearch,
     setIsTagCloudExpanded,
-  } = useTagFilter(allTags);
+  } = useTagFilter(allTags, updateURL);
 
   // Data fetching via SWR hook
   const {
@@ -98,17 +109,6 @@ export default function VideosPageClient({
   });
 
   const totalPages = Math.max(1, Math.ceil(totalVideos / perPage));
-
-  const updateURL = (newParams: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value === null || value === "") params.delete(key);
-      else params.set(key, value);
-    });
-    router.push(`${pathname}?${params.toString()}`, {
-      scroll: false,
-    });
-  };
 
   const handleSortChange = (value: string) => {
     updateURL({ sort: value, page: "1" });

@@ -113,6 +113,20 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
   const { tags: allTags = [] } = useImageTags();
 
+  const updateURL = (newParams: Record<string, string | null>) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null || value === '' || value === 'false') {
+        current.delete(key);
+      } else {
+        current.set(key, value);
+      }
+    });
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    router.push(`${pathname}${query}`);
+  };
+
   // URL-synced tag filter state (via shared hook)
   const {
     includedTags,
@@ -127,23 +141,9 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     setTagSearch,
     setIsTagCloudExpanded: setShowAllTags,
     resetTagFilters: resetAllFilters,
-  } = useTagFilter(allTags);
+  } = useTagFilter(allTags, updateURL);
 
   const displayedTags = filteredTagList;
-
-  const updateURL = (newParams: Record<string, string | null>) => {
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value === null || value === '' || value === 'false') {
-        current.delete(key);
-      } else {
-        current.set(key, value);
-      }
-    });
-    const search = current.toString();
-    const query = search ? `?${search}` : '';
-    router.push(`${pathname}${query}`);
-  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
