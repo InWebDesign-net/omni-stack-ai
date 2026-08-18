@@ -171,7 +171,7 @@ export default function ArticlesPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
       <Header />
 
       <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">
@@ -183,7 +183,7 @@ export default function ArticlesPageClient() {
                 <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 border border-purple-500/30 text-purple-400">
                   <FileText className="w-6 h-6" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
                   {t.header?.articles || 'Articles'}
                 </h1>
                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono">

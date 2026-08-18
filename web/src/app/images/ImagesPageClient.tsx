@@ -180,7 +180,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     filterFavorites === 'true';
 
   return (
-    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
+    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif] selection:bg-[#8083ff] selection:text-white">
       <Header />
 
       {/* Toast Notification */}
@@ -200,7 +200,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                 <div className="p-2.5 rounded-xl bg-gradient-to-tr from-teal-500/20 to-indigo-500/20 border border-teal-500/30 text-teal-400">
                   <ImageIcon className="w-6 h-6" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
                   {t.header?.images || 'Images'}
                 </h1>
                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 font-mono">
