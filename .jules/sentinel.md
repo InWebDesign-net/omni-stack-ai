@@ -30,3 +30,8 @@
 **Vulnerability:** The `/api/video/settings/route.ts` and `/api/image/settings/route.ts` endpoints permitted a fallback to the `STRAPI_API_TOKEN` (via `buildHeaders(req, false)`) for `PUT` and `DELETE` mutations when no valid client JWT was provided.
 **Learning:** Fallback mechanisms meant for safe, read-only queries can inadvertently grant admin-level privileges to unauthenticated users if applied to mutation endpoints, completely bypassing intended client authorization checks.
 **Prevention:** Strictly enforce authentication for mutating API endpoints (e.g., using `buildHeaders(req, true)`) and ensure that unauthenticated requests immediately fail with a `401 Unauthorized` status before attempting any state changes.
+
+## 2026-08-16 - [CRITICAL] Authorization Bypass in Article Creation API
+**Vulnerability:** The `/api/article/settings/route.ts` endpoint used `buildHeaders(req, true) || buildHeaders(req, false)` for the `POST` mutation intended for article creation. This fallback logic allowed unauthenticated users to create articles using the system's `STRAPI_API_TOKEN` when no user token was provided.
+**Learning:** Using an OR fallback (`||`) to a lower-security authentication mechanism (like a system-level read-only/fallback token) for mutating operations completely defeats the purpose of client authorization checks, granting system-level access to anonymous users.
+**Prevention:** Always enforce strict authentication requirements for mutation operations. Do not allow fallbacks to server-side master or API tokens for actions that must be attributed to an authenticated client. Use `buildHeaders(req, true)` without fallbacks for write endpoints.

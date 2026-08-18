@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 // POST /api/article/settings - Create new article
 export async function POST(req: Request) {
   try {
-    const headers = buildHeaders(req, true) || buildHeaders(req, false);
+    const headers = buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
