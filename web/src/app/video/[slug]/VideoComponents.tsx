@@ -185,8 +185,8 @@ export function VideoComments({
   const loadComments = async () => {
     setLoading(true);
     try {
-      const items = await fetchCommentsForSlug(slug, lang);
-      setComments(items);
+      const fetched = await fetchCommentsForSlug(slug, lang as 'de' | 'en');
+      setComments(fetched);
     } catch (e) {
       console.error('Failed to load comments:', e);
     } finally {

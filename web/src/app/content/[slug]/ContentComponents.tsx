@@ -223,7 +223,7 @@ export function ContentComments({
     if (!slug) return;
     setLoading(true);
     try {
-      const fetched = await fetchCommentsForSlug(slug, lang);
+      const fetched = await fetchCommentsForSlug(slug, lang as 'de' | 'en');
       setComments(fetched);
     } catch (e) {
       console.error('Failed to load comments:', e);
@@ -245,7 +245,12 @@ export function ContentComments({
     if (!newComment.trim()) return;
     setSubmitting(true);
     try {
-      const created = await createCommentInStrapi(slug, newComment);
+      const created = await createCommentInStrapi({
+        feedSlug: slug,
+        text: newComment.trim(),
+        authorName: currentUser?.username || 'Gast',
+        authorAvatar: currentUser?.avatarUrl,
+      });
       if (created) {
         setComments([created, ...comments]);
         setNewComment('');
@@ -323,7 +328,7 @@ export function ContentComments({
                   <span className="text-xs font-semibold text-white">{comment.authorName}</span>
                   <span className="text-[10px] text-slate-500">{comment.createdAt}</span>
                 </div>
-                {currentUser && comment.authorId === currentUser.id && (
+                {currentUser && comment.isCurrentUser && (
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {

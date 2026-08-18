@@ -36,6 +36,7 @@ import { getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import { loadStoredAffinityGraph, getStoredJwt, jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { ContentInfo, ContentComments, RelatedContent } from './ContentComponents';
+import CommentItem from '@/components/CommentItem';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,

@@ -706,28 +706,14 @@ export default function VideoPageClient({
                   {t.videoDetail.noComments}
                 </p>
               ) : (
-                <div className="space-y-4 pt-2 divide-y divide-slate-800/60">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="pt-4">
-                      <CommentItem
-                        comment={comment}
-                        currentUser={currentUser}
-                        onAddReply={handleAddReply}
-                        onEditComment={async (id, text) => {
-                          const ok = await updateCommentInStrapi(id, text);
-                          if (ok) await loadComments();
-                          return ok;
-                        }}
-                        onDeleteComment={async (id) => {
-                          const ok = await deleteCommentFromStrapi(id);
-                          if (ok) await loadComments();
-                          return ok;
-                        }}
-                        t={t}
-                      />
-                    </div>
-                  ))}
-                </div>
+                <VideoComments
+                  slug={slug}
+                  lang={effectiveLang}
+                  currentUser={currentUser}
+                  onOpenAuth={openAuthModal}
+                  showToast={showToast}
+                  t={t}
+                />
               )}
             </div>
           </div>
