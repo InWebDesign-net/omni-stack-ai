@@ -302,21 +302,9 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           <div className="lg:col-span-2 space-y-6">
             {/* Article Header Card */}
             <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
-                  <FileText className="w-4 h-4" />
-                  <span>Omni Magazine & Articles</span>
-                </div>
-
-                {isEffectiveOwner && (
-                  <button
-                    onClick={() => setShowSettingsModal(true)}
-                    className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Settings className="w-4 h-4 text-purple-400" />
-                    <span>{effectiveLang === 'de' ? 'Artikel bearbeiten' : 'Edit article'}</span>
-                  </button>
-                )}
+              <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                <FileText className="w-4 h-4" />
+                <span>Omni Magazine & Articles</span>
               </div>
 
               <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
