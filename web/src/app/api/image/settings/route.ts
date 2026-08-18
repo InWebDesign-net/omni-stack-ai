@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 // PUT /api/image/settings - Update image metadata for all locales
 export async function PUT(req: Request) {
   try {
-    const headers = buildHeaders(req, true) || buildHeaders(req, false);
+    const headers = buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -125,7 +125,7 @@ export async function PUT(req: Request) {
 // DELETE /api/image/settings - Delete image (soft or hard)
 export async function DELETE(req: Request) {
   try {
-    const headers = buildHeaders(req, true) || buildHeaders(req, false);
+    const headers = buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }

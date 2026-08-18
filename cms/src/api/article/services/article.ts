@@ -41,9 +41,6 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
     if (!filters.visibility) {
       filters.visibility = { $eq: 'public' };
     }
-    if (!filters.isProcessing && params.includeProcessing !== 'true') {
-      filters.isProcessing = { $ne: true };
-    }
 
     if (params.excludeSlug) {
       const excludes = Array.isArray(params.excludeSlug)

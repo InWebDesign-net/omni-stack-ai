@@ -99,10 +99,6 @@
           "localized": false
         }
       }
-    },
-    "isProcessing": {
-      "type": "boolean",
-      "default": false
     }
   }
 }
