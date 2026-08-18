@@ -49,10 +49,16 @@ export default function ArticlesPageClient() {
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  const { data: allTags = [] } = useSWR<TagCount[]>(
+  const { data: tagRes } = useSWR<{ data: TagCount[] } | TagCount[]>(
     `/api/article/tags?lang=${lang}`,
     fetcher
   );
+
+  const allTags = useMemo(() => {
+    if (Array.isArray(tagRes)) return tagRes;
+    if (tagRes && Array.isArray((tagRes as any).data)) return (tagRes as any).data;
+    return [];
+  }, [tagRes]);
 
   const updateURL = useCallback(
     (newParams: Record<string, string | null>) => {
@@ -404,10 +410,12 @@ export default function ArticlesPageClient() {
                         <p className="text-xs text-slate-400 line-clamp-2">
                           {typeof article.summary === 'string'
                             ? article.summary
-                            : article.summary
-                                ?.map((b: any) => b.children?.map((c: any) => c.text).join('') || '')
+                            : Array.isArray(article.summary)
+                            ? article.summary
+                                .map((b: any) => (Array.isArray(b?.children) ? b.children.map((c: any) => c.text).join('') : ''))
                                 .filter(Boolean)
-                                .join(' ')}
+                                .join(' ')
+                            : ''}
                         </p>
                       )}
                       <div className="flex items-center justify-between pt-2 text-[10px] text-slate-500">

@@ -68,7 +68,7 @@ export function useArticles(params: UseArticlesParams = {}) {
   });
 
   return {
-    articles: data?.data || [],
+    articles: Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [],
     total: data?.meta?.pagination?.total || 0,
     isLoading: enabled ? isLoading : false,
     isError: !!error,

@@ -133,10 +133,12 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
   const summary = typeof item.summary === 'string'
     ? item.summary
-    : item.summary
-        ?.map((b: any) => b.children?.map((c: any) => c.text).join('') || '')
+    : Array.isArray(item.summary)
+    ? item.summary
+        .map((b: any) => (Array.isArray(b.children) ? b.children.map((c: any) => c.text).join('') : ''))
         .filter(Boolean)
-        .join(' ');
+        .join(' ')
+    : '';
 
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] font-sans">

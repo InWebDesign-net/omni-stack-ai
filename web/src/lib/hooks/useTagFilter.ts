@@ -22,7 +22,12 @@ export interface TagFilterState {
 
 // Convert string[] to TagCount[] for internal use
 function toTagCounts(items: (string | TagCount)[]): TagCount[] {
-  return items.map((item) => {
+  const safeItems = Array.isArray(items)
+    ? items
+    : items && Array.isArray((items as any).data)
+    ? (items as any).data
+    : [];
+  return safeItems.map((item: any) => {
     if (typeof item === 'string') return { tag: item, count: 0 };
     return item;
   });
