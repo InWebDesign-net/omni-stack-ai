@@ -50,13 +50,46 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       return ctx.unauthorized('Authentication required');
     }
     try {
-      const raw = ctx.request.body?.affinityGraph ?? ctx.request.body;
+      const body = ctx.request.body || {};
+      const raw = body.affinityGraph ?? body;
       const graph = normalizeAffinityGraph(raw);
+
+      const updateData: any = {};
+      if (typeof body.avatarUrl === 'string') {
+        updateData.avatarUrl = body.avatarUrl;
+      }
+      if (typeof body.username === 'string' && body.username.trim()) {
+        updateData.username = body.username.trim();
+      }
+      if (typeof body.handle === 'string' && body.handle.trim()) {
+        updateData.handle = body.handle.trim();
+      }
+      if (typeof body.bio === 'string') {
+        updateData.bio = body.bio.trim();
+      }
+      if (graph) {
+        updateData.affinityGraph = graph;
+      }
+
       await strapi.db.query('plugin::users-permissions.user').update({
         where: { id: viewer.id },
-        data: { affinityGraph: graph },
+        data: updateData,
       });
-      return ctx.send({ success: true, affinityGraph: graph });
+
+      // Update all comments created by this user to use the updated avatar
+      if (typeof body.avatarUrl === 'string' && (viewer.handle || updateData.handle)) {
+        const userHandle = updateData.handle || viewer.handle;
+        try {
+          await strapi.db.query('api::comment.comment').updateMany({
+            where: { authorHandle: userHandle },
+            data: { authorAvatar: body.avatarUrl },
+          });
+        } catch (commentErr) {
+          console.warn('Failed to update authorAvatar on comments:', commentErr);
+        }
+      }
+
+      return ctx.send({ success: true, ...updateData });
     } catch (err: any) {
       return ctx.badRequest('Profile Update Error', { error: err.message });
     }

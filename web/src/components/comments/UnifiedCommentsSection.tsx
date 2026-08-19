@@ -218,10 +218,11 @@ export function UnifiedCommentsSection({
           <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-700 mt-1">
             <Image
               src={currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
-              alt={currentUser?.username || 'User Avatar'}
+              alt={currentUser?.username || 'Avatar'}
               width={32}
               height={32}
               className="w-full h-full object-cover"
+              unoptimized
             />
           </div>
           <div className="flex-1 relative">

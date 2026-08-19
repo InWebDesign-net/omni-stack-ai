@@ -323,7 +323,10 @@ export default function Header({
                 <Image
                   src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                   alt={activeUser.username}
+                  width={28}
+                  height={28}
                   className="w-7 h-7 rounded-lg object-cover border border-white/20 shrink-0"
+                  unoptimized
                 />
                 <span className="text-xs font-semibold text-white hidden md:inline truncate max-w-[100px]">
                   {activeUser.username}

@@ -98,12 +98,19 @@ export default function CommentItem({
     >
       <div className="flex items-start gap-2.5 sm:gap-3 group">
         <Image
-          src={comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80'}
+          src={
+            (isOwner && typeof currentUser?.avatarUrl !== 'undefined')
+              ? (currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80')
+              : (comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80')
+          }
           alt={comment.authorName}
           loading="lazy"
           onClick={handleAuthorClick}
           className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-700 hover:border-indigo-400 hover:scale-105 shrink-0 mt-0.5 cursor-pointer transition-all"
           title={`${comment.authorName} - Kanal anzeigen`}
+          width={32}
+          height={32}
+          unoptimized
         />
 
         <div className="flex-1 space-y-1 min-w-0">
