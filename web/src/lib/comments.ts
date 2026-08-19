@@ -69,7 +69,7 @@ export async function fetchCommentsForSlug(
         text: item.text,
         authorName: item.authorName || 'Gast',
         authorHandle: item.authorHandle || '@gast',
-        authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        authorAvatar: item.authorAvatar || '',
         isEdited: item.isEdited || false,
         feedSlug: item.feedSlug,
         createdAt: formatRelativeDate(item.createdAt, lang) || 'Gerade eben',

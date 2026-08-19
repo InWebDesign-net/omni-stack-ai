@@ -123,7 +123,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           username,
           email: usr.email || '',
           handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-          avatarUrl: usr.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+          avatarUrl: usr.avatarUrl || '',
           bio: usr.bio || '',
           subscribersCount: usr.subscribersCount || 0,
         };
