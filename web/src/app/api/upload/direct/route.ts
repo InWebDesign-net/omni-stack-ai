@@ -4,10 +4,6 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-function strapiBase() {
-  return process.env.STRAPI_URL || 'http://127.0.0.1:1337';
-}
-
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -22,35 +18,18 @@ export async function POST(req: Request) {
     const fileExt = path.extname((file as File).name || 'image.png').toLowerCase() || '.png';
     const uniqueSlug = `${folder}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${fileExt}`;
 
-    const mediaOutDir = path.join('/root/media/out', folder);
-    fs.mkdirSync(mediaOutDir, { recursive: true });
+    // Target folder directly under /root/media (e.g. /root/media/avatars)
+    const targetDir = path.join('/root/media', folder);
+    fs.mkdirSync(targetDir, { recursive: true });
 
-    const localFilePath = path.join(mediaOutDir, uniqueSlug);
+    const localFilePath = path.join(targetDir, uniqueSlug);
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     fs.writeFileSync(localFilePath, buffer);
 
-    const publicUrl = `/media/out/${folder}/${uniqueSlug}`;
-
-    // Optionally register in Strapi upload library
-    try {
-      const strapiToken = process.env.STRAPI_API_TOKEN || process.env.STRAPI_TOKEN;
-      if (strapiToken) {
-        const strapiFormData = new FormData();
-        strapiFormData.append('files', new Blob([buffer], { type: file.type || 'image/png' }), (file as File).name || uniqueSlug);
-
-        await fetch(`${strapiBase()}/api/upload`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${strapiToken}`,
-          },
-          body: strapiFormData,
-        });
-      }
-    } catch (strapiErr) {
-      console.warn('Strapi upload sync warning:', strapiErr);
-    }
+    // Public URL accessible via Next.js /media/[...path] route
+    const publicUrl = `/media/${folder}/${uniqueSlug}`;
 
     return NextResponse.json({ success: true, url: publicUrl });
   } catch (error: any) {
