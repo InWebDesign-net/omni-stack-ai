@@ -157,10 +157,23 @@ export async function PUT(req: Request) {
     // Update localized fields per locale
     if (Array.isArray(localeUpdates)) {
       for (const { locale, data } of localeUpdates) {
+        const updateData = { ...data };
+        if (!updateData.slug && updateData.title) {
+          updateData.slug = updateData.title
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9äöüß]+/g, '-')
+            .replace(/ä/g, 'ae')
+            .replace(/ö/g, 'oe')
+            .replace(/ü/g, 'ue')
+            .replace(/ß/g, 'ss')
+            .replace(/^-+|-+$/g, '') || `artikel-${Date.now()}`;
+        }
+
         const res = await fetch(`${strapiBase()}/api/articles/${documentId}?locale=${locale}`, {
           method: 'PUT',
           headers,
-          body: JSON.stringify({ data }),
+          body: JSON.stringify({ data: updateData }),
         });
         if (!res.ok) {
           const errText = await res.text();

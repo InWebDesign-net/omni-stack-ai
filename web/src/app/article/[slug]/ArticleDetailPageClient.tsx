@@ -569,8 +569,9 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               const errData = await res.json().catch(() => ({}));
               throw new Error(errData.error || 'Speichern des Artikels fehlgeschlagen');
             }
+            setShowSettingsModal(false);
             showToast('Artikel erfolgreich aktualisiert!');
-            if (typeof window !== 'undefined') window.location.reload();
+            router.refresh();
           }}
           onDelete={async (hardDelete) => {
             const url = `/api/article/settings?documentId=${encodeURIComponent(item.documentId)}${

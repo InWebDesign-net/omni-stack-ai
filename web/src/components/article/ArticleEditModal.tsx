@@ -126,6 +126,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
   const handleSave = async () => {
     setSaving(true);
     setError(null);
+    const articleSlug = article?.slug;
     try {
       if (onSave) {
         await onSave({
@@ -134,6 +135,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
               locale: 'de',
               data: {
                 ...form.de,
+                ...(articleSlug ? { slug: articleSlug } : {}),
                 summary: [
                   {
                     type: 'paragraph',
@@ -146,6 +148,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
               locale: 'en',
               data: {
                 ...form.en,
+                ...(articleSlug ? { slug: articleSlug } : {}),
                 summary: [
                   {
                     type: 'paragraph',
@@ -168,6 +171,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                 locale: 'de',
                 data: {
                   ...form.de,
+                  ...(articleSlug ? { slug: articleSlug } : {}),
                   summary: [
                     {
                       type: 'paragraph',
@@ -180,6 +184,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                 locale: 'en',
                 data: {
                   ...form.en,
+                  ...(articleSlug ? { slug: articleSlug } : {}),
                   summary: [
                     {
                       type: 'paragraph',
