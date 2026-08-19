@@ -207,7 +207,21 @@ export default function ImagePageClient({
     }
   };
 
-  const creatorObj = image?.creator || { username: 'Omni Creator', handle: '@omni' };
+  const rawCreatorObj = image?.creator || { username: 'Omni Creator', handle: '@omni' };
+  const isCreatorOwner = Boolean(
+    currentUser &&
+      (currentUser.id === rawCreatorObj.id ||
+        currentUser.username === rawCreatorObj.username ||
+        (currentUser.handle && rawCreatorObj.handle && currentUser.handle.toLowerCase() === rawCreatorObj.handle.toLowerCase()))
+  );
+  const effectiveCreatorAvatar = (isCreatorOwner && typeof currentUser?.avatarUrl !== 'undefined')
+    ? (currentUser.avatarUrl || rawCreatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80')
+    : (rawCreatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80');
+
+  const creatorObj = {
+    ...rawCreatorObj,
+    avatarUrl: effectiveCreatorAvatar,
+  };
 
   const handleOpenChannel = (creator: any) => {
     setSelectedChannel({
@@ -328,8 +342,11 @@ export default function ImagePageClient({
                     <Image
                       src={creatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
                       alt={creatorObj.username}
+                      width={40}
+                      height={40}
                       onClick={() => handleOpenChannel(creatorObj)}
                       className="w-10 h-10 rounded-full object-cover border border-white/20 cursor-pointer hover:opacity-80 transition-opacity"
+                      unoptimized
                     />
                     <div className="flex flex-col">
                       <span

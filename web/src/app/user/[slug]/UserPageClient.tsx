@@ -109,9 +109,12 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         <div className="relative group">
                             <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl p-1 bg-gradient-to-tr from-indigo-500 via-teal-400 to-indigo-600 shadow-xl">
                                 <Image
-                                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+                                    src={(isOwner && typeof currentUser?.avatarUrl !== 'undefined') ? (currentUser.avatarUrl || profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80') : (profile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80')}
                                     alt={profile.username}
+                                    width={128}
+                                    height={128}
                                     className="w-full h-full object-cover rounded-[22px] bg-slate-950"
+                                    unoptimized
                                 />
                             </div>
                             {isOwner && (

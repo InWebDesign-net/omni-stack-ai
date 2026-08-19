@@ -380,8 +380,17 @@ export default function ContentPageClient({
   const authorName =
     creator?.username || creator?.name || item?.authorName || initialItem?.authorName || (rawHandle ? rawHandle.replace(/^@/, '') : fallbackCreator.username);
   const authorHandle = rawHandle ? (rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`) : fallbackCreator.handle;
-  const authorAvatar =
+  const isAuthorOwner = Boolean(
+    currentUser &&
+      (currentUser.id === creator?.id ||
+        currentUser.username === authorName ||
+        (currentUser.handle && authorHandle && currentUser.handle.toLowerCase() === authorHandle.toLowerCase()))
+  );
+  const rawAuthorAvatar =
     creator?.avatarUrl || creator?.avatar || item?.authorAvatar || initialItem?.authorAvatar || fallbackCreator.avatarUrl;
+  const authorAvatar = (isAuthorOwner && typeof currentUser?.avatarUrl !== 'undefined')
+    ? (currentUser.avatarUrl || rawAuthorAvatar)
+    : rawAuthorAvatar;
 
   
   
@@ -505,7 +514,7 @@ export default function ContentPageClient({
                     className="flex items-center gap-3 cursor-pointer group/author transition-all"
                     title={t.content.openProfileTitle.replace('{name}', authorName)}
                   >
-                    <Image src={authorAvatar} alt={authorName} className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" />
+                    <Image src={authorAvatar} alt={authorName} width={44} height={44} className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" unoptimized />
                     <div>
                       <div className="flex items-center gap-1">
                         <p className="text-sm font-bold text-white group-hover/author:text-[#44e2cd] transition-colors">{authorName}</p>

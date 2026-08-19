@@ -27,8 +27,13 @@ export default function ChannelProfileModal({
   const isOwner = Boolean(
     currentUser &&
       (currentUser.id === selectedChannel.id ||
-        currentUser.username === selectedChannel.username)
+        currentUser.username === selectedChannel.username ||
+        (currentUser.handle && selectedChannel.handle && currentUser.handle.toLowerCase() === selectedChannel.handle.toLowerCase()))
   );
+
+  const effectiveAvatar = (isOwner && typeof currentUser?.avatarUrl !== 'undefined')
+    ? (currentUser.avatarUrl || selectedChannel.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80')
+    : (selectedChannel.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80');
 
   const cleanHandle = (selectedChannel.handle || '').replace(/^@/, '').toLowerCase();
   const demoMatch = getDemoCreatorByHandle(cleanHandle);
@@ -72,9 +77,12 @@ export default function ChannelProfileModal({
             <div className="relative shrink-0">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-[#8083ff] to-teal-400 opacity-60 blur-sm" />
               <Image
-                src={selectedChannel.avatarUrl}
+                src={effectiveAvatar}
                 alt={selectedChannel.username}
+                width={56}
+                height={56}
                 className="relative h-14 w-14 rounded-full object-cover border-2 border-white/20 shadow-xl"
+                unoptimized
               />
             </div>
             <div className="flex-1 min-w-0">

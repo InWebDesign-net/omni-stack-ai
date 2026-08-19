@@ -104,18 +104,16 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   const creatorName =
     creator?.username || creator?.name || item?.authorName || (rawHandle ? rawHandle.replace(/^@/, '') : fallbackCreator.username);
   const creatorHandle = rawHandle ? (rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`) : fallbackCreator.handle;
-  const creatorAvatar =
-    creator?.avatarUrl || creator?.avatar || item?.authorAvatar || fallbackCreator.avatarUrl;
-  const isSubscribed = Boolean(
-    creatorHandle &&
-      (subscribedChannels.includes(creatorHandle) ||
-        subscribedChannels.includes(creatorHandle.replace(/^@/, '')))
-  );
-
   const isEffectiveOwner =
     isOwner ||
     (Boolean(currentUser?.id) && Boolean(creator?.id) && Number(currentUser?.id) === Number(creator?.id)) ||
     (Boolean(currentUser?.handle) && Boolean(creatorHandle) && currentUser?.handle.replace(/^@/, '').toLowerCase() === creatorHandle.replace(/^@/, '').toLowerCase());
+
+  const rawCreatorAvatar =
+    creator?.avatarUrl || creator?.avatar || item?.authorAvatar || fallbackCreator.avatarUrl;
+  const creatorAvatar = (isEffectiveOwner && typeof currentUser?.avatarUrl !== 'undefined')
+    ? (currentUser.avatarUrl || rawCreatorAvatar)
+    : rawCreatorAvatar;
 
   const userIdent = useMemo(() => {
     return currentUser?.id ? `user-${currentUser.id}` : 'anon-session';
@@ -345,6 +343,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                       width={44}
                       height={44}
                       className="w-11 h-11 rounded-full object-cover border-2 border-purple-500/30 group-hover:border-purple-400 transition-colors"
+                      unoptimized
                     />
                   </button>
                   <div>

@@ -459,7 +459,16 @@ export default function VideosPageClient({
             {videos.map((video: VideoItem) => {
               const creator = video.creator || (video as any).author;
               const creatorName = creator?.username || creator?.handle || (video as any).authorName || "Omni Creator";
-              const creatorAvatar = creator?.avatarUrl || (video as any).authorAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80";
+              const isItemOwner = Boolean(
+                currentUser &&
+                  (currentUser.id === creator?.id ||
+                    currentUser.username === creatorName ||
+                    (currentUser.handle && (creator?.handle || (video as any).authorHandle) && currentUser.handle.toLowerCase() === (creator?.handle || (video as any).authorHandle).toLowerCase()))
+              );
+              const rawCreatorAvatar = creator?.avatarUrl || (video as any).authorAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80";
+              const creatorAvatar = (isItemOwner && typeof currentUser?.avatarUrl !== 'undefined')
+                ? (currentUser.avatarUrl || rawCreatorAvatar)
+                : rawCreatorAvatar;
 
               return (
                 <div
@@ -528,6 +537,7 @@ export default function VideosPageClient({
                           width={24}
                           height={24}
                           className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
+                          unoptimized
                         />
                         <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
                       </button>

@@ -262,45 +262,60 @@ export default function HomeClient() {
             onScroll={updateScrollState}
             className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none scroll-smooth"
           >
-            {channels.map((channel) => (
-              <div
-                key={channel.id}
-                onClick={() => openChannelModal(channel)}
-                className="flex-shrink-0 w-64 p-4 rounded-2xl bg-[#0d1528]/80 border border-slate-800/80 hover:border-indigo-500/40 transition-all duration-300 shadow-lg cursor-pointer group flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
-                    <Image
-                      src={channel.avatarUrl}
-                      alt={channel.username}
-                      loading="lazy"
-                      className="w-12 h-12 rounded-xl object-cover border border-slate-700 group-hover:scale-105 transition-transform"
-                    />
-                    {channel.hasNewContent && (
-                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-[#080e1e]" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
-                    )}
+            {channels.map((channel: any) => {
+              const isChannelOwner = Boolean(
+                currentUser &&
+                  (currentUser.id === channel.id ||
+                    currentUser.username === channel.username ||
+                    (currentUser.handle && channel.handle && currentUser.handle.toLowerCase() === channel.handle.toLowerCase()))
+              );
+              const channelAvatar = (isChannelOwner && typeof currentUser?.avatarUrl !== 'undefined')
+                ? (currentUser.avatarUrl || channel.avatarUrl)
+                : channel.avatarUrl;
+
+              return (
+                <div
+                  key={channel.id}
+                  onClick={() => openChannelModal(channel)}
+                  className="group bg-[#0d1528] hover:bg-[#121a30] border border-white/10 hover:border-indigo-500/40 rounded-3xl p-5 shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
+                      <Image
+                        src={channelAvatar}
+                        alt={channel.username}
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-700 group-hover:scale-105 transition-transform"
+                        unoptimized
+                      />
+                      {channel.hasNewContent && (
+                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-[#080e1e]" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-sm text-white truncate group-hover:text-indigo-400 transition-colors">
+                        {channel.username}
+                      </h3>
+                      <p className="text-xs font-mono text-indigo-400 truncate">
+                        {channel.handle}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm text-white truncate group-hover:text-indigo-400 transition-colors">
-                      {channel.username}
-                    </h3>
-                    <p className="text-xs font-mono text-indigo-400 truncate">
-                      {channel.handle}
-                    </p>
+
+                  <p className="text-xs text-slate-400 mt-3 line-clamp-2 leading-relaxed">
+                    {channel.bio}
+                  </p>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                    <span>{(channel.subscribersCount || 0).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
+                    <span className="text-indigo-400 font-semibold group-hover:underline">{t.home?.viewChannel || 'Kanal ansehen →'}</span>
                   </div>
                 </div>
-
-                <p className="text-xs text-slate-400 mt-3 line-clamp-2 leading-relaxed">
-                  {channel.bio}
-                </p>
-
-                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                  <span>{(channel.subscribersCount || 0).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
-                  <span className="text-indigo-400 font-semibold group-hover:underline">{t.home?.viewChannel || 'Kanal ansehen →'}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -345,7 +360,16 @@ export default function HomeClient() {
               {videos.map((item: any) => {
                 const creator = item.creator || item.author;
                 const creatorName = creator?.username || creator?.handle || item.authorName || 'Omni Creator';
-                const creatorAvatar = creator?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+                const isItemOwner = Boolean(
+                  currentUser &&
+                    (currentUser.id === creator?.id ||
+                      currentUser.username === creatorName ||
+                      (currentUser.handle && (creator?.handle || item.authorHandle) && currentUser.handle.toLowerCase() === (creator?.handle || item.authorHandle).toLowerCase()))
+                );
+                const rawCreatorAvatar = creator?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+                const creatorAvatar = (isItemOwner && typeof currentUser?.avatarUrl !== 'undefined')
+                  ? (currentUser.avatarUrl || rawCreatorAvatar)
+                  : rawCreatorAvatar;
 
                 return (
                   <div
@@ -397,8 +421,11 @@ export default function HomeClient() {
                           <Image
                             src={creatorAvatar}
                             alt={creatorName}
+                            width={24}
+                            height={24}
                             loading="lazy"
                             className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
+                            unoptimized
                           />
                           <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
                         </Link>
