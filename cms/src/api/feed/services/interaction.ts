@@ -551,16 +551,24 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     if (!clean) return null;
 
     const user = await strapi.db.query('plugin::users-permissions.user').findOne({
-      where: { handle: clean },
+      where: {
+        $or: [
+          { handle: clean },
+          { handle: `@${clean}` },
+          { username: clean },
+        ],
+      },
     });
 
     if (!user) return null;
+
+    const normalizedHandle = user.handle ? (user.handle.startsWith('@') ? user.handle : `@${user.handle}`) : `@${clean}`;
 
     return {
       id: user.id,
       documentId: user.documentId || String(user.id),
       username: user.username || clean,
-      handle: user.handle,
+      handle: normalizedHandle,
       avatarUrl: user.avatarUrl || null,
       bio: user.bio || null,
       subscribersCount: user.subscribersCount || 0,

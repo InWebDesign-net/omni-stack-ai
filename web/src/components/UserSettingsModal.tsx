@@ -42,7 +42,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
     const updatedUser = {
       ...currentUser,
       username: form.username.trim() || currentUser.username,
-      handle: `@${normHandle || 'user'}`,
+      handle: normHandle || 'user',
       avatarUrl: form.avatarUrl.trim(),
       bio: form.bio.trim(),
     };

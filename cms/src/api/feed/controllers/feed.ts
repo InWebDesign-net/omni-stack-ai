@@ -62,7 +62,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         updateData.username = body.username.trim();
       }
       if (typeof body.handle === 'string' && body.handle.trim()) {
-        updateData.handle = body.handle.trim();
+        updateData.handle = body.handle.trim().replace(/^@/, '');
       }
       if (typeof body.bio === 'string') {
         updateData.bio = body.bio.trim();
