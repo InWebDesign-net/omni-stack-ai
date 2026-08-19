@@ -421,61 +421,77 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 3xl:grid-cols-7 gap-4 sm:gap-6">
-            {images.map((img) => (
-              <Link
-                key={img.id || img.documentId}
-                href={`/image/${img.slug}`}
-                className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
-              >
-                {/* Aspect ratio image container */}
-                <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
-                  <Image
-                    src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
-                    alt={img.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+            {images.map((img) => {
+              const isImgOwner = Boolean(
+                currentUser &&
+                  img.creator &&
+                  (currentUser.id === img.creator.id ||
+                    currentUser.username === img.creator.username ||
+                    (currentUser.handle && img.creator.handle && currentUser.handle.toLowerCase() === img.creator.handle.toLowerCase()))
+              );
+              const effectiveCreatorAvatar = (isImgOwner && typeof currentUser?.avatarUrl !== 'undefined')
+                ? (currentUser.avatarUrl || img.creator?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80')
+                : (img.creator?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80');
 
-                  {/* Top Stats Badges */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleCardLikeToggle(e, img)}
-                    title={likedSlugs.includes(img.slug) ? 'Gefällt mir nicht mehr' : 'Gefällt mir'}
-                    className={`absolute top-3 right-3 z-10 flex items-center gap-1.5 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all cursor-pointer ${
-                      likedSlugs.includes(img.slug)
-                        ? 'bg-rose-500/30 text-rose-200 border-rose-500/50 shadow-md shadow-rose-500/20'
-                        : 'bg-black/60 text-white border-white/10 hover:border-rose-400/50 hover:text-rose-300'
-                    }`}
-                  >
-                    <Heart className={`w-3 h-3 ${likedSlugs.includes(img.slug) ? 'text-rose-400 fill-rose-400' : 'text-rose-400'}`} />
-                    <span>{img.likesCount || 0}</span>
-                  </button>
+              return (
+                <Link
+                  key={img.id || img.documentId}
+                  href={`/image/${img.slug}`}
+                  className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                >
+                  {/* Aspect ratio image container */}
+                  <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
+                    <Image
+                      src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
+                      alt={img.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
-                  {/* Creator Avatar Badge */}
-                  {img.creator && (
+                    {/* Top Stats Badges */}
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        openChannelModal(img.creator);
-                      }}
-                      className="absolute bottom-3 left-3 flex items-center gap-2 hover:opacity-80 transition-opacity z-10 cursor-pointer text-left"
+                      onClick={(e) => handleCardLikeToggle(e, img)}
+                      title={likedSlugs.includes(img.slug) ? 'Gefällt mir nicht mehr' : 'Gefällt mir'}
+                      className={`absolute top-3 right-3 z-10 flex items-center gap-1.5 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all cursor-pointer ${
+                        likedSlugs.includes(img.slug)
+                          ? 'bg-rose-500/30 text-rose-200 border-rose-500/50 shadow-md shadow-rose-500/20'
+                          : 'bg-black/60 text-white border-white/10 hover:border-rose-400/50 hover:text-rose-300'
+                      }`}
                     >
-                      <Image
-                        src={img.creator.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
-                        alt={img.creator.username || 'Creator'}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0"
-                      />
-                      <span className="text-[11px] font-semibold text-white drop-shadow truncate max-w-[120px]">
-                        {img.creator.username || 'Creator'}
-                      </span>
+                      <Heart className={`w-3 h-3 ${likedSlugs.includes(img.slug) ? 'text-rose-400 fill-rose-400' : 'text-rose-400'}`} />
+                      <span>{img.likesCount || 0}</span>
                     </button>
-                  )}
-                </div>
+
+                    {/* Creator Avatar Badge */}
+                    {img.creator && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openChannelModal({
+                            ...img.creator,
+                            avatarUrl: effectiveCreatorAvatar,
+                          });
+                        }}
+                        className="absolute bottom-3 left-3 flex items-center gap-2 hover:opacity-80 transition-opacity z-10 cursor-pointer text-left"
+                      >
+                        <Image
+                          src={effectiveCreatorAvatar}
+                          alt={img.creator.username || 'Creator'}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0"
+                          unoptimized
+                        />
+                        <span className="text-[11px] font-semibold text-white drop-shadow truncate max-w-[120px]">
+                          {img.creator.username || 'Creator'}
+                        </span>
+                      </button>
+                    )}
+                  </div>
 
                 {/* Footer Info */}
                 <div className="p-4 flex flex-col gap-1.5 flex-1">
@@ -501,7 +517,8 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   )}
                 </div>
               </Link>
-            ))}
+            );
+          })}
           </div>
         )}
 

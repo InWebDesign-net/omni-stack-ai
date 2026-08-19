@@ -186,8 +186,20 @@ export default function VideoPageClient({
   const creatorName =
     creator?.username || creator?.name || video?.authorName || initialVideo?.authorName || (rawHandle ? rawHandle.replace(/^@/, '') : fallbackCreator.username);
   const creatorHandle = rawHandle ? (rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`) : fallbackCreator.handle;
-  const creatorAvatar =
+
+  const isVideoOwner = Boolean(
+    currentUser &&
+      (currentUser.id === creator?.id ||
+        currentUser.username === creatorName ||
+        (currentUser.handle && creatorHandle && currentUser.handle.replace(/^@/, '').toLowerCase() === creatorHandle.replace(/^@/, '').toLowerCase()))
+  );
+
+  const rawCreatorAvatar =
     creator?.avatarUrl || creator?.avatar || video?.authorAvatar || initialVideo?.authorAvatar || fallbackCreator.avatarUrl;
+
+  const creatorAvatar = (isVideoOwner && typeof currentUser?.avatarUrl !== 'undefined')
+    ? (currentUser.avatarUrl || rawCreatorAvatar)
+    : rawCreatorAvatar;
   const isSubscribed = Boolean(
     creatorHandle &&
       (subscribedChannels.includes(creatorHandle) ||
@@ -455,7 +467,10 @@ export default function VideoPageClient({
                   <Image
                     src={creatorAvatar}
                     alt={creatorName}
+                    width={44}
+                    height={44}
                     className="w-11 h-11 rounded-full object-cover border-2 border-indigo-500/40 group-hover:scale-105 transition-transform"
+                    unoptimized
                   />
                   <div>
                     <div className="flex items-center gap-1.5">
