@@ -32,12 +32,14 @@ import {
 import { ActionButton } from '@/components/ActionButton';
 import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import { useArticles, ArticleItem } from '@/lib/hooks/useArticles';
+import { ArticleCreateModal } from '@/components/article/ArticleCreateModal';
 import Image from 'next/image';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function ArticlesPageClient() {
   const router = useRouter();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { currentUser, lang, t } = useApp();
@@ -200,7 +202,7 @@ export default function ArticlesPageClient() {
             <div className="flex items-center">
               <ActionButton
                 isFilterActive={hasActiveFilters}
-                onUpload={() => {/* Article Create Modal */}}
+                onUpload={() => setIsCreateModalOpen(true)}
                 onReset={hardReset}
                 uploadLabel={t.articles?.createArticle || 'Artikel erstellen'}
                 resetLabel={t.common?.resetFilters || 'Filter zurücksetzen'}
@@ -500,6 +502,11 @@ export default function ArticlesPageClient() {
           </div>
         )}
       </main>
+
+      <ArticleCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 }

@@ -88,7 +88,7 @@ export async function POST(req: Request) {
           blocks,
           thumbnail,
           tags: tags || [],
-          visibility: visibility || 'public',
+          visibility: visibility || 'private',
           locale: lang || 'de',
         },
       }),
@@ -103,7 +103,30 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, article: data.data });
+    const createdArticle = data.data;
+
+    // Create secondary localization (en/de) so title is available in both languages
+    if (createdArticle?.documentId) {
+      const targetLocale = (lang || 'de') === 'de' ? 'en' : 'de';
+      try {
+        await fetch(`${strapiBase()}/api/articles/${createdArticle.documentId}/localizations`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            data: {
+              title,
+              slug,
+              visibility: visibility || 'private',
+              locale: targetLocale,
+            },
+          }),
+        });
+      } catch (locErr) {
+        console.warn('Failed to create secondary localization for article:', locErr);
+      }
+    }
+
+    return NextResponse.json({ success: true, article: createdArticle });
   } catch (error: any) {
     console.error('[article-settings-proxy] POST error', error);
     return NextResponse.json(

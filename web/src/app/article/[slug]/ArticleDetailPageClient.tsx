@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Heart, Share2, Bookmark, Eye, Clock, MessageSquare,
   BookOpen, User as UserIcon, Settings, Tag, Sparkles, FileText, CheckCircle2,
@@ -31,6 +31,7 @@ function pickLocalized(source: any, useLang: string) {
 
 export default function ArticleDetailPageClient({ initialItem, slug }: { initialItem: any; slug: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, lang, currentUser, openAuthModal, subscribedChannels } = useApp();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -42,6 +43,13 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Auto-open ArticleEditModal if edit=true query param is present
+  useEffect(() => {
+    if (searchParams.get('edit') === 'true') {
+      setShowSettingsModal(true);
+    }
+  }, [searchParams]);
   const [isOwner, setIsOwner] = useState(false);
   const [activeChannelModal, setActiveChannelModal] = useState<any>(null);
   const hasTrackedView = useRef(false);

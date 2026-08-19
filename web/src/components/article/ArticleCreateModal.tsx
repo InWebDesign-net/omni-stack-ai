@@ -1,168 +1,190 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, X, Save, Eye } from 'lucide-react';
-import { BlockEditor } from './BlockEditor';
+import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
+import { FileText, Plus, X, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { jsonAuthHeaders } from '@/lib/affinity';
+import { useApp } from '@/context/AppContext';
 
 interface ArticleCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: any) => Promise<void>;
-  t?: any;
 }
 
-export function ArticleCreateModal({ isOpen, onClose, onCreate, t }: ArticleCreateModalProps) {
+export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps) {
+  const router = useRouter();
+  const { lang, openAuthModal, currentUser } = useApp();
+
   const [title, setTitle] = useState('');
-  const [summary, setSummary] = useState('');
-  const [thumbnail, setThumbnail] = useState('');
-  const [tags, setTags] = useState('');
-  const [visibility, setVisibility] = useState('public');
-  const [blocks, setBlocks] = useState<any[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [preview, setPreview] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof window === 'undefined') return null;
 
-  const handleSubmit = async () => {
-    if (!title.trim()) return;
-    setSaving(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError(lang === 'de' ? 'Bitte gib einen Titel für den Artikel ein.' : 'Please enter a title for the article.');
+      return;
+    }
+
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      await onCreate({
-        title: title.trim(),
-        summary,
-        thumbnail,
-        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        visibility,
-        blocks,
+      // Clean slug generation
+      const cleanSlug = trimmedTitle
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9äöüß]+/g, '-')
+        .replace(/ä/g, 'ae')
+        .replace(/ö/g, 'oe')
+        .replace(/ü/g, 'ue')
+        .replace(/ß/g, 'ss')
+        .replace(/^-+|-+$/g, '') || `artikel-${Date.now()}`;
+
+      const res = await fetch('/api/article/settings', {
+        method: 'POST',
+        headers: {
+          ...jsonAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: trimmedTitle,
+          slug: cleanSlug,
+          visibility: 'private',
+          lang: lang || 'de',
+        }),
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Fehler beim Erstellen des Artikels');
+      }
+
+      const createdArticle = data.article;
+      const targetSlug = createdArticle?.slug || cleanSlug;
+
       onClose();
-      // Reset form
       setTitle('');
-      setSummary('');
-      setThumbnail('');
-      setTags('');
-      setBlocks([]);
-    } catch (e) {
-      console.error('Failed to create article:', e);
+      router.push(`/article/${targetSlug}?edit=true`);
+    } catch (err: any) {
+      console.error('Error creating article:', err);
+      setError(err.message || 'Fehler beim Erstellen des Artikels');
     } finally {
-      setSaving(false);
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg text-white flex items-center gap-2">
-            <Plus className="w-5 h-5 text-indigo-400" />
-            {t?.articles?.createArticle || 'Artikel erstellen'}
-          </h3>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl">
-            <X className="w-5 h-5 text-slate-400" />
-          </button>
-        </div>
-
-        {/* Title */}
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">{t?.common?.title || 'Titel'}</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t?.articles?.titlePlaceholder || 'Artikel-Titel...'}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Summary */}
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">{t?.common?.summary || 'Zusammenfassung'}</label>
-          <textarea
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            placeholder={t?.articles?.summaryPlaceholder || 'Kurze Beschreibung...'}
-            rows={2}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Thumbnail */}
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">{t?.common?.thumbnail || 'Thumbnail URL'}</label>
-          <input
-            type="text"
-            value={thumbnail}
-            onChange={(e) => setThumbnail(e.target.value)}
-            placeholder="https://..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Tags */}
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">{t?.common?.tags || 'Tags (kommagetrennt)'}</label>
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="tech, news, tutorial"
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Visibility */}
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">{t?.common?.visibility || 'Sichtbarkeit'}</label>
-          <select
-            value={visibility}
-            onChange={(e) => setVisibility(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value="public">{t?.common?.public || 'Öffentlich'}</option>
-            <option value="private">{t?.common?.private || 'Privat'}</option>
-          </select>
-        </div>
-
-        {/* Block Editor */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-xs text-slate-400">{t?.articles?.content || 'Inhalt'}</label>
-            <button
-              type="button"
-              onClick={() => setPreview(!preview)}
-              className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300"
-            >
-              <Eye className="w-3 h-3" />
-              {preview ? t?.common?.edit || 'Bearbeiten' : t?.common?.preview || 'Vorschau'}
-            </button>
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-5 shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-white">
+                {lang === 'de' ? 'Neuen Artikel erstellen' : 'Create New Article'}
+              </h3>
+              <p className="text-xs text-slate-400">
+                {lang === 'de' ? 'Gib einen Titel ein, um zu beginnen' : 'Enter a title to get started'}
+              </p>
+            </div>
           </div>
-          <BlockEditor blocks={blocks} onChange={setBlocks} t={t} />
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-4 border-t border-slate-800">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors"
+            className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors"
           >
-            {t?.common?.cancel || 'Abbrechen'}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving || !title.trim()}
-            className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-          >
-            {saving ? (
-              <div className="w-4 h-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                {t?.common?.create || 'Erstellen'}
-              </>
-            )}
+            <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Error notification */}
+        {error && (
+          <div className="p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
+              {lang === 'de' ? 'Titel des Beitrags' : 'Article Title'} <span className="text-purple-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder={
+                lang === 'de'
+                  ? 'z.B. Wie KI die Zukunft der Softwareentwicklung verändert...'
+                  : 'e.g. How AI is transforming software engineering...'
+              }
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all"
+              disabled={isSubmitting}
+              autoFocus
+            />
+          </div>
+
+          <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl text-[11px] text-slate-400 flex items-start gap-2">
+            <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+            <span>
+              {lang === 'de'
+                ? 'Der Beitrag wird zunächst als "Privat" angelegt. Anschließend öffnet sich direkt der Editor zum Ausgestalten.'
+                : 'The post will initially be set to "Private". The editor will open immediately for further customization.'}
+            </span>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors"
+              disabled={isSubmitting}
+            >
+              {lang === 'de' ? 'Abbrechen' : 'Cancel'}
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 py-2.5 px-4 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/20 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  <span>{lang === 'de' ? 'Artikel erstellen' : 'Create Article'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
