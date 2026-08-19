@@ -1,75 +1,107 @@
-# Omni Viewer & Content Visibility
+# Omni Viewer & Content Visibility Architecture
 
-This document explains how the Omni Stack enforces content visibility across
-Strapi 5. It is intended as a reference for frontend and backend developers
-who build on top of this boilerplate.
+This document explains how the Omni Stack enforces content visibility across Strapi 5. It serves as an authoritative reference for frontend and backend developers building on top of this platform.
 
-## Scope
+---
 
-The visibility rules apply to these content types:
+## 🎯 Scope
 
-- `api::feed-item.feed-item`
-- `api::video.video`
-- `api::image.image`
+The default-deny visibility enforcement applies to the following content types in Strapi 5:
 
-## Core rule: default-deny
+- `api::article.article` — Editorial articles, blog posts, and rich text content.
+- `api::video.video` — Video media items, metadata, and HLS stream manifests.
+- `api::image.image` — Image gallery items, WebP previews, and OpenGraph assets.
+- `api::feed-item.feed-item` — Dynamic feed item containers (planned for expansion as unified rich feed cards combining articles, media embeds, and interactive blocks).
 
-All document queries (`findMany`, `findOne`, `findFirst`) that are **not**
-made by a Strapi admin user are filtered to `visibility: 'public'` by
-default.
+---
 
-This is implemented as a Strapi Document Service middleware in
-`cms/src/index.ts`.
+## 🔒 Core Rule: Default-Deny Visibility (`visibility: 'public'`)
 
-## When private content is visible
+All document queries (`findMany`, `findOne`, `findFirst`) executed against the Strapi Document Service that are **not** made by a Strapi admin user are automatically filtered to `visibility: 'public'` by default.
 
-A user can see non-public content in the following cases:
+This security policy is enforced centrally via a Strapi 5 Document Service middleware in [`cms/src/index.ts`](file:///root/omni-stack-ai/cms/src/index.ts).
 
-1. **Admin request** — requests to `/admin` or `/content-manager` bypass the
-   middleware so editors can manage all entries in the Strapi admin panel.
+---
 
-2. **Owner query** — when the request is authenticated and the query filters
-   by `author` (feed-item) or `creator` (video/image) matching the current
-   user's ID. This powers "My channel / my content" views.
+## 🔑 When Private / Draft Content is Accessible
 
-3. **Specific item query** — when the query filters by `slug`, `documentId`,
-   or `id` and the request is authenticated. This allows the owner to preview
-   or share a single private item without exposing the whole library.
+Non-public content (`visibility: 'private'` or draft status) is accessible under the following specific conditions:
 
-4. **Explicit visibility filter** — if the caller already supplies a
-   `visibility` filter, the middleware leaves it untouched.
+1. **Admin Panel Requests**  
+   Requests originating from `/admin` or `/content-manager` bypass the middleware completely so editors and administrators can inspect and manage all entries in the Strapi Admin Panel.
 
-## How authentication is resolved
+2. **Owner Queries ("My Channel / My Content")**  
+   When a request is authenticated and explicitly filters by relation to the current user:
+   - `creator` ID for `video`, `image`, and `article`.
+   - `author` ID for `feed-item`.
+   This allows creators to view and manage their own private or draft content in user dashboard views.
 
-The middleware looks for the current user ID in this order:
+3. **Single Item Previews & Direct Links**  
+   When a query filters by a specific identifier (`slug`, `documentId`, or `id`) AND the caller provides an authenticated session (`x-omni-user-id`, JWT token, or preview secret). This powers preview links and shareable owner previews without exposing private items in public feeds.
 
-1. `context.params.omniViewer.userId` — passed explicitly by backend services
-   such as `feed-assembly.ts`.
-2. `ctx.state.user.id` — set by Strapi JWT authentication.
-3. `x-omni-user-id` header.
-4. `omniUserId` query parameter.
+4. **Explicit Visibility Filters**  
+   If the caller already supplies an explicit `visibility` filter (e.g. `{ visibility: { $in: ['public', 'private'] } }`), the middleware respects the explicit filter provided by authorized callers.
 
-Only the first resolved ID is used.
+5. **Strapi Admin Preview Mode**  
+   Clicking *"Vorschau"* in Strapi Content Manager generates a signed Next.js preview URL (`/api/preview?secret=...&slug=...&type=...`) verified against `STRAPI_PREVIEW_SECRET`, enabling live draft previews.
 
-## Frontend / API contract
+---
 
-- Authenticated frontend routes should continue sending the standard
-  `Authorization: Bearer <jwt>` header.
-- Internal CMS services that need owner-aware queries can pass
-  `{ omniViewer: { userId: <id> } }` in Document Service calls.
-- Public feeds and listings never expose `visibility: 'private'` entries.
+## 🛠️ Authentication Resolution Hierarchy
 
-## Why this pattern exists
+The middleware resolves the current user ID (`uidNum`) in the following order of precedence:
 
-The boilerplate is designed for multi-tenant content platforms where users can
-publish public content and keep drafts/private content separate. Instead of
-relying on Strapi role permissions alone, the middleware adds a defense-in-depth
-layer that guarantees private content is never accidentally returned by an
-unscoped query.
+1. `context.params.omniViewer.userId` — Passed explicitly by internal backend services (e.g., `feed-assembly.ts`).
+2. `koaCtx.state.user.id` — Extracted from a validated Strapi JWT bearer token.
+3. `x-omni-user-id` header — Passed by Next.js server-side API proxy routes.
+4. `omniUserId` query parameter — Passed in query strings where headers cannot be set.
 
-## Changing the behavior
+Only the first resolved user ID is used.
 
-To add new content types to the visibility enforcement, extend
-`targetUIDs` in the middleware (`cms/src/index.ts`). To change the default
-visibility value or add extra bypass rules, modify the conditions before the
-`context.params.filters` assignment.
+---
+
+## 🚀 Future Roadmap: Feed Item Expansion & Articles
+
+As the platform evolves, `feed-item` containers will be expanded into rich, modular cards:
+- **Articles & Long-form Content**: Seamless integration between `api::article.article` and `api::feed-item.feed-item` using reusable block components.
+- **Embedded Media**: Direct embedding of video streams and WebP image carousels within feed items.
+- **Interactive Widgets**: Polls, comments, and reaction counters integrated directly into feed items.
+
+---
+
+## 🛠️ Code Implementation Reference
+
+```typescript
+// cms/src/index.ts
+strapi.documents.use(async (context: any, next: any) => {
+  const targetUIDs = [
+    'api::video.video',
+    'api::feed-item.feed-item',
+    'api::image.image',
+    'api::article.article'
+  ];
+  const action = context.action;
+
+  if (targetUIDs.includes(context.uid) && ['findMany', 'findOne', 'findFirst'].includes(action)) {
+    // 1. Bypass for Strapi Admin Panel
+    if (isAdminRequest) return next();
+
+    // 2. Resolve User ID
+    const uidNum = resolveUserId(context, koaCtx);
+
+    // 3. Bypass for Owner Queries or Single Item Slugs
+    const usesCreator = ['api::video.video', 'api::image.image', 'api::article.article'].includes(context.uid);
+    const targetRelFilter = usesCreator ? filters.creator : filters.author;
+    
+    if (isOwnerQuery || (isSpecificItemQuery && uidNum != null)) return next();
+
+    // 4. Default-deny fallback: Enforce visibility = 'public'
+    context.params.filters = {
+      ...filters,
+      visibility: { $eq: 'public' },
+    };
+  }
+
+  return next();
+});
+```

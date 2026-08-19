@@ -21,7 +21,7 @@ export default {
     // Centralized Document Service Middleware for default-deny visibility enforcement.
     // See docs/OMNI_VIEWER.md for the full visibility contract.
     strapi.documents.use(async (context: any, next: any) => {
-      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item', 'api::image.image'];
+      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item', 'api::image.image', 'api::article.article'];
       const action = context.action;
 
       if (targetUIDs.includes(context.uid) && (action === 'findMany' || action === 'findOne' || action === 'findFirst')) {
@@ -51,7 +51,7 @@ export default {
               : (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : null)));
 
         const filters = context.params.filters || {};
-        const usesCreator = context.uid === 'api::video.video' || context.uid === 'api::image.image';
+        const usesCreator = context.uid === 'api::video.video' || context.uid === 'api::image.image' || context.uid === 'api::article.article';
         const targetRelFilter = usesCreator ? filters.creator : filters.author;
         const targetRelId = targetRelFilter?.id?.$eq || targetRelFilter?.id || targetRelFilter;
 
