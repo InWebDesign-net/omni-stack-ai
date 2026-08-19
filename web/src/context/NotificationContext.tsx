@@ -10,6 +10,7 @@ import {
 import { updateFaviconBadge } from '@/lib/faviconBadge';
 
 import { getSocket } from '@/lib/socket';
+import { useApp } from '@/context/AppContext';
 
 interface NotificationContextType {
   notifications: NotificationItem[];
@@ -25,6 +26,7 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
+  const { currentUser } = useApp();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -37,11 +39,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setLoading(false);
   }, []);
 
+  // Re-fetch notifications whenever user logs in, logs out, or session changes
   useEffect(() => {
     refreshNotifications();
+  }, [currentUser?.id, currentUser?.username, currentUser?.handle, refreshNotifications]);
 
+  // WebSocket real-time listener & 30s fallback polling
+  useEffect(() => {
     const socket = getSocket();
-    if (!socket) return;
 
     const handleNewNotification = (notification: NotificationItem) => {
       console.log('⚡ Real-time notification received via WebSocket:', notification);
@@ -49,10 +54,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       setUnreadCount((prev) => prev + 1);
     };
 
-    socket.on('notification:new', handleNewNotification);
+    if (socket) {
+      socket.on('notification:new', handleNewNotification);
+    }
+
+    // 30-second interval fallback poll
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30000);
 
     return () => {
-      socket.off('notification:new', handleNewNotification);
+      if (socket) {
+        socket.off('notification:new', handleNewNotification);
+      }
+      clearInterval(interval);
     };
   }, [refreshNotifications]);
 
