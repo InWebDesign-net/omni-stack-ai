@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sliders, CheckCircle2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { jsonAuthHeaders } from '@/lib/affinity';
+import { ImageUploadField } from '@/components/common/ImageUploadField';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -32,7 +34,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
 
@@ -41,13 +43,21 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
       ...currentUser,
       username: form.username.trim() || currentUser.username,
       handle: `@${normHandle || 'user'}`,
-      avatarUrl: form.avatarUrl.trim() || currentUser.avatarUrl,
+      avatarUrl: form.avatarUrl.trim(),
       bio: form.bio.trim(),
     };
 
     setCurrentUser(updatedUser);
     try {
       localStorage.setItem('omni_user', JSON.stringify(updatedUser));
+      await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          ...jsonAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedUser),
+      });
     } catch (e) {}
 
     onClose();
@@ -110,19 +120,13 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="avatarUrl" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
-              {t.settings.avatarLabel}
-            </label>
-            <input
-              id="avatarUrl"
-              type="text"
-              value={form.avatarUrl}
-              onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
-              placeholder="https://images.unsplash.com/photo-..."
-              className="bg-[#080e1e] border border-white/8 focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
-            />
-          </div>
+          <ImageUploadField
+            label={t.settings.avatarLabel}
+            value={form.avatarUrl}
+            onChange={(newUrl) => setForm((prev) => ({ ...prev, avatarUrl: newUrl }))}
+            rounded
+            folder="avatars"
+          />
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="bio" className="text-[11px] font-semibold text-[#9ba4bf] uppercase tracking-wider">
