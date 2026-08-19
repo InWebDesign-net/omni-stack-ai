@@ -366,10 +366,12 @@ export default function ChatWidget() {
                   isAiEnabled={activeRoom.isAiEnabled}
                   showOnlineStatus={showOnlineStatus}
                   privacyError={privacyError}
+                  onBack={() => setActiveRoomId(null)}
                   onToggleExpand={toggleExpand}
                   onClose={closeChat}
                   onRemoveAi={() => removeParticipantFromRoom(activeRoom.id, 'ai')}
                   onInviteAi={() => addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
+                  onManageGroup={() => setIsGroupManageOpen(true)}
                   t={t}
                 />
                 <MessageList
@@ -508,7 +510,9 @@ export default function ChatWidget() {
                 isAiEnabled={activeRoom?.isAiEnabled}
                 showOnlineStatus={showOnlineStatus}
                 privacyError={privacyError}
-                onClose={() => setActiveRoomId(null)}
+                onBack={() => setActiveRoomId(null)}
+                onToggleExpand={toggleExpand}
+                onClose={closeChat}
                 onRemoveAi={() => activeRoom && removeParticipantFromRoom(activeRoom.id, 'ai')}
                 onInviteAi={() => activeRoom && addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
                 onManageGroup={() => setIsGroupManageOpen(true)}

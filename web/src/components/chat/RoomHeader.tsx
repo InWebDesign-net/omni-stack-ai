@@ -9,6 +9,7 @@ interface RoomHeaderProps {
   isAiEnabled?: boolean;
   showOnlineStatus?: boolean;
   privacyError?: string | null;
+  onBack?: () => void;
   onToggleExpand?: () => void;
   onClose?: () => void;
   onRemoveAi?: () => void;
@@ -23,6 +24,7 @@ export function RoomHeader({
   isAiEnabled,
   showOnlineStatus,
   privacyError,
+  onBack,
   onToggleExpand,
   onClose,
   onRemoveAi,
@@ -35,11 +37,12 @@ export function RoomHeader({
       {/* Sleek & Compact Chat Room Header */}
       <div className="px-3 py-2 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          {onClose && (
+          {(onBack || onClose) && (
             <button
-              onClick={onClose}
-              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors shrink-0"
+              onClick={onBack || onClose}
+              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors shrink-0 cursor-pointer"
               title={t?.chat?.backToRooms || 'Zurück zur Übersicht'}
+              aria-label={t?.chat?.backToRooms || 'Zurück zur Übersicht'}
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -87,7 +90,7 @@ export function RoomHeader({
               <span>Omni AI</span>
               <button
                 onClick={onRemoveAi}
-                className="ml-0.5 p-0.5 hover:bg-rose-500/40 hover:text-rose-200 rounded-full transition-colors"
+                className="ml-0.5 p-0.5 hover:bg-rose-500/40 hover:text-rose-200 rounded-full transition-colors cursor-pointer"
                 title="KI aus Chat entfernen"
               >
                 <X className="w-2.5 h-2.5" />
@@ -96,7 +99,7 @@ export function RoomHeader({
           ) : (
             <button
               onClick={onInviteAi}
-              className="px-2 py-0.5 bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/30 text-teal-300 hover:text-teal-200 rounded-lg transition-all flex items-center gap-1 text-[11px] font-semibold"
+              className="px-2 py-0.5 bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/30 text-teal-300 hover:text-teal-200 rounded-lg transition-all flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
               title="KI in diesen Chat einladen"
             >
               <Sparkles className="w-3 h-3 text-teal-400" />
@@ -107,10 +110,22 @@ export function RoomHeader({
           {onToggleExpand && (
             <button
               onClick={onToggleExpand}
-              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all"
+              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
               title="Fenster vergrößern / verkleinern"
+              aria-label="Fenster vergrößern / verkleinern"
             >
               <Minimize2 className="w-4 h-4" />
+            </button>
+          )}
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
+              title={t?.common?.close || 'Schließen'}
+              aria-label={t?.common?.close || 'Schließen'}
+            >
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
