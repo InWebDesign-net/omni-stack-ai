@@ -38,7 +38,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
       Object.assign(filters, params.filters);
     }
 
-    if (!filters.visibility) {
+    if (!filters.visibility && params.includeProcessing !== 'true' && !params.q && !params.slug) {
       filters.visibility = { $eq: 'public' };
     }
 
@@ -61,6 +61,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
     }
 
     const docQueryLocale = (targetLocale === '*' || Boolean(searchTerm)) ? '*' : targetLocale;
+    const docQueryStatus = params.status || (params.includeProcessing === 'true' || Boolean(searchTerm) ? undefined : 'published');
 
     const articlePopulate: any = {
       creator: true,
@@ -89,7 +90,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
 
     let items = await strapi.documents('api::article.article').findMany({
       locale: docQueryLocale,
-      status: 'published',
+      ...(docQueryStatus ? { status: docQueryStatus } : {}),
       filters,
       populate: articlePopulate,
       sort: strapiSort,
@@ -98,7 +99,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
     if ((!items || items.length === 0) && docQueryLocale !== '*') {
       items = await strapi.documents('api::article.article').findMany({
         locale: '*',
-        status: 'published',
+        ...(docQueryStatus ? { status: docQueryStatus } : {}),
         filters,
         populate: articlePopulate,
         sort: strapiSort,

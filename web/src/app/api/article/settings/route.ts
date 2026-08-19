@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    const { user } = await getCurrentUserFromCookies();
     const body = await req.json();
     const { title, slug, summary, blocks, thumbnail, tags, visibility, lang } = body;
 
@@ -90,6 +92,7 @@ export async function POST(req: Request) {
           tags: tags || [],
           visibility: visibility || 'private',
           locale: lang || 'de',
+          ...(user?.id ? { creator: user.id } : {}),
         },
       }),
     });
