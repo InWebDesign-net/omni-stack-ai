@@ -511,7 +511,6 @@ export default function ChatWidget() {
                 showOnlineStatus={showOnlineStatus}
                 privacyError={privacyError}
                 onBack={() => setActiveRoomId(null)}
-                onToggleExpand={toggleExpand}
                 onClose={closeChat}
                 onRemoveAi={() => activeRoom && removeParticipantFromRoom(activeRoom.id, 'ai')}
                 onInviteAi={() => activeRoom && addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
