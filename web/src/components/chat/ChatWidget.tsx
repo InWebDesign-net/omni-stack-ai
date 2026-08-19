@@ -270,9 +270,6 @@ export default function ChatWidget() {
                 <button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'} aria-label={t.chat?.settingsTitle || 'Privatsphäre & Einstellungen'}>
                   <Settings className="w-5 h-5" />
                 </button>
-                <button onClick={toggleExpand} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title="Fenster verkleinern" aria-label="Fenster verkleinern">
-                  <Minimize2 className="w-5 h-5" />
-                </button>
                 <button onClick={closeChat} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title={t.common?.close || 'Schließen'} aria-label={t.common?.close || 'Schließen'}>
                   <X className="w-5 h-5" />
                 </button>
@@ -384,8 +381,31 @@ export default function ChatWidget() {
                 <ChatInput onSend={handleSend} t={t} />
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-500">
-                <p>{t.chat?.noConversations || 'Keine Konversationen'}</p>
+              <div className="relative flex-1 flex flex-col items-center justify-center text-slate-500 p-6">
+                {/* Transparent Top Right Window Controls in Empty State */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                  <button
+                    onClick={toggleExpand}
+                    className="p-2 hover:bg-slate-800/60 text-slate-400 hover:text-white rounded-xl transition-all border border-transparent hover:border-slate-800/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
+                    title="Fenster verkleinern"
+                    aria-label="Fenster verkleinern"
+                  >
+                    <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    onClick={closeChat}
+                    className="p-2 hover:bg-slate-800/60 text-slate-400 hover:text-white rounded-xl transition-all border border-transparent hover:border-slate-800/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
+                    title={t.common?.close || 'Schließen'}
+                    aria-label={t.common?.close || 'Schließen'}
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+                <Sparkles className="w-12 h-12 text-indigo-500/20 mb-3" />
+                <p className="text-sm font-medium text-slate-400">{t.chat?.noConversations || 'Keine Konversationen'}</p>
+                <p className="text-xs text-slate-600 mt-1 max-w-xs text-center font-sans">
+                  {t.chat?.noConversationsSub || 'Wähle einen Chat aus der linken Spalte oder starte eine neue Unterhaltung.'}
+                </p>
               </div>
             )}
           </div>
