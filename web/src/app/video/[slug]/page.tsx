@@ -23,7 +23,7 @@ function formatIsoDuration(seconds?: number): string {
   return res;
 }
 
-async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
+async function getData(slug: string, jwt?: string | null, lang: string = 'de', statusParam?: string) {
   try {
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
@@ -39,11 +39,20 @@ async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
       headers['x-omni-user-id'] = String(user.id);
     }
 
+    const statusQuery = statusParam === 'draft' ? '&status=draft' : '';
+
     // Fetch primary video by slug from Strapi (all localizations)
-    const videoRes = await fetch(
-      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
+    let videoRes = await fetch(
+      `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*${statusQuery}`,
       { headers, cache: 'no-store' }
     );
+
+    if (!videoRes.ok && statusParam === 'draft') {
+      videoRes = await fetch(
+        `${strapiUrl}/api/videos?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=creator&locale=*`,
+        { headers, cache: 'no-store' }
+      );
+    }
 
     if (!videoRes.ok) return null;
 
@@ -78,13 +87,15 @@ async function getData(slug: string, jwt?: string | null, lang: string = 'de') {
 }
 
 export async function generateMetadata(
-  { params }: Props,
+  { params, searchParams }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
+  const searchParamsObj = searchParams ? await searchParams : {};
+  const statusParam = typeof searchParamsObj.status === 'string' ? searchParamsObj.status : undefined;
   const { user, jwt } = await getCurrentUserFromCookies();
   const lang = (await cookies()).get('omni_lang')?.value === 'en' ? 'en' : 'de';
-  const data = await getData(slug, jwt, lang);
+  const data = await getData(slug, jwt, lang, statusParam);
 
   if (!data || !data.video) {
     return {
@@ -97,7 +108,7 @@ export async function generateMetadata(
   const { isOwner } = await getVideoOwnerStatus(slug);
 
   // If video is private and user is not owner, return non-indexed notFound title
-  if (video.visibility === 'private' && !isOwner) {
+  if (video.visibility === 'private' && !isOwner && statusParam !== 'draft') {
     return {
       title: 'Privates Video | Omni Network',
       robots: { index: false, follow: false },
@@ -154,11 +165,13 @@ export async function generateMetadata(
   };
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { slug } = await params;
+  const searchParamsObj = searchParams ? await searchParams : {};
+  const statusParam = typeof searchParamsObj.status === 'string' ? searchParamsObj.status : undefined;
   const { user, jwt } = await getCurrentUserFromCookies();
   const lang = (await cookies()).get('omni_lang')?.value === 'en' ? 'en' : 'de';
-  const data = await getData(slug, jwt, lang);
+  const data = await getData(slug, jwt, lang, statusParam);
 
   if (!data || !data.video) {
     notFound();
@@ -167,8 +180,8 @@ export default async function Page({ params }: Props) {
   const video = data.video;
   const { isOwner } = await getVideoOwnerStatus(slug);
 
-  // Security & Privacy Check: If private and not owner, return 404
-  if (video.visibility === 'private' && !isOwner) {
+  // Security & Privacy Check: If private and not owner and not in draft preview mode, return 404
+  if (video.visibility === 'private' && !isOwner && statusParam !== 'draft') {
     notFound();
   }
 

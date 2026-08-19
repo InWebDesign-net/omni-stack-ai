@@ -31,7 +31,14 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
       ],
       async handler(uid: any, { documentId, locale, status }: any) {
         let slug = documentId;
-        let mediaType = 'article';
+        const uidStr = String(uid || '').toLowerCase();
+        let mediaType = uidStr.includes('video')
+          ? 'video'
+          : uidStr.includes('image')
+          ? 'image'
+          : uidStr.includes('short')
+          ? 'short'
+          : 'article';
 
         try {
           const document = await (strapi as any).documents(uid).findOne({
@@ -41,18 +48,14 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
           });
           if (document) {
             slug = document.slug || documentId;
-            mediaType = document.mediaType || 'article';
+            if (document.mediaType) mediaType = document.mediaType;
           }
         } catch (e) {
           // Fallback
         }
 
-        const secret = env('STRAPI_PREVIEW_SECRET');
+        const secret = env('STRAPI_PREVIEW_SECRET', 'omni_preview_secret_2026');
         const baseUrl = env('PUBLIC_FRONTEND_URL', 'https://omni-web.inwebdesign.net');
-
-        if (!secret) {
-          throw new Error('STRAPI_PREVIEW_SECRET is not configured');
-        }
 
         return `${baseUrl}/api/preview?secret=${secret}&slug=${slug}&type=${mediaType}&documentId=${documentId}&status=${status || 'draft'}`;
       },
