@@ -44,10 +44,16 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
-  // Auto-open ArticleEditModal if edit=true query param is present
+  const hasOpenedEditFromUrl = useRef(false);
+
+  // Auto-open ArticleEditModal if edit=true query param is present (runs once per page load)
   useEffect(() => {
-    if (searchParams.get('edit') === 'true') {
+    if (searchParams.get('edit') === 'true' && !hasOpenedEditFromUrl.current) {
+      hasOpenedEditFromUrl.current = true;
       setShowSettingsModal(true);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
     }
   }, [searchParams]);
   const [isOwner, setIsOwner] = useState(false);
