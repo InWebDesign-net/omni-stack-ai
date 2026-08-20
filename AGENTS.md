@@ -59,9 +59,10 @@ omni-stack-ai/
 │   ├── src/components/      # React UI Components
 │   ├── src/context/         # AppContext (i18n), ChatContext (Rooms, Socket & Messages)
 │   └── src/dictionaries/    # Multilingual i18n Dictionaries (de.json, en.json)
-├── converter_lxc/           # LXC Node 22 Transcoder (Level 4 AES-128 HLS)
 └── ecosystem.config.js      # PM2 Process Manager setup
 ```
+
+*Note: The [media converter](docs/CONVERTER_SERVICE.md) and the [content-fill service](docs/CONTENT_FILL_SERVICE.md) run in separate LXC containers by design to keep heavy transcoding and Ollama LLM load off the web/CMS container.*
 
 ---
 

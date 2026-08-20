@@ -132,12 +132,13 @@ omni-stack-ai/
 │   ├── src/components/      # SubscribeButton, CustomVideoPlayer, ChatWidget, NotificationDrawer
 │   ├── src/context/         # AppContext (i18n), ChatContext (Rooms, Socket & Messages)
 │   └── src/dictionaries/    # Multilingual i18n JSON Dictionaries (de.json, en.json)
-├── converter_lxc/           # LXC Node 22 Transcoder (Level 4 AES-128 HLS, Watermarks, OG Images)
 ├── ecosystem.config.js      # PM2 Process Manager setup (omni-cms, omni-web, omni-socket)
 ├── turbo.json               # Turborepo task pipeline (Turbo v2)
 ├── package.json             # Monorepo workspaces configuration
 └── LICENSE                  # MIT License (InWebDesign)
 ```
+
+*Note: The [media converter](docs/CONVERTER_SERVICE.md) and the [content-fill service](docs/CONTENT_FILL_SERVICE.md) run in separate LXC containers by design to keep heavy transcoding and Ollama LLM load off the web/CMS container.*
 
 ---
 
