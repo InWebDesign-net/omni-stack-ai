@@ -242,14 +242,16 @@ export default function HomeClient() {
               <button
                 onClick={() => handleScroll('left')}
                 disabled={!canScrollLeft}
-                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
+                className="p-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary disabled:opacity-30 transition-all cursor-pointer"
+                aria-label="Nach links scrollen"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleScroll('right')}
                 disabled={!canScrollRight}
-                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
+                className="p-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary disabled:opacity-30 transition-all cursor-pointer"
+                aria-label="Nach rechts scrollen"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -259,7 +261,7 @@ export default function HomeClient() {
           <div
             ref={channelScrollRef}
             onScroll={updateScrollState}
-            className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none scroll-smooth"
+            className="flex items-stretch gap-4 overflow-x-auto pb-2 scrollbar-none scroll-smooth"
           >
             {channels.map((channel: any) => {
               const isChannelOwner = Boolean(
@@ -276,18 +278,18 @@ export default function HomeClient() {
                 <div
                   key={channel.id}
                   onClick={() => openChannelModal(channel)}
-                  className="group bg-surface hover:bg-surface-raised border border-subtle hover:border-indigo-500/40 rounded-3xl p-5 shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                  className="group w-64 sm:w-72 shrink-0 bg-surface hover:bg-surface-raised border border-subtle hover:border-indigo-500/40 rounded-2xl p-4 shadow-sm transition-all duration-200 cursor-pointer flex flex-col justify-between hover:-translate-y-0.5"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                       <Image
                         src={channelAvatar}
                         alt={channel.username}
-                        width={48}
-                        height={48}
+                        width={44}
+                        height={44}
                         loading="lazy"
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-700 group-hover:scale-105 transition-transform"
+                        className="w-11 h-11 rounded-xl object-cover border border-subtle group-hover:scale-105 transition-transform"
                         unoptimized
                       />
                       {channel.hasNewContent && (
@@ -295,7 +297,7 @@ export default function HomeClient() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm text-white truncate group-hover:text-indigo-400 transition-colors">
+                      <h3 className="font-semibold text-sm text-primary truncate group-hover:text-indigo-400 transition-colors">
                         {channel.username}
                       </h3>
                       <p className="text-xs font-mono text-indigo-400 truncate">
@@ -304,11 +306,11 @@ export default function HomeClient() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-400 mt-3 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-muted mt-2.5 line-clamp-2 leading-relaxed">
                     {channel.bio}
                   </p>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                  <div className="mt-3 pt-2.5 border-t border-subtle flex items-center justify-between text-[11px] text-faint font-mono">
                     <span>{(channel.subscribersCount || 0).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
                     <span className="text-indigo-400 font-semibold group-hover:underline">{t.home?.viewChannel || 'Kanal ansehen →'}</span>
                   </div>
