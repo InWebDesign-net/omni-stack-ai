@@ -104,7 +104,7 @@ function playMessageChime() {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.3);
-  } catch (e) {}
+  } catch (e) { /* expected: AudioContext may be suspended or unsupported */ }
 }
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
@@ -464,7 +464,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           }),
         });
       }
-    } catch (e) {}
+    } catch (e) { /* expected: AudioContext may be suspended or unsupported */ }
 
     const socket = getSocket();
     if (socket) {
@@ -547,7 +547,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           }),
         });
       }
-    } catch (e) {}
+    } catch (e) { /* expected: AudioContext may be suspended or unsupported */ }
 
     const socket = getSocket();
     if (socket) {

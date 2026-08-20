@@ -200,7 +200,7 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       if (params.userTopicScores) {
         try {
           Object.assign(userTopicScores, JSON.parse(params.userTopicScores));
-        } catch (e) {}
+        } catch (e) { /* malformed userTopicScores param — ranking falls back to no topic weighting */ }
       } else {
         userTopics.forEach((topic: string, index: number) => {
           userTopicScores[topic] = Math.max(10, 100 - index * 5);

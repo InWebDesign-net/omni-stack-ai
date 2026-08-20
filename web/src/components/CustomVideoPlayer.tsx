@@ -134,7 +134,7 @@ export default function CustomVideoPlayer({
     if (!video) return;
     video.currentTime = 0;
     setHasEnded(false);
-    video.play().catch(() => {});
+    video.play().catch((e) => { console.error('Video API failed:', e); });
     setIsPlaying(true);
   }, []);
 
@@ -144,7 +144,7 @@ export default function CustomVideoPlayer({
       const video = videoRef.current;
       if (video) {
         video.currentTime = 0;
-        video.play().catch(() => {});
+        video.play().catch((e) => { console.error('Video API failed:', e); });
       }
       return;
     }
@@ -194,7 +194,7 @@ export default function CustomVideoPlayer({
     }
 
     if (video.paused) {
-      video.play().catch(() => {});
+      video.play().catch((e) => { console.error('Video API failed:', e); });
       setIsPlaying(true);
       setCenterAnimation('play');
     } else {
@@ -251,10 +251,10 @@ export default function CustomVideoPlayer({
     if (!container) return;
 
     if (!document.fullscreenElement) {
-      container.requestFullscreen().catch(() => {});
+      container.requestFullscreen().catch((e) => { console.error('Video API failed:', e); });
       setIsFullscreen(true);
     } else {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch((e) => { console.error('Video API failed:', e); });
       setIsFullscreen(false);
     }
   };

@@ -58,7 +58,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
         },
         body: JSON.stringify(updatedUser),
       });
-    } catch (e) {}
+    } catch (e) { /* expected: storage might be blocked or empty */ }
 
     onClose();
   };

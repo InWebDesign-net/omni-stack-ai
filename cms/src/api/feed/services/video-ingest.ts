@@ -40,7 +40,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             metaDuration = Math.round(parseFloat(value.trim())) || metaDuration;
           }
         }
-      } catch (e) {}
+      } catch (e) { strapi.log.error('[video-ingest] could not read duration from meta file:', e); }
     }
 
     // 1. Move Thumbnails

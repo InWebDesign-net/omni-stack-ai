@@ -96,7 +96,7 @@ export const useVideos = ({
           queryParams.set('userTopics', topics);
         }
       }
-    } catch (e) {}
+    } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
   }
 
   if (searchTerm) {

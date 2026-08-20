@@ -122,7 +122,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesResult {
           queryParams.set('userTopics', topTopics.join(','));
         }
       }
-    } catch (e) {}
+    } catch (e) { console.error('[useImages] could not derive topic filter from affinity profile:', e); }
   }
 
   const url = enabled ? `/api/image/list?${queryParams.toString()}` : null;

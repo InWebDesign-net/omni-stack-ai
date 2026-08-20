@@ -127,7 +127,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     try {
       const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
       if (storedLikes.includes(item.slug)) localLiked = true;
-    } catch (e) {}
+    } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
 
     const checkInteraction = async () => {
       try {
@@ -165,7 +165,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         .then((d) => {
           if (d && typeof d.viewsCount === 'number') setViewsCount(d.viewsCount);
         })
-        .catch(() => {});
+        .catch((e) => { console.error('Unhandled promise rejection:', e); });
 
       if (item.tags) {
         tracker.track('view', item.tags, 'article', creator?.id);
@@ -207,7 +207,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         if (!storedLikes.includes(item.slug)) {
           localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, item.slug]));
         }
-      } catch (e) {}
+      } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     } else {
       showToast(effectiveLang === 'de' ? 'Aus deinen Favoriten entfernt.' : 'Removed from favorites.');
       try {
@@ -216,7 +216,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           'omni_user_likes',
           JSON.stringify(storedLikes.filter((s) => s !== item.slug))
         );
-      } catch (e) {}
+      } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     }
 
     try {
@@ -236,7 +236,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           setLikesCount(data.likesCount);
         }
       }
-    } catch (e) {}
+    } catch (e) { console.error('[ArticleDetail] could not refresh like count from server:', e); }
   };
 
   const handleShare = () => {

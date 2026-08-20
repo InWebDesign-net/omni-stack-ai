@@ -139,7 +139,7 @@ export default function ImagePageClient({
       if (storedLikes.includes(slug)) {
         setIsLiked(true);
       }
-    } catch (e) {}
+    } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
     trackView();
   }, [slug]);
 
@@ -151,7 +151,7 @@ export default function ImagePageClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, type: 'view' }),
       });
-    } catch (e) {}
+    } catch (e) { console.error('[ImageDetail] view tracking request failed:', e); }
   };
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -183,7 +183,7 @@ export default function ImagePageClient({
       } else if (!nextIsLiked) {
         localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== slug)));
       }
-    } catch (e) {}
+    } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 
     try {
       const userIdent = currentUser.username || currentUser.handle || `user-${currentUser.id}`;

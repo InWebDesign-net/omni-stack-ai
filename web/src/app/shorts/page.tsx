@@ -77,7 +77,7 @@ export default function ShortsFeedPage() {
             }
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error('[shorts] failed to load shorts feed:', e); }
     };
     fetchShorts();
   }, [initialSlug]);
@@ -185,7 +185,7 @@ export default function ShortsFeedPage() {
       if (storedUser) {
         setUserData(JSON.parse(storedUser));
       }
-    } catch (e) {}
+    } catch (e) { console.error('[shorts] failed to read stored user from localStorage:', e); }
   }, []);
 
   // Fetch comments from Strapi for active short

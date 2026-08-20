@@ -51,7 +51,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     try {
       const stored = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
       setLikedSlugs(stored);
-    } catch (e) {}
+    } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
   }, []);
 
   const handleCardLikeToggle = async (e: React.MouseEvent, img: any) => {
@@ -85,7 +85,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
       } else if (!nextIsLiked) {
         localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s: string) => s !== img.slug)));
       }
-    } catch (err) {}
+    } catch (err) { /* expected: storage might be blocked or empty */ }
 
     try {
       const userIdent = currentUser.username || currentUser.handle || `user-${currentUser.id}`;
