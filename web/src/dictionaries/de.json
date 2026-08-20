@@ -250,7 +250,19 @@
     "uploading": "Lädt hoch",
     "transcoding": "HLS Transcoding...",
     "completed": "Abgeschlossen & Veröffentlicht",
-    "error": "Fehler beim Upload"
+    "error": "Fehler beim Upload",
+    "viewEntry": "Beitrag ansehen",
+    "retry": "Wiederholen",
+    "dismiss": "Entfernen",
+    "clearCompleted": "Abgeschlossene bereinigen",
+    "activeList": "Aktive Uploads & Warteschlange",
+    "fileTooLargeVideo": "Video zu groß (max. 2GB)",
+    "fileTooLargeImage": "Bild zu groß (max. 50MB)",
+    "unsupportedFormat": "Dateiformat wird nicht unterstützt",
+    "emptyFile": "Datei ist leer",
+    "supportedFormats": "Unterstützt MP4, MKV, MOV, WebM (Videos & Shorts) sowie JPG, PNG, WebP (Bilder)",
+    "dragDropLabel": "Medien hier hineinziehen oder klicken",
+    "leaveWarning": "Uploads laufen noch. Möchtest du die Seite wirklich verlassen?"
   },
   "channel": {
     "subscribed": "Abonniert ✓",

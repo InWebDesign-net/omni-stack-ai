@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Link from 'next/link';
 import {
   Upload,
   X,
@@ -15,6 +16,8 @@ import {
   Maximize2,
   Minimize2,
   Sparkles,
+  ExternalLink,
+  RotateCcw,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useUploadManager, UploadTask } from '@/context/UploadContext';
@@ -29,8 +32,8 @@ export default function GlobalUploadManager() {
     closeManager,
     setIsMinimized,
     addFiles,
+    retryTask,
     removeTask,
-    updateTaskTitle,
     updateTaskMediaType,
     clearCompleted,
   } = useUploadManager();
@@ -62,6 +65,13 @@ export default function GlobalUploadManager() {
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       addFiles(e.dataTransfer.files);
     }
+  };
+
+  const getItemDetailUrl = (task: UploadTask) => {
+    if (!task.slug) return null;
+    if (task.mediaType === 'image') return `/image/${task.slug}`;
+    if (task.mediaType === 'short') return `/video/${task.slug}`;
+    return `/video/${task.slug}`;
   };
 
   // Minimized Bar Bottom Right
@@ -143,7 +153,8 @@ export default function GlobalUploadManager() {
 
         {/* Drag and Drop Zone */}
         <div
-          onDragOver={(e) => e.preventDefault()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 ${
@@ -195,102 +206,125 @@ export default function GlobalUploadManager() {
               </button>
             </div>
 
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="bg-surface border border-subtle rounded-2xl p-4 flex flex-col gap-3 transition-all"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  {/* Info & Type badge */}
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0">
-                      {task.mediaType === 'image' ? (
-                        <ImageIcon className="h-4.5 w-4.5 text-teal-400" />
-                      ) : task.mediaType === 'short' ? (
-                        <Film className="h-4.5 w-4.5 text-rose-400" />
-                      ) : (
-                        <Play className="h-4.5 w-4.5 text-indigo-400" />
-                      )}
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <input
-                        type="text"
-                        aria-label="Titel bearbeiten"
-                        value={task.title}
-                        onChange={(e) => updateTaskTitle(task.id, e.target.value)}
-                        className="bg-transparent text-sm font-bold text-primary focus:outline-none border-b border-transparent focus:border-indigo-500 truncate"
-                        placeholder={t.upload?.titlePlaceholder || 'Titel eingeben...'}
-                      />
-                      <span className="text-[10px] font-mono text-faint truncate">
-                        {(task.file.size / (1024 * 1024)).toFixed(1)} MB • {task.file.name}
-                      </span>
-                    </div>
-                  </div>
+            {tasks.map((task) => {
+              const detailUrl = getItemDetailUrl(task);
 
-                  {/* Delete Task */}
-                  <button
-                    type="button"
-                    onClick={() => removeTask(task.id)}
-                    aria-label="Aufgabe entfernen"
-                    title="Aufgabe entfernen"
-                    className="p-1.5 rounded-lg text-faint hover:text-red-400 hover:bg-surface-raised transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+              return (
+                <div
+                  key={task.id}
+                  className="bg-surface border border-subtle rounded-2xl p-4 flex flex-col gap-3 transition-all"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    {/* Info & Type badge */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-9 h-9 rounded-xl bg-surface-raised border border-subtle flex items-center justify-center shrink-0">
+                        {task.mediaType === 'image' ? (
+                          <ImageIcon className="h-4.5 w-4.5 text-teal-400" />
+                        ) : task.mediaType === 'short' ? (
+                          <Film className="h-4.5 w-4.5 text-rose-400" />
+                        ) : (
+                          <Play className="h-4.5 w-4.5 text-indigo-400" />
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-sm font-bold text-primary truncate" title={task.title}>
+                          {task.title}
+                        </span>
+                        <span className="text-[10px] font-mono text-faint truncate">
+                          {(task.file.size / (1024 * 1024)).toFixed(1)} MB • {task.file.name}
+                        </span>
+                      </div>
+                    </div>
 
-                {/* Progress Bar & Status Text */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 font-medium">
-                      {task.status === 'queued' && (
-                        <span className="text-muted">{t.upload?.queued || 'Eingereiht'}</span>
+                    {/* Actions on right: View Link / Retry / Delete */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {task.status === 'completed' && detailUrl && (
+                        <Link
+                          href={detailUrl}
+                          onClick={closeManager}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 rounded-xl text-xs font-bold transition-all shadow-sm"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span>{t.upload?.viewEntry || 'Beitrag ansehen'}</span>
+                        </Link>
                       )}
-                      {task.status === 'uploading' && (
-                        <span className="text-indigo-400 flex items-center gap-1.5">
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {t.upload?.uploading || 'Lädt hoch'} {task.progress}%
-                        </span>
-                      )}
-                      {task.status === 'processing' && (
-                        <span className="text-amber-400 flex items-center gap-1.5 font-semibold">
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {task.mediaType === 'image' ? 'WebP Konvertierung & Wasserzeichen...' : (t.upload?.transcoding || 'HLS Transcoding...')}
-                        </span>
-                      )}
-                      {task.status === 'completed' && (
-                        <span className="text-teal-400 flex items-center gap-1.5 font-bold">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          {t.upload?.completed || 'Abgeschlossen & Veröffentlicht'}
-                        </span>
-                      )}
+
                       {task.status === 'error' && (
-                        <span className="text-red-400 flex items-center gap-1.5 font-semibold">
-                          <AlertCircle className="h-3.5 w-3.5" />
-                          {task.errorMsg || t.upload?.error || 'Fehler beim Upload'}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => retryTask(task.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-semibold transition-all shadow-sm"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          <span>{t.upload?.retry || 'Wiederholen'}</span>
+                        </button>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={() => removeTask(task.id)}
+                        aria-label={t.upload?.dismiss || 'Entfernen'}
+                        title={t.upload?.dismiss || 'Entfernen'}
+                        className="p-1.5 rounded-lg text-faint hover:text-red-400 hover:bg-surface-raised transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
-                    <span className="font-mono text-[11px] text-muted font-bold">{task.progress}%</span>
                   </div>
 
-                  <div className="w-full h-2 bg-surface rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        task.status === 'completed'
-                          ? 'bg-teal-400'
-                          : task.status === 'error'
-                          ? 'bg-red-500'
-                          : task.status === 'processing'
-                          ? 'bg-gradient-to-r from-indigo-500 to-amber-400 animate-pulse'
-                          : 'bg-indigo-500'
-                      }`}
-                      style={{ width: `${task.progress}%` }}
-                    />
+                  {/* Progress Bar & Status Text */}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 font-medium">
+                        {task.status === 'queued' && (
+                          <span className="text-muted">{t.upload?.queued || 'Eingereiht'}</span>
+                        )}
+                        {task.status === 'uploading' && (
+                          <span className="text-indigo-400 flex items-center gap-1.5">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            {t.upload?.uploading || 'Lädt hoch'} {task.progress}%
+                          </span>
+                        )}
+                        {task.status === 'processing' && (
+                          <span className="text-amber-400 flex items-center gap-1.5 font-semibold">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            {task.mediaType === 'image' ? 'WebP Konvertierung & Wasserzeichen...' : (t.upload?.transcoding || 'HLS Transcoding...')}
+                          </span>
+                        )}
+                        {task.status === 'completed' && (
+                          <span className="text-teal-400 flex items-center gap-1.5 font-bold">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {t.upload?.completed || 'Abgeschlossen & Veröffentlicht'}
+                          </span>
+                        )}
+                        {task.status === 'error' && (
+                          <span className="text-red-400 flex items-center gap-1.5 font-semibold">
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            {task.errorMsg || t.upload?.error || 'Fehler beim Upload'}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono text-[11px] text-muted font-bold">{task.progress}%</span>
+                    </div>
+
+                    <div className="w-full h-2 bg-base rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          task.status === 'completed'
+                            ? 'bg-teal-400'
+                            : task.status === 'error'
+                            ? 'bg-red-500'
+                            : task.status === 'processing'
+                            ? 'bg-gradient-to-r from-indigo-500 to-amber-400 animate-pulse'
+                            : 'bg-indigo-500'
+                        }`}
+                        style={{ width: `${task.progress}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

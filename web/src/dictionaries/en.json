@@ -250,7 +250,19 @@
     "uploading": "Uploading",
     "transcoding": "HLS Transcoding...",
     "completed": "Completed & Published",
-    "error": "Upload Error"
+    "error": "Upload Error",
+    "viewEntry": "View entry",
+    "retry": "Retry",
+    "dismiss": "Dismiss",
+    "clearCompleted": "Clear completed",
+    "activeList": "Active Uploads & Queue",
+    "fileTooLargeVideo": "Video too large (max. 2GB)",
+    "fileTooLargeImage": "Image too large (max. 50MB)",
+    "unsupportedFormat": "Unsupported file format",
+    "emptyFile": "File is empty",
+    "supportedFormats": "Supports MP4, MKV, MOV, WebM (Videos & Shorts) as well as JPG, PNG, WebP (Images)",
+    "dragDropLabel": "Drag & drop media here or click",
+    "leaveWarning": "Uploads in progress. Are you sure you want to leave the page?"
   },
   "channel": {
     "subscribed": "Subscribed ✓",
