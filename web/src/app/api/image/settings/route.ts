@@ -1,3 +1,4 @@
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -6,7 +7,16 @@ function strapiBase() {
   return process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 }
 
-function buildHeaders(req: Request, requireUserAuth = false): Record<string, string> | null {
+/**
+ * Builds the upstream Strapi headers.
+ *
+ * `requireUserAuth` must be honoured BEFORE the STRAPI_API_TOKEN fallback. The
+ * fallback attaches an admin-scoped token, so checking it afterwards let every
+ * anonymous mutation through: the caller got the master token and the guard was
+ * never reached. Returns null when a caller without any session asks for a
+ * mutation, which the handlers translate into 401.
+ */
+async function buildHeaders(req: Request, requireUserAuth = false): Promise<Record<string, string> | null> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -14,6 +24,13 @@ function buildHeaders(req: Request, requireUserAuth = false): Record<string, str
   if (authHeader && authHeader !== 'Bearer null' && authHeader !== 'Bearer undefined') {
     headers['Authorization'] = authHeader;
     return headers;
+  }
+
+  if (requireUserAuth) {
+    const { user } = await getCurrentUserFromCookies();
+    if (!user) {
+      return null;
+    }
   }
 
   const token = process.env.STRAPI_API_TOKEN || process.env.STRAPI_TOKEN;
@@ -36,7 +53,7 @@ export async function GET(req: Request) {
     if (!documentId) {
       return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
     }
-    const headers = buildHeaders(req, false);
+    const headers = await buildHeaders(req, false);
     if (!headers) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -65,7 +82,7 @@ export async function GET(req: Request) {
 // PUT /api/image/settings - Update image metadata for all locales
 export async function PUT(req: Request) {
   try {
-    const headers = buildHeaders(req, true);
+    const headers = await buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -127,7 +144,7 @@ export async function PUT(req: Request) {
 // DELETE /api/image/settings - Delete image (soft or hard)
 export async function DELETE(req: Request) {
   try {
-    const headers = buildHeaders(req, true);
+    const headers = await buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
