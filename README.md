@@ -170,6 +170,7 @@ DATABASE_USERNAME=omni_user
 DATABASE_PASSWORD=omni_password_secure
 OLLAMA_URL=http://10.0.0.6:11434/v1/chat/completions
 OLLAMA_MODEL=llama3.1:latest
+DEMO_MODE=false      # ON when unset: wipes demo content and every affinityGraph nightly at 04:00
 ```
 
 ### 3. Build & Run with PM2

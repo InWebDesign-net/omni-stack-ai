@@ -4,6 +4,11 @@ export default {
    * Cron format: '0 4 * * *' (Minute 0, Hour 4, Every day).
    */
   '0 4 * * *': async ({ strapi }: { strapi: any }) => {
+    if (process.env.DEMO_MODE === 'false') {
+      console.log('⏭️ Skipping nightly demo data reset because DEMO_MODE is false.');
+      return;
+    }
+
     console.log('🌙 Running nightly demo data & affinityGraph reset cron job (04:00 AM)...');
     try {
       // 1. Cleanly re-seed demo data
@@ -12,16 +17,13 @@ export default {
 
       // 2. Reset user affinityGraphs to canonical default shape
       const { defaultAffinityGraph } = await import('../src/lib/affinity');
-      const allUsers = await strapi.db.query('plugin::users-permissions.user').findMany({});
-      let resetCount = 0;
-      for (const user of allUsers) {
-        await strapi.db.query('plugin::users-permissions.user').update({
-          where: { id: user.id },
-          data: { affinityGraph: defaultAffinityGraph() },
-        });
-        resetCount += 1;
-      }
-      console.log(`✅ Nightly reset of affinityGraph completed for ${resetCount} user(s).`);
+      
+      const { count } = await strapi.db.query('plugin::users-permissions.user').updateMany({
+        where: {},
+        data: { affinityGraph: defaultAffinityGraph() },
+      });
+      
+      console.log(`✅ Nightly reset of affinityGraph completed for ${count} user(s).`);
     } catch (e: any) {
       console.error('❌ Nightly demo reset cron job error:', e?.message || e);
     }
