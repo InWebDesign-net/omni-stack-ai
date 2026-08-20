@@ -227,7 +227,7 @@ export default function VideoPageClient({
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (storedLikes.includes(video.slug)) localLiked = true;
-      } catch (e) {}
+      } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
 
       try {
         const res = await fetch(
@@ -281,7 +281,7 @@ export default function VideoPageClient({
             setViewsCount(data.viewsCount);
           }
         })
-        .catch(() => {});
+        .catch((e) => { console.error('Unhandled promise rejection:', e); });
     }
   };
 
@@ -307,7 +307,7 @@ export default function VideoPageClient({
         if (!storedLikes.includes(video.slug)) {
           localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, video.slug]));
         }
-      } catch (e) {}
+      } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     } else {
       showToast(t.common.likeRemoved);
       try {
@@ -316,7 +316,7 @@ export default function VideoPageClient({
           'omni_user_likes',
           JSON.stringify(storedLikes.filter((s) => s !== video.slug))
         );
-      } catch (e) {}
+      } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     }
 
     try {
@@ -329,7 +329,7 @@ export default function VideoPageClient({
           userIdentifier: userIdent,
         }),
       });
-    } catch (e) {}
+    } catch (e) { console.error('[VideoDetail] like/unlike was not persisted to the server — UI and server state may now differ:', e); }
   };
 
   const handleShare = () => {

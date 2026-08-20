@@ -197,11 +197,11 @@ export default function Header({
   const handleLogoutAction = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (e) { }
+    } catch (e) { console.error('Unexpected error in catch block:', e); }
     try {
       localStorage.removeItem('omni_user');
       localStorage.removeItem('omni_jwt');
-    } catch (e) { }
+    } catch (e) { console.error('Unexpected error in catch block:', e); }
     if (onLogout) {
       onLogout();
     } else {

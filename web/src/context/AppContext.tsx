@@ -143,7 +143,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error('[AppContext] failed to restore stored session and affinity profile:', e); }
 
       const storedGraph = loadStoredAffinityGraph();
       if (storedGraph) {
@@ -164,7 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 setCurrentUser((prev) => ({ ...prev, ...sanitized }));
                 try {
                   localStorage.setItem('omni_user', JSON.stringify(sanitized));
-                } catch (e) {}
+                } catch (e) { console.error('[AppContext] failed to persist user session to localStorage:', e); }
               }
             }
             if (data?.affinityGraph) {
@@ -183,7 +183,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem('omni_lang', nextLang);
       document.cookie = `omni_lang=${nextLang}; path=/; max-age=31536000`;
-    } catch (e) {}
+    } catch (e) { console.error('[AppContext] failed to persist language preference:', e); }
   };
 
   const toggleLanguage = () => {

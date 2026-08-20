@@ -97,10 +97,10 @@ export async function POST(req: Request) {
                 ...(body.username ? { username: body.username } : {}),
                 ...(body.bio !== undefined ? { bio: body.bio } : {}),
               }),
-            }).catch(() => {});
+            }).catch((e) => { console.error('Unhandled promise rejection:', e); });
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error('[api/profile] failed to sync profile changes to Strapi:', e); }
     }
 
     return NextResponse.json(data, { status: res.status });

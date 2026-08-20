@@ -99,7 +99,7 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
           parsed.userIdentifier = user.handle || user.username || `user-${user.id}`;
         }
         bodyText = JSON.stringify(parsed);
-      } catch (e) {}
+      } catch (e) { console.error('[api/feed] could not attach user identity to request body:', e); }
     }
 
     const res = await fetch(targetUrl, {

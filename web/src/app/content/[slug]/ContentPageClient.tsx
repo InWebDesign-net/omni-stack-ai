@@ -137,7 +137,7 @@ export default function ContentPageClient({
       if (storedUser) {
         setUserData(JSON.parse(storedUser));
       }
-    } catch (e) {}
+    } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
 
     loadComments();
   }, [slug, lang]);
@@ -160,7 +160,7 @@ export default function ContentPageClient({
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (storedLikes.includes(item.slug)) localLiked = true;
-      } catch (e) {}
+      } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
 
       try {
         const res = await fetch(`/api/feed/interaction-status?slug=${item.slug}&userIdentifier=${userIdent}`, {
@@ -212,7 +212,7 @@ export default function ContentPageClient({
               setViewsCount(data.viewsCount);
             }
           })
-          .catch(() => {});
+          .catch((e) => { console.error('Unhandled promise rejection:', e); });
       }
     }, 3000);
 
@@ -257,7 +257,7 @@ export default function ContentPageClient({
         if (idx > -1) storedLikes.splice(idx, 1);
       }
       localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes));
-    } catch (e) {}
+    } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 
     try {
       const res = await fetch('/api/feed/interaction', {
@@ -364,7 +364,7 @@ export default function ContentPageClient({
         title: item.title,
         text: item.summary || t.content.readTime || 'Lies jetzt',
         url: window.location.href,
-      }).catch(() => {});
+      }).catch((e) => { console.error('Unhandled promise rejection:', e); });
     } else {
       navigator.clipboard.writeText(window.location.href);
       showToast(t.common.share || 'Link kopiert');

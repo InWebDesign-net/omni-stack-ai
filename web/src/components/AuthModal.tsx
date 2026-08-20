@@ -81,7 +81,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
       try {
         localStorage.setItem('omni_user', JSON.stringify(userData));
         document.cookie = `omni_user_jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-      } catch (e) {}
+      } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);
       onClose();
@@ -126,7 +126,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
       try {
         localStorage.setItem('omni_jwt', data.jwt);
         localStorage.setItem('omni_user', JSON.stringify(userData));
-      } catch (e) {}
+      } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);
       onClose();
@@ -178,7 +178,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
       try {
         localStorage.setItem('omni_jwt', data.jwt);
         localStorage.setItem('omni_user', JSON.stringify(userData));
-      } catch (e) {}
+      } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);
       onClose();

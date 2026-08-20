@@ -67,7 +67,7 @@ export async function POST(request: Request) {
                   repliesCount: (pData.repliesCount || 0) + 1,
                 },
               }),
-            }).catch(() => {});
+            }).catch((e) => { console.error('Unhandled promise rejection:', e); });
           }
         }
       } catch (e) {
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
                   method: 'PUT',
                   headers,
                   body: JSON.stringify({ data: { commentsCount: nextCount } }),
-                }).catch(() => {});
+                }).catch((e) => { console.error('Unhandled promise rejection:', e); });
               }
             }
           }
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
                     method: 'PUT',
                     headers,
                     body: JSON.stringify({ data: { commentsCount: nextCount } }),
-                  }).catch(() => {});
+                  }).catch((e) => { console.error('Unhandled promise rejection:', e); });
                 }
               }
             }
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
                     method: 'PUT',
                     headers,
                     body: JSON.stringify({ data: { commentsCount: nextCount } }),
-                  }).catch(() => {});
+                  }).catch((e) => { console.error('Unhandled promise rejection:', e); });
                 }
               }
             }
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
               targetUserHandle: parentAuthorHandle,
               contentTitle,
             }),
-          }).catch(() => {});
+          }).catch((e) => { console.error('Unhandled promise rejection:', e); });
         }
 
         // B. Notify Content Creator (Content comment notification)
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
                 targetUserHandle: creatorHandle,
                 contentTitle,
               }),
-            }).catch(() => {});
+            }).catch((e) => { console.error('Unhandled promise rejection:', e); });
           }
         }
       } catch (e) {
@@ -313,7 +313,7 @@ export async function DELETE(request: Request) {
         const getJson = await getRes.json();
         feedSlug = getJson.data?.feedSlug || null;
       }
-    } catch (e) {}
+    } catch (e) { console.error('Unexpected error in catch block:', e); }
 
     const res = await fetch(`${STRAPI_URL}/api/comments/${id}`, {
       method: 'DELETE',
@@ -343,7 +343,7 @@ export async function DELETE(request: Request) {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: nextCount } }),
-              }).catch(() => {});
+              }).catch((e) => { console.error('Unhandled promise rejection:', e); });
             }
           }
         }
@@ -360,7 +360,7 @@ export async function DELETE(request: Request) {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: nextCount } }),
-              }).catch(() => {});
+              }).catch((e) => { console.error('Unhandled promise rejection:', e); });
             }
           }
         }
@@ -377,11 +377,11 @@ export async function DELETE(request: Request) {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: nextCount } }),
-              }).catch(() => {});
+              }).catch((e) => { console.error('Unhandled promise rejection:', e); });
             }
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error('Unexpected error in catch block:', e); }
     }
 
     return NextResponse.json({ success: true });

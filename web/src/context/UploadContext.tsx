@@ -201,7 +201,7 @@ export function UploadProvider({ children }: { children: ReactNode }) {
             clearInterval(interval);
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error('[UploadContext] upload status poll failed:', e); }
 
       if (attempts > 60) {
         setTasks((prev) =>

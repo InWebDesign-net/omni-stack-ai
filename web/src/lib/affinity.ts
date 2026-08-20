@@ -45,7 +45,7 @@ export function storeAffinityGraph(graph: AffinityGraph) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(graph));
-  } catch {}
+  } catch { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 }
 
 /** JWT of the logged-in user from stored session or localStorage. */
