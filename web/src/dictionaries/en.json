@@ -498,5 +498,37 @@
     "articles": "Articles",
     "images": "Images",
     "shorts": "Shorts"
+  },
+  "blocks": {
+    "sectionTitle": "Content blocks",
+    "addBlock": "Add block",
+    "cancel": "Cancel",
+    "empty": "No content blocks yet. Add the first one below.",
+    "dragHandle": "Move block",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "insertBefore": "Insert before",
+    "insertAfter": "Insert after",
+    "remove": "Remove",
+    "confirmRemove": "Remove this block?",
+    "otherLocaleWarning": "Careful: the {locale} version still has content at this position and it will be removed too: “{content}”",
+    "headlineTitle": "Headline",
+    "headlineLevel": "Level",
+    "headlineSubtitle": "Subtitle (optional)",
+    "richTextBody": "Text…",
+    "quoteText": "Quote",
+    "quoteAuthor": "Attribution (optional)",
+    "mediaCaption": "Caption (optional)",
+    "mediaEmpty": "No media linked",
+    "mediaReadOnly": "Media blocks cannot be picked here yet. The existing link is preserved on save.",
+    "types": {
+      "headline": "Headline",
+      "richText": "Text",
+      "quote": "Quote",
+      "image": "Image",
+      "video": "Video"
+    },
+    "mismatch": "The language versions have different block counts ({a} vs. {b}). Until that is resolved, changes apply to {locale} only.",
+    "alignLocales": "Align structure"
   }
 }

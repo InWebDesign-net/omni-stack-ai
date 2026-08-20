@@ -92,9 +92,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
+      // `blocks` is a dynamic zone; without explicit population Strapi omits it
+      // entirely, which is why the edit modal never saw an article's content.
+      // Relations inside the components (shared.image -> image, shared.video ->
+      // video) need their own populate or they come back as bare ids.
+      // Mixing `populate=creator` with `populate[blocks][…]` is rejected by
+      // Strapi — the string and object forms cannot be combined in one query.
+      const populate =
+        kind === 'article'
+          ? 'populate[creator]=true&populate[blocks][populate]=*'
+          : 'populate=creator';
+
       const targetUrl = `${strapiBase()}/api/${plural}?filters[documentId][$eq]=${encodeURIComponent(
         documentId
-      )}&locale=*&populate=creator&status=draft`;
+      )}&locale=*&${populate}&status=draft`;
 
       const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
       if (!res.ok) {
@@ -206,6 +217,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
       return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
     }
 
+    // A per-locale failure used to be logged and swallowed, so the caller was
+    // told 200 while one language silently kept its old content. Collected and
+    // reported instead.
+    const failedLocales: { locale: string; error: string }[] = [];
+
     if (Array.isArray(localeUpdates)) {
       for (const { locale, data } of localeUpdates) {
         const updateData = { ...data };
@@ -228,7 +244,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
         });
         if (!res.ok) {
           const errText = await res.text();
-          console.error(`update ${locale} failed:`, errText);
+          console.error(`[content-api] update ${kind}/${locale} failed:`, errText);
+          let message = errText;
+          try {
+            message = JSON.parse(errText)?.error?.message || errText;
+          } catch {
+            /* non-JSON upstream error — keep the raw text */
+          }
+          failedLocales.push({ locale, error: message });
         }
       }
     } else if (title !== undefined) {
@@ -252,6 +275,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
           body: JSON.stringify({ data: { visibility } }),
         });
       }
+    }
+
+    if (failedLocales.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Update failed for: ${failedLocales.map((f) => f.locale).join(', ')}`,
+          failedLocales,
+        },
+        { status: 422 }
+      );
     }
 
     return NextResponse.json({ success: true });

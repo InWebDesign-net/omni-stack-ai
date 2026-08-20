@@ -498,5 +498,37 @@
     "articles": "Artikel",
     "images": "Bilder",
     "shorts": "Shorts"
+  },
+  "blocks": {
+    "sectionTitle": "Inhaltsblöcke",
+    "addBlock": "Block hinzufügen",
+    "cancel": "Abbrechen",
+    "empty": "Noch keine Inhaltsblöcke. Füge unten den ersten hinzu.",
+    "dragHandle": "Block verschieben",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "insertBefore": "Davor einfügen",
+    "insertAfter": "Danach einfügen",
+    "remove": "Entfernen",
+    "confirmRemove": "Diesen Block entfernen?",
+    "otherLocaleWarning": "Achtung: In der Sprachversion {locale} steht an dieser Stelle noch Inhalt, der mit entfernt wird: „{content}\"",
+    "headlineTitle": "Überschrift",
+    "headlineLevel": "Ebene",
+    "headlineSubtitle": "Unterzeile (optional)",
+    "richTextBody": "Text…",
+    "quoteText": "Zitat",
+    "quoteAuthor": "Urheber (optional)",
+    "mediaCaption": "Bildunterschrift (optional)",
+    "mediaEmpty": "Kein Medium verknüpft",
+    "mediaReadOnly": "Medien-Blöcke lassen sich hier noch nicht auswählen. Die vorhandene Verknüpfung bleibt beim Speichern erhalten.",
+    "types": {
+      "headline": "Überschrift",
+      "richText": "Text",
+      "quote": "Zitat",
+      "image": "Bild",
+      "video": "Video"
+    },
+    "mismatch": "Die Sprachversionen haben unterschiedlich viele Blöcke ({a} vs. {b}). Solange das so ist, wirken Änderungen nur in {locale}.",
+    "alignLocales": "Struktur angleichen"
   }
 }

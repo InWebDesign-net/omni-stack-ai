@@ -21,6 +21,8 @@ export interface LocaleData {
   title: string;
   summary: string;
   tags: string[];
+  /** Article dynamic zone. Empty for kinds that have no blocks. */
+  blocks?: unknown[];
 }
 
 export const EMPTY_LOCALE: LocaleData = { title: '', summary: '', tags: [] };
@@ -93,11 +95,13 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
             title: de?.title || fallback?.title || '',
             summary: parseSummary(de?.summary ?? fallback?.summary),
             tags: Array.isArray(de?.tags) ? de.tags : Array.isArray(fallback?.tags) ? fallback!.tags! : [],
+            blocks: Array.isArray(de?.blocks) ? de.blocks : [],
           },
           en: {
             title: en?.title || '',
             summary: parseSummary(en?.summary),
             tags: Array.isArray(en?.tags) ? en.tags : [],
+            blocks: Array.isArray(en?.blocks) ? en.blocks : [],
           },
         };
         const loadedVisibility = de?.visibility || en?.visibility || fallback?.visibility || 'public';

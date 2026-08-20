@@ -1,6 +1,9 @@
 'use client';
 
 import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
+import { BlockListEditor } from '@/components/article/blocks/BlockListEditor';
+import { serializeBlocks, type ArticleBlock } from '@/components/article/blocks/blockTypes';
+import { useBlockStructureSync } from '@/lib/hooks/useBlockStructureSync';
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, AlertTriangle, Globe, Loader2, Archive, Trash } from 'lucide-react';
@@ -25,14 +28,83 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
     documentId: article?.documentId,
     fallback: { title: article?.title, summary: article?.summary, tags: article?.tags, visibility: article?.visibility },
     // Articles store the summary as Strapi blocks; the modal edits plain text.
-    serializeLocale: (_locale, data) => ({
+    serializeLocale: (locale, data) => ({
       ...data,
+      blocks: serializeBlocks((data.blocks as ArticleBlock[]) || []),
       ...(article?.slug ? { slug: article.slug } : {}),
       summary: [{ type: 'paragraph', children: [{ type: 'text', text: data.summary }] }],
     }),
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { syncInsert, syncRemove, syncMove, alignLength } = useBlockStructureSync();
+
+  const otherLocale: 'de' | 'en' = activeLocale === 'de' ? 'en' : 'de';
+  const currentBlocks = (currentData.blocks as ArticleBlock[]) || [];
+  const otherBlocks = (form[otherLocale].blocks as ArticleBlock[]) || [];
+
+  /**
+   * The two locales are only mirrorable while their structures line up. Position
+   * two in a five-block German list means nothing in a one-block English one:
+   * an insert there lands at the end and the matching delete finds nothing, so
+   * the lists drift further apart with every edit instead of staying in step.
+   */
+  const localesAligned = currentBlocks.length === otherBlocks.length;
+
+  /** Append empty counterparts to the shorter locale so mirroring can resume. */
+  const handleAlignLocales = () => {
+    setForm((current) => {
+      const de = (current.de.blocks as ArticleBlock[]) || [];
+      const en = (current.en.blocks as ArticleBlock[]) || [];
+      return {
+        ...current,
+        de: { ...current.de, blocks: alignLength(de, en) },
+        en: { ...current.en, blocks: alignLength(en, de) },
+      };
+    });
+  };
+
+  /**
+   * Applies a block change to the active locale and mirrors the *structural*
+   * part of it into the other one. Which structural operation happened is
+   * inferred from the length and identity of the new list, because the editor
+   * reports a finished array rather than an intent.
+   */
+  const handleBlocksChange = (next: ArticleBlock[]) => {
+    const prev = currentBlocks;
+    let mirrored = otherBlocks;
+
+    if (!localesAligned) {
+      // Edit the active locale only; the banner tells the author why.
+      setForm((current) => ({
+        ...current,
+        [activeLocale]: { ...current[activeLocale], blocks: next },
+      }));
+      return;
+    }
+
+    if (next.length > prev.length) {
+      const index = next.findIndex((blk, i) => blk !== prev[i]);
+      const at = index === -1 ? next.length - 1 : index;
+      mirrored = syncInsert(otherBlocks, at, next[at]);
+    } else if (next.length < prev.length) {
+      const index = prev.findIndex((blk, i) => blk !== next[i]);
+      mirrored = syncRemove(otherBlocks, index === -1 ? prev.length - 1 : index);
+    } else {
+      const from = prev.findIndex((blk, i) => blk !== next[i]);
+      if (from !== -1) {
+        const to = next.findIndex((blk) => blk === prev[from]);
+        // A pure field edit leaves order untouched; only mirror real moves.
+        if (to !== -1 && to !== from) mirrored = syncMove(otherBlocks, from, to);
+      }
+    }
+
+    setForm((current) => ({
+      ...current,
+      [activeLocale]: { ...current[activeLocale], blocks: next },
+      [otherLocale]: { ...current[otherLocale], blocks: mirrored },
+    }));
+  };
 
   if (!isOpen) return null;
 
@@ -204,6 +276,44 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Content Blocks */}
+            <div className="pt-4 border-t border-subtle space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-xs font-bold text-muted uppercase tracking-wider">
+                  {t?.blocks?.sectionTitle || 'Inhaltsblöcke'} ({activeLocale.toUpperCase()})
+                </label>
+                <span className="text-[11px] font-mono text-faint">
+                  {currentBlocks.length} {activeLocale.toUpperCase()} · {otherBlocks.length} {otherLocale.toUpperCase()}
+                </span>
+              </div>
+              {!localesAligned && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                  <p className="text-[11px] text-amber-200 leading-relaxed flex-1">
+                    {(t?.blocks?.mismatch ||
+                      'Die Sprachversionen haben unterschiedlich viele Blöcke ({a} vs. {b}). Solange das so ist, wirken Änderungen nur in {locale}.')
+                      .replace('{a}', String(currentBlocks.length))
+                      .replace('{b}', String(otherBlocks.length))
+                      .replace('{locale}', activeLocale.toUpperCase())}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleAlignLocales}
+                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  >
+                    {t?.blocks?.alignLocales || 'Struktur angleichen'}
+                  </button>
+                </div>
+              )}
+
+              <BlockListEditor
+                blocks={currentBlocks}
+                onChange={handleBlocksChange}
+                otherLocaleBlocks={otherBlocks}
+                otherLocaleLabel={otherLocale.toUpperCase()}
+                t={t}
+              />
             </div>
 
             {/* Global Visibility */}
