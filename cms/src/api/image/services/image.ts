@@ -90,6 +90,41 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
       ];
     }
 
+    // Filter by user favorites if favsOnly is requested
+    // Note: 'fav' is a deprecated alias for favsOnly
+    const isFavsOnly = params.favsOnly === 'true' || params.favsOnly === true || params.fav === 'true' || params.fav === true;
+    if (isFavsOnly) {
+      const koaCtx = strapi.requestContext ? strapi.requestContext.get() : null;
+      const headerUserId = koaCtx?.header?.['x-omni-user-id'] || koaCtx?.request?.header?.['x-omni-user-id'];
+      const queryUserId = koaCtx?.query?.omniUserId || koaCtx?.request?.query?.omniUserId;
+      const userId = koaCtx?.state?.user?.id || (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : (params.userId ? Number(params.userId) : null)));
+
+      if (userId) {
+        const userFavs = await strapi.documents('api::favorite.favorite').findMany({
+          filters: {
+            $or: [
+              { user: { id: { $eq: userId } } },
+              { userIdentifier: { $eq: `user-${userId}` } },
+            ],
+          },
+          populate: ['image'],
+        });
+        const favDocIds = (userFavs as any[])
+          .map((f) => f.image?.documentId || f.image?.id)
+          .filter(Boolean);
+
+        if (!filters.documentId || typeof filters.documentId !== 'object') {
+          filters.documentId = {};
+        }
+        filters.documentId.$in = favDocIds.length > 0 ? favDocIds : ['__none__'];
+      } else {
+        if (!filters.documentId || typeof filters.documentId !== 'object') {
+          filters.documentId = {};
+        }
+        filters.documentId.$in = ['__none__'];
+      }
+    }
+
     const docQueryLocale = targetLocale === '*' ? '*' : targetLocale;
 
     let items = await strapi.documents('api::image.image').findMany({

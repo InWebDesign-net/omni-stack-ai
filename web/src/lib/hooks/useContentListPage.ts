@@ -38,7 +38,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
   const searchTerm = searchParams.get('q') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const sort = searchParams.get('sort') || DEFAULT_SORT;
-  const filterFavorites = searchParams.get('fav') || 'false';
+  const filterFavorites = searchParams.get('favsOnly') || searchParams.get('fav') || 'false';
 
   const [searchInput, setSearchInput] = useState(searchTerm);
 

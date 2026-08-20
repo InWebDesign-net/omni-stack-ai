@@ -157,8 +157,7 @@ export function useContentList<T>(kind: ContentKind, params: UseContentListParam
     queryParams.set('q', safeSearch);
   }
   if (filterFavorites === 'true' || filterFavorites === true) {
-    queryParams.set('favsOnly', 'true'); // used by articles/images
-    queryParams.set('fav', 'true');      // used by videos
+    queryParams.set('favsOnly', 'true');
   }
   const safeIncluded = Array.isArray(includedTags) ? includedTags : [];
   const safeExcluded = Array.isArray(excludedTags) ? excludedTags : [];

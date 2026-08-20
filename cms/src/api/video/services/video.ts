@@ -92,6 +92,41 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
       filters.title = { $containsi: searchTerm };
     }
 
+    // Filter by user favorites if favsOnly is requested
+    // Note: 'fav' is a deprecated alias for favsOnly
+    const isFavsOnly = params.favsOnly === 'true' || params.favsOnly === true || params.fav === 'true' || params.fav === true;
+    if (isFavsOnly) {
+      const koaCtx = strapi.requestContext ? strapi.requestContext.get() : null;
+      const headerUserId = koaCtx?.header?.['x-omni-user-id'] || koaCtx?.request?.header?.['x-omni-user-id'];
+      const queryUserId = koaCtx?.query?.omniUserId || koaCtx?.request?.query?.omniUserId;
+      const userId = koaCtx?.state?.user?.id || (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : (params.userId ? Number(params.userId) : null)));
+
+      if (userId) {
+        const userFavs = await strapi.documents('api::favorite.favorite').findMany({
+          filters: {
+            $or: [
+              { user: { id: { $eq: userId } } },
+              { userIdentifier: { $eq: `user-${userId}` } },
+            ],
+          },
+          populate: ['video'],
+        });
+        const favDocIds = (userFavs as any[])
+          .map((f) => f.video?.documentId || f.video?.id)
+          .filter(Boolean);
+
+        if (!filters.documentId || typeof filters.documentId !== 'object') {
+          filters.documentId = {};
+        }
+        filters.documentId.$in = favDocIds.length > 0 ? favDocIds : ['__none__'];
+      } else {
+        if (!filters.documentId || typeof filters.documentId !== 'object') {
+          filters.documentId = {};
+        }
+        filters.documentId.$in = ['__none__'];
+      }
+    }
+
     // Determine target locale query (if targetLocale === '*', fetch all localizations)
     const docQueryLocale = targetLocale === '*' ? '*' : targetLocale;
     const statusQuery = allowPrivate ? (params.status || undefined) : 'published';
