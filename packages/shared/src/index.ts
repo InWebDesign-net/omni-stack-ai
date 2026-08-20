@@ -9,3 +9,9 @@ export {
   topicWeight,
   creatorWeight,
 } from './affinity';
+
+export {
+  CONTENT_KINDS,
+  type ContentKind,
+  isContentKind,
+} from './content-kinds';
