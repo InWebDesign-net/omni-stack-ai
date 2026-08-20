@@ -79,7 +79,7 @@ export default function GlobalUploadManager() {
     return (
       <div
         onClick={openManager}
-        className="fixed bottom-5 right-5 z-[9999] bg-surface border border-indigo-500/40 rounded-2xl p-4 shadow-2xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition-all animate-fadeIn"
+        style={{ bottom: `calc(1.25rem + var(--footer-overlap, 0px))` }} className="fixed right-5 z-[9999] bg-surface border border-indigo-500/40 rounded-2xl p-4 shadow-2xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition-all animate-fadeIn"
       >
         <div className="relative">
           <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center">

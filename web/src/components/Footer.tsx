@@ -1,13 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ExternalLink, Film, BookOpen, Image as ImageIcon, Flame } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { OmniLogo } from '@/components/Header';
+import { FooterOverlapProbe } from '@/components/FooterOverlapProbe';
 
 export default function Footer() {
+  const footerRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const { t } = useApp();
 
@@ -28,7 +30,11 @@ export default function Footer() {
   };
 
   return (
-    <footer className="w-full border-t border-subtle bg-surface text-primary py-8 sm:py-10 px-4 sm:px-6 lg:px-8 mt-auto">
+    <footer
+      ref={footerRef}
+      className="w-full border-t border-subtle bg-surface text-primary py-8 sm:py-10 px-4 sm:px-6 lg:px-8 mt-auto"
+    >
+      <FooterOverlapProbe targetRef={footerRef} />
       <div className="max-w-content mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Brand & Tagline */}
         <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">

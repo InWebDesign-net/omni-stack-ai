@@ -564,7 +564,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
             {/* Toast Notification */}
             {toastMessage && (
-                <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 bg-surface-raised/95 text-primary font-medium text-xs rounded-xl shadow-2xl border border-subtle backdrop-blur-md animate-fadeIn">
+                <div style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-[100] px-4 py-3 bg-surface-raised/95 text-primary font-medium text-xs rounded-xl shadow-2xl border border-subtle backdrop-blur-md animate-fadeIn">
                     {toastMessage}
                 </div>
             )}
