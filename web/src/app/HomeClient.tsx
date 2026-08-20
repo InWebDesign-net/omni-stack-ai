@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare, Clock } from 'lucide-react';
+import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare, Clock, BookOpen } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
-import { useContentList, ImageItem, VideoItem } from '@/lib/hooks/useContentList';
+import { useContentList, ImageItem, VideoItem, ArticleItem } from '@/lib/hooks/useContentList';
 import Image from 'next/image';
 
 interface ChannelItem {
@@ -28,6 +28,15 @@ export default function HomeClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [channels, setChannels] = useState<ChannelItem[]>([]);
 
+  // Hook for Articles: affinity for logged-in, createdatasc for guests
+  const { items: rawArticles = [], isLoading: isLoadingArticles } = useContentList<ArticleItem>('article', {
+    currentPage: 1,
+    pageSize: 6,
+    sort: currentUser ? 'affinity' : 'createdatasc',
+    lang,
+    enabled: true,
+  });
+
   // Hook for Videos: affinity for logged-in, createdatasc for guests
   const { items: rawVideos = [], isLoading: isLoadingVideos } = useContentList<VideoItem>('video', {
     currentPage: 1,
@@ -45,6 +54,18 @@ export default function HomeClient() {
     lang,
     enabled: true,
   });
+
+  // Dynamic random rotation for guest users (rotates every 5 mins so guests see varied content)
+  const articles = useMemo(() => {
+    if (currentUser || !rawArticles.length) return rawArticles;
+    const copy = [...rawArticles];
+    const seed = Math.floor(Date.now() / 300000);
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.abs((seed + i * 13) % (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }, [rawArticles, currentUser]);
 
   // Dynamic random rotation for guest users (rotates every 5 mins so guests see varied content)
   const videos = useMemo(() => {
@@ -320,24 +341,155 @@ export default function HomeClient() {
           </div>
         </section>
 
-        <section className="space-y-6">
+        {/* Articles Section */}
+        <section className="space-y-6 pt-4 border-t border-subtle">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
-              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30 shrink-0 mt-0.5 sm:mt-0">
-                <Film className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shrink-0 mt-0.5 sm:mt-0">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-extrabold text-base sm:text-lg text-white tracking-tight">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
+                  <h2 className="font-extrabold text-base sm:text-lg text-primary tracking-tight">{t.home?.articlesTitle || 'Aktuelle Artikel & Magazine im Network'}</h2>
                   <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${
                     currentUser
-                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
-                      : 'bg-teal-500/20 text-teal-300 border-teal-500/30'
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                      : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
                   }`}>
                     {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 leading-normal">{t.home?.videosSubtitle || 'Entdecke die neusten Veröffentlichungen im Katalog'}</p>
+                <p className="text-xs text-muted leading-normal">{t.home?.articlesSubtitle || 'Entdecke fundierte Analysen, Tech-Tutorials & Berichte'}</p>
+              </div>
+            </div>
+
+            <Link
+              href="/articles"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors self-start sm:self-center shrink-0"
+            >
+              <span>{t.home?.viewAllArticles || 'Alle Artikel ansehen'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* INVARIANT: Item count (6) must be evenly divisible by the column count at every breakpoint (2, 3, 6). */}
+          {isLoadingArticles ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="animate-pulse flex flex-col space-y-2">
+                  <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
+                    <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
+              {articles.slice(0, 6).map((item: any) => {
+                const creator = item.creator || item.author;
+                const creatorName = creator?.username || creator?.handle || item.authorName || 'Omni Creator';
+                const isItemOwner = Boolean(
+                  currentUser &&
+                    (currentUser.id === creator?.id ||
+                      currentUser.username === creatorName ||
+                      (currentUser.handle && (creator?.handle || item.authorHandle) && currentUser.handle.toLowerCase() === (creator?.handle || item.authorHandle).toLowerCase()))
+                );
+                const rawCreatorAvatar = creator?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+                const creatorAvatar = (isItemOwner && typeof currentUser?.avatarUrl !== 'undefined')
+                  ? (currentUser.avatarUrl || rawCreatorAvatar)
+                  : rawCreatorAvatar;
+
+                return (
+                  <div
+                    key={item.documentId || item.slug || item.id}
+                    className="group flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5"
+                  >
+                    {/* Article Thumbnail / Fallback */}
+                    <Link href={`/article/${item.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-slate-950 shadow-md">
+                      {item.thumbnail || item.thumbnailUrl ? (
+                        <Image
+                          src={item.thumbnail || item.thumbnailUrl}
+                          alt={item.title}
+                          loading="lazy"
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-tr from-purple-950 via-indigo-950 to-slate-900 flex items-center justify-center">
+                          <BookOpen className="w-8 h-8 text-purple-400/50 group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                    </Link>
+
+                    {/* Card Details */}
+                    <div className="pt-2.5 flex-1 flex flex-col justify-between gap-1.5">
+                      <div>
+                        <Link
+                          href={`/article/${item.slug}`}
+                          className="font-semibold text-primary group-hover:text-purple-400 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
+                        >
+                          {item.title}
+                        </Link>
+                      </div>
+
+                      {/* Creator & Meta */}
+                      <div className="flex items-center justify-between text-[11px] text-muted">
+                        <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity min-w-0">
+                          <Image
+                            src={creatorAvatar}
+                            alt={creatorName}
+                            width={20}
+                            height={20}
+                            loading="lazy"
+                            className="w-5 h-5 rounded-full object-cover border border-subtle shrink-0"
+                            unoptimized
+                          />
+                          <span className="truncate max-w-[70px] sm:max-w-[120px] text-muted font-medium">{creatorName}</span>
+                        </Link>
+
+                        <div className="flex items-center gap-2 text-muted shrink-0 font-mono text-[10px]">
+                          {item.viewsCount !== undefined && (
+                            <div className="flex items-center gap-0.5" title="Aufrufe">
+                              <Eye className="w-3 h-3 text-muted" />
+                              <span>{item.viewsCount.toLocaleString()}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-0.5" title="Likes">
+                            <Heart className="w-3 h-3 text-rose-400" />
+                            <span>{(item.likesCount || 0).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-6 pt-4 border-t border-subtle">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0 mt-0.5 sm:mt-0">
+                <Film className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-extrabold text-base sm:text-lg text-primary tracking-tight">{t.home?.videosTitle || 'Aktuelle Videos im Network'}</h2>
+                  <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${
+                    currentUser
+                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                      : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                  }`}>
+                    {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted leading-normal">{t.home?.videosSubtitle || 'Entdecke die neusten Veröffentlichungen im Katalog'}</p>
               </div>
             </div>
 
