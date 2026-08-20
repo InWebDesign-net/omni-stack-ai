@@ -1,14 +1,9 @@
 'use client';
 
+import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
+
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, AlertTriangle, Globe, Loader2, Archive, Trash } from 'lucide-react';
-import { jsonAuthHeaders } from '@/lib/affinity';
-
-interface LocaleData {
-  title: string;
-  summary: string;
-  tags: string[];
-}
 
 interface ArticleEditModalProps {
   isOpen: boolean;
@@ -19,216 +14,64 @@ interface ArticleEditModalProps {
   t?: any;
 }
 
-const EMPTY_LOCALE: LocaleData = { title: '', summary: '', tags: [] };
-
 export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t }: ArticleEditModalProps) {
-  const [activeLocale, setActiveLocale] = useState<'de' | 'en'>('de');
-  const [form, setForm] = useState<{ de: LocaleData; en: LocaleData }>({
-    de: EMPTY_LOCALE,
-    en: EMPTY_LOCALE,
+  const {
+    activeLocale, setActiveLocale, form, setForm, current: currentData, visibility, setVisibility,
+    loading, saving, deleting, error, setError, newTag, setNewTag,
+    updateField, addTag, removeTag, buildLocaleUpdates, save, remove,
+  } = useContentEditForm('article', {
+    isOpen,
+    documentId: article?.documentId,
+    fallback: { title: article?.title, summary: article?.summary, tags: article?.tags, visibility: article?.visibility },
+    // Articles store the summary as Strapi blocks; the modal edits plain text.
+    serializeLocale: (_locale, data) => ({
+      ...data,
+      ...(article?.slug ? { slug: article.slug } : {}),
+      summary: [{ type: 'paragraph', children: [{ type: 'text', text: data.summary }] }],
+    }),
   });
-  const [visibility, setVisibility] = useState<string>(article?.visibility || 'public');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [newTag, setNewTag] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isOpen || !article?.documentId) return;
-
-    let cancelled = false;
-    const loadData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/content/article/settings?documentId=${encodeURIComponent(article.documentId)}`, {
-          headers: jsonAuthHeaders(),
-          cache: 'no-store',
-        });
-
-        if (!res.ok) throw new Error('Fehler beim Laden der Artikeldaten');
-        const data = await res.json();
-        const items = data.data || [];
-
-        const deItem = items.find((i: any) => i.locale === 'de');
-        const enItem = items.find((i: any) => i.locale === 'en');
-
-        const parseSummary = (raw: any) => {
-          if (typeof raw === 'string') return raw;
-          if (Array.isArray(raw)) {
-            return raw
-              .map((b: any) => (Array.isArray(b.children) ? b.children.map((c: any) => c.text).join('') : ''))
-              .filter(Boolean)
-              .join('\n');
-          }
-          return '';
-        };
-
-        if (!cancelled) {
-          setForm({
-            de: {
-              title: deItem?.title || article.title || '',
-              summary: parseSummary(deItem?.summary || article.summary),
-              tags: Array.isArray(deItem?.tags) ? deItem.tags : Array.isArray(article.tags) ? article.tags : [],
-            },
-            en: {
-              title: enItem?.title || '',
-              summary: parseSummary(enItem?.summary),
-              tags: Array.isArray(enItem?.tags) ? enItem.tags : [],
-            },
-          });
-          setVisibility(deItem?.visibility || article.visibility || 'public');
-        }
-      } catch (err: any) {
-        if (!cancelled) setError(err.message || 'Ladefehler');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    loadData();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, article]);
 
   if (!isOpen) return null;
 
-  const currentData = form[activeLocale];
 
-  const updateCurrentLocale = (field: keyof LocaleData, value: any) => {
-    setForm((prev) => ({
-      ...prev,
-      [activeLocale]: { ...prev[activeLocale], [field]: value },
-    }));
-  };
+  const updateCurrentLocale = (field: keyof LocaleData, value: any) => updateField(field, value);
 
   const handleAddTag = (e: React.KeyboardEvent | React.MouseEvent) => {
     if ('key' in e && e.key !== 'Enter') return;
     e.preventDefault();
-    const tag = newTag.trim();
-    if (!tag) return;
-    if (!currentData.tags.includes(tag)) {
-      updateCurrentLocale('tags', [...currentData.tags, tag]);
-    }
-    setNewTag('');
+    addTag();
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    updateCurrentLocale(
-      'tags',
-      currentData.tags.filter((t) => t !== tagToRemove)
-    );
-  };
+  const handleRemoveTag = (tag: string) => removeTag(tag);
 
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    const articleSlug = article?.slug;
-    try {
-      if (onSave) {
-        await onSave({
-          localeUpdates: [
-            {
-              locale: 'de',
-              data: {
-                ...form.de,
-                ...(articleSlug ? { slug: articleSlug } : {}),
-                summary: [
-                  {
-                    type: 'paragraph',
-                    children: [{ type: 'text', text: form.de.summary }],
-                  },
-                ] as any,
-              },
-            },
-            {
-              locale: 'en',
-              data: {
-                ...form.en,
-                ...(articleSlug ? { slug: articleSlug } : {}),
-                summary: [
-                  {
-                    type: 'paragraph',
-                    children: [{ type: 'text', text: form.en.summary }],
-                  },
-                ] as any,
-              },
-            },
-          ],
-          visibility,
-        });
-      } else {
-        const res = await fetch('/api/content/article/settings', {
-          method: 'PUT',
-          headers: jsonAuthHeaders(),
-          body: JSON.stringify({
-            documentId: article.documentId,
-            localeUpdates: [
-              {
-                locale: 'de',
-                data: {
-                  ...form.de,
-                  ...(articleSlug ? { slug: articleSlug } : {}),
-                  summary: [
-                    {
-                      type: 'paragraph',
-                      children: [{ type: 'text', text: form.de.summary }],
-                    },
-                  ],
-                },
-              },
-              {
-                locale: 'en',
-                data: {
-                  ...form.en,
-                  ...(articleSlug ? { slug: articleSlug } : {}),
-                  summary: [
-                    {
-                      type: 'paragraph',
-                      children: [{ type: 'text', text: form.en.summary }],
-                    },
-                  ],
-                },
-              },
-            ],
-            visibility,
-          }),
-        });
-        if (!res.ok) throw new Error('Speichern fehlgeschlagen');
+    if (onSave) {
+      setError(null);
+      try {
+        await onSave({ localeUpdates: buildLocaleUpdates() as any, visibility });
+        onClose();
+      } catch (e: any) {
+        setError(e?.message || 'Fehler beim Speichern');
       }
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern');
-    } finally {
-      setSaving(false);
+      return;
     }
+    if (await save()) onClose();
   };
 
   const handleDelete = async (hardDelete: boolean) => {
-    setDeleting(true);
-    setError(null);
-    try {
-      if (onDelete) {
+    if (onDelete) {
+      setError(null);
+      try {
         await onDelete(hardDelete);
-      } else {
-        const url = `/api/content/article/settings?documentId=${encodeURIComponent(article.documentId)}${
-          hardDelete ? '&hard=true' : ''
-        }`;
-        const res = await fetch(url, {
-          method: 'DELETE',
-          headers: jsonAuthHeaders(),
-        });
-        if (!res.ok) throw new Error('Löschen fehlgeschlagen');
+        onClose();
+      } catch (e: any) {
+        setError(e?.message || 'Fehler beim Löschen');
       }
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Fehler beim Löschen');
-    } finally {
-      setDeleting(false);
+      return;
     }
+    if (await remove(hardDelete)) onClose();
   };
 
   return (

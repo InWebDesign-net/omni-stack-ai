@@ -2,14 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, AlertTriangle, Globe, Loader2, Archive, Trash } from 'lucide-react';
-import { jsonAuthHeaders } from '@/lib/affinity';
 import { useApp } from '@/context/AppContext';
-
-interface LocaleData {
-  title: string;
-  summary: string;
-  tags: string[];
-}
+import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
 
 interface ImageEditModalProps {
   isOpen: boolean;
@@ -20,149 +14,47 @@ interface ImageEditModalProps {
   t?: any;
 }
 
-const EMPTY_LOCALE: LocaleData = { title: '', summary: '', tags: [] };
-
 export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: ImageEditModalProps) {
-  const [activeLocale, setActiveLocale] = useState<'de' | 'en'>('de');
-  const [form, setForm] = useState<{ de: LocaleData; en: LocaleData }>({
-    de: EMPTY_LOCALE,
-    en: EMPTY_LOCALE,
+  const {
+    activeLocale, setActiveLocale, form, setForm, current, visibility, setVisibility,
+    loading, saving, deleting, error, setError, newTag, setNewTag,
+    updateField, addTag, removeTag, buildLocaleUpdates, save, remove,
+  } = useContentEditForm('image', {
+    isOpen,
+    documentId: image?.documentId,
+    fallback: { title: image?.title, summary: image?.summary, tags: image?.tags, visibility: image?.visibility },
   });
-  const [visibility, setVisibility] = useState<string>(image?.visibility || 'public');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [newTag, setNewTag] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isOpen || !image?.documentId) return;
-
-    let cancelled = false;
-    const loadData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/content/image/settings?documentId=${encodeURIComponent(image.documentId)}`, {
-          headers: jsonAuthHeaders(),
-          cache: 'no-store',
-        });
-        if (!res.ok) throw new Error('Failed to load image settings');
-        const json = await res.json();
-        const items: any[] = json?.data || [];
-        const de = items.find((i) => i.locale === 'de') || items[0] || image || {};
-        const en = items.find((i) => i.locale === 'en') || {};
-
-        if (cancelled) return;
-
-        setForm({
-          de: {
-            title: de.title || image?.title || '',
-            summary: de.summary || image?.summary || '',
-            tags: Array.isArray(de.tags) ? de.tags : Array.isArray(image?.tags) ? image.tags : [],
-          },
-          en: {
-            title: en.title || '',
-            summary: en.summary || '',
-            tags: Array.isArray(en.tags) ? en.tags : [],
-          },
-        });
-        setVisibility(de.visibility || en.visibility || image?.visibility || 'public');
-      } catch (e: any) {
-        if (!cancelled) {
-          // Fallback to current prop data if fetch fails
-          setForm({
-            de: {
-              title: image?.title || '',
-              summary: image?.summary || '',
-              tags: Array.isArray(image?.tags) ? image.tags : [],
-            },
-            en: EMPTY_LOCALE,
-          });
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    loadData();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, image]);
 
   if (!isOpen) return null;
 
-  const current = form[activeLocale];
-
-  const addTag = () => {
-    const tag = newTag.trim();
-    if (!tag) return;
-    setForm((prev) => {
-      const existing = prev[activeLocale].tags;
-      if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [activeLocale]: {
-          ...prev[activeLocale],
-          tags: [...existing, tag],
-        },
-      };
-    });
-    setNewTag('');
-  };
-
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const localeUpdates = [
-        { locale: 'de', data: { title: form.de.title, summary: form.de.summary, tags: form.de.tags } },
-        { locale: 'en', data: { title: form.en.title, summary: form.en.summary, tags: form.en.tags } },
-      ];
-
-      if (onSave) {
-        await onSave({ localeUpdates, visibility });
-      } else {
-        const res = await fetch('/api/content/image/settings', {
-          method: 'PUT',
-          headers: { ...jsonAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ documentId: image.documentId, localeUpdates, visibility }),
-        });
-        if (!res.ok) throw new Error('Save failed');
+    if (onSave) {
+      setError(null);
+      try {
+        await onSave({ localeUpdates: buildLocaleUpdates() as any, visibility });
+        onClose();
+      } catch (e: any) {
+        setError(e?.message || 'Fehler beim Speichern');
       }
-      onClose();
-    } catch (e: any) {
-      console.error('Failed to save image:', e);
-      setError(e.message || 'Fehler beim Speichern');
-    } finally {
-      setSaving(false);
+      return;
     }
+    if (await save()) onClose();
   };
 
   const handleDelete = async (hardDelete: boolean) => {
-    setDeleting(true);
-    setError(null);
-    try {
-      if (onDelete) {
+    if (onDelete) {
+      setError(null);
+      try {
         await onDelete(hardDelete);
-      } else {
-        const res = await fetch(`/api/content/image/settings?documentId=${encodeURIComponent(image.documentId)}&hard=${hardDelete}`, {
-          method: 'DELETE',
-          headers: jsonAuthHeaders(),
-        });
-        if (!res.ok) throw new Error('Delete failed');
+        onClose();
+      } catch (e: any) {
+        setError(e?.message || 'Fehler beim Löschen');
       }
-      onClose();
-    } catch (e: any) {
-      console.error('Failed to delete image:', e);
-      setError(e.message || 'Fehler beim Löschen');
-    } finally {
-      setDeleting(false);
+      return;
     }
+    if (await remove(hardDelete)) onClose();
   };
 
   return (

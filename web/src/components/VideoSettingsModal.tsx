@@ -1,15 +1,11 @@
 'use client';
 
+import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
+
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2, Globe, Trash2, AlertTriangle, Archive, Trash } from 'lucide-react';
-import { jsonAuthHeaders } from '@/lib/affinity';
 import { useApp } from '@/context/AppContext';
 
-interface LocaleData {
-  title: string;
-  summary: string;
-  tags: string[];
-}
 
 function flattenBlocks(value: any): string {
   if (!value) return '';
@@ -41,7 +37,6 @@ interface VideoSettingsModalProps {
   onDelete?: (hardDelete: boolean) => Promise<void>;
 }
 
-const EMPTY_LOCALE: LocaleData = { title: '', summary: '', tags: [] };
 
 export default function VideoSettingsModal({
   documentId,
@@ -51,134 +46,25 @@ export default function VideoSettingsModal({
   onDelete,
 }: VideoSettingsModalProps) {
   const { t } = useApp();
-  const [activeLocale, setActiveLocale] = useState<'de' | 'en'>('de');
-  const [form, setForm] = useState<{ de: LocaleData; en: LocaleData }>({
-    de: EMPTY_LOCALE,
-    en: EMPTY_LOCALE,
-  });
-  const [visibility, setVisibility] = useState<string>('public');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [newTag, setNewTag] = useState('');
   const [showDiscard, setShowDiscard] = useState(false);
-
   const [snapshot, setSnapshot] = useState<{ form: { de: LocaleData; en: LocaleData }; visibility: string } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const addTag = () => {
-    const tag = newTag.trim();
-    if (!tag) return;
-    setForm((prev) => {
-      const existing = prev[activeLocale].tags;
-      if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [activeLocale]: {
-          ...prev[activeLocale],
-          tags: [...existing, tag],
-        },
-      };
-    });
-    setNewTag('');
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `/api/content/video/settings?documentId=${encodeURIComponent(documentId)}`,
-          { headers: jsonAuthHeaders(), cache: 'no-store' }
-        );
-        if (!res.ok) throw new Error(`Load failed (${res.status})`);
-        const data = await res.json();
-        const items: any[] = data?.data || [];
-        const de = items.find((i) => i.locale === 'de') || items[0] || {};
-        const en = items.find((i) => i.locale === 'en') || {};
-        if (cancelled) return;
-
-        const loadedDe = {
-          title: de.title || '',
-          summary: flattenBlocks(de.summary),
-          tags: Array.isArray(de.tags) ? de.tags : [],
-        };
-        const loadedEn = {
-          title: en.title || '',
-          summary: flattenBlocks(en.summary),
-          tags: Array.isArray(en.tags) ? en.tags : [],
-        };
-        const loadedVisibility = de.visibility || en.visibility || 'public';
-        if (cancelled) return;
-
-        setForm({ de: loadedDe, en: loadedEn });
-        setVisibility(loadedVisibility);
-        setSnapshot({
-          form: { de: loadedDe, en: loadedEn },
-          visibility: loadedVisibility,
-        });
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || 'Fehler beim Laden');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [documentId]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const headers = { ...jsonAuthHeaders(), 'Content-Type': 'application/json' };
-      const localeUpdates = [
-        { locale: 'de', data: { title: form.de.title, summary: textToBlocks(form.de.summary), tags: form.de.tags } },
-        { locale: 'en', data: { title: form.en.title, summary: textToBlocks(form.en.summary), tags: form.en.tags } },
-      ];
-      const saveRes = await fetch(`/api/content/video/settings`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ documentId, localeUpdates, visibility }),
-      });
-      if (!saveRes.ok) throw new Error(`Save failed (${saveRes.status})`);
-      setSnapshot({ form, visibility });
-      if (onSave) onSave();
-      onClose();
-    } catch (e: any) {
-      setError(e?.message || 'Fehler beim Speichern');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (hardDelete: boolean) => {
-    setDeleting(true);
-    setError(null);
-    try {
-      if (onDelete) {
-        await onDelete(hardDelete);
-      } else {
-        const res = await fetch(`/api/content/video/settings?documentId=${encodeURIComponent(documentId)}&hard=${hardDelete}`, {
-          method: 'DELETE',
-          headers: jsonAuthHeaders(),
-        });
-        if (!res.ok) throw new Error('Video-Löschung fehlgeschlagen');
-      }
-      if (onSave) onSave();
-      onClose();
-    } catch (e: any) {
-      console.error('Failed to delete video:', e);
-      setError(e.message || 'Fehler beim Löschen des Videos');
-    } finally {
-      setDeleting(false);
-    }
-  };
+  const {
+    activeLocale, setActiveLocale, form, setForm, current, visibility, setVisibility,
+    loading, saving, deleting, error, setError, newTag, setNewTag,
+    updateField, addTag, removeTag, buildLocaleUpdates, save, remove,
+  } = useContentEditForm('video', {
+    isOpen: true,
+    documentId,
+    onLoaded: setSnapshot,
+    // Videos store the summary as Strapi blocks, same as articles.
+    serializeLocale: (_locale, data) => ({
+      title: data.title,
+      summary: textToBlocks(data.summary),
+      tags: data.tags,
+    }),
+  });
 
   const requestClose = () => {
     if (isDirty) {
@@ -188,7 +74,21 @@ export default function VideoSettingsModal({
     }
   };
 
-  const current = form[activeLocale];
+  const handleSave = async () => {
+    if (await save()) {
+      setSnapshot({ form, visibility });
+      if (onSave) onSave();
+      onClose();
+    }
+  };
+
+  const handleDelete = async (hardDelete: boolean) => {
+    if (await remove(hardDelete)) {
+      if (onDelete) onDelete(hardDelete);
+      onClose();
+    }
+  };
+
   const isDirty =
     !!snapshot &&
     (snapshot.visibility !== visibility ||
