@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { useApp } from '@/context/AppContext';
-import { useImages, useImageTags, ImageItem } from '@/lib/hooks/useImages';
+import { useContentList, useContentTags, ImageItem } from '@/lib/hooks/useContentList';
 import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import {
   Search,
@@ -114,7 +114,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  const { tags: allTags = [] } = useImageTags(lang);
+  const { tags: allTags = [] } = useContentTags('image', lang);
 
   const updateURL = (newParams: Record<string, string | null>) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -162,7 +162,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     updateURL({ sort: newSort, page: '1' });
   };
 
-  const { images, total, isLoading } = useImages({
+  const { items: images, total, isLoading } = useContentList<ImageItem>('image', {
     currentPage,
     pageSize: perPage,
     sort,

@@ -22,7 +22,7 @@ import SubscribeButton from '@/components/SubscribeButton';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { useApp } from '@/context/AppContext';
-import { useImages } from '@/lib/hooks/useImages';
+import { useContentList, ImageItem } from '@/lib/hooks/useContentList';
 import { getRotatedRecommendations } from '@/lib/recommendations';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { formatRelativeDate } from '@/lib/date';
@@ -119,7 +119,7 @@ export default function ImagePageClient({
   };
 
   // Related Recommendations Hook with excludeSlug & rotation
-  const { images: hookRelated = [] } = useImages({
+  const { items: hookRelated = [] } = useContentList<ImageItem>('image', {
     pageSize: 12,
     excludeSlug: slug,
     sort: currentUser ? 'affinity' : 'createdatasc',

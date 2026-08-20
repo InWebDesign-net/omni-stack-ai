@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { ActionButton } from '@/components/ActionButton';
 import { useTagFilter } from '@/lib/hooks/useTagFilter';
-import { useArticles, ArticleItem } from '@/lib/hooks/useArticles';
+import { useContentList, ArticleItem } from '@/lib/hooks/useContentList';
 import { ArticleCreateModal } from '@/components/article/ArticleCreateModal';
 import Image from 'next/image';
 
@@ -94,7 +94,7 @@ export default function ArticlesPageClient() {
     resetTagFilters,
   } = useTagFilter(allTags, updateURL);
 
-  const { articles, total: totalArticles, isLoading } = useArticles({
+  const { items: articles, total: totalArticles, isLoading } = useContentList<ArticleItem>('article', {
     currentPage,
     pageSize: perPage,
     sort,

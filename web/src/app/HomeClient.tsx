@@ -7,8 +7,7 @@ import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIco
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
-import { useImages } from '@/lib/hooks/useImages';
-import { useVideos } from '@/lib/hooks/useVideos';
+import { useContentList, ImageItem, VideoItem } from '@/lib/hooks/useContentList';
 import Image from 'next/image';
 
 interface ChannelItem {
@@ -30,7 +29,7 @@ export default function HomeClient() {
   const [channels, setChannels] = useState<ChannelItem[]>([]);
 
   // Hook for Videos: affinity for logged-in, createdatasc for guests
-  const { videos: rawVideos = [], isLoading: isLoadingVideos } = useVideos({
+  const { items: rawVideos = [], isLoading: isLoadingVideos } = useContentList<VideoItem>('video', {
     currentPage: 1,
     pageSize: 6,
     sort: currentUser ? 'affinity' : 'createdatasc',
@@ -39,7 +38,7 @@ export default function HomeClient() {
   });
 
   // Hook for Images: affinity for logged-in, createdatasc for guests
-  const { images: rawImages = [], isLoading: isLoadingImages } = useImages({
+  const { items: rawImages = [], isLoading: isLoadingImages } = useContentList<ImageItem>('image', {
     currentPage: 1,
     pageSize: 6,
     sort: currentUser ? 'affinity' : 'createdatasc',

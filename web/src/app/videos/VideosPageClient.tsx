@@ -6,7 +6,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import VideoUploadModal from "@/components/VideoUploadModal";
 import { useApp } from "@/context/AppContext";
-import { useVideos, VideoItem } from "@/lib/hooks/useVideos";
+import { useContentList, VideoItem } from "@/lib/hooks/useContentList";
 import { TagCount } from "@/lib/videoFilters";
 import { useTagFilter } from '@/lib/hooks/useTagFilter';
 import useSWR from "swr";
@@ -93,12 +93,12 @@ export default function VideosPageClient({
 
   // Data fetching via SWR hook
   const {
-    videos,
+    items: videos,
     total: totalVideos,
     isLoading,
     isError,
     refresh,
-  } = useVideos({
+  } = useContentList<VideoItem>('video', {
     currentPage,
     pageSize: perPage,
     sort,

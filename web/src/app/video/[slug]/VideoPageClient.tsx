@@ -34,7 +34,7 @@ import ChannelProfileModal from '@/components/ChannelProfileModal';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
 import { VideoInfo, VideoComments, RelatedVideos } from './VideoComponents';
 import { useApp } from '@/context/AppContext';
-import { useVideos } from '@/lib/hooks/useVideos';
+import { useContentList, VideoItem } from '@/lib/hooks/useContentList';
 import { getRotatedRecommendations } from '@/lib/recommendations';
 import { getDictionary } from '@/lib/i18n';
 import { jsonAuthHeaders } from '@/lib/affinity';
@@ -147,8 +147,8 @@ export default function VideoPageClient({
   const [video, setVideo] = useState<any>(() => pickLocalized(initialVideo, initialLang));
   const [relatedItems, setRelatedItems] = useState<any[]>(initialRelated);
 
-  // Dynamic recommendations via useVideos hook with excludeSlug & rotation
-  const { videos: hookRelated = [] } = useVideos({
+  // Dynamic recommendations via useContentList hook with excludeSlug & rotation
+  const { items: hookRelated = [] } = useContentList<VideoItem>('video', {
     currentPage: 1,
     pageSize: 12,
     excludeSlug: slug,

@@ -16,7 +16,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { ArticleBlockRenderer } from '@/components/article/ArticleBlockRenderer';
 import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
-import { useArticles } from '@/lib/hooks/useArticles';
+import { useContentList, ArticleItem } from '@/lib/hooks/useContentList';
 import { getRotatedRecommendations } from '@/lib/recommendations';
 import { getArticleOwnerStatus } from './actions';
 import Image from 'next/image';
@@ -174,7 +174,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   }, [item?.slug, userIdent, creator?.id, item?.tags]);
 
   // Related articles hook
-  const { articles: hookRelated = [] } = useArticles({
+  const { items: hookRelated = [] } = useContentList<ArticleItem>('article', {
     currentPage: 1,
     pageSize: 10,
     excludeSlug: slug,
