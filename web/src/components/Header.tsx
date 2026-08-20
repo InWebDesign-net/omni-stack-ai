@@ -28,8 +28,8 @@ import { useApp } from '@/context/AppContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { DEMO_CREATORS } from '@/config/demo';
 import Image from 'next/image';
-
 import NotificationDrawer from '@/components/NotificationDrawer';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export function OmniLogo({ size = 28 }: { size?: number }) {
   return (
@@ -270,10 +270,13 @@ export default function Header({
             <span className="hidden sm:inline">{activeLang === 'de' ? t.header.algorithm : t.header.algorithm}</span>
           </button>
 
+          {/* Theme Switcher */}
+          <ThemeToggle />
+
           {/* Language Switch */}
           <button
             onClick={handleLanguageClick}
-            className="flex items-center gap-1.5 glass-surface hover:bg-white/6 text-[#dae2fd] px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border border-white/8 hover:border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
+            className="flex items-center gap-1.5 glass-surface hover:bg-white/6 text-primary px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border border-subtle hover:border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
             title="Language"
             aria-label={activeLang === 'de' ? "Sprache wechseln zu Englisch" : "Switch language to German"}
           >
@@ -337,11 +340,11 @@ export default function Header({
               {/* User Dropdown Menu */}
               {userDropdownOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-56 bg-[#0d1528] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 animate-scaleIn flex flex-col gap-1"
-                  style={{ boxShadow: '0 12px 32px -8px rgba(8,14,30,0.95), 0 1px 0 rgba(128,131,255,0.15)' }}
+                  className="absolute right-0 mt-2 w-56 bg-surface-raised border border-subtle rounded-2xl shadow-2xl p-2 z-50 animate-scaleIn flex flex-col gap-1"
+                  style={{ boxShadow: '0 12px 32px -8px rgba(0,0,0,0.5)' }}
                 >
-                  <div className="px-3 py-2 border-b border-white/6 flex flex-col">
-                    <span className="text-xs font-bold text-white truncate">{activeUser.username}</span>
+                  <div className="px-3 py-2 border-b border-subtle flex flex-col">
+                    <span className="text-xs font-bold text-primary truncate">{activeUser.username}</span>
                     <span className="text-[10px] font-mono text-[#8083ff] truncate">
                       {getUserHandleString(activeUser)}
                     </span>
@@ -356,7 +359,7 @@ export default function Header({
                         router.push(`/user/${encodeURIComponent(channelHandle)}`);
                       }
                     }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-primary hover:bg-surface transition-all text-left"
                   >
                     <Tv className="h-4 w-4 text-[#8083ff]" />
                     <span>{t.header.myChannel}</span>
@@ -372,13 +375,13 @@ export default function Header({
                         openSettingsModal();
                       }
                     }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#dae2fd] hover:text-white hover:bg-white/5 transition-all text-left"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-primary hover:bg-surface transition-all text-left"
                   >
                     <User className="h-4 w-4 text-[#44e2cd]" />
                     <span>{t.header.settings}</span>
                   </button>
 
-                  <div className="my-1 border-t border-white/5" />
+                  <div className="my-1 border-t border-subtle" />
 
                   <button
                     type="button"

@@ -143,8 +143,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdWebsite) }}
         />
         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdOrganization) }}
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('omni-theme')||'system';var r=t;if(t==='system'){r=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',r);}catch(e){}})();`,
+          }}
         />
       </head>
       <body className="antialiased bg-base text-primary min-h-screen selection:bg-[#8083ff] selection:text-white" suppressHydrationWarning>

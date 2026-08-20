@@ -18,6 +18,8 @@
   --color-faint: var(--text-faint);
 }
 
+@custom-variant dark (&:where(:not([data-theme="light"]), :not([data-theme="light"]) *));
+
 @utility bg-base {
   background-color: var(--bg-base);
 }
@@ -77,6 +79,38 @@
     --radius-2xl: 32px;
   }
 
+  :root[data-theme="light"],
+  html[data-theme="light"] {
+    --bg-base: #f8fafc;
+    --background: var(--bg-base);
+    --surface: rgba(255, 255, 255, 0.88);
+    --surface-raised: #ffffff;
+    --border-subtle: rgba(203, 213, 225, 0.80);
+    --text-primary: #0f172a;
+    --text-muted: #475569;
+    --text-faint: #64748b;
+
+    --surface-1: #f1f5f9;
+    --surface-2: #e2e8f0;
+    --surface-3: #cbd5e1;
+    --surface-4: #94a3b8;
+    --surface-5: #64748b;
+    --border-default: rgba(99, 102, 241, 0.25);
+    --border-strong: rgba(99, 102, 241, 0.50);
+    --on-surface: var(--text-primary);
+    --on-surface-muted: var(--text-muted);
+    --on-surface-faint: var(--text-faint);
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --primary-glow: rgba(79, 70, 229, 0.20);
+    --secondary: #0d9488;
+    --secondary-glow: rgba(13, 148, 136, 0.20);
+    --accent: #d97706;
+    --accent-glow: rgba(217, 119, 6, 0.18);
+    --danger: #e11d48;
+    --success: #059669;
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -132,6 +166,11 @@
   border: 1px solid var(--border-subtle);
 }
 
+html[data-theme="light"] .glass-surface {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border-subtle);
+}
+
 .glass-surface-glow {
   background: rgba(28, 36, 62, 0.80);
   backdrop-filter: blur(28px) saturate(180%);
@@ -143,6 +182,12 @@
     0 1px 0 rgba(255,255,255,0.04) inset;
 }
 
+html[data-theme="light"] .glass-surface-glow {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 4px 20px -4px rgba(79, 70, 229, 0.12);
+}
+
 .glass-card {
   background: rgba(15, 22, 42, 0.85);
   backdrop-filter: blur(20px);
@@ -150,10 +195,20 @@
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
+html[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid var(--border-subtle);
+}
+
 .glass-card:hover {
   border-color: var(--border-strong);
   box-shadow: 0 12px 40px -8px rgba(128, 131, 255, 0.22);
   transform: translateY(-2px);
+}
+
+html[data-theme="light"] .glass-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 24px -4px rgba(79, 70, 229, 0.14);
 }
 
 /* ─── Gradient Text Utilities ─────────────────────────────────────────────── */
