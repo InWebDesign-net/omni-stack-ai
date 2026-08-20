@@ -139,7 +139,7 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md animate-fadeIn" onClick={onClose} />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-[#0d1528] border border-indigo-500/20 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 z-50 overflow-hidden font-sans">
+      <div className="relative w-full max-w-2xl max-h-[90vh] bg-surface border border-subtle rounded-3xl p-6 shadow-2xl flex flex-col gap-5 z-50 overflow-hidden font-sans">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800/80">
           <div className="flex items-center gap-3">

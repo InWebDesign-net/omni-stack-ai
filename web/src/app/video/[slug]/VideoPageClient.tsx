@@ -352,12 +352,12 @@ export default function VideoPageClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
+    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
       <Header />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-slate-900/95 border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>

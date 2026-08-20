@@ -9,22 +9,58 @@
 @theme {
   --breakpoint-3xl: 1920px;
   --container-content: 2560px;
+
+  --color-base: var(--bg-base);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-subtle: var(--border-subtle);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+}
+
+@utility bg-base {
+  background-color: var(--bg-base);
+}
+@utility bg-surface {
+  background-color: var(--surface);
+}
+@utility bg-surface-raised {
+  background-color: var(--surface-raised);
+}
+@utility border-subtle {
+  border-color: var(--border-subtle);
+}
+@utility text-primary {
+  color: var(--text-primary);
+}
+@utility text-muted {
+  color: var(--text-muted);
+}
+@utility text-faint {
+  color: var(--text-faint);
 }
 
 @layer base {
   :root {
-    --background: #080e1e;
-    --surface-1: #0d1528;
-    --surface-2: #121a30;
-    --surface-3: #192038;
+    --bg-base: #040711;
+    --background: var(--bg-base);
+    --surface: rgba(15, 23, 42, 0.60);
+    --surface-raised: rgba(15, 23, 42, 0.95);
+    --border-subtle: rgba(51, 65, 85, 0.60);
+    --text-primary: #dae2fd;
+    --text-muted: #94a3b8;
+    --text-faint: #64748b;
+
+    --surface-1: #090e1c;
+    --surface-2: #0f172a;
+    --surface-3: #162038;
     --surface-4: #1e2740;
     --surface-5: #28314f;
-    --border-subtle: rgba(128, 131, 255, 0.12);
     --border-default: rgba(128, 131, 255, 0.20);
     --border-strong: rgba(128, 131, 255, 0.40);
-    --on-surface: #dae2fd;
-    --on-surface-muted: #9ba4bf;
-    --on-surface-faint: #5c657d;
+    --on-surface: var(--text-primary);
+    --on-surface-muted: var(--text-muted);
+    --on-surface-faint: var(--text-faint);
     --primary: #8083ff;
     --primary-light: #c0c1ff;
     --primary-glow: rgba(128, 131, 255, 0.25);

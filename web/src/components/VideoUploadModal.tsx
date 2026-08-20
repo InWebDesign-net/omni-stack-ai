@@ -44,22 +44,22 @@ export default function VideoUploadModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md animate-fadeIn" onClick={onClose} />
 
-      <div className="relative w-full max-w-lg bg-[#080e1e] border border-white/10 rounded-3xl p-6 shadow-2xl z-50 flex flex-col gap-5 animate-scaleIn font-sans">
-        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+      <div className="relative w-full max-w-lg bg-base border border-subtle rounded-3xl p-6 shadow-2xl z-50 flex flex-col gap-5 animate-scaleIn font-sans">
+        <div className="flex items-center justify-between pb-4 border-b border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">
               <FileVideo className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
               <h3 className="text-base font-extrabold text-white">{t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}</h3>
-              <p className="text-xs text-[#9ba4bf]">{t.upload?.selectVideosSubtitle || (lang === 'de' ? 'Wähle Videos zum Hochladen aus' : 'Select videos to upload')}</p>
+              <p className="text-xs text-muted">{t.upload?.selectVideosSubtitle || (lang === 'de' ? 'Wähle Videos zum Hochladen aus' : 'Select videos to upload')}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label={t.common?.close || 'Schließen'}
             title={t.common?.close || 'Schließen'}
-            className="p-2 rounded-xl text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-colors"
+            className="p-2 rounded-xl text-muted hover:text-white hover:bg-white/5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -69,7 +69,7 @@ export default function VideoUploadModal({
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-white/15 bg-[#0d1528] hover:border-indigo-500/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all"
+          className="border-2 border-dashed border-subtle bg-surface hover:border-indigo-500/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all"
         >
           <input
             ref={fileInputRef}

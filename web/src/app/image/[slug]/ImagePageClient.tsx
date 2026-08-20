@@ -237,12 +237,12 @@ export default function ImagePageClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
+    <div className="min-h-screen bg-base text-primary flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
       <Header />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-slate-900/95 border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>
@@ -272,7 +272,7 @@ export default function ImagePageClient({
           {/* Main Image Display & Metadata (2 Columns) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Viewer Container */}
-            <div className="relative bg-[#0d1528] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
+            <div className="relative bg-surface border border-subtle rounded-3xl overflow-hidden shadow-2xl group">
               <div className="relative flex items-center justify-center min-h-[400px] max-h-[70vh] bg-slate-950 p-4">
                 <Image
                   src={image?.imageUrl || image?.thumbnailUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80'}
@@ -403,7 +403,7 @@ export default function ImagePageClient({
 
           {/* Related Images Sidebar (1 Column) */}
           <div className="space-y-6">
-            <div className="bg-[#0d1528] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-2xl space-y-4">
               <h3 className="font-extrabold text-sm text-white uppercase tracking-wider flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-teal-400" />
                 <span>Ähnliche Bilder</span>

@@ -52,7 +52,7 @@ export function RoomHeader({
               {roomType === 'ai' ? <Bot className="w-4 h-4" /> : roomType === 'group' ? <Users className="w-4 h-4" /> : roomName.charAt(0)}
             </div>
             {showOnlineStatus && (
-              <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 border-2 border-[#080e1e] rounded-full" />
+              <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 border-2 border-base rounded-full" />
             )}
           </div>
           <div className="min-w-0 flex-1">

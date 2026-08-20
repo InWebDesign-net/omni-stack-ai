@@ -68,7 +68,7 @@ export function EndOverlay({
               key={rec.slug}
               href={`/video/${rec.slug}`}
               onClick={() => onSelectRecommendation(rec.slug)}
-              className="group relative bg-[#0d1528]/95 border border-indigo-500/30 hover:border-indigo-500/60 rounded-xl overflow-hidden p-2 flex items-center gap-2.5 shadow-xl transition-all"
+              className="group relative bg-surface border border-subtle hover:border-indigo-500/60 rounded-xl overflow-hidden p-2 flex items-center gap-2.5 shadow-xl transition-all"
             >
               <div className="relative w-28 aspect-video bg-slate-950 rounded-lg overflow-hidden shrink-0">
                 <Image
@@ -119,7 +119,7 @@ export function EndOverlay({
               key={rec.slug}
               href={`/video/${rec.slug}`}
               onClick={() => onSelectRecommendation(rec.slug)}
-              className="group relative bg-[#0d1528] border border-slate-800 hover:border-indigo-500/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
+              className="group relative bg-surface border border-subtle hover:border-indigo-500/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
             >
               <div className="relative aspect-video w-full bg-slate-950 overflow-hidden block">
                 <Image

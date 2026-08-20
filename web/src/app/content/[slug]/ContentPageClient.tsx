@@ -397,7 +397,7 @@ export default function ContentPageClient({
   const readTime = Math.max(1, Math.ceil(((item.content || '').length + (item.summary || '').length) / 800));
 
   return (
-    <div className="min-h-screen bg-[#060a16] text-[#dae2fd] font-sans selection:bg-[#8083ff]/30 selection:text-white">
+    <div className="min-h-screen bg-base text-primary font-sans selection:bg-[#8083ff]/30 selection:text-white">
       <Header />
       <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
@@ -416,7 +416,7 @@ export default function ContentPageClient({
               className={`p-2 rounded-xl border transition-all ${
                 isBookmarked
                   ? 'bg-[#8083ff] border-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
-                  : 'bg-[#121a30] border-white/8 text-[#dae2fd] hover:bg-[#192038]'
+                  : 'bg-surface-raised border-subtle text-primary hover:bg-surface'
               }`}
               title={'Merken'}
             >
@@ -424,7 +424,7 @@ export default function ContentPageClient({
             </button>
             <button
               onClick={handleShare}
-              className="p-2 rounded-xl bg-[#121a30] border border-white/8 text-[#dae2fd] hover:bg-[#192038] transition-all"
+              className="p-2 rounded-xl bg-surface-raised border border-subtle text-primary hover:bg-surface transition-all"
               title={t.common.share || 'Teilen'}
             >
               <Share2 className="h-4 w-4" />
@@ -452,7 +452,7 @@ export default function ContentPageClient({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Article Content */}
           <section className="lg:col-span-8 flex flex-col gap-6">
-            <div className="bg-[#0d1528] rounded-3xl border border-white/6 overflow-hidden shadow-2xl relative">
+            <div className="bg-surface rounded-3xl border border-subtle overflow-hidden shadow-2xl relative">
               <div className="absolute top-0 right-0 p-4 z-10 flex gap-2">
                 {item.visibility === 'private' && (
                   <span className="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-lg flex items-center gap-1.5">
@@ -469,13 +469,13 @@ export default function ContentPageClient({
               {/* Cover Image */}
               <div className="relative w-full aspect-[2/1] bg-black">
                 <CardThumbnail item={item} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0d1528] via-[#0d1528]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent" />
               </div>
 
               <div className="p-8 -mt-20 relative z-10 flex flex-col gap-6">
                 {/* Meta Tags */}
                 <div className="flex flex-wrap gap-2">
-                  <span className="bg-[#121a30]/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-[#44e2cd] uppercase tracking-wider border border-white/5 flex items-center gap-1.5">
+                  <span className="bg-surface-raised/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-[#44e2cd] uppercase tracking-wider border border-subtle flex items-center gap-1.5">
                     <FileText className="h-3.5 w-3.5" />
                     Artikel
                   </span>
@@ -508,7 +508,7 @@ export default function ContentPageClient({
                 </div>
 
                 {/* Author Strip */}
-                <div className="flex items-center justify-between p-4 bg-[#121a30] rounded-2xl border border-white/5">
+                <div className="flex items-center justify-between p-4 bg-surface-raised rounded-2xl border border-subtle">
                   <div
                     onClick={() => openChannelModal(creator || fallbackCreator)}
                     className="flex items-center gap-3 cursor-pointer group/author transition-all"
@@ -530,7 +530,7 @@ export default function ContentPageClient({
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
                         isLiked
                           ? 'bg-[#ff6b81] border-[#ff6b81] text-white shadow-lg shadow-[#ff6b81]/25'
-                          : 'bg-[#121a30] border-white/8 text-[#dae2fd] hover:bg-[#192038]'
+                          : 'bg-surface-raised border-subtle text-primary hover:bg-surface'
                       }`}
                     >
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -593,7 +593,7 @@ export default function ContentPageClient({
             </div>
 
             {/* Interactive Comments Section */}
-            <section className="bg-[#0d1528] p-6 rounded-3xl border border-white/6 flex flex-col gap-6">
+            <section className="bg-surface p-6 rounded-3xl border border-subtle flex flex-col gap-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-[#8083ff]" />
@@ -614,7 +614,7 @@ export default function ContentPageClient({
                     onChange={(e) => setNewCommentText(e.target.value)}
                     placeholder={t.common.commentPlaceholder}
                     rows={2}
-                    className="w-full bg-[#080e1e] border border-white/10 focus:border-[#8083ff]/60 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"
+                    className="w-full bg-base border border-subtle focus:border-[#8083ff]/60 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"
                   />
                   <div className="flex justify-end">
                     <button

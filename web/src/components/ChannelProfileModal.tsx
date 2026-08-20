@@ -69,7 +69,7 @@ export default function ChannelProfileModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md animate-fadeIn" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-[#0d1528] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 z-50 animate-scaleIn font-sans">
+      <div className="relative w-full max-w-lg bg-surface border border-subtle rounded-3xl p-6 shadow-2xl flex flex-col gap-5 z-50 animate-scaleIn font-sans">
         
         {/* Channel Header (Avatar + Details + Top Actions) */}
         <div className="flex items-start justify-between gap-3">
@@ -90,7 +90,7 @@ export default function ChannelProfileModal({
                 <h3 className="text-base font-extrabold text-white truncate">{selectedChannel.username}</h3>
                 <CheckCircle2 className="h-4 w-4 text-[#44e2cd] shrink-0" />
               </div>
-              <p className="text-xs font-mono text-[#9ba4bf] truncate">{selectedChannel.handle}</p>
+              <p className="text-xs font-mono text-muted truncate">{selectedChannel.handle}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[11px] text-[#44e2cd] font-semibold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
@@ -128,7 +128,7 @@ export default function ChannelProfileModal({
               onClick={onClose}
               aria-label={t.common?.close || 'Schließen'}
               title={t.common?.close || 'Schließen'}
-              className="p-2 text-[#9ba4bf] hover:text-white rounded-xl hover:bg-white/5 transition-all"
+              className="p-2 text-muted hover:text-white rounded-xl hover:bg-white/5 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
@@ -136,7 +136,7 @@ export default function ChannelProfileModal({
         </div>
 
         {/* Bio */}
-        <div className="bg-[#080e1e]/60 p-3.5 rounded-2xl border border-white/5 text-xs text-[#dae2fd] leading-relaxed">
+        <div className="bg-base/60 p-3.5 rounded-2xl border border-subtle text-xs text-primary leading-relaxed">
           {selectedChannel.bio || 'Creator & Content Publisher im Omni Network.'}
         </div>
 

@@ -258,10 +258,10 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
   if (!item) {
     return (
-      <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
+      <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-slate-400">{t.article?.notFound || 'Artikel nicht gefunden'}</p>
+          <p className="text-muted">{t.article?.notFound || 'Artikel nicht gefunden'}</p>
         </div>
       </div>
     );
@@ -277,12 +277,12 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     : '';
 
   return (
-    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">
+    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
       <Header />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-slate-900/95 border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>

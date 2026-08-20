@@ -219,7 +219,7 @@ export default function Header({
   return (
     <>
       <header
-        className="sticky top-0 z-40 bg-[#080e1e]/90 backdrop-blur-2xl border-b border-white/5 px-3 sm:px-5 h-14 flex items-center justify-between gap-4 select-none"
+        className="sticky top-0 z-40 bg-base/90 backdrop-blur-2xl border-b border-subtle px-3 sm:px-5 h-14 flex items-center justify-between gap-4 select-none"
         style={{ boxShadow: '0 1px 0 rgba(128,131,255,0.10), 0 4px 16px -4px rgba(8,14,30,0.80)' }}
       >
         {/* Brand & Menu */}
@@ -422,15 +422,15 @@ export default function Header({
           />
 
           {/* Slide-over Drawer Canvas */}
-          <aside className="relative w-80 max-w-[85vw] bg-[#080e1e] border-r border-white/10 flex flex-col gap-4 p-5 z-50 overflow-y-auto h-full shadow-2xl animate-slideRight">
+          <aside className="relative w-80 max-w-[85vw] bg-base border-r border-subtle flex flex-col gap-4 p-5 z-50 overflow-y-auto h-full shadow-2xl animate-slideRight">
             {/* Drawer Top Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+            <div className="flex items-center justify-between pb-4 border-b border-subtle">
               <Link
                 href="/"
                 onClick={() => setUniversalNavOpen(false)}
                 className="flex items-center gap-3 group"
               >
-                <div className="rounded-xl bg-[#0d1528] border border-white/15 p-1 group-hover:border-[#8083ff]/40 transition-colors flex items-center justify-center">
+                <div className="rounded-xl bg-surface border border-subtle p-1 group-hover:border-[#8083ff]/40 transition-colors flex items-center justify-center">
                   <OmniLogo size={28} />
                 </div>
                 <div className="flex flex-col leading-none">

@@ -144,11 +144,11 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] font-sans selection:bg-[#8083ff] selection:text-white flex flex-col">
+    <div className="min-h-screen bg-base text-primary font-sans selection:bg-[#8083ff] selection:text-white flex flex-col">
       <Header />
 
       <main className="flex-1 w-full max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        <section className="relative rounded-3xl bg-gradient-to-b from-[#0d1528] via-[#080e1e] to-[#080e1e] border border-white/10 p-8 sm:p-12 shadow-2xl overflow-hidden text-center space-y-6">
+        <section className="relative rounded-3xl bg-gradient-to-b from-surface via-base to-base border border-subtle p-8 sm:p-12 shadow-2xl overflow-hidden text-center space-y-6">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
@@ -160,12 +160,12 @@ export default function HomeClient() {
             {t.home?.heroTitle || 'Was möchtest du heute entdecken?'}
           </h1>
 
-          <p className="relative text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+          <p className="relative text-sm sm:text-base text-muted max-w-xl mx-auto leading-relaxed">
             {t.home?.heroSubtitle || 'Nutze die KI-Suche oder stöbere in un-gefiltertem Content direkt aus dem Omni Network.'}
           </p>
 
           <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto">
-            <div className="relative flex items-center bg-[#0b1222] border border-white/15 rounded-2xl p-2 shadow-2xl focus-within:border-indigo-500 transition-all">
+            <div className="relative flex items-center bg-surface-raised border border-subtle rounded-2xl p-2 shadow-2xl focus-within:border-indigo-500 transition-all">
               <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
               <input
                 id="home-hero-search-input"
@@ -276,7 +276,7 @@ export default function HomeClient() {
                 <div
                   key={channel.id}
                   onClick={() => openChannelModal(channel)}
-                  className="group bg-[#0d1528] hover:bg-[#121a30] border border-white/10 hover:border-indigo-500/40 rounded-3xl p-5 shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                  className="group bg-surface hover:bg-surface-raised border border-subtle hover:border-indigo-500/40 rounded-3xl p-5 shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -291,7 +291,7 @@ export default function HomeClient() {
                         unoptimized
                       />
                       {channel.hasNewContent && (
-                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-[#080e1e]" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
+                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-base" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -496,7 +496,7 @@ export default function HomeClient() {
                 <Link
                   key={img.id || img.documentId}
                   href={`/image/${img.slug}`}
-                  className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                  className="group relative bg-surface border border-subtle hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
                 >
                   <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
                     <Image
@@ -511,7 +511,7 @@ export default function HomeClient() {
                     <h3 className="font-bold text-xs text-white group-hover:text-teal-400 transition-colors line-clamp-1">
                       {img.title}
                     </h3>
-                    <span className="text-[10px] text-slate-400 font-mono truncate">
+                    <span className="text-[10px] text-muted font-mono truncate">
                       {img.creator?.username || 'Creator'}
                     </span>
                   </div>
@@ -522,7 +522,7 @@ export default function HomeClient() {
         </section>
       </main>
 
-      <footer className="w-full border-t border-slate-800/80 py-8 bg-[#050914] text-xs text-slate-500 text-center space-y-2">
+      <footer className="w-full border-t border-subtle py-8 bg-base text-xs text-faint text-center space-y-2">
         <p>{t.home?.footer?.subtitle || 'Omni Network – Hyper-Personalisiertes KI Mediennetzwerk'}</p>
         <p>{t.home?.footer?.rights || '© 2026 InWebDesign. Alle Rechte vorbehalten.'}</p>
       </footer>

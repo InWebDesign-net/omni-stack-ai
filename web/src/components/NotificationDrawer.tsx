@@ -107,7 +107,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
   };
 
   return (
-    <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 bg-[#0c1324] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
+    <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 bg-base border border-subtle rounded-2xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
       {/* Header */}
       <div className="p-4 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
         <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                     </div>
                   )}
                   {!n.isRead && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-[#0c1324]" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-base" />
                   )}
                 </div>
 
