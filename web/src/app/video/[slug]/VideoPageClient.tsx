@@ -79,9 +79,14 @@ interface VideoPageClientProps {
   initialRelated?: any[];
   slug: string;
   accessStatus?: {
-    isAccessible: boolean;
-    isOwner: boolean;
-    isPrivate: boolean;
+    isAllowed?: boolean;
+    isAccessible?: boolean;
+    isOwner?: boolean;
+    visibility?: string;
+    isPrivate?: boolean;
+    isSubscribersOnly?: boolean;
+    isUnlisted?: boolean;
+    reason?: string | null;
   };
   initialLang?: 'de' | 'en';
 }
@@ -394,16 +399,39 @@ export default function VideoPageClient({
           <div className="lg:col-span-2 space-y-6">
             {/* 16:9 Video Player Container */}
             <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
-              <CustomVideoPlayer
-                mp4Url={video.mp4Url || video.mediaUrl}
-                hlsUrl={video.hlsUrl}
-                posterUrl={video.thumbnailUrl || '/media/thumbnails/default.png'}
-                title={video.title}
-                slug={slug}
-                recommendations={initialRelated}
-                onTimeUpdate={handleVideoTimeUpdate}
-                className="w-full h-full"
-              />
+              {accessStatus && accessStatus.isAllowed === false && accessStatus.isSubscribersOnly ? (
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-slate-900 to-slate-950 text-slate-200 space-y-4">
+                  <div className="p-4 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 shadow-xl animate-pulse">
+                    <Users className="w-8 h-8" />
+                  </div>
+                  <div className="max-w-md space-y-1">
+                    <h3 className="text-lg font-bold text-white">
+                      {t?.contentAccess?.subscribersOnlyTitle || 'Nur für Abonnenten'}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {t?.contentAccess?.subscribersOnlySubtitle || 'Dieser Inhalt ist exklusiv für Abonnenten dieses Kanals verfügbar.'}
+                    </p>
+                  </div>
+                  {video.creator?.id && (
+                    <SubscribeButton
+                      targetId={String(video.creator.id)}
+                      type="channel"
+                      size="lg"
+                    />
+                  )}
+                </div>
+              ) : (
+                <CustomVideoPlayer
+                  mp4Url={video.mp4Url || video.mediaUrl}
+                  hlsUrl={video.hlsUrl}
+                  posterUrl={video.thumbnailUrl || '/media/thumbnails/default.png'}
+                  title={video.title}
+                  slug={slug}
+                  recommendations={initialRelated}
+                  onTimeUpdate={handleVideoTimeUpdate}
+                  className="w-full h-full"
+                />
+              )}
             </div>
 
             {/* Video Details Header */}

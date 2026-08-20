@@ -165,8 +165,13 @@
     "noTags": "No Tags",
     "visibility": {
       "public": "Public",
-      "unlisted": "Unlisted",
-      "private": "Private"
+      "publicDesc": "Appears in listings and feed",
+      "unlisted": "Anyone with link",
+      "unlistedDesc": "Not discoverable — only people with the link",
+      "subscribers": "Subscribers only",
+      "subscribersDesc": "Only for signed-in subscribers of your channel",
+      "private": "Only me",
+      "privateDesc": "Only you can see this content"
     },
     "saved": "Saved",
     "save": "Save",
@@ -461,5 +466,12 @@
     "showAll": "All tags",
     "showLess": "Show less",
     "noTagsAtAll": "No tags available."
+  },
+  "contentAccess": {
+    "subscribersOnlyTitle": "Subscribers Only",
+    "subscribersOnlySubtitle": "This content is exclusively available to subscribers of this channel.",
+    "subscribeCta": "Subscribe to Channel",
+    "privateTitle": "Private Content",
+    "privateSubtitle": "This content is only visible to the creator."
   }
 }

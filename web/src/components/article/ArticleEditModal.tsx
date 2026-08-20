@@ -4,6 +4,7 @@ import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditF
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, AlertTriangle, Globe, Loader2, Archive, Trash } from 'lucide-react';
+import { VisibilitySelector } from '@/components/VisibilitySelector';
 
 interface ArticleEditModalProps {
   isOpen: boolean;
@@ -207,17 +208,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
 
             {/* Global Visibility */}
             <div className="pt-4 border-t border-slate-800 space-y-2">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Sichtbarkeit & Status
-              </label>
-              <select
-                value={visibility}
-                onChange={(e) => setVisibility(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-purple-500 transition-colors"
-              >
-                <option value="public">Öffentlich (Für alle im Feed und in Feeds sichtbar)</option>
-                <option value="private">Privat / Nicht gelistet (Nur für mich als Ersteller sichtbar)</option>
-              </select>
+              <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
             </div>
 
             {/* Actions */}

@@ -55,11 +55,11 @@ export default {
         const targetRelFilter = usesCreator ? filters.creator : filters.author;
         const targetRelId = targetRelFilter?.id?.$eq || targetRelFilter?.id || targetRelFilter;
 
-        const isOwnerQuery = uidNum && targetRelId && String(uidNum) === String(targetRelId);
+        const isOwnerQuery = Boolean(uidNum && targetRelId && String(uidNum) === String(targetRelId));
         const isSpecificItemQuery = Boolean(filters.slug || filters.documentId || filters.id);
 
-        // If explicitly querying for owner's items OR querying for a specific item (slug/documentId) when authenticated, allow query
-        if (isOwnerQuery || (isSpecificItemQuery && uidNum != null)) {
+        // If explicitly querying for owner's items, allow query
+        if (isOwnerQuery) {
           return next();
         }
 
@@ -68,7 +68,16 @@ export default {
           return next();
         }
 
-        // Default-deny for general queries: enforce visibility = public
+        // Single-item lookup by slug/documentId/id allows public, unlisted, and subscribers items
+        if (isSpecificItemQuery) {
+          context.params.filters = {
+            ...filters,
+            visibility: { $in: ['public', 'unlisted', 'subscribers'] },
+          };
+          return next();
+        }
+
+        // Default-deny for general queries/listings: enforce visibility = public
         context.params.filters = {
           ...filters,
           visibility: { $eq: 'public' },

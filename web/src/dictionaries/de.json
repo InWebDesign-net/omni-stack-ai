@@ -165,8 +165,13 @@
     "noTags": "Keine Tags",
     "visibility": {
       "public": "Öffentlich",
-      "unlisted": "Nicht gelistet",
-      "private": "Privat"
+      "publicDesc": "Erscheint in Listen und im Feed",
+      "unlisted": "Über Link",
+      "unlistedDesc": "Nicht auffindbar — nur wer den Link hat",
+      "subscribers": "Nur Abonnenten",
+      "subscribersDesc": "Nur für angemeldete Abonnenten deines Kanals",
+      "private": "Nur ich",
+      "privateDesc": "Nur du kannst diesen Inhalt sehen"
     },
     "saved": "Gespeichert",
     "save": "Speichern",
@@ -461,5 +466,12 @@
     "showAll": "Alle Tags",
     "showLess": "Weniger anzeigen",
     "noTagsAtAll": "Keine Tags vorhanden."
+  },
+  "contentAccess": {
+    "subscribersOnlyTitle": "Nur für Abonnenten",
+    "subscribersOnlySubtitle": "Dieser Inhalt ist exklusiv für Abonnenten dieses Kanals verfügbar.",
+    "subscribeCta": "Kanal abonnieren",
+    "privateTitle": "Privater Inhalt",
+    "privateSubtitle": "Dieser Inhalt ist nur für den Ersteller sichtbar."
   }
 }

@@ -68,9 +68,10 @@
     "visibility": {
       "type": "enumeration",
       "enum": [
-        "public",
+        "private",
+        "subscribers",
         "unlisted",
-        "private"
+        "public"
       ],
       "default": "public"
     },

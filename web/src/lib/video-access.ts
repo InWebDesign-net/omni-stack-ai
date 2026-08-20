@@ -87,11 +87,29 @@ async function loadVideoMeta(slug: string, viewerId: number | null): Promise<Vid
     creatorId: entry.creator?.id ?? null,
   };
 
-  if (meta.visibility === 'public') {
+  if (meta.visibility === 'public' || meta.visibility === 'unlisted') {
     metaCache.set(slug, { meta, expiresAt: Date.now() + PUBLIC_META_TTL_MS });
   }
 
   return meta;
+}
+
+async function checkUserSubscribedToCreator(userId: number, creatorId: number): Promise<boolean> {
+  try {
+    const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (process.env.STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+    }
+    const url = `${strapiUrl}/api/subscriptions?filters[subscriber][id][$eq]=${userId}&filters[targetUser][id][$eq]=${creatorId}&filters[type][$eq]=channel`;
+    const res = await fetch(url, { headers, cache: 'no-store' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Array.isArray(data?.data) && data.data.length > 0;
+  } catch (err) {
+    console.error(`[video-access] subscription check error:`, err);
+    return false;
+  }
 }
 
 export async function resolveVideoAccess(rawSlug: string): Promise<VideoAccessDecision> {
@@ -110,7 +128,7 @@ export async function resolveVideoAccess(rawSlug: string): Promise<VideoAccessDe
     return { allowed: false, status: 404, reason: 'not found' };
   }
 
-  if (meta.visibility === 'public') {
+  if (meta.visibility === 'public' || meta.visibility === 'unlisted') {
     return { allowed: true };
   }
 
@@ -120,6 +138,16 @@ export async function resolveVideoAccess(rawSlug: string): Promise<VideoAccessDe
 
   if (meta.creatorId != null && meta.creatorId === user.id) {
     return { allowed: true };
+  }
+
+  if (meta.visibility === 'subscribers') {
+    if (meta.creatorId != null) {
+      const isSubscribed = await checkUserSubscribedToCreator(user.id, meta.creatorId);
+      if (isSubscribed) {
+        return { allowed: true };
+      }
+    }
+    return { allowed: false, status: 403, reason: 'subscribers only' };
   }
 
   return { allowed: false, status: 403, reason: 'not the owner of this video' };

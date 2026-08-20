@@ -5,6 +5,7 @@ import VideoPageClient from '@/app/video/[slug]/VideoPageClient';
 import { safeJsonLd } from '@/lib/jsonLd';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
 import { getVideoOwnerStatus } from '@/app/video/[slug]/actions';
+import { resolveVideoAccess } from '@/lib/video-access';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -246,10 +247,15 @@ export default async function Page({ params, searchParams }: Props) {
     ],
   };
 
+  const accessDecision = await resolveVideoAccess(slug);
   const accessStatus = {
-    isAccessible: true,
+    isAllowed: accessDecision.allowed,
     isOwner,
+    visibility: video.visibility || 'public',
     isPrivate: video.visibility === 'private',
+    isSubscribersOnly: video.visibility === 'subscribers',
+    isUnlisted: video.visibility === 'unlisted',
+    reason: accessDecision.allowed ? null : accessDecision.reason,
   };
 
   return (

@@ -90,6 +90,8 @@
       "type": "enumeration",
       "enum": [
         "private",
+        "subscribers",
+        "unlisted",
         "public"
       ],
       "default": "public",
