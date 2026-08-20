@@ -191,9 +191,11 @@ export default async function Page({ params, searchParams }: Props) {
     ? video.thumbnailUrl
     : `${baseUrl}${video.thumbnailUrl || '/media/thumbnails/default.png'}`;
 
-  const mp4ContentUrl = video.mp4Url?.startsWith('http')
-    ? video.mp4Url
-    : `${baseUrl}${video.mp4Url || ''}`;
+  // Omitted entirely when the video has no MP4 rendition — emitting `baseUrl`
+  // alone advertises a dead contentUrl to every crawler that reads the page.
+  const mp4ContentUrl = video.mp4Url
+    ? (video.mp4Url.startsWith('http') ? video.mp4Url : `${baseUrl}${video.mp4Url}`)
+    : null;
 
   const description =
     video.summary || video.description || `Schaue "${video.title}" auf Omni BY INWEBDESIGN.`;
@@ -209,7 +211,7 @@ export default async function Page({ params, searchParams }: Props) {
           duration: isoDuration,
           thumbnailUrl: [thumbnailUrl],
           uploadDate: video.createdAt || new Date().toISOString(),
-          contentUrl: mp4ContentUrl,
+          ...(mp4ContentUrl ? { contentUrl: mp4ContentUrl } : {}),
           embedUrl: videoUrl,
           isAccessibleForFree: 'True',
           author: {

@@ -18,7 +18,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const glob = require('glob');
 
     const base = slug;
-    const videoPath = path.join(OUT_DIR, base + '.mp4');
+    // The converter writes the progressive rendition to OUT_DIR/mp4/<base>.mp4.
+    // Older runs left it directly in OUT_DIR, so both are accepted.
+    const mp4Candidates = [
+      path.join(OUT_DIR, 'mp4', base + '.mp4'),
+      path.join(OUT_DIR, base + '.mp4'),
+    ];
+    const videoPath = mp4Candidates.find((c: string) => fs.existsSync(c)) || mp4Candidates[0];
     const donePath = path.join(OUT_DIR, base + '.done');
     const metaPath = path.join(OUT_DIR, base + '.meta');
 
@@ -72,12 +78,21 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
 
     // 4. Move MP4 file
+    const mp4TargetPath = path.join(FINAL_DIR, base + '.mp4');
     if (fs.existsSync(videoPath)) {
-      const targetPath = path.join(FINAL_DIR, base + '.mp4');
-      fs.copyFileSync(videoPath, targetPath);
+      fs.copyFileSync(videoPath, mp4TargetPath);
       try { fs.unlinkSync(videoPath); } catch (e: any) {
         if (e?.code !== 'ENOENT') console.warn(`[video-ingest] cleanup MP4 ${videoPath} failed:`, e.message);
       }
+    }
+    // Recording an mp4Url for a file that was never placed is what produced a
+    // catalogue of dead links, so the URL is only written when the file is there.
+    const hasMp4 = fs.existsSync(mp4TargetPath);
+    if (!hasMp4) {
+      console.warn(
+        `[video-ingest] no MP4 rendition for "${base}" — looked in ${mp4Candidates.join(', ')}. ` +
+        `Ingesting HLS only; mp4Url stays unset.`
+      );
     }
 
     // Clean up markers
@@ -96,7 +111,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           isProcessing: false,
           duration: Math.round(Number(metaDuration || (videoMatches[0] as any).duration || 0)),
           hlsUrl: `/media/videos/hls/${base}/master.m3u8`,
-          mp4Url: `/media/videos/${base}.mp4`,
+          ...(hasMp4 ? { mp4Url: `/media/videos/${base}.mp4` } : {}),
           thumbnailUrl: `/media/thumbnails/${base}-1.png`,
           ogImageUrl: `/media/og/${base}.jpg`,
         };
