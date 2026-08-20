@@ -96,7 +96,8 @@ export function VideoControls({
           step={0.1}
           value={currentTime}
           onChange={onSeek}
-          className="absolute inset-0 w-full opacity-0 cursor-pointer"
+          aria-label={t?.player?.seek || 'Video-Position'}
+          className="absolute inset-0 w-full opacity-0 cursor-pointer focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
       </div>
 
@@ -106,8 +107,9 @@ export function VideoControls({
         <div className="flex items-center gap-2">
           <button
             onClick={onTogglePlay}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+            className="p-2 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title={isPlaying ? t?.player?.pause || 'Pause' : t?.player?.play || 'Play'}
+            aria-label={isPlaying ? t?.player?.pause || 'Pause' : t?.player?.play || 'Play'}
           >
             {isPlaying ? <Pause className="w-5 h-5 text-white" /> : <Play className="w-5 h-5 text-white" />}
           </button>
@@ -116,8 +118,10 @@ export function VideoControls({
           <div className="flex items-center gap-1 group/vol">
             <button
               onClick={onToggleMute}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title={isMuted ? t?.player?.unmute || 'Unmute' : t?.player?.mute || 'Mute'}
+              aria-label={isMuted ? t?.player?.unmute || 'Unmute' : t?.player?.mute || 'Mute'}
+              aria-pressed={isMuted}
             >
               {isMuted || volume === 0 ? (
                 <VolumeX className="w-5 h-5 text-white" />
@@ -132,7 +136,8 @@ export function VideoControls({
               step={0.05}
               value={isMuted ? 0 : volume}
               onChange={onVolumeChange}
-              className="w-0 group-hover/vol:w-20 transition-all duration-200 accent-indigo-500"
+              aria-label={t?.player?.volume || 'Lautstärke'}
+              className="w-0 group-hover/vol:w-20 focus-visible:w-20 transition-all duration-200 accent-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
           </div>
 
@@ -147,10 +152,12 @@ export function VideoControls({
           {/* Loop */}
           <button
             onClick={onToggleLoop}
-            className={`p-2 rounded-xl transition-colors ${
+            className={`p-2 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
               isLooping ? 'bg-indigo-600 text-white' : 'hover:bg-white/10 text-slate-300'
             }`}
             title={t?.player?.loop || 'Loop'}
+            aria-label={t?.player?.loop || 'Loop'}
+            aria-pressed={isLooping}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -160,20 +167,25 @@ export function VideoControls({
             <div className="relative">
               <button
                 onClick={onToggleSettings}
-                className={`p-2 rounded-xl transition-colors ${
+                className={`p-2 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   isSettingsOpen ? 'bg-indigo-600 text-white' : 'hover:bg-white/10 text-slate-300'
                 }`}
                 title={t?.player?.quality || 'Qualität'}
+                aria-label={t?.player?.quality || 'Qualität'}
+                aria-expanded={isSettingsOpen}
+                aria-haspopup="menu"
               >
                 <Settings className="w-4 h-4" />
               </button>
               {isSettingsOpen && (
-                <div className="absolute bottom-full right-0 mb-2 bg-slate-900 border border-slate-700 rounded-xl p-2 min-w-[120px] shadow-xl">
+                <div role="menu" className="absolute bottom-full right-0 mb-2 bg-slate-900 border border-slate-700 rounded-xl p-2 min-w-[120px] shadow-xl">
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
                     {t?.player?.quality || 'Qualität'}
                   </div>
                   <button
                     onClick={() => onQualityChange(-1)}
+                    role="menuitemradio"
+                    aria-checked={currentLevel === -1}
                     className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors ${
                       currentLevel === -1 ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                     }`}
@@ -184,6 +196,8 @@ export function VideoControls({
                     <button
                       key={lvl.index}
                       onClick={() => onQualityChange(lvl.index)}
+                      role="menuitemradio"
+                      aria-checked={currentLevel === lvl.index}
                       className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors ${
                         currentLevel === lvl.index ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                       }`}
@@ -199,8 +213,9 @@ export function VideoControls({
           {/* Fullscreen */}
           <button
             onClick={onToggleFullscreen}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+            className="p-2 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title={isFullscreen ? t?.player?.exitFullscreen || 'Vollbild verlassen' : t?.player?.fullscreen || 'Vollbild'}
+            aria-label={isFullscreen ? t?.player?.exitFullscreen || 'Vollbild verlassen' : t?.player?.fullscreen || 'Vollbild'}
           >
             {isFullscreen ? (
               <Minimize className="w-5 h-5 text-white" />

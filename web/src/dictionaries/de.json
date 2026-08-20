@@ -29,7 +29,6 @@
     "noCommentsYet": "Noch keine Kommentare vorhanden. Schreibe den ersten!",
     "justNow": "Gerade eben",
     "moreArticles": "Weitere Artikel & Beiträge",
-    "send": "Senden",
     "message": "Nachricht",
     "sendMessage": "Nachricht senden",
     "edited": "(bearbeitet)",
@@ -39,8 +38,7 @@
     "commentError": "Fehler beim Kommentieren",
     "writeComment": "Kommentar schreiben...",
     "loginToComment": "Anmelden zum Kommentieren...",
-    "noComments": "Noch keine Kommentare",
-    "share": "Teilen"
+    "noComments": "Noch keine Kommentare"
   },
   "header": {
     "searchPlaceholder": "Was möchtest du heute entdecken?",
@@ -223,21 +221,28 @@
     "save": "Einstellungen speichern"
   },
   "upload": {
-    "failed": "Upload fehlgeschlagen",
-    "processing": "Upload(s) werden verarbeitet...",
-    "completedMin": "Upload(s) fertiggestellt",
-    "clickToOpenManager": "Klicken, um Manager zu öffnen",
-    "managerTitle": "Zentraler Medien-Upload Manager",
-    "managerSubtitle": "Drag & Drop für Videos & Bilder mit automatischer Konvertierung",
-    "dropHere": "Videos oder Bilder hierher ziehen",
-    "dropHint": "Oder klicken, um Dateien auszuwählen. Unterstützt MP4, MOV, MKV sowie JPG, PNG, WebP.",
-    "queueLabel": "Upload-Warteschlange & Status",
+    "uploadVideo": "Video hochladen",
+    "uploadImage": "Bild hochladen",
+    "selectVideosSubtitle": "Wähle Videos zum Hochladen aus",
+    "selectImagesSubtitle": "Wähle ein oder mehrere Bilder aus",
+    "dragVideosHere": "Video-Dateien hier hineinziehen",
+    "dragImagesHere": "Bilder hier hineinziehen",
+    "orClickVideos": "oder klicken um Dateien auszuwählen (MP4, MOV, MKV)",
+    "orClickImages": "oder klicken um Dateien auszuwählen (JPG, PNG, WebP)",
+    "processing": "Uploads in Arbeit...",
+    "completedMin": "Uploads abgeschlossen",
+    "clickToOpenManager": "Klicken zum Öffnen des Managers",
+    "managerTitle": "Medien-Upload Manager",
+    "managerSubtitle": "Zentraler Upload für Videos, Shorts & Bilder (WebP + Converter)",
+    "dropHere": "Videos oder Bilder hier hineinziehen",
+    "dropHint": "Unterstützt MP4, MOV, MKV, WebM sowie JPG, PNG, WebP (automatische Konvertierung)",
+    "queueLabel": "Upload-Warteschlange",
     "titlePlaceholder": "Titel eingeben...",
-    "queued": "In Warteschlange...",
-    "uploading": "Wird hochgeladen...",
-    "transcoding": "⚙️ LXC Transcoding (HLS/WebP/Thumbnails)...",
-    "completed": "Fertiggestellt & im Feed live!",
-    "error": "Fehler"
+    "queued": "Eingereiht",
+    "uploading": "Lädt hoch",
+    "transcoding": "HLS Transcoding...",
+    "completed": "Abgeschlossen & Veröffentlicht",
+    "error": "Fehler beim Upload"
   },
   "channel": {
     "subscribed": "Abonniert ✓",
@@ -370,7 +375,9 @@
     "exitFullscreen": "Vollbild beenden",
     "recommendedForYou": "Empfohlene Videos für dich",
     "discoverMore": "Weitere Empfehlungen entdecken",
-    "replay": "Erneut abspielen"
+    "replay": "Erneut abspielen",
+    "seek": "Video-Position",
+    "volume": "Lautstärke"
   },
   "userProfile": {
     "ownerBadge": "Dein Profil (Eigentümer)",
@@ -440,29 +447,5 @@
       "subtitle": "Omni Network – Hyper-Personalisiertes KI Mediennetzwerk",
       "rights": "© 2026 InWebDesign. Alle Rechte vorbehalten."
     }
-  },
-  "upload": {
-    "uploadVideo": "Video hochladen",
-    "uploadImage": "Bild hochladen",
-    "selectVideosSubtitle": "Wähle Videos zum Hochladen aus",
-    "selectImagesSubtitle": "Wähle ein oder mehrere Bilder aus",
-    "dragVideosHere": "Video-Dateien hier hineinziehen",
-    "dragImagesHere": "Bilder hier hineinziehen",
-    "orClickVideos": "oder klicken um Dateien auszuwählen (MP4, MOV, MKV)",
-    "orClickImages": "oder klicken um Dateien auszuwählen (JPG, PNG, WebP)",
-    "processing": "Uploads in Arbeit...",
-    "completedMin": "Uploads abgeschlossen",
-    "clickToOpenManager": "Klicken zum Öffnen des Managers",
-    "managerTitle": "Medien-Upload Manager",
-    "managerSubtitle": "Zentraler Upload für Videos, Shorts & Bilder (WebP + Converter)",
-    "dropHere": "Videos oder Bilder hier hineinziehen",
-    "dropHint": "Unterstützt MP4, MOV, MKV, WebM sowie JPG, PNG, WebP (automatische Konvertierung)",
-    "queueLabel": "Upload-Warteschlange",
-    "titlePlaceholder": "Titel eingeben...",
-    "queued": "Eingereiht",
-    "uploading": "Lädt hoch",
-    "transcoding": "HLS Transcoding...",
-    "completed": "Abgeschlossen & Veröffentlicht",
-    "error": "Fehler beim Upload"
   }
 }

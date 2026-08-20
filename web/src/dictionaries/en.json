@@ -29,7 +29,6 @@
     "noCommentsYet": "No comments yet. Write the first one!",
     "justNow": "Just now",
     "moreArticles": "More Articles & Posts",
-    "send": "Send",
     "message": "Message",
     "sendMessage": "Send Message",
     "edited": "(edited)",
@@ -39,8 +38,7 @@
     "commentError": "Error commenting",
     "writeComment": "Write a comment...",
     "loginToComment": "Login to comment...",
-    "noComments": "No comments yet",
-    "share": "Share"
+    "noComments": "No comments yet"
   },
   "header": {
     "searchPlaceholder": "What would you like to discover today?",
@@ -223,21 +221,28 @@
     "save": "Save Settings"
   },
   "upload": {
-    "failed": "Upload failed",
-    "processing": "Upload(s) processing...",
-    "completedMin": "Upload(s) completed",
+    "uploadVideo": "Upload Video",
+    "uploadImage": "Upload Image",
+    "selectVideosSubtitle": "Select videos to upload",
+    "selectImagesSubtitle": "Select one or more images",
+    "dragVideosHere": "Drag & drop video files here",
+    "dragImagesHere": "Drag & drop images here",
+    "orClickVideos": "or click to select files (MP4, MOV, MKV)",
+    "orClickImages": "or click to select files (JPG, PNG, WebP)",
+    "processing": "Uploads in progress...",
+    "completedMin": "Uploads completed",
     "clickToOpenManager": "Click to open manager",
-    "managerTitle": "Central Media Upload Manager",
-    "managerSubtitle": "Drag & drop videos and images for automated WebP & HLS transcoding",
-    "dropHere": "Drop videos or images here",
-    "dropHint": "Or click to select files. Supports MP4, MOV, MKV as well as JPG, PNG, WebP.",
-    "queueLabel": "Upload Queue & Status",
+    "managerTitle": "Media Upload Manager",
+    "managerSubtitle": "Centralized upload for Videos, Shorts & Images (WebP + Converter)",
+    "dropHere": "Drag & drop videos or images here",
+    "dropHint": "Supports MP4, MOV, MKV, WebM and JPG, PNG, WebP (automatic conversion)",
+    "queueLabel": "Upload Queue",
     "titlePlaceholder": "Enter title...",
-    "queued": "Queued...",
-    "uploading": "Uploading...",
-    "transcoding": "⚙️ LXC Transcoding (HLS/WebP/Thumbnails)...",
-    "completed": "Completed & live in feed!",
-    "error": "Error"
+    "queued": "Queued",
+    "uploading": "Uploading",
+    "transcoding": "HLS Transcoding...",
+    "completed": "Completed & Published",
+    "error": "Upload Error"
   },
   "channel": {
     "subscribed": "Subscribed ✓",
@@ -370,7 +375,9 @@
     "exitFullscreen": "Exit Fullscreen",
     "recommendedForYou": "Recommended for you",
     "discoverMore": "Discover more recommendations",
-    "replay": "Replay video"
+    "replay": "Replay video",
+    "seek": "Seek video position",
+    "volume": "Volume"
   },
   "userProfile": {
     "ownerBadge": "Your Profile (Owner)",
@@ -440,29 +447,5 @@
       "subtitle": "Omni Network – Hyper-Personalized AI Media Network",
       "rights": "© 2026 InWebDesign. All rights reserved."
     }
-  },
-  "upload": {
-    "uploadVideo": "Upload Video",
-    "uploadImage": "Upload Image",
-    "selectVideosSubtitle": "Select videos to upload",
-    "selectImagesSubtitle": "Select one or more images",
-    "dragVideosHere": "Drag & drop video files here",
-    "dragImagesHere": "Drag & drop images here",
-    "orClickVideos": "or click to select files (MP4, MOV, MKV)",
-    "orClickImages": "or click to select files (JPG, PNG, WebP)",
-    "processing": "Uploads in progress...",
-    "completedMin": "Uploads completed",
-    "clickToOpenManager": "Click to open manager",
-    "managerTitle": "Media Upload Manager",
-    "managerSubtitle": "Centralized upload for Videos, Shorts & Images (WebP + Converter)",
-    "dropHere": "Drag & drop videos or images here",
-    "dropHint": "Supports MP4, MOV, MKV, WebM and JPG, PNG, WebP (automatic conversion)",
-    "queueLabel": "Upload Queue",
-    "titlePlaceholder": "Enter title...",
-    "queued": "Queued",
-    "uploading": "Uploading",
-    "transcoding": "HLS Transcoding...",
-    "completed": "Completed & Published",
-    "error": "Upload Error"
   }
 }
