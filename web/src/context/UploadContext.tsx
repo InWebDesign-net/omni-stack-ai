@@ -179,7 +179,7 @@ export function UploadProvider({ children }: { children: ReactNode }) {
   const pollProcessingStatus = (taskId: string, slug: string, mediaType: string) => {
     let attempts = 0;
     const isImage = mediaType === 'image';
-    const pollEndpoint = isImage ? '/api/image/list' : '/api/strapi-feed';
+    const pollEndpoint = isImage ? '/api/content/image/list' : '/api/strapi-feed';
 
     const interval = setInterval(async () => {
       attempts++;

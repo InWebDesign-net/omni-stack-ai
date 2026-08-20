@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { CONTENT_KINDS, isContentKind } from '@omni/shared';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
@@ -45,43 +46,78 @@ async function buildHeaders(req: Request, requireUserAuth = false): Promise<Reco
   return headers;
 }
 
-// GET /api/article/settings?documentId=... -> load both locales (de + en)
-export async function GET(req: Request) {
+export async function GET(req: Request, { params }: { params: Promise<{ kind: string; action: string }> }) {
   try {
+    const { kind, action } = await params;
+    if (!isContentKind(kind)) {
+      return new NextResponse('Not found', { status: 404 });
+    }
+
     const { searchParams } = new URL(req.url);
-    const documentId = searchParams.get('documentId');
-    if (!documentId) {
-      return NextResponse.json({ error: 'documentId required' }, { status: 400 });
-    }
-    const headers = await buildHeaders(req, false);
-    if (!headers) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const plural = CONTENT_KINDS[kind].plural;
+
+    if (action === 'list') {
+      const targetUrl = `${strapiBase()}/api/${plural}/filtered?${searchParams.toString()}`;
+      const headers = await buildHeaders(req, false) || { 'Content-Type': 'application/json' };
+
+      const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
+      if (!res.ok) {
+        return NextResponse.json(
+          { data: [], meta: { pagination: { total: 0, page: 1, pageSize: 24, pageCount: 0 } } },
+          { status: res.status }
+        );
+      }
+      return NextResponse.json(await res.json());
     }
 
-    const targetUrl = `${strapiBase()}/api/articles?filters[documentId][$eq]=${encodeURIComponent(
-      documentId
-    )}&locale=*&populate=creator&status=draft`;
+    if (action === 'tags') {
+      const targetUrl = `${strapiBase()}/api/${plural}/tags?${searchParams.toString()}`;
+      const headers = await buildHeaders(req, false) || { 'Content-Type': 'application/json' };
 
-    const res = await fetch(targetUrl, {
-      method: 'GET',
-      headers,
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      return NextResponse.json({ data: [] }, { status: res.status });
+      const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
+      if (!res.ok) {
+        return NextResponse.json({ data: [] }, { status: res.status });
+      }
+      const data = await res.json();
+      return NextResponse.json(data?.data || data);
     }
-    const data = await res.json();
-    return NextResponse.json(data);
+
+    if (action === 'settings') {
+      const documentId = searchParams.get('documentId');
+      if (!documentId) {
+        return NextResponse.json({ error: 'documentId required' }, { status: 400 });
+      }
+      const headers = await buildHeaders(req, false);
+      if (!headers) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      const targetUrl = `${strapiBase()}/api/${plural}?filters[documentId][$eq]=${encodeURIComponent(
+        documentId
+      )}&locale=*&populate=creator&status=draft`;
+
+      const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
+      if (!res.ok) {
+        return NextResponse.json({ data: [] }, { status: res.status });
+      }
+      return NextResponse.json(await res.json());
+    }
+
+    return new NextResponse('Not found', { status: 404 });
   } catch (error: any) {
-    console.error('Error loading article settings:', error);
+    console.error(`[content-api] GET error`, error);
     return NextResponse.json({ error: 'internal_error' }, { status: 500 });
   }
 }
 
-// POST /api/article/settings - Create new article
-export async function POST(req: Request) {
+export async function POST(req: Request, { params }: { params: Promise<{ kind: string; action: string }> }) {
   try {
+    const { kind, action } = await params;
+    if (!isContentKind(kind) || action !== 'settings') {
+      return new NextResponse('Not found', { status: 404 });
+    }
+    const plural = CONTENT_KINDS[kind].plural;
+
     const headers = await buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -95,7 +131,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'title and slug are required' }, { status: 400 });
     }
 
-    const res = await fetch(`${strapiBase()}/api/articles`, {
+    const res = await fetch(`${strapiBase()}/api/${plural}`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -114,21 +150,19 @@ export async function POST(req: Request) {
     });
 
     const data = await res.json();
-
     if (!res.ok) {
       return NextResponse.json(
-        { error: data.error?.message || 'Failed to create article' },
+        { error: data.error?.message || `Failed to create ${kind}` },
         { status: res.status }
       );
     }
 
-    const createdArticle = data.data;
+    const createdItem = data.data;
 
-    // Create secondary localization (en/de) so title is available in both languages
-    if (createdArticle?.documentId) {
+    if (createdItem?.documentId) {
       const targetLocale = (lang || 'de') === 'de' ? 'en' : 'de';
       try {
-        await fetch(`${strapiBase()}/api/articles/${createdArticle.documentId}/localizations`, {
+        await fetch(`${strapiBase()}/api/${plural}/${createdItem.documentId}/localizations`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -141,40 +175,41 @@ export async function POST(req: Request) {
           }),
         });
       } catch (locErr) {
-        console.warn('Failed to create secondary localization for article:', locErr);
+        console.warn(`Failed to create secondary localization for ${kind}:`, locErr);
       }
     }
 
-    return NextResponse.json({ success: true, article: createdArticle });
+    return NextResponse.json({ success: true, [kind]: createdItem, article: kind === 'article' ? createdItem : undefined });
   } catch (error: any) {
-    console.error('[article-settings-proxy] POST error', error);
-    return NextResponse.json(
-      { error: error.message || 'Article Settings Proxy Error' },
-      { status: 500 }
-    );
+    console.error(`[content-api] POST error`, error);
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
   }
 }
 
-// PUT /api/article/settings -> { documentId, localeUpdates: [{locale, data}], visibility }
-export async function PUT(req: Request) {
+export async function PUT(req: Request, { params }: { params: Promise<{ kind: string; action: string }> }) {
   try {
+    const { kind, action } = await params;
+    if (!isContentKind(kind) || action !== 'settings') {
+      return new NextResponse('Not found', { status: 404 });
+    }
+    const plural = CONTENT_KINDS[kind].plural;
+
     const headers = await buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const body = await req.json();
-    const { documentId, localeUpdates, visibility } = body;
+    const { documentId, localeUpdates, visibility, title, summary, tags } = body;
 
     if (!documentId) {
       return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
     }
 
-    // Update localized fields per locale
     if (Array.isArray(localeUpdates)) {
       for (const { locale, data } of localeUpdates) {
         const updateData = { ...data };
-        if (!updateData.slug && updateData.title) {
+        if (kind === 'article' && !updateData.slug && updateData.title) {
           updateData.slug = updateData.title
             .toLowerCase()
             .trim()
@@ -186,7 +221,7 @@ export async function PUT(req: Request) {
             .replace(/^-+|-+$/g, '') || `artikel-${Date.now()}`;
         }
 
-        const res = await fetch(`${strapiBase()}/api/articles/${documentId}?locale=${locale}`, {
+        const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({ data: updateData }),
@@ -196,12 +231,22 @@ export async function PUT(req: Request) {
           console.error(`update ${locale} failed:`, errText);
         }
       }
+    } else if (title !== undefined) {
+      // Fallback single locale update (used by image historically)
+      const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ data: { title, summary, tags, visibility } }),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        return NextResponse.json({ error: errText }, { status: res.status });
+      }
     }
 
-    // Update global visibility across all localizations (de + en) and publish changes
     if (typeof visibility === 'string') {
       for (const locale of ['de', 'en']) {
-        await fetch(`${strapiBase()}/api/articles/${documentId}?locale=${locale}&status=published`, {
+        await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({ data: { visibility } }),
@@ -211,17 +256,19 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('[article-settings-proxy] PUT error', error);
-    return NextResponse.json(
-      { error: error.message || 'Article Settings Proxy Error' },
-      { status: 500 }
-    );
+    console.error(`[content-api] PUT error`, error);
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
   }
 }
 
-// DELETE /api/article/settings - Delete article (soft or hard)
-export async function DELETE(req: Request) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ kind: string; action: string }> }) {
   try {
+    const { kind, action } = await params;
+    if (!isContentKind(kind) || action !== 'settings') {
+      return new NextResponse('Not found', { status: 404 });
+    }
+    const plural = CONTENT_KINDS[kind].plural;
+
     const headers = await buildHeaders(req, true);
     if (!headers) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -236,24 +283,22 @@ export async function DELETE(req: Request) {
     }
 
     if (hardDelete) {
-      // Permanent delete
-      const res = await fetch(`${strapiBase()}/api/articles/${documentId}`, {
+      const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}`, {
         method: 'DELETE',
         headers,
       });
 
       if (!res.ok) {
         const errText = await res.text();
-        console.error('[article-settings-proxy] Hard DELETE failed:', errText);
+        console.error(`[content-api] Hard DELETE failed:`, errText);
         return NextResponse.json(
-          { error: 'Failed to delete article permanently' },
+          { error: `Failed to delete ${kind} permanently` },
           { status: res.status }
         );
       }
     } else {
-      // Soft delete - set visibility to private
       for (const locale of ['de', 'en']) {
-        await fetch(`${strapiBase()}/api/articles/${documentId}?locale=${locale}&status=published`, {
+        await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({
@@ -265,10 +310,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('[article-settings-proxy] DELETE error', error);
-    return NextResponse.json(
-      { error: error.message || 'Article Settings Proxy Error' },
-      { status: 500 }
-    );
+    console.error(`[content-api] DELETE error`, error);
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
   }
 }

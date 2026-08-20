@@ -119,7 +119,7 @@ export const useVideos = ({
     queryParams.set('matchmode', matchMode);
   }
 
-  const url = `/api/video/list?${queryParams.toString()}`;
+  const url = `/api/content/video/list?${queryParams.toString()}`;
 
   const { data, error, isLoading, mutate } = useSWR(
     enabled ? url : null,

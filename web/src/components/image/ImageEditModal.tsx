@@ -44,7 +44,7 @@ export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: 
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/image/settings?documentId=${encodeURIComponent(image.documentId)}`, {
+        const res = await fetch(`/api/content/image/settings?documentId=${encodeURIComponent(image.documentId)}`, {
           headers: jsonAuthHeaders(),
           cache: 'no-store',
         });
@@ -127,7 +127,7 @@ export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: 
       if (onSave) {
         await onSave({ localeUpdates, visibility });
       } else {
-        const res = await fetch('/api/image/settings', {
+        const res = await fetch('/api/content/image/settings', {
           method: 'PUT',
           headers: { ...jsonAuthHeaders(), 'Content-Type': 'application/json' },
           body: JSON.stringify({ documentId: image.documentId, localeUpdates, visibility }),
@@ -150,7 +150,7 @@ export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: 
       if (onDelete) {
         await onDelete(hardDelete);
       } else {
-        const res = await fetch(`/api/image/settings?documentId=${encodeURIComponent(image.documentId)}&hard=${hardDelete}`, {
+        const res = await fetch(`/api/content/image/settings?documentId=${encodeURIComponent(image.documentId)}&hard=${hardDelete}`, {
           method: 'DELETE',
           headers: jsonAuthHeaders(),
         });

@@ -43,7 +43,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/article/settings?documentId=${encodeURIComponent(article.documentId)}`, {
+        const res = await fetch(`/api/content/article/settings?documentId=${encodeURIComponent(article.documentId)}`, {
           headers: jsonAuthHeaders(),
           cache: 'no-store',
         });
@@ -161,7 +161,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
           visibility,
         });
       } else {
-        const res = await fetch('/api/article/settings', {
+        const res = await fetch('/api/content/article/settings', {
           method: 'PUT',
           headers: jsonAuthHeaders(),
           body: JSON.stringify({
@@ -214,7 +214,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
       if (onDelete) {
         await onDelete(hardDelete);
       } else {
-        const url = `/api/article/settings?documentId=${encodeURIComponent(article.documentId)}${
+        const url = `/api/content/article/settings?documentId=${encodeURIComponent(article.documentId)}${
           hardDelete ? '&hard=true' : ''
         }`;
         const res = await fetch(url, {

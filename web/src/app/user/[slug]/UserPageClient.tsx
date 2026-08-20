@@ -480,7 +480,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     article={editingArticle}
                     t={t}
                     onSave={async ({ localeUpdates, visibility }: { localeUpdates: any[]; visibility: string }) => {
-                        const res = await fetch('/api/article/settings', {
+                        const res = await fetch('/api/content/article/settings', {
                             method: 'PUT',
                             headers: jsonAuthHeaders(),
                             body: JSON.stringify({
@@ -498,7 +498,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         router.refresh();
                     }}
                     onDelete={async (hardDelete: boolean) => {
-                        const url = `/api/article/settings?documentId=${encodeURIComponent(editingArticle.documentId)}${
+                        const url = `/api/content/article/settings?documentId=${encodeURIComponent(editingArticle.documentId)}${
                             hardDelete ? '&hard=true' : ''
                         }`;
                         const res = await fetch(url, {
@@ -524,7 +524,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     image={editingImage}
                     t={t}
                     onSave={async (data: { localeUpdates: any[]; visibility: string }) => {
-                        const res = await fetch('/api/image/settings', {
+                        const res = await fetch('/api/content/image/settings', {
                             method: 'PUT',
                             headers: jsonAuthHeaders(),
                             body: JSON.stringify({
@@ -545,7 +545,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         router.refresh();
                     }}
                     onDelete={async (hardDelete: boolean) => {
-                        const url = `/api/image/settings?documentId=${encodeURIComponent(editingImage.documentId)}&hard=${hardDelete}`;
+                        const url = `/api/content/image/settings?documentId=${encodeURIComponent(editingImage.documentId)}&hard=${hardDelete}`;
                         const res = await fetch(url, {
                             method: 'DELETE',
                             headers: jsonAuthHeaders(),

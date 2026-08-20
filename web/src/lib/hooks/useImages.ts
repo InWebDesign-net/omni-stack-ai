@@ -125,7 +125,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesResult {
     } catch (e) { console.error('[useImages] could not derive topic filter from affinity profile:', e); }
   }
 
-  const url = enabled ? `/api/image/list?${queryParams.toString()}` : null;
+  const url = enabled ? `/api/content/image/list?${queryParams.toString()}` : null;
 
   const { data, error, isLoading, mutate } = useSWR(url, fetcher, {
     fallbackData,
@@ -144,7 +144,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesResult {
 
 export function useImageTags(lang: string = 'de') {
   const { data, error, isLoading } = useSWR<{ data: { tag: string; count: number }[] }>(
-    `/api/image/tags?lang=${lang}`,
+    `/api/content/image/tags?lang=${lang}`,
     fetcher,
     { revalidateOnFocus: false }
   );

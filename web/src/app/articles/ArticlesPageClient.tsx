@@ -57,7 +57,7 @@ export default function ArticlesPageClient() {
   }, [searchTerm]);
 
   const { data: tagRes } = useSWR<{ data: TagCount[] } | TagCount[]>(
-    `/api/article/tags?lang=${lang}`,
+    `/api/content/article/tags?lang=${lang}`,
     fetcher
   );
 

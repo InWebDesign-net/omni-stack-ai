@@ -91,7 +91,7 @@ export default function VideoSettingsModal({
     const load = async () => {
       try {
         const res = await fetch(
-          `/api/video/settings?documentId=${encodeURIComponent(documentId)}`,
+          `/api/content/video/settings?documentId=${encodeURIComponent(documentId)}`,
           { headers: jsonAuthHeaders(), cache: 'no-store' }
         );
         if (!res.ok) throw new Error(`Load failed (${res.status})`);
@@ -141,7 +141,7 @@ export default function VideoSettingsModal({
         { locale: 'de', data: { title: form.de.title, summary: textToBlocks(form.de.summary), tags: form.de.tags } },
         { locale: 'en', data: { title: form.en.title, summary: textToBlocks(form.en.summary), tags: form.en.tags } },
       ];
-      const saveRes = await fetch(`/api/video/settings`, {
+      const saveRes = await fetch(`/api/content/video/settings`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ documentId, localeUpdates, visibility }),
@@ -164,7 +164,7 @@ export default function VideoSettingsModal({
       if (onDelete) {
         await onDelete(hardDelete);
       } else {
-        const res = await fetch(`/api/video/settings?documentId=${encodeURIComponent(documentId)}&hard=${hardDelete}`, {
+        const res = await fetch(`/api/content/video/settings?documentId=${encodeURIComponent(documentId)}&hard=${hardDelete}`, {
           method: 'DELETE',
           headers: jsonAuthHeaders(),
         });

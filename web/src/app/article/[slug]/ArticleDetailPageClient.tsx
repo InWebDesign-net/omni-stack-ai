@@ -555,7 +555,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           article={item}
           t={t}
           onSave={async ({ localeUpdates, visibility }) => {
-            const res = await fetch('/api/article/settings', {
+            const res = await fetch('/api/content/article/settings', {
               method: 'PUT',
               headers: jsonAuthHeaders(),
               body: JSON.stringify({
@@ -573,7 +573,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
             router.refresh();
           }}
           onDelete={async (hardDelete) => {
-            const url = `/api/article/settings?documentId=${encodeURIComponent(item.documentId)}${
+            const url = `/api/content/article/settings?documentId=${encodeURIComponent(item.documentId)}${
               hardDelete ? '&hard=true' : ''
             }`;
             const res = await fetch(url, {

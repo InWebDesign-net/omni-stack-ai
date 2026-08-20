@@ -51,7 +51,7 @@ export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps)
         .replace(/ß/g, 'ss')
         .replace(/^-+|-+$/g, '') || `artikel-${Date.now()}`;
 
-      const res = await fetch('/api/article/settings', {
+      const res = await fetch('/api/content/article/settings', {
         method: 'POST',
         headers: {
           ...jsonAuthHeaders(),

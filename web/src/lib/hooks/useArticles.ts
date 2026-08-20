@@ -60,7 +60,7 @@ export function useArticles(params: UseArticlesParams = {}) {
   if (matchMode === 'all') queryParams.set('matchmode', 'all');
   if (excludeSlug) queryParams.set('excludeSlug', excludeSlug);
 
-  const url = enabled ? `/api/article/list?${queryParams.toString()}` : null;
+  const url = enabled ? `/api/content/article/list?${queryParams.toString()}` : null;
 
   const { data, error, isLoading, mutate } = useSWR(url, fetcher, {
     revalidateOnFocus: false,

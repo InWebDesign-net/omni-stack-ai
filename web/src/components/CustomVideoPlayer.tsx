@@ -163,7 +163,7 @@ export default function CustomVideoPlayer({
     let isMounted = true;
     async function fetchRecommendations() {
       try {
-        const url = currentUser ? '/api/feed/personalized?pageSize=6' : '/api/video/list?pageSize=6';
+        const url = currentUser ? '/api/feed/personalized?pageSize=6' : '/api/content/video/list?pageSize=6';
         const res = await fetch(url);
         if (res.ok) {
           const json = await res.json();
