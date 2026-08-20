@@ -489,15 +489,13 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           </div>
 
           {/* Sidebar Column (1 Col - Flush at top) */}
-          <div className="space-y-6">
-            {/* Related Articles Sidebar */}
-            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-primary flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-purple-400" />
               <span>Weitere Artikel</span>
             </h3>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {displayRelated.map((rel: any) => {
                 const relCreator =
                   rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
@@ -507,24 +505,24 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                   <Link
                     key={rel.documentId || rel.id || rel.slug}
                     href={`/article/${rel.slug}`}
-                    className="flex gap-3 p-1.5 sm:p-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle hover:border-purple-500/50 transition-all group"
+                    className="flex gap-3 p-1.5 rounded-xl hover:bg-surface transition-colors duration-150 group min-h-[44px]"
                   >
-                    <div className="relative w-20 h-16 rounded-lg overflow-hidden bg-slate-900 shrink-0">
+                    <div className="relative aspect-video w-36 sm:w-40 shrink-0 rounded-xl overflow-hidden bg-slate-900 shadow-sm">
                       <Image
                         src={relThumbnail}
                         alt={rel.title}
                         fill
-                        sizes="80px"
+                        sizes="160px"
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                      <h4 className="text-xs font-semibold text-slate-200 group-hover:text-purple-300 transition-colors line-clamp-2 leading-tight">
+                      <h4 className="text-sm font-semibold text-primary group-hover:text-purple-400 transition-colors line-clamp-2 leading-snug">
                         {rel.title}
                       </h4>
-                      <div className="flex items-center justify-between text-[10px] text-muted mt-1">
-                        <span className="truncate max-w-[100px]">{relCreator}</span>
-                        <span className="flex items-center gap-1 font-mono text-purple-400 shrink-0">
+                      <div className="flex items-center justify-between text-xs text-muted mt-1">
+                        <span className="truncate max-w-[120px]">{relCreator}</span>
+                        <span className="flex items-center gap-1 font-mono text-purple-400 shrink-0 text-[11px]">
                           <Heart className="w-3 h-3 fill-current" />
                           {rel.likesCount || 0}
                         </span>
@@ -536,8 +534,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
 
       {/* Channel Profile Modal */}
       {activeChannelModal && (

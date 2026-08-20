@@ -589,29 +589,36 @@ export default function VideoPageClient({
               <span>{t.videoDetail.relatedRecommendations}</span>
             </h3>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {displayRelated.map((rel: any) => {
                 const relCreator = rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
                 return (
                   <Link
                     key={rel.documentId || rel.id}
                     href={`/video/${rel.slug}`}
-                    className="group bg-surface hover:bg-surface-raised border border-subtle hover:border-indigo-500/40 rounded-xl overflow-hidden p-2 flex gap-3 transition-all"
+                    className="group flex gap-3 p-1.5 rounded-xl hover:bg-surface transition-colors duration-150 min-h-[44px]"
                   >
-                    <div className="relative aspect-video w-28 shrink-0 rounded-lg overflow-hidden bg-slate-950">
+                    <div className="relative aspect-video w-40 sm:w-[168px] shrink-0 rounded-xl overflow-hidden bg-slate-950 shadow-sm">
                       <CardThumbnail item={rel} />
                       {rel.duration && (
-                        <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-slate-950/80 text-[9px] font-mono text-slate-200">
+                        <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white">
                           {formatDuration(rel.duration)}
                         </div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                      <h4 className="font-semibold text-xs text-slate-200 group-hover:text-indigo-300 line-clamp-2 transition-colors leading-snug">
+                      <h4 className="font-semibold text-sm text-primary group-hover:text-indigo-400 line-clamp-2 transition-colors leading-snug">
                         {rel.title}
                       </h4>
-                      <p className="text-[11px] text-slate-400 truncate">{relCreator}</p>
+                      <div className="text-xs text-muted truncate mt-1">
+                        <p className="truncate">{relCreator}</p>
+                        {rel.viewsCount !== undefined && (
+                          <p className="text-[11px] text-faint font-mono">
+                            {rel.viewsCount.toLocaleString()} {t.videoDetail.views}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 );

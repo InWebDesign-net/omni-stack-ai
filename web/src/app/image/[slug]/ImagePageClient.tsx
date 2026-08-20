@@ -402,38 +402,36 @@ export default function ImagePageClient({
           </div>
 
           {/* Related Images Sidebar (1 Column) */}
-          <div className="space-y-6">
-            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-2xl space-y-4">
-              <h3 className="font-extrabold text-sm text-white uppercase tracking-wider flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-teal-400" />
-                <span>Ähnliche Bilder</span>
-              </h3>
+          <div className="space-y-4">
+            <h3 className="font-bold text-base text-primary flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-teal-400" />
+              <span>Ähnliche Bilder</span>
+            </h3>
 
-              <div className="flex flex-col gap-2.5">
-                {displayRelated.map((rel) => (
-                  <Link
-                    key={rel.id || rel.documentId}
-                    href={`/image/${rel.slug}`}
-                    className="group flex gap-3 bg-surface hover:bg-surface-raised border border-subtle hover:border-teal-500/40 rounded-xl p-1.5 sm:p-2 transition-all"
-                  >
-                    <div className="w-20 h-16 rounded-lg bg-slate-900 overflow-hidden shrink-0">
-                      <Image
-                        src={rel.thumbnailUrl || rel.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80'}
-                        alt={rel.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="flex flex-col justify-center min-w-0">
-                      <h4 className="font-semibold text-xs text-white group-hover:text-teal-400 transition-colors truncate">
-                        {rel.title}
-                      </h4>
-                      <span className="text-[10px] text-muted font-mono mt-0.5">
-                        {rel.creator?.username || 'Creator'}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+            <div className="flex flex-col gap-2">
+              {displayRelated.map((rel) => (
+                <Link
+                  key={rel.id || rel.documentId}
+                  href={`/image/${rel.slug}`}
+                  className="group flex gap-3 p-1.5 rounded-xl hover:bg-surface transition-colors duration-150 min-h-[44px]"
+                >
+                  <div className="w-28 sm:w-32 aspect-[4/3] rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-sm">
+                    <Image
+                      src={rel.thumbnailUrl || rel.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80'}
+                      alt={rel.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-center min-w-0 py-0.5">
+                    <h4 className="font-semibold text-sm text-primary group-hover:text-teal-400 transition-colors truncate">
+                      {rel.title}
+                    </h4>
+                    <span className="text-xs text-muted font-mono mt-1">
+                      {rel.creator?.username || 'Creator'}
+                    </span>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
