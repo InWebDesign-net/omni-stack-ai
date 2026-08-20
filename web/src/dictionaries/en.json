@@ -476,5 +476,15 @@
     "subscribeCta": "Subscribe to Channel",
     "privateTitle": "Private Content",
     "privateSubtitle": "This content is only visible to the creator."
+  },
+  "footer": {
+    "tagline": "Omni – Hyper-Personalized AI Media Network",
+    "by": "Developed by",
+    "inwebdesign": "InWebDesign",
+    "rights": "© 2026 InWebDesign. All rights reserved.",
+    "videos": "Videos",
+    "articles": "Articles",
+    "images": "Images",
+    "shorts": "Shorts"
   }
 }

@@ -3,6 +3,8 @@ import './globals.css';
 
 import { safeJsonLd } from '@/lib/jsonLd';
 
+import Footer from '@/components/Footer';
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://omni-web.inwebdesign.net'),
   title: {
@@ -148,12 +150,15 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased bg-base text-primary min-h-screen selection:bg-[#8083ff] selection:text-white" suppressHydrationWarning>
+      <body className="antialiased bg-base text-primary min-h-screen flex flex-col selection:bg-[#8083ff] selection:text-white" suppressHydrationWarning>
         <AppProvider>
           <ChatProvider>
             <UploadProvider>
               <NotificationProvider>
-                {children}
+                <div className="flex-1 flex flex-col">
+                  {children}
+                </div>
+                <Footer />
                 <ChatWidget />
                 <GlobalUploadManager />
               </NotificationProvider>

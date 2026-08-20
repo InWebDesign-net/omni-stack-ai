@@ -688,11 +688,6 @@ export default function HomeClient() {
           )}
         </section>
       </main>
-
-      <footer className="w-full border-t border-subtle py-8 bg-base text-xs text-faint text-center space-y-2">
-        <p>{t.home?.footer?.subtitle || 'Omni Network – Hyper-Personalisiertes KI Mediennetzwerk'}</p>
-        <p>{t.home?.footer?.rights || '© 2026 InWebDesign. Alle Rechte vorbehalten.'}</p>
-      </footer>
     </div>
   );
 }

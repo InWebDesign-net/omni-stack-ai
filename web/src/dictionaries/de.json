@@ -476,5 +476,15 @@
     "subscribeCta": "Kanal abonnieren",
     "privateTitle": "Privater Inhalt",
     "privateSubtitle": "Dieser Inhalt ist nur für den Ersteller sichtbar."
+  },
+  "footer": {
+    "tagline": "Omni – Hyper-Personalisiertes KI Mediennetzwerk",
+    "by": "Entwickelt von",
+    "inwebdesign": "InWebDesign",
+    "rights": "© 2026 InWebDesign. Alle Rechte vorbehalten.",
+    "videos": "Videos",
+    "articles": "Artikel",
+    "images": "Bilder",
+    "shorts": "Shorts"
   }
 }
