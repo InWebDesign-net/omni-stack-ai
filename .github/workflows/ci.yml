@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          APP_KEYS: "dummy,keys"
+          API_TOKEN_SALT: "dummySalt"
+          ADMIN_JWT_SECRET: "dummySecret"
+          TRANSFER_TOKEN_SALT: "dummySalt2"
+          JWT_SECRET: "dummyJwtSecret"
+          DATABASE_HOST: "localhost"
+          DATABASE_PORT: "5432"
+          DATABASE_NAME: "omni_db"
+          DATABASE_USERNAME: "postgres"
+          DATABASE_PASSWORD: "password"
+          DATABASE_SSL: "false"
+
+      - name: Typecheck Web
+        run: npx tsc --noEmit
+        working-directory: web

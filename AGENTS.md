@@ -67,7 +67,7 @@ omni-stack-ai/
 
 ## 🧪 Verification Commands for Agents
 
-Run these bash commands in order when executing modifications:
+Run these bash commands in order when executing modifications. **Note: CI enforces these checks on every Pull Request. A red run blocks the merge, so ensure these pass locally before submitting.**
 
 ```bash
 # 1. Typecheck and build all workspace packages
