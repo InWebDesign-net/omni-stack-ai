@@ -100,8 +100,11 @@ Omni features a centralized notification engine (`api::notification.notification
 Omni implements an enterprise-grade content security architecture:
 
 * 🔐 **On-Disk AES-128 Encryption (Level 4 Security):** Every `.ts` video segment file stored on disk is encrypted with a unique 128-bit AES key (`enc.key`). Raw `.ts` files are 100% unplayable if copied directly.
-* 🔑 **JWT-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** Next.js & Strapi 5 serve the 16-byte AES decryption keys exclusively to authenticated users with valid session tokens.
+* 🔑 **Visibility-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** The 16-byte AES decryption key is released according to the video's own `visibility` field, not according to whether a session exists. Published (`public`) videos stream for anonymous visitors, while `private` videos return `401`/`403` unless the requesting session owns them. The same check guards the unencrypted MP4 renditions; HLS segments need no gate of their own, since they are AES-encrypted on disk and useless without the key.
 * 🛡️ **Client Memory Isolation:** Native `hls.js` decodes segments into tab-scoped `blob:http://...` MediaSource buffers, preventing direct URL hotlinking and unauthorized media extraction.
+
+> ⚠️ **Deployment note — never symlink the media directory into `web/public/`.**
+> Anything reachable under `web/public/` is served by Next.js as a static asset *before* App Router route handlers run. A `web/public/media -> /path/to/media` symlink therefore silently bypasses `app/media/[...path]/route.ts` entirely, taking the visibility check, the traversal guard and the Range implementation out of the request path. Point `MEDIA_ROOT` in the route handler at the media directory instead and let every `/media/*` request go through it.
 
 ### 6. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
 * 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes scrub bar hover timestamp tooltips, smooth play/pause animations, volume hover expansion, and full-screen toggle.

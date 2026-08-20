@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { resolveVideoAccess, videoSlugForMediaPath } from '@/lib/video-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,17 @@ export async function GET(
     const resolvedParams = await params;
     const pathSegments = resolvedParams.path || [];
     const relativePath = pathSegments.join('/');
+
+    // Raw MP4 renditions are unencrypted, so they need the same visibility check
+    // as the AES key. Thumbnails, OG images and avatars stay public; HLS segments
+    // are encrypted on disk and gated via the key endpoint instead.
+    const governingSlug = videoSlugForMediaPath(pathSegments);
+    if (governingSlug) {
+      const access = await resolveVideoAccess(governingSlug);
+      if (!access.allowed) {
+        return new NextResponse(access.reason, { status: access.status });
+      }
+    }
 
     const resolvedPath = path.resolve(path.join(MEDIA_ROOT, relativePath));
     const mediaRootWithSep = MEDIA_ROOT.endsWith(path.sep) ? MEDIA_ROOT : MEDIA_ROOT + path.sep;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { resolveVideoAccess, sanitizeSlug } from '@/lib/video-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,7 +76,14 @@ export async function GET(
     }
 
     // Sanitize slug
-    const cleanSlug = slug.replace(/[^a-zA-Z0-9_-]/g, '');
+    const cleanSlug = sanitizeSlug(slug);
+
+    // Authorization: the video's own visibility decides. Published videos stay
+    // playable for anonymous visitors; private ones only for their owner.
+    const access = await resolveVideoAccess(cleanSlug);
+    if (!access.allowed) {
+      return new NextResponse(access.reason, { status: access.status });
+    }
 
     // Check key location across possible storage paths
     const candidatePaths = [
