@@ -20,12 +20,13 @@ import {
   Pause,
   Sparkles,
   Flame,
+  Film,
   Pencil,
   Trash2,
   Check,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { FeedItem, FALLBACK_FEED_ITEMS, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
+import { FeedItem, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib/feed';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import Image from 'next/image';
@@ -43,11 +44,8 @@ export default function ShortsFeedPage() {
   const initialSlug = params?.slug as string;
   const { lang, currentUser, openAuthModal, t } = useApp();
 
-  // Dynamic shorts list from Strapi with fallback
-  const [shortsList, setShortsList] = useState<FeedItem[]>(() => {
-    const allShorts = FALLBACK_FEED_ITEMS.filter((item) => item.mediaType === 'short');
-    return allShorts.length > 0 ? allShorts : FALLBACK_FEED_ITEMS;
-  });
+  // Dynamic shorts list from real video catalog
+  const [shortsList, setShortsList] = useState<FeedItem[]>([]);
 
   useEffect(() => {
     const fetchShorts = async () => {
@@ -57,24 +55,35 @@ export default function ShortsFeedPage() {
       const isBypass = statusParam === 'draft' || (hasCookie && statusParam !== 'published');
 
       try {
-        const res = await fetch('/api/strapi-feed', {
-          method: 'POST',
+        const res = await fetch('/api/content/video/list?pageSize=50', {
           headers: {
             ...jsonAuthHeaders(),
-            'Cache-Control': 'no-cache, no-store',
           },
-          cache: 'no-store',
-          body: JSON.stringify({ activePattern: 'discovery', includeDrafts: isBypass, targetSlug: initialSlug }),
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.feed && data.feed.length > 0) {
-            const apiShorts = data.feed.filter(
-              (i: FeedItem) => i.mediaType === 'short' || i.slug === initialSlug || (i as any).documentId === initialSlug
-            );
-            if (apiShorts.length > 0) {
-              setShortsList(apiShorts);
-            }
+          if (data.items && data.items.length > 0) {
+            const mapped: FeedItem[] = data.items.map((v: any) => ({
+              id: v.id || v.documentId,
+              documentId: v.documentId,
+              slug: v.slug,
+              title: v.title,
+              summary: v.summary,
+              mediaType: 'short',
+              videoUrl: v.videoUrl,
+              thumbnailUrl: v.thumbnailUrl,
+              hlsPlaylistUrl: v.hlsPlaylistUrl,
+              dashManifestUrl: v.dashManifestUrl,
+              duration: v.duration,
+              likesCount: v.likesCount || 0,
+              viewsCount: v.viewsCount || 0,
+              commentsCount: v.commentsCount || 0,
+              creator: v.creator,
+              author: v.author,
+              tags: v.tags,
+              createdAt: v.createdAt,
+            }));
+            setShortsList(mapped);
           }
         }
       } catch (e) { console.error('[shorts] failed to load shorts feed:', e); }
@@ -304,13 +313,6 @@ export default function ShortsFeedPage() {
 
   return (
     <div className="relative h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none">
-      <head>
-        <title>{activeShort ? `${activeShort.title} | Short` : 'Shorts & Reels'}</title>
-        <link
-          rel="canonical"
-          href={activeShort ? `https://omni-web.inwebdesign.net/video/${activeShort.slug}` : 'https://omni-web.inwebdesign.net/'}
-        />
-      </head>
       {isPreviewActive && (
         <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
           <div className="flex items-center gap-2 font-bold tracking-wide">
@@ -341,6 +343,17 @@ export default function ShortsFeedPage() {
             <Flame className="h-3.5 w-3.5 text-[#ffb783] animate-pulse" />
             <span className="text-xs font-extrabold tracking-wide">Omni Shorts</span>
           </div>
+
+          {activeShort && (
+            <Link
+              href={`/video/${activeShort.slug}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-xs font-semibold text-white backdrop-blur-md transition-all"
+              title="Standard View / Detailansicht"
+            >
+              <Film className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Standard View</span>
+            </Link>
+          )}
         </div>
 
         <button

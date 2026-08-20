@@ -25,6 +25,7 @@ import {
   UserPlus,
   Users,
   Film,
+  Flame,
   Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
@@ -483,6 +484,15 @@ export default function VideoPageClient({
                     <Share2 className="w-4 h-4" />
                     <span className="hidden sm:inline">{t.common.share}</span>
                   </button>
+
+                  <Link
+                    href={`/shorts/${slug}`}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-primary text-xs font-semibold transition-all"
+                    title="Vertical View / Shorts-Modus"
+                  >
+                    <Flame className="w-4 h-4 text-amber-400" />
+                    <span className="hidden sm:inline">Vertical View</span>
+                  </Link>
                 </div>
               </div>
 
