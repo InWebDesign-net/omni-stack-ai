@@ -29,7 +29,6 @@ import { useNotifications } from '@/context/NotificationContext';
 import { DEMO_CREATORS } from '@/config/demo';
 import Image from 'next/image';
 import NotificationDrawer from '@/components/NotificationDrawer';
-import ThemeToggle from '@/components/ThemeToggle';
 
 export function OmniLogo({ size = 28 }: { size?: number }) {
   return (
@@ -271,7 +270,6 @@ export default function Header({
           </button>
 
           {/* Theme Switcher */}
-          <ThemeToggle />
 
           {/* Language Switch */}
           <button
