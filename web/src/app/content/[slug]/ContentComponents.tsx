@@ -70,7 +70,7 @@ export function ContentInfo({
   return (
     <div className="space-y-4">
       {/* Title */}
-      <h1 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">
+      <h1 className="text-xl sm:text-2xl font-extrabold text-primary leading-tight">
         {item?.title}
       </h1>
 

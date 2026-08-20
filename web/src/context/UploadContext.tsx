@@ -39,7 +39,6 @@ interface UploadContextType {
   ) => string[];
   retryTask: (id: string) => void;
   removeTask: (id: string) => void;
-  updateTaskTitle: (id: string, newTitle: string) => void;
   updateTaskMediaType: (id: string, mediaType: 'video' | 'short' | 'image') => void;
   clearCompleted: () => void;
 }
@@ -366,10 +365,6 @@ export function UploadProvider({ children }: { children: ReactNode }) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const updateTaskTitle = useCallback((id: string, newTitle: string) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, title: newTitle } : t)));
-  }, []);
-
   const updateTaskMediaType = useCallback((id: string, mediaType: 'video' | 'short' | 'image') => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, mediaType } : t)));
   }, []);
@@ -390,7 +385,6 @@ export function UploadProvider({ children }: { children: ReactNode }) {
         addFiles,
         retryTask,
         removeTask,
-        updateTaskTitle,
         updateTaskMediaType,
         clearCompleted,
       }}
@@ -410,7 +404,6 @@ const fallbackUploadManager: UploadContextType = {
   addFiles: () => [],
   retryTask: () => {},
   removeTask: () => {},
-  updateTaskTitle: () => {},
   updateTaskMediaType: () => {},
   clearCompleted: () => {},
 };

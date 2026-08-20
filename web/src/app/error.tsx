@@ -22,7 +22,7 @@ export default function Error({
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-extrabold text-white">Ein unerwarteter Fehler ist aufgetreten</h2>
+          <h2 className="text-xl font-extrabold text-primary">Ein unerwarteter Fehler ist aufgetreten</h2>
           <p className="text-xs text-muted font-mono break-words">
             {error?.message || 'Laufzeitfehler beim Laden der Anwendung.'}
           </p>

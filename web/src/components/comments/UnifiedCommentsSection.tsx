@@ -188,7 +188,7 @@ export function UnifiedCommentsSection({
     <div className="bg-surface border border-subtle rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6">
       {/* Toast alert */}
       {toastMsg && (
-        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-white px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-xl text-xs font-semibold animate-fadeIn">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-xl text-xs font-semibold animate-fadeIn">
           {toastMsg}
         </div>
       )}
