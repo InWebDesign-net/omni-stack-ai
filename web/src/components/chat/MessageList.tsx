@@ -112,13 +112,13 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
             <React.Fragment key={msg.id}>
               {msg.showDateDivider && msg.dateDividerText && (
                 <div className="flex justify-center my-3 sticky top-2 z-10">
-                  <span className="px-3 py-1 bg-slate-900/90 border border-slate-800 text-slate-300 rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
+                  <span className="px-3 py-1 bg-surface-raised/90 border border-subtle text-primary rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
                     {msg.dateDividerText}
                   </span>
                 </div>
               )}
               <div className="flex justify-center my-2">
-                <span className="px-3 py-1 bg-slate-900 border border-slate-800 text-slate-400 rounded-full text-[11px] font-mono">
+                <span className="px-3 py-1 bg-surface border border-subtle text-muted rounded-full text-[11px] font-mono">
                   {msg.content}
                 </span>
               </div>
@@ -132,21 +132,21 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
           if (msg.isFirstInGroup && msg.isLastInGroup) {
             bubbleCorners = 'rounded-2xl rounded-br-sm';
           } else if (msg.isFirstInGroup && !msg.isLastInGroup) {
-            bubbleCorners = 'rounded-2xl rounded-br-md';
+            bubbleCorners = 'rounded-2xl rounded-br-none';
           } else if (!msg.isFirstInGroup && msg.isLastInGroup) {
-            bubbleCorners = 'rounded-2xl rounded-tr-md rounded-br-sm';
+            bubbleCorners = 'rounded-2xl rounded-tr-none rounded-br-sm';
           } else {
-            bubbleCorners = 'rounded-2xl rounded-r-md';
+            bubbleCorners = 'rounded-2xl rounded-r-none';
           }
         } else {
           if (msg.isFirstInGroup && msg.isLastInGroup) {
             bubbleCorners = 'rounded-2xl rounded-bl-sm';
           } else if (msg.isFirstInGroup && !msg.isLastInGroup) {
-            bubbleCorners = 'rounded-2xl rounded-bl-md';
+            bubbleCorners = 'rounded-2xl rounded-bl-none';
           } else if (!msg.isFirstInGroup && msg.isLastInGroup) {
-            bubbleCorners = 'rounded-2xl rounded-tl-md rounded-bl-sm';
+            bubbleCorners = 'rounded-2xl rounded-tl-none rounded-bl-sm';
           } else {
-            bubbleCorners = 'rounded-2xl rounded-l-md';
+            bubbleCorners = 'rounded-2xl rounded-l-none';
           }
         }
 
@@ -157,19 +157,19 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
             {/* Sticky Date Divider (0 Uhr / Neuer Tag) */}
             {msg.showDateDivider && msg.dateDividerText && (
               <div className="flex justify-center my-3.5 sticky top-2 z-10">
-                <span className="px-3 py-1 bg-slate-900/90 border border-slate-800 text-slate-300 rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
+                <span className="px-3 py-1 bg-surface-raised/90 border border-subtle text-primary rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
                   {msg.dateDividerText}
                 </span>
               </div>
             )}
 
-            {/* Message Item Container with Dynamic Spacing */}
-            <div className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isFirstInGroup ? 'mt-3' : 'mt-1'}`}>
+            {/* Message Item Container with Dynamic Spacing (Flush when grouped) */}
+            <div className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isFirstInGroup ? 'mt-3' : 'mt-0.5'}`}>
               <div
                 className={`max-w-[78%] sm:max-w-[72%] px-4 py-2.5 text-sm shadow-md transition-all ${bubbleCorners} ${
                   msg.isMe
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-900 border border-slate-800 text-slate-200'
+                    : 'bg-surface border border-subtle text-primary'
                 }`}
               >
                 {/* Sender Name: Only rendered on first message of a group for incoming messages */}
@@ -190,15 +190,17 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
                   </div>
                 )}
 
-                {/* Inline Bubble Footer: Micro Timestamp & Read Status */}
-                <div className="flex items-center justify-end gap-1.5 mt-1 -mb-0.5">
-                  <span className={`text-[10px] font-mono opacity-75 ${msg.isMe ? 'text-indigo-200' : 'text-slate-500'}`}>
-                    {formattedTime}
-                  </span>
-                  {msg.isMe && showReadReceipts && (
-                    <CheckCheck className="w-3.5 h-3.5 text-indigo-200 opacity-90" />
-                  )}
-                </div>
+                {/* Inline Bubble Footer: Micro Timestamp & Read Status only on last message of group */}
+                {msg.isLastInGroup && (
+                  <div className="flex items-center justify-end gap-1.5 mt-1 -mb-0.5">
+                    <span className={`text-[10px] font-mono opacity-75 ${msg.isMe ? 'text-indigo-200' : 'text-muted'}`}>
+                      {formattedTime}
+                    </span>
+                    {msg.isMe && showReadReceipts && (
+                      <CheckCheck className="w-3.5 h-3.5 text-indigo-200 opacity-90" />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </React.Fragment>
