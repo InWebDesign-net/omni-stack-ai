@@ -348,8 +348,9 @@ export default function HomeClient() {
             </Link>
           </div>
 
+          {/* INVARIANT: Item count (6) must be evenly divisible by the column count at every breakpoint (2, 3, 6). */}
           {isLoadingVideos ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-x-4 gap-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="animate-pulse flex flex-col space-y-2">
                   <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
@@ -361,7 +362,7 @@ export default function HomeClient() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-x-4 gap-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {videos.map((item: any) => {
                 const creator = item.creator || item.author;
                 const creatorName = creator?.username || creator?.handle || item.authorName || 'Omni Creator';
