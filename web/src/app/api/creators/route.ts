@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { type StrapiUser } from '@omni/shared';
 
 const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
@@ -14,8 +15,8 @@ export async function GET() {
       return NextResponse.json({ creators: [] });
     }
 
-    const users = await res.json();
-    const creators = (users || []).map((u: any) => ({
+    const users: StrapiUser[] = await res.json();
+    const creators = (users || []).map((u: StrapiUser & { subscribersCount?: number }) => ({
       id: String(u.id),
       documentId: u.documentId,
       username: u.username || 'Creator',
@@ -26,7 +27,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({ creators });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching creators:', error);
     return NextResponse.json({ creators: [] });
   }

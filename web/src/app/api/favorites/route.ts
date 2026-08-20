@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
     const favoriteImageIds: string[] = [];
     const favoriteFeedItemIds: string[] = [];
 
-    items.forEach((item: any) => {
+    items.forEach((item: Record<string, any>) => {
       const vId = item.attributes?.video?.data?.id || item.video?.id;
       const imgId = item.attributes?.image?.data?.id || item.image?.id;
       const fId = item.attributes?.feedItem?.data?.id || item.feedItem?.id;
@@ -56,78 +57,79 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ favoriteVideoIds, favoriteImageIds, favoriteFeedItemIds });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('GET /api/favorites error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const authUser = await getAuthUser(req);
-    if (!authUser?.id) {
+    const { user: authUser } = await getCurrentUserFromCookies();
+
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { videoId, imageId, feedItemId } = body;
+    const { videoId, imageId, feedItemId } = await req.json();
 
     if (!videoId && !imageId && !feedItemId) {
-      return NextResponse.json({ error: 'Missing videoId, imageId, or feedItemId' }, { status: 400 });
+      return NextResponse.json({ error: 'videoId, imageId or feedItemId required' }, { status: 400 });
     }
 
-    const targetFilter = videoId
-      ? `filters[user][id][$eq]=${authUser.id}&filters[video][id][$eq]=${videoId}`
-      : imageId
-      ? `filters[user][id][$eq]=${authUser.id}&filters[image][id][$eq]=${imageId}`
-      : `filters[user][id][$eq]=${authUser.id}&filters[feedItem][id][$eq]=${feedItemId}`;
+    let targetFilter = '';
+    const payload: Record<string, unknown> = {
+      user: authUser.id,
+      userIdentifier: `user-${authUser.id}`,
+    };
+
+    if (videoId) {
+      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[video][id][$eq]=${videoId}`;
+      payload.video = videoId;
+    } else if (imageId) {
+      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[image][id][$eq]=${imageId}`;
+      payload.image = imageId;
+    } else if (feedItemId) {
+      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[feedItem][id][$eq]=${feedItemId}`;
+      payload.feedItem = feedItemId;
+    }
 
     const existingRes = await fetch(getStrapiUrl(`/api/favorites?${targetFilter}`), {
-      headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
+      },
     });
 
-    let isFavorite = false;
-    let recordId: string | null = null;
+    const existingData = await existingRes.json();
+    const existingList = existingData.data || [];
 
-    if (existingRes.ok) {
-      const data = await existingRes.json();
-      if ((data.data || []).length > 0) {
-        isFavorite = true;
-        recordId = String(data.data[0].id);
-      }
-    }
-
-    if (isFavorite && recordId) {
+    if (existingList.length > 0) {
       // Toggle OFF (Delete favorite)
+      const recordId = existingList[0].id || existingList[0].documentId;
       await fetch(getStrapiUrl(`/api/favorites/${recordId}`), {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
+        headers: {
+          Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
+        },
       });
-      isFavorite = false;
+      return NextResponse.json({ favorited: false });
     } else {
       // Toggle ON (Create favorite)
-      const payload: any = {
-        user: authUser.id,
-        userIdentifier: authUser.username || authUser.handle || `user-${authUser.id}`,
-      };
-      if (videoId) payload.video = videoId;
-      if (imageId) payload.image = imageId;
-      if (feedItemId) payload.feedItem = feedItemId;
-
       await fetch(getStrapiUrl('/api/favorites'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${STRAPI_API_TOKEN}`,
+          Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
         },
         body: JSON.stringify({ data: payload }),
       });
-      isFavorite = true;
+      return NextResponse.json({ favorited: true });
     }
-
-    return NextResponse.json({ isFavorite });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('POST /api/favorites error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

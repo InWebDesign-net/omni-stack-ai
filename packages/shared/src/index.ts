@@ -15,3 +15,14 @@ export {
   type ContentKind,
   isContentKind,
 } from './content-kinds';
+
+export {
+  type StrapiUser,
+  type StrapiBaseMediaItem,
+  type VideoItem,
+  type ImageItem,
+  type ArticleItem,
+  type FeedItem,
+  type StrapiPaginatedMeta,
+  type StrapiListResponse,
+} from './entities';

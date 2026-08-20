@@ -1,7 +1,14 @@
 import useSWR from 'swr';
-import { ContentKind } from '@omni/shared';
+import {
+  ContentKind,
+  type VideoItem,
+  type ImageItem,
+  type ArticleItem,
+} from '@omni/shared';
 
-export interface UseContentListParams {
+export type { VideoItem, ImageItem, ArticleItem };
+
+export interface UseContentListParams<T = unknown> {
   currentPage?: number;
   pageSize?: number | string;
   sort?: string;
@@ -13,7 +20,7 @@ export interface UseContentListParams {
   lang?: string;
   excludeSlug?: string | string[];
   enabled?: boolean;
-  fallbackData?: any;
+  fallbackData?: { items: T[]; total: number };
 }
 
 export interface UseContentListResult<T> {
@@ -22,78 +29,6 @@ export interface UseContentListResult<T> {
   isLoading: boolean;
   isError: boolean;
   refresh: () => void;
-}
-
-// Interfaces copied from old files for backwards compatibility
-export interface ArticleItem {
-  id?: string | number;
-  documentId?: string;
-  slug?: string;
-  title: string;
-  summary?: any;
-  thumbnail?: string;
-  creator?: { id?: string | number; username?: string; avatarUrl?: string };
-  authorName?: string;
-  viewsCount?: number;
-  likesCount?: number;
-  commentsCount?: number;
-  tags?: string[];
-  createdAt?: string;
-}
-
-export interface ImageAuthor {
-  id?: number;
-  documentId?: string;
-  username?: string;
-  handle?: string;
-  avatarUrl?: string;
-  bio?: string;
-}
-
-export interface ImageItem {
-  id: number;
-  documentId: string;
-  title: string;
-  slug: string;
-  summary?: string;
-  content?: string;
-  tags?: string[];
-  viewsCount?: number;
-  likesCount?: number;
-  commentsCount?: number;
-  imageUrl?: string;
-  thumbnailUrl?: string;
-  createdAt?: string;
-  creator?: ImageAuthor;
-  isProcessing?: boolean;
-}
-
-export interface VideoAuthor {
-  id?: number;
-  documentId?: string;
-  username?: string;
-  handle?: string;
-  avatarUrl?: string;
-  bio?: string;
-}
-
-export interface VideoItem {
-  id: number;
-  documentId: string;
-  title: string;
-  slug: string;
-  summary?: string;
-  tags?: string[];
-  viewsCount?: number;
-  likesCount?: number;
-  commentsCount?: number;
-  mp4Url?: string;
-  hlsUrl?: string;
-  thumbnailUrl?: string;
-  duration?: number;
-  createdAt?: string;
-  creator?: VideoAuthor;
-  isProcessing?: boolean;
 }
 
 const fetcher = async (url: string) => {

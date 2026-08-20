@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
     }
 
     const listData = await listRes.json();
-    const subscriptions = (listData.data || []).map((sub: any) => ({
+    const subscriptions = (listData.data || []).map((sub: Record<string, any>) => ({
       id: String(sub.id),
       type: sub.attributes?.type || sub.type || 'channel',
       targetUser: sub.attributes?.targetUser?.data
@@ -181,9 +181,10 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({ subscriptions });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('GET /api/subscriptions error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -201,7 +202,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    let targetUserObj: any = null;
+    let targetUserObj: { id?: number | string; subscribersCount?: number } | null = null;
     let resolvedTargetId = targetId;
 
     if (type === 'channel') {
@@ -226,7 +227,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    let existingItems: any[] = [];
+    let existingItems: Record<string, any>[] = [];
     if (existingRes.ok) {
       const existingData = await existingRes.json();
       existingItems = existingData.data || [];
@@ -248,7 +249,7 @@ export async function POST(req: NextRequest) {
       isSubscribed = false;
     } else {
       // Subscribe
-      const payloadData: any = {
+      const payloadData: Record<string, unknown> = {
         type,
         subscriber: authUser.id,
       };
@@ -339,8 +340,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ isSubscribed, subscriberCount });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('POST /api/subscriptions error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

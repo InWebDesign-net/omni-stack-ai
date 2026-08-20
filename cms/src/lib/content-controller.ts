@@ -15,29 +15,31 @@ export function createContentController(kind: ContentKind, filteredServiceMethod
   const uid = CONTENT_KINDS[kind].uid;
 
   return factories.createCoreController(uid as any, ({ strapi }) => ({
-    async filtered(ctx: any) {
+    async filtered(ctx: Record<string, any>) {
       try {
-        const service = strapi.service(uid) as any;
+        const service = strapi.service(uid) as Record<string, any>;
         const fn = service?.[filteredServiceMethod];
         if (typeof fn !== 'function') {
           throw new Error(`${uid} has no service method "${filteredServiceMethod}"`);
         }
         ctx.body = await fn.call(service, ctx.query);
-      } catch (err: any) {
-        strapi.log.error(`[${kind}.filtered] ${err?.message || err}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        strapi.log.error(`[${kind}.filtered] ${message}`);
         ctx.status = 500;
-        ctx.body = { error: err?.message || `Failed to fetch filtered ${CONTENT_KINDS[kind].plural}` };
+        ctx.body = { error: message || `Failed to fetch filtered ${CONTENT_KINDS[kind].plural}` };
       }
     },
 
-    async tags(ctx: any) {
+    async tags(ctx: Record<string, any>) {
       try {
-        const service = strapi.service(uid) as any;
+        const service = strapi.service(uid) as Record<string, any>;
         ctx.body = { data: await service.getAllTags(ctx.query) };
-      } catch (err: any) {
-        strapi.log.error(`[${kind}.tags] ${err?.message || err}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        strapi.log.error(`[${kind}.tags] ${message}`);
         ctx.status = 500;
-        ctx.body = { error: err?.message || `Failed to aggregate ${kind} tags` };
+        ctx.body = { error: message || `Failed to aggregate ${kind} tags` };
       }
     },
   }));

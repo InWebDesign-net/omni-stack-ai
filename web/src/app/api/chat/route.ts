@@ -61,10 +61,10 @@ async function getOrCreateRoomBySlug(
   return null;
 }
 
-function isUserParticipantInRoom(room: any, userId: number | string): boolean {
+function isUserParticipantInRoom(room: Record<string, any>, userId: number | string): boolean {
   if (!userId) return false;
 
-  let participantsList: any[] = [];
+  let participantsList: Record<string, any>[] = [];
   if (Array.isArray(room.participants)) {
     participantsList = room.participants;
   } else if (room.participants?.data && Array.isArray(room.participants.data)) {
@@ -75,7 +75,7 @@ function isUserParticipantInRoom(room: any, userId: number | string): boolean {
     participantsList = room.attributes.participants.data;
   }
 
-  return participantsList.some((p: any) => {
+  return participantsList.some((p: Record<string, any>) => {
     const pId = p.id || p.documentId;
     return String(pId) === String(userId);
   });
