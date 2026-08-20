@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { TagCount } from '@/lib/videoFilters';
-import useSWR from 'swr';
 import {
   Search,
   FilterX,
@@ -30,139 +28,26 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { ActionButton } from '@/components/ActionButton';
-import { useTagFilter } from '@/lib/hooks/useTagFilter';
-import { useContentList, ArticleItem } from '@/lib/hooks/useContentList';
+import { ArticleItem } from '@/lib/hooks/useContentList';
+import { useContentListPage } from '@/lib/hooks/useContentListPage';
 import { ArticleCreateModal } from '@/components/article/ArticleCreateModal';
 import Image from 'next/image';
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function ArticlesPageClient() {
-  const router = useRouter();
+  const { currentUser, t } = useApp();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { currentUser, lang, t } = useApp();
-  const perPage = 24;
-
-  const searchTerm = searchParams.get('q') || '';
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const sort = searchParams.get('sort') || 'createdatasc';
-  const filterFavorites = searchParams.get('fav') || 'false';
-
-  const [searchInput, setSearchInput] = useState(searchTerm);
-
-  useEffect(() => {
-    setSearchInput(searchTerm);
-  }, [searchTerm]);
-
-  const { data: tagRes } = useSWR<{ data: TagCount[] } | TagCount[]>(
-    `/api/content/article/tags?lang=${lang}`,
-    fetcher
-  );
-
-  const allTags = useMemo(() => {
-    if (Array.isArray(tagRes)) return tagRes;
-    if (tagRes && Array.isArray((tagRes as any).data)) return (tagRes as any).data;
-    return [];
-  }, [tagRes]);
-
-  const updateURL = useCallback(
-    (newParams: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams);
-      Object.entries(newParams).forEach(([key, value]) => {
-        if (value === null || value === '') params.delete(key);
-        else params.set(key, value);
-      });
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, pathname, router]
-  );
 
   const {
-    includedTags,
-    excludedTags,
-    matchMode,
-    tagSearch,
-    isTagCloudExpanded,
-    filteredAllTags,
-    hasTagFilters,
-    toggleTag,
-    setMatchMode,
-    setTagSearch,
-    setIsTagCloudExpanded,
-    resetTagFilters,
-  } = useTagFilter(allTags, updateURL);
-
-  const { items: articles, total: totalArticles, isLoading } = useContentList<ArticleItem>('article', {
-    currentPage,
-    pageSize: perPage,
-    sort,
-    searchTerm,
-    filterFavorites,
-    includedTags,
-    excludedTags,
-    matchMode,
-    lang,
-    enabled: true,
-  });
-
-  const totalPages = Math.max(1, Math.ceil(totalArticles / perPage));
-
-  const updateURL2 = useCallback(
-    (newParams: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams);
-      Object.entries(newParams).forEach(([key, value]) => {
-        if (value === null || value === '') params.delete(key);
-        else params.set(key, value);
-      });
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, pathname, router]
-  );
-
-  const handleSortChange = useCallback(
-    (value: string) => {
-      updateURL2({ sort: value, page: '1' });
-    },
-    [updateURL2]
-  );
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      updateURL2({ page: page.toString() });
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    },
-    [updateURL2]
-  );
-
-  const handleSearchSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      updateURL2({ q: searchInput.trim() || null, page: '1' });
-    },
-    [searchInput, updateURL2]
-  );
-
-  const clearSearch = useCallback(() => {
-    setSearchInput('');
-    updateURL2({ q: null, page: '1' });
-  }, [updateURL2]);
-
-  const hardReset = useCallback(() => {
-    setSearchInput('');
-    router.push(pathname);
-  }, [pathname, router]);
-
-  const hasActiveFilters = Boolean(
-    searchTerm ||
-      sort !== 'createdatasc' ||
-      filterFavorites === 'true' ||
-      includedTags.length > 0 ||
-      excludedTags.length > 0
-  );
+    searchTerm, currentPage, sort, filterFavorites, lang, perPage,
+    searchInput, setSearchInput, handleSearchSubmit, clearSearch,
+    includedTags, excludedTags, matchMode, tagSearch, isTagCloudExpanded,
+    filteredAllTags, hasTagFilters, toggleTag, setMatchMode, setTagSearch,
+    setIsTagCloudExpanded, allTags,
+    items: articles, total: totalArticles, isLoading, isError, refresh,
+    totalPages, updateURL, handleSortChange, handlePageChange, hardReset,
+    hasActiveFilters,
+  } = useContentListPage<ArticleItem>('article');
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';

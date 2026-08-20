@@ -1,15 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import VideoUploadModal from "@/components/VideoUploadModal";
 import { useApp } from "@/context/AppContext";
-import { useContentList, VideoItem } from "@/lib/hooks/useContentList";
-import { TagCount } from "@/lib/videoFilters";
-import { useTagFilter } from '@/lib/hooks/useTagFilter';
-import useSWR from "swr";
+import { VideoItem } from "@/lib/hooks/useContentList";
+import { useContentListPage } from "@/lib/hooks/useContentListPage";
 import {
   Search,
   ChevronLeft,
@@ -39,112 +36,20 @@ export default function VideosPageClient({
 }: {
   initialParams: any;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { currentUser, lang, t, openChannelModal } = useApp();
-  const perPage = 24;
+  const { currentUser, t, openChannelModal } = useApp();
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  // Single Source of Truth from SearchParams
-  const searchTerm = searchParams.get("q") || "";
-  const currentPage = parseInt(searchParams.get("page") || "1", 10);
-  const sort = searchParams.get("sort") || "createdatasc";
-  const filterFavorites = searchParams.get("fav") || "false";
-
-  const [searchInput, setSearchInput] = useState(searchTerm);
-
-  // Sync search input state if URL search param changes
-  useEffect(() => {
-    setSearchInput(searchTerm);
-  }, [searchTerm]);
-
-  // All available tags (aggregated from Strapi, with counts) for the tag cloud
-  const { data: allTags = [] } = useSWR<TagCount[]>(`/api/content/video/tags?lang=${lang}`, (url: string) =>
-    fetch(url).then((r) => r.json())
-  );
-
-  const updateURL = (newParams: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value === null || value === "") params.delete(key);
-      else params.set(key, value);
-    });
-    router.push(`${pathname}?${params.toString()}`, {
-      scroll: false,
-    });
-  };
-
-  // URL-synced tag filter state (via shared hook)
   const {
-    includedTags,
-    excludedTags,
-    matchMode,
-    tagSearch,
-    isTagCloudExpanded,
-    filteredAllTags,
-    hasTagFilters,
-    toggleTag,
-    setMatchMode,
-    setTagSearch,
-    setIsTagCloudExpanded,
-  } = useTagFilter(allTags, updateURL);
-
-  // Data fetching via SWR hook
-  const {
-    items: videos,
-    total: totalVideos,
-    isLoading,
-    isError,
-    refresh,
-  } = useContentList<VideoItem>('video', {
-    currentPage,
-    pageSize: perPage,
-    sort,
-    searchTerm,
-    filterFavorites,
-    includedTags,
-    excludedTags,
-    matchMode,
-    lang,
-    enabled: true,
-  });
-
-  const totalPages = Math.max(1, Math.ceil(totalVideos / perPage));
-
-  const handleSortChange = (value: string) => {
-    updateURL({ sort: value, page: "1" });
-  };
-
-  const handlePageChange = (page: number) => {
-    updateURL({ page: page.toString() });
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateURL({ q: searchInput.trim() || null, page: "1" });
-  };
-
-  const clearSearch = () => {
-    setSearchInput("");
-    updateURL({ q: null, page: "1" });
-  };
-
-  const hardReset = () => {
-    setSearchInput("");
-    router.push(pathname);
-  };
-
-  // Boundary check: redirect to page 1 if page exceeds totalPages ONLY after data loading finishes
-  useEffect(() => {
-    if (!isLoading && totalVideos > 0 && currentPage > totalPages) {
-      updateURL({ page: "1" });
-    }
-  }, [isLoading, totalVideos, currentPage, totalPages]);
+    searchTerm, currentPage, sort, filterFavorites, lang, perPage,
+    searchInput, setSearchInput, handleSearchSubmit, clearSearch,
+    includedTags, excludedTags, matchMode, tagSearch, isTagCloudExpanded,
+    filteredAllTags, hasTagFilters, toggleTag, setMatchMode, setTagSearch,
+    setIsTagCloudExpanded, allTags,
+    items: videos, total: totalVideos, isLoading, isError, refresh,
+    totalPages, updateURL, handleSortChange, handlePageChange, hardReset,
+    hasActiveFilters,
+  } = useContentListPage<VideoItem>('video');
 
   const formatDuration = (seconds?: number) => {
     if (!seconds) return "0:00";
@@ -152,14 +57,6 @@ export default function VideosPageClient({
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
-
-  const hasActiveFilters = Boolean(
-    searchTerm ||
-    sort !== "createdatasc" ||
-    filterFavorites === "true" ||
-    includedTags.length > 0 ||
-    excludedTags.length > 0
-  );
 
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif]">

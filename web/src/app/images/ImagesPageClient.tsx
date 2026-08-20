@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { useApp } from '@/context/AppContext';
-import { useContentList, useContentTags, ImageItem } from '@/lib/hooks/useContentList';
-import { useTagFilter } from '@/lib/hooks/useTagFilter';
+import { ImageItem } from '@/lib/hooks/useContentList';
+import { useContentListPage } from '@/lib/hooks/useContentListPage';
 import {
   Search,
   ChevronLeft,
@@ -32,11 +31,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
 import Image from 'next/image';
 
 export default function ImagesPageClient({ initialParams }: { initialParams?: any }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { currentUser, openAuthModal, lang, t, openChannelModal } = useApp();
-  const perPage = 24;
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
@@ -103,39 +98,10 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     }
   };
 
-  const searchTerm = searchParams.get('q') || '';
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const sort = searchParams.get('sort') || 'createdatasc';
-  const filterFavorites = searchParams.get('fav') || 'false';
-
-  const [searchInput, setSearchInput] = useState(searchTerm);
-
-  useEffect(() => {
-    setSearchInput(searchTerm);
-  }, [searchTerm]);
-
-  const { tags: allTags = [] } = useContentTags('image', lang);
-
-  const updateURL = (newParams: Record<string, string | null>) => {
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value === null || value === '' || value === 'false') {
-        current.delete(key);
-      } else {
-        current.set(key, value);
-      }
-    });
-    const search = current.toString();
-    const query = search ? `?${search}` : '';
-    router.push(`${pathname}${query}`);
-  };
-
-  // URL-synced tag filter state (via shared hook)
   const {
-    includedTags,
-    excludedTags,
-    matchMode,
-    tagSearch,
+    searchTerm, currentPage, sort, filterFavorites, perPage,
+    searchInput, setSearchInput, handleSearchSubmit, clearSearch,
+    includedTags, excludedTags, matchMode, tagSearch,
     isTagCloudExpanded: showAllTags,
     filteredAllTags: filteredTagList,
     hasTagFilters,
@@ -144,42 +110,13 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     setTagSearch,
     setIsTagCloudExpanded: setShowAllTags,
     resetTagFilters: resetAllFilters,
-  } = useTagFilter(allTags, updateURL);
+    allTags,
+    items: images, total, isLoading, isError, refresh,
+    totalPages, updateURL, handleSortChange, handlePageChange, hardReset,
+    hasActiveFilters,
+  } = useContentListPage<ImageItem>('image');
 
   const displayedTags = filteredTagList;
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateURL({ q: searchInput, page: '1' });
-  };
-
-  const clearSearch = () => {
-    setSearchInput('');
-    updateURL({ q: null, page: '1' });
-  };
-
-  const handleSortChange = (newSort: string) => {
-    updateURL({ sort: newSort, page: '1' });
-  };
-
-  const { items: images, total, isLoading } = useContentList<ImageItem>('image', {
-    currentPage,
-    pageSize: perPage,
-    sort,
-    searchTerm,
-    filterFavorites: filterFavorites === 'true' ? 'true' : '',
-    includedTags,
-    excludedTags,
-    matchMode,
-    lang,
-  });
-
-  const totalPages = Math.ceil(total / perPage);
-  const hasActiveFilters =
-    searchTerm !== '' ||
-    includedTags.length > 0 ||
-    excludedTags.length > 0 ||
-    filterFavorites === 'true';
 
   return (
     <div className="min-h-screen bg-[#080e1e] text-[#dae2fd] flex flex-col font-['Hanken_Grotesk',sans-serif] selection:bg-[#8083ff] selection:text-white">
