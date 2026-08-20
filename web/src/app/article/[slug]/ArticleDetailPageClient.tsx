@@ -497,7 +497,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               <span>Weitere Artikel</span>
             </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {displayRelated.map((rel: any) => {
                 const relCreator =
                   rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
@@ -507,7 +507,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                   <Link
                     key={rel.documentId || rel.id || rel.slug}
                     href={`/article/${rel.slug}`}
-                    className="flex gap-3 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-purple-500/50 hover:bg-slate-900 transition-all group"
+                    className="flex gap-3 p-1.5 sm:p-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle hover:border-purple-500/50 transition-all group"
                   >
                     <div className="relative w-20 h-16 rounded-lg overflow-hidden bg-slate-900 shrink-0">
                       <Image
@@ -515,15 +515,15 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                         alt={rel.title}
                         fill
                         sizes="80px"
-                        className="object-cover group-hover:scale-105 transition-transform"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                      <h4 className="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition-colors line-clamp-2 leading-tight">
+                      <h4 className="text-xs font-semibold text-slate-200 group-hover:text-purple-300 transition-colors line-clamp-2 leading-tight">
                         {rel.title}
                       </h4>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                        <span className="truncate">{relCreator}</span>
+                      <div className="flex items-center justify-between text-[10px] text-muted mt-1">
+                        <span className="truncate max-w-[100px]">{relCreator}</span>
                         <span className="flex items-center gap-1 font-mono text-purple-400 shrink-0">
                           <Heart className="w-3 h-3 fill-current" />
                           {rel.likesCount || 0}

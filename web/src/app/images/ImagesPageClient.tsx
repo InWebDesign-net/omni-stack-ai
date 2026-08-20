@@ -251,13 +251,19 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
         {/* Gallery Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 3xl:grid-cols-7 gap-x-4 gap-y-6">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="bg-slate-900/60 border border-slate-800/80 rounded-2xl h-56 animate-pulse" />
+              <div key={i} className="animate-pulse flex flex-col space-y-2">
+                <div className="aspect-[4/3] bg-slate-800/80 rounded-xl w-full" />
+                <div className="space-y-1.5 pt-1">
+                  <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
+                  <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                </div>
+              </div>
             ))}
           </div>
         ) : images.length === 0 ? (
-          <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center space-y-4">
+          <div className="bg-surface border border-subtle rounded-3xl p-12 text-center space-y-4">
             <Sparkles className="w-12 h-12 text-teal-400/40 mx-auto animate-pulse" />
             <h3 className="text-lg font-bold text-white">Keine Bilder gefunden</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
@@ -265,7 +271,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 3xl:grid-cols-7 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 3xl:grid-cols-7 gap-x-4 gap-y-6">
             {images.map((img) => {
               const isImgOwner = Boolean(
                 currentUser &&
@@ -282,15 +288,15 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                 <Link
                   key={img.id || img.documentId}
                   href={`/image/${img.slug}`}
-                  className="group relative bg-[#0d1528] border border-white/10 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                  className="group relative flex flex-col transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   {/* Aspect ratio image container */}
-                  <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
+                  <div className="relative aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden shadow-md">
                     <Image
                       src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
                       alt={img.title}
                       loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
@@ -299,7 +305,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                       type="button"
                       onClick={(e) => handleCardLikeToggle(e, img)}
                       title={likedSlugs.includes(img.slug) ? 'Gefällt mir nicht mehr' : 'Gefällt mir'}
-                      className={`absolute top-3 right-3 z-10 flex items-center gap-1.5 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all cursor-pointer ${
+                      className={`absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-mono border transition-all cursor-pointer ${
                         likedSlugs.includes(img.slug)
                           ? 'bg-rose-500/30 text-rose-200 border-rose-500/50 shadow-md shadow-rose-500/20'
                           : 'bg-black/60 text-white border-white/10 hover:border-rose-400/50 hover:text-rose-300'
@@ -321,17 +327,17 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                             avatarUrl: effectiveCreatorAvatar,
                           });
                         }}
-                        className="absolute bottom-3 left-3 flex items-center gap-2 hover:opacity-80 transition-opacity z-10 cursor-pointer text-left"
+                        className="absolute bottom-2 left-2 flex items-center gap-1.5 hover:opacity-80 transition-opacity z-10 cursor-pointer text-left"
                       >
                         <Image
                           src={effectiveCreatorAvatar}
                           alt={img.creator.username || 'Creator'}
-                          width={24}
-                          height={24}
-                          className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0"
+                          width={20}
+                          height={20}
+                          className="w-5 h-5 rounded-full object-cover border border-white/20 shrink-0"
                           unoptimized
                         />
-                        <span className="text-[11px] font-semibold text-white drop-shadow truncate max-w-[120px]">
+                        <span className="text-[10px] font-semibold text-white drop-shadow truncate max-w-[100px]">
                           {img.creator.username || 'Creator'}
                         </span>
                       </button>
@@ -339,21 +345,21 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   </div>
 
                 {/* Footer Info */}
-                <div className="p-4 flex flex-col gap-1.5 flex-1">
-                  <h3 className="font-extrabold text-sm text-white group-hover:text-teal-400 transition-colors line-clamp-1">
+                <div className="pt-2 flex flex-col gap-1 flex-1">
+                  <h3 className="font-semibold text-xs sm:text-sm text-white group-hover:text-teal-400 transition-colors line-clamp-1">
                     {img.title}
                   </h3>
                   {img.summary && (
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
                       {img.summary}
                     </p>
                   )}
                   {img.tags && img.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-auto pt-2">
+                    <div className="flex flex-wrap gap-1 mt-auto pt-1">
                       {img.tags.slice(0, 3).map((t) => (
                         <span
                           key={t}
-                          className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300 font-medium"
+                          className="px-1.5 py-0.5 rounded bg-slate-800/80 text-[9px] text-slate-300 font-medium"
                         >
                           #{t}
                         </span>

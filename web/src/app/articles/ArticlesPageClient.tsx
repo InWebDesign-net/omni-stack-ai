@@ -161,15 +161,14 @@ export default function ArticlesPageClient() {
           />
 
         {/* Articles Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-6">
           {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden animate-pulse">
-                  <div className="aspect-video bg-slate-800" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-4 bg-slate-800 rounded w-3/4" />
-                    <div className="h-3 bg-slate-800 rounded w-full" />
-                    <div className="h-3 bg-slate-800 rounded w-1/2" />
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="animate-pulse flex flex-col space-y-2">
+                  <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
+                    <div className="h-3 bg-slate-800/40 rounded w-full" />
                   </div>
                 </div>
               ))
@@ -189,14 +188,14 @@ export default function ArticlesPageClient() {
                   <Link
                     key={article.documentId || article.slug || article.id}
                     href={`/article/${article.slug}`}
-                    className="group relative bg-slate-900/60 border border-slate-800 hover:border-indigo-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+                    className="group relative flex flex-col transition-transform duration-200 hover:-translate-y-0.5"
                   >
-                    <div className="relative aspect-video bg-slate-950 overflow-hidden">
+                    <div className="relative aspect-video bg-slate-950 rounded-xl overflow-hidden shadow-md">
                       {article.thumbnail ? (
                         <Image
                           src={article.thumbnail}
                           alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-tr from-purple-950 via-indigo-950 to-slate-900 flex items-center justify-center">
@@ -206,37 +205,39 @@ export default function ArticlesPageClient() {
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
                     </div>
 
-                    <div className="p-4 space-y-2">
-                      <h3 className="font-bold text-sm text-white line-clamp-2 group-hover:text-indigo-300 transition-colors">
-                        {article.title}
-                      </h3>
-                      {article.summary && (
-                        <p className="text-xs text-slate-400 line-clamp-2">
-                          {typeof article.summary === 'string'
-                            ? article.summary
-                            : Array.isArray(article.summary)
-                            ? article.summary
-                                .map((b: any) => (Array.isArray(b?.children) ? b.children.map((c: any) => c.text).join('') : ''))
-                                .filter(Boolean)
-                                .join(' ')
-                            : ''}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between pt-2 text-[10px] text-slate-500">
-                        <span className="truncate">
+                    <div className="pt-2.5 flex-1 flex flex-col justify-between gap-1.5">
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-xs sm:text-sm text-white line-clamp-2 group-hover:text-indigo-300 transition-colors leading-snug">
+                          {article.title}
+                        </h3>
+                        {article.summary && (
+                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                            {typeof article.summary === 'string'
+                              ? article.summary
+                              : Array.isArray(article.summary)
+                              ? article.summary
+                                  .map((b: any) => (Array.isArray(b?.children) ? b.children.map((c: any) => c.text).join('') : ''))
+                                  .filter(Boolean)
+                                  .join(' ')
+                              : ''}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                        <span className="truncate max-w-[120px]">
                           {article.creator?.username || article.authorName || 'Omni Creator'}
                         </span>
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-2 font-mono text-[10px]">
                           <span className="flex items-center gap-0.5">
-                            <Eye className="w-3 h-3" />
+                            <Eye className="w-3 h-3 text-slate-400" />
                             {article.viewsCount || 0}
                           </span>
                           <span className="flex items-center gap-0.5">
-                            <Heart className="w-3 h-3" />
+                            <Heart className="w-3 h-3 text-rose-400" />
                             {article.likesCount || 0}
                           </span>
                           <span className="flex items-center gap-0.5">
-                            <MessageSquare className="w-3 h-3" />
+                            <MessageSquare className="w-3 h-3 text-indigo-400" />
                             {article.commentsCount || 0}
                           </span>
                         </span>

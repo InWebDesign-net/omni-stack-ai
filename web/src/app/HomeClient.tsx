@@ -349,13 +349,19 @@ export default function HomeClient() {
           </div>
 
           {isLoadingVideos ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-x-4 gap-y-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="aspect-video bg-slate-900/60 rounded-xl sm:rounded-2xl animate-pulse border border-slate-800" />
+                <div key={n} className="animate-pulse flex flex-col space-y-2">
+                  <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
+                    <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-x-4 gap-y-6">
               {videos.map((item: any) => {
                 const creator = item.creator || item.author;
                 const creatorName = creator?.username || creator?.handle || item.authorName || 'Omni Creator';
@@ -373,37 +379,37 @@ export default function HomeClient() {
                 return (
                   <div
                     key={item.documentId || item.slug || item.id}
-                    className="group bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+                    className="group flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5"
                   >
                     {/* Video Thumbnail & Play Overlay */}
-                    <Link href={`/video/${item.slug}`} className="relative aspect-video w-full overflow-hidden block bg-slate-950">
+                    <Link href={`/video/${item.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-slate-950 shadow-md">
                       {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
                       <Image
                         src={item.thumbnailUrl || '/media/thumbnails/default.png'}
                         alt={item.title}
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
                       {/* Play Icon Badge */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="p-2 sm:p-3 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur-md transform group-hover:scale-110 transition-transform">
-                          <Play className="w-4 h-4 sm:w-6 sm:h-6 fill-white ml-0.5" />
+                        <div className="p-2 sm:p-2.5 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur-md transform group-hover:scale-110 transition-transform">
+                          <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-white ml-0.5" />
                         </div>
                       </div>
 
                       {/* Duration Badge */}
                       {Boolean(item.duration && item.duration > 0) && (
-                        <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[9px] sm:text-[10px] font-mono text-slate-200 flex items-center gap-1">
-                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-400" />
+                        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[9px] sm:text-[10px] font-mono text-slate-200 flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5 text-indigo-400" />
                           <span>{formatDuration(item.duration)}</span>
                         </div>
                       )}
                     </Link>
 
                     {/* Card Details */}
-                    <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-between">
+                    <div className="pt-2.5 flex-1 flex flex-col justify-between gap-1.5">
                       <div>
                         <Link
                           href={`/video/${item.slug}`}
@@ -414,34 +420,34 @@ export default function HomeClient() {
                       </div>
 
                       {/* Creator & Meta */}
-                      <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-800/60 text-[11px] sm:text-xs text-slate-400">
-                        <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity min-w-0">
+                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity min-w-0">
                           {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                           <Image
                             src={creatorAvatar}
                             alt={creatorName}
-                            width={24}
-                            height={24}
+                            width={20}
+                            height={20}
                             loading="lazy"
-                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-slate-700 shrink-0"
+                            className="w-5 h-5 rounded-full object-cover border border-slate-700 shrink-0"
                             unoptimized
                           />
-                          <span className="truncate max-w-[65px] sm:max-w-[110px] text-slate-300 font-medium">{creatorName}</span>
+                          <span className="truncate max-w-[70px] sm:max-w-[120px] text-slate-300 font-medium">{creatorName}</span>
                         </Link>
 
-                        <div className="flex items-center gap-1.5 sm:gap-2.5 text-slate-400 shrink-0 font-mono text-[10px] sm:text-xs">
+                        <div className="flex items-center gap-2 text-slate-400 shrink-0 font-mono text-[10px]">
                           {item.viewsCount !== undefined && (
                             <div className="flex items-center gap-0.5" title="Aufrufe">
-                              <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400" />
+                              <Eye className="w-3 h-3 text-slate-400" />
                               <span>{item.viewsCount.toLocaleString()}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-0.5" title="Kommentare">
-                            <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400" />
+                            <MessageSquare className="w-3 h-3 text-indigo-400" />
                             <span>{(item.commentsCount || 0).toLocaleString()}</span>
                           </div>
                           <div className="flex items-center gap-0.5" title="Likes">
-                            <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-400" />
+                            <Heart className="w-3 h-3 text-rose-400" />
                             <span>{(item.likesCount || 0).toLocaleString()}</span>
                           </div>
                         </div>
@@ -485,30 +491,36 @@ export default function HomeClient() {
           </div>
 
           {isLoadingImages ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="aspect-[4/3] bg-slate-900/60 rounded-xl animate-pulse border border-slate-800" />
+                <div key={n} className="animate-pulse flex flex-col space-y-2">
+                  <div className="aspect-[4/3] bg-slate-800/80 rounded-xl w-full" />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
+                    <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {images.slice(0, 6).map((img) => (
                 <Link
                   key={img.id || img.documentId}
                   href={`/image/${img.slug}`}
-                  className="group relative bg-surface border border-subtle hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                  className="group relative flex flex-col transition-transform duration-200 hover:-translate-y-0.5"
                 >
-                  <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
+                  <div className="relative aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden shadow-md">
                     <Image
                       src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
                       alt={img.title}
                       loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   </div>
-                  <div className="p-2.5 flex flex-col gap-1">
-                    <h3 className="font-bold text-xs text-white group-hover:text-teal-400 transition-colors line-clamp-1">
+                  <div className="pt-2 flex flex-col gap-0.5">
+                    <h3 className="font-semibold text-xs text-white group-hover:text-teal-400 transition-colors line-clamp-1">
                       {img.title}
                     </h3>
                     <span className="text-[10px] text-muted font-mono truncate">

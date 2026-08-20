@@ -409,25 +409,25 @@ export default function ImagePageClient({
                 <span>Ähnliche Bilder</span>
               </h3>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {displayRelated.map((rel) => (
                   <Link
                     key={rel.id || rel.documentId}
                     href={`/image/${rel.slug}`}
-                    className="group flex gap-3 bg-slate-950/60 border border-slate-800/80 hover:border-teal-500/40 rounded-2xl p-2 transition-all"
+                    className="group flex gap-3 bg-surface hover:bg-surface-raised border border-subtle hover:border-teal-500/40 rounded-xl p-1.5 sm:p-2 transition-all"
                   >
-                    <div className="w-20 h-16 rounded-xl bg-slate-900 overflow-hidden shrink-0">
+                    <div className="w-20 h-16 rounded-lg bg-slate-900 overflow-hidden shrink-0">
                       <Image
                         src={rel.thumbnailUrl || rel.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80'}
                         alt={rel.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="flex flex-col justify-center min-w-0">
-                      <h4 className="font-bold text-xs text-white group-hover:text-teal-400 transition-colors truncate">
+                      <h4 className="font-semibold text-xs text-white group-hover:text-teal-400 transition-colors truncate">
                         {rel.title}
                       </h4>
-                      <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+                      <span className="text-[10px] text-muted font-mono mt-0.5">
                         {rel.creator?.username || 'Creator'}
                       </span>
                     </div>

@@ -589,16 +589,16 @@ export default function VideoPageClient({
               <span>{t.videoDetail.relatedRecommendations}</span>
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {displayRelated.map((rel: any) => {
                 const relCreator = rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
                 return (
                   <Link
                     key={rel.documentId || rel.id}
                     href={`/video/${rel.slug}`}
-                    className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl overflow-hidden p-2 flex gap-3 transition-all"
+                    className="group bg-surface hover:bg-surface-raised border border-subtle hover:border-indigo-500/40 rounded-xl overflow-hidden p-2 flex gap-3 transition-all"
                   >
-                    <div className="relative aspect-video w-32 shrink-0 rounded-lg overflow-hidden bg-slate-950">
+                    <div className="relative aspect-video w-28 shrink-0 rounded-lg overflow-hidden bg-slate-950">
                       <CardThumbnail item={rel} />
                       {rel.duration && (
                         <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-slate-950/80 text-[9px] font-mono text-slate-200">
@@ -608,7 +608,7 @@ export default function VideoPageClient({
                     </div>
 
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                      <h4 className="font-semibold text-xs text-slate-200 group-hover:text-indigo-300 line-clamp-2 transition-colors">
+                      <h4 className="font-semibold text-xs text-slate-200 group-hover:text-indigo-300 line-clamp-2 transition-colors leading-snug">
                         {rel.title}
                       </h4>
                       <p className="text-[11px] text-slate-400 truncate">{relCreator}</p>
