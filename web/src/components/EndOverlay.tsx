@@ -3,6 +3,7 @@
 import React from 'react';
 import { Play, RotateCcw, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 interface EndCard {
   slug: string;
@@ -61,7 +62,7 @@ export function EndOverlay({
         {recommendations.slice(0, 1).map((rec) => {
           const creator = rec.creator;
           const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
-          const creatorAvatar = creator?.avatarUrl || rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+          const creatorAvatar = creator?.avatarUrl || resolveAvatarUrl(rec.authorAvatar);
 
           return (
             <a
@@ -112,7 +113,7 @@ export function EndOverlay({
         {recommendations.slice(0, 3).map((rec) => {
           const creator = rec.creator;
           const creatorName = creator?.username || creator?.handle || rec.authorName || 'Omni Creator';
-          const creatorAvatar = creator?.avatarUrl || rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+          const creatorAvatar = creator?.avatarUrl || resolveAvatarUrl(rec.authorAvatar);
 
           return (
             <a

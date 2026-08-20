@@ -17,6 +17,7 @@ import {
   getStoredJwt,
 } from '@/lib/affinity';
 import { getDictionary, Dictionary } from '@/lib/i18n';
+import { AVATAR_PLACEHOLDER, isLegacyAvatar, resolveAvatarUrl } from '@/lib/avatar';
 
 export interface UserProfileSession {
   id: number;
@@ -123,7 +124,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           username,
           email: usr.email || '',
           handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`,
-          avatarUrl: usr.avatarUrl || '',
+          // Legacy records still carry the old hardcoded portrait that
+          // registration used to write. It was never a choice the user made, so
+          // it is normalised away to an empty value and the placeholder takes over.
+          avatarUrl: isLegacyAvatar(usr.avatarUrl) ? '' : (usr.avatarUrl || ''),
           bio: usr.bio || '',
           subscribersCount: usr.subscribersCount || 0,
         };
@@ -247,7 +251,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         id: undefined,
         username: normHandle,
         handle: `@${normHandle}`,
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        avatarUrl: AVATAR_PLACEHOLDER,
         bio: 'Creator & Content Publisher im Omni Network.',
         subscribersCount: 0,
         allowDirectMessages: 'everyone',
@@ -269,7 +273,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (creatorOrItem.authorHandle || creatorOrItem.handle) {
       const handle = creatorOrItem.authorHandle || creatorOrItem.handle;
       const name = creatorOrItem.authorName || creatorOrItem.label || creatorOrItem.username || handle.replace('@', '');
-      const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || creatorOrItem.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+      const avatar = creatorOrItem.authorAvatar || creatorOrItem.avatar || resolveAvatarUrl(creatorOrItem.avatarUrl);
       setSelectedChannel({
         id: creatorOrItem.id || creatorOrItem.author?.id || creatorOrItem.creator?.id,
         username: name,

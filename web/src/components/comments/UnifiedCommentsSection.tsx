@@ -12,6 +12,7 @@ import {
   deleteCommentFromStrapi,
 } from '@/lib/comments';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 interface UnifiedCommentsSectionProps {
   slug: string;
@@ -217,7 +218,7 @@ export function UnifiedCommentsSection({
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-subtle mt-1">
             <Image
-              src={currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+              src={resolveAvatarUrl(currentUser?.avatarUrl)}
               alt={currentUser?.username || 'Avatar'}
               width={32}
               height={32}

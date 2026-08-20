@@ -8,6 +8,7 @@ import { useChat } from '@/context/ChatContext';
 import SubscribeButton from '@/components/SubscribeButton';
 import { getDemoCreatorByHandle } from '@/config/demo';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 interface ChannelProfileModalProps {
   selectedChannel: ChannelProfileData | null;
@@ -32,8 +33,8 @@ export default function ChannelProfileModal({
   );
 
   const effectiveAvatar = (isOwner && typeof currentUser?.avatarUrl !== 'undefined')
-    ? (currentUser.avatarUrl || selectedChannel.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80')
-    : (selectedChannel.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80');
+    ? (currentUser.avatarUrl || resolveAvatarUrl(selectedChannel.avatarUrl))
+    : (resolveAvatarUrl(selectedChannel.avatarUrl));
 
   const cleanHandle = (selectedChannel.handle || '').replace(/^@/, '').toLowerCase();
   const demoMatch = getDemoCreatorByHandle(cleanHandle);

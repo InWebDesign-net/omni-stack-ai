@@ -30,6 +30,7 @@ import { FeedItem, getAuthorName, getAuthorHandle, getAuthorAvatar } from '@/lib
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -246,7 +247,7 @@ export default function ShortsFeedPage() {
     const slug = activeShort.slug;
     const authorName = userData?.username || 'Du (Benutzer)';
     const authorHandle = userData?.handle || '@du';
-    const authorAvatar = userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+    const authorAvatar = resolveAvatarUrl(userData?.avatarUrl);
 
     const created = await createCommentInStrapi({
       feedSlug: slug,

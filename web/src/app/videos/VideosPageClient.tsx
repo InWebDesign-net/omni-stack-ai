@@ -32,6 +32,7 @@ import { ActionButton } from '@/components/ActionButton';
 import { ContentTagFilter } from '@/components/content/ContentTagFilter';
 import { ContentSearchBar } from '@/components/content/ContentSearchBar';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 export default function VideosPageClient({
   initialParams,
@@ -244,7 +245,7 @@ export default function VideosPageClient({
                     currentUser.username === creatorName ||
                     (currentUser.handle && (creator?.handle || (video as any).authorHandle) && currentUser.handle.toLowerCase() === (creator?.handle || (video as any).authorHandle).toLowerCase()))
               );
-              const rawCreatorAvatar = creator?.avatarUrl || (video as any).authorAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80";
+              const rawCreatorAvatar = resolveAvatarUrl(creator?.avatarUrl || (video as any).authorAvatar);
               const creatorAvatar = (isItemOwner && typeof currentUser?.avatarUrl !== 'undefined')
                 ? (currentUser.avatarUrl || rawCreatorAvatar)
                 : rawCreatorAvatar;

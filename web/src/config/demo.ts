@@ -1,3 +1,4 @@
+import { AVATAR_PLACEHOLDER } from '@/lib/avatar';
 /**
  * Demo configuration for the Omni Stack AI preview.
  *
@@ -5,7 +6,7 @@
  * components stay clean and customer projects can override this file easily.
  */
 
-export const DEFAULT_AVATAR_URL = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80';
+export const DEFAULT_AVATAR_URL = AVATAR_PLACEHOLDER;
 export const DEFAULT_COVER_URL = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80';
 
 export interface DemoCreator {
@@ -35,7 +36,7 @@ export const DEMO_CREATORS: DemoCreator[] = [
     id: '1',
     username: 'Database Guru',
     handle: 'demotech',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+    avatarUrl: AVATAR_PLACEHOLDER,
     bio: 'Tech, Datenbanken & AI Engineering.',
   },
   {
@@ -63,7 +64,7 @@ export const DEMO_CREATORS: DemoCreator[] = [
     id: '5',
     username: 'Omni Architect',
     handle: 'omniarchitect',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+    avatarUrl: AVATAR_PLACEHOLDER,
     bio: 'Architektur, Design & digitale Räume.',
   },
   {

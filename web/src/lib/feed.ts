@@ -1,3 +1,4 @@
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 export interface FeedItemAuthor {
   id?: number;
   username: string;
@@ -53,7 +54,7 @@ export const FALLBACK_FEED_ITEMS: FeedItem[] = [
       id: 1,
       username: 'Database Guru',
       handle: '@demotech',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'PostgreSQL, Strapi & Next.js Stack Architect.',
       subscribersCount: 24300,
     },
@@ -128,7 +129,7 @@ export const FALLBACK_FEED_ITEMS: FeedItem[] = [
       id: 4,
       username: 'Cat Mania',
       handle: '@catmania',
-      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'Tiere, Katzen & lustige Alltagsmomente.',
       subscribersCount: 95000,
     },
@@ -161,7 +162,7 @@ export const FALLBACK_FEED_ITEMS: FeedItem[] = [
       id: 1,
       username: 'Database Guru',
       handle: '@demotech',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'PostgreSQL, Strapi & Next.js Stack Architect.',
       subscribersCount: 24300,
     },
@@ -220,7 +221,7 @@ export const FALLBACK_FEED_ITEMS: FeedItem[] = [
       id: 1,
       username: 'Database Guru',
       handle: '@demotech',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'PostgreSQL, Strapi & Next.js Stack Architect.',
       subscribersCount: 24300,
     },
@@ -245,7 +246,7 @@ export const FALLBACK_FEED_ITEMS: FeedItem[] = [
       id: 1,
       username: 'Database Guru',
       handle: '@demotech',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'PostgreSQL, Strapi & Next.js Stack Architect.',
       subscribersCount: 24300,
     },
@@ -374,7 +375,7 @@ Durch diesen Slot-Interleaving-Mechanismus erhält jeder Nutzer ein maßgeschnei
       id: 1,
       username: 'Database Guru',
       handle: '@demotech',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'PostgreSQL, Strapi & Next.js Stack Architect.',
       subscribersCount: 24300,
     },
@@ -399,7 +400,7 @@ Durch diesen Slot-Interleaving-Mechanismus erhält jeder Nutzer ein maßgeschnei
       id: 1,
       username: 'Database Guru',
       handle: '@demotech',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'PostgreSQL, Strapi & Next.js Stack Architect.',
       subscribersCount: 24300,
     },
@@ -420,7 +421,7 @@ export function getAuthorHandle(item: FeedItem): string {
 }
 
 export function getAuthorAvatar(item: FeedItem): string {
-  return item.author?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+  return item.author?.avatarUrl || resolveAvatarUrl(item.authorAvatar);
 }
 
 export function getAuthorBio(item: FeedItem): string {

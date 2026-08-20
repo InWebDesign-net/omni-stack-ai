@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="">
+  <!--
+    Neutral avatar placeholder.
+
+    Deliberately mid-tone rather than theme-aware: this is loaded as an <img src>,
+    so it inherits nothing from the page and has to read on both the dark and the
+    light surface. The circle sits between the two, the glyph is lighter than the
+    circle on either.
+  -->
+  <circle cx="48" cy="48" r="48" fill="#39415a"/>
+  <circle cx="48" cy="38" r="15" fill="#9aa4c0"/>
+  <path d="M48 58c-15.5 0-28 9.8-28 21.9V96h56V79.9C76 67.8 63.5 58 48 58Z" fill="#9aa4c0"/>
+</svg>

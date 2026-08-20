@@ -9,6 +9,7 @@ import {
   ChevronDown, ChevronUp, BookOpen, Sparkles,
 } from 'lucide-react';
 import { formatRelativeDate } from '@/lib/date';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -321,7 +322,7 @@ export function ContentComments({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Image
-                    src={comment.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+                    src={resolveAvatarUrl(comment.authorAvatar)}
                     alt={comment.authorName}
                     className="w-6 h-6 rounded-full object-cover"
                   />

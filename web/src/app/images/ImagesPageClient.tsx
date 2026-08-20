@@ -31,6 +31,7 @@ import { ActionButton } from '@/components/ActionButton';
 
 import { jsonAuthHeaders } from '@/lib/affinity';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 export default function ImagesPageClient({ initialParams }: { initialParams?: any }) {
   const { currentUser, openAuthModal, lang, t, openChannelModal } = useApp();
@@ -281,8 +282,8 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                     (currentUser.handle && img.creator.handle && currentUser.handle.toLowerCase() === img.creator.handle.toLowerCase()))
               );
               const effectiveCreatorAvatar = (isImgOwner && typeof currentUser?.avatarUrl !== 'undefined')
-                ? (currentUser.avatarUrl || img.creator?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80')
-                : (img.creator?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80');
+                ? (currentUser.avatarUrl || resolveAvatarUrl(img.creator?.avatarUrl))
+                : (resolveAvatarUrl(img.creator?.avatarUrl));
 
               return (
                 <Link

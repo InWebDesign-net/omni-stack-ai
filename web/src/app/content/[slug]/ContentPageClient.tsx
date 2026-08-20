@@ -38,6 +38,7 @@ import { tracker } from '@/lib/tracking';
 import { ContentInfo, ContentComments, RelatedContent } from './ContentComponents';
 import CommentItem from '@/components/CommentItem';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -288,7 +289,7 @@ export default function ContentPageClient({
 
     const activeUser = currentUser || userData;
     const authorName = activeUser ? activeUser.username || activeUser.handle : 'Gast';
-    const authorAvatar = activeUser?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+    const authorAvatar = resolveAvatarUrl(activeUser?.avatarUrl);
     const authorId = activeUser?.id;
 
     const result = await createCommentInStrapi({
@@ -406,7 +407,7 @@ export default function ContentPageClient({
   const fallbackCreator = {
     username: item?.creator?.username || item?.authorName || 'Omni Creator',
     handle: item?.creator?.handle || '@omnicreator',
-    avatarUrl: item?.creator?.avatarUrl || item?.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+    avatarUrl: item?.creator?.avatarUrl || resolveAvatarUrl(item?.authorAvatar),
     bio: item?.creator?.bio || 'Omni Verified Content Creator & Writer.',
   };
 
@@ -639,7 +640,7 @@ export default function ContentPageClient({
               {/* Add Comment Form */}
               <form onSubmit={handleAddComment} className="flex gap-3">
                 <Image
-                  src={userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+                  src={resolveAvatarUrl(userData?.avatarUrl)}
                   alt="Dein Avatar"
                   className="h-9 w-9 rounded-full object-cover border border-subtle shrink-0 mt-1"
                 />

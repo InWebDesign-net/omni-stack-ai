@@ -1,4 +1,5 @@
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 export interface UserProfile {
   id: number;
@@ -298,7 +299,7 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         documentId: targetProfile.documentId || String(targetProfile.id),
         username: targetProfile.username || 'User Profile',
         handle: targetProfile.handle || `@user${targetProfile.id}`,
-        avatarUrl: targetProfile.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        avatarUrl: resolveAvatarUrl(targetProfile.avatarUrl),
         bio: targetProfile.bio || 'Content Creator on Omni Media Network.',
         subscribersCount: targetProfile.subscribersCount || 0,
         createdAt: targetProfile.createdAt,

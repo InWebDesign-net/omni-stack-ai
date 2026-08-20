@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { defaultAffinityGraph } from '@/lib/affinity';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 export async function POST(req: Request) {
   try {
@@ -50,7 +51,11 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           bio: bio || 'Omni Community Mitglied',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+          // No avatar is written at sign-up. Storing a stand-in makes "has not
+          // chosen a picture" indistinguishable from "chose this one", and the
+          // value it used to store was a photograph of a specific person.
+          // An empty field lets the placeholder do its job and lets a later
+          // upload replace nothing.
           handle: `@${username.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
           affinityGraph: defaultAffinityGraph(),
         }),
@@ -68,7 +73,7 @@ export async function POST(req: Request) {
         username: user.username,
         email: user.email,
         handle: user.handle || `@${username.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
-        avatarUrl: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        avatarUrl: resolveAvatarUrl(user.avatarUrl),
         bio: user.bio || bio || 'Omni Community Mitglied',
         subscribersCount: user.subscribersCount || 0,
       },

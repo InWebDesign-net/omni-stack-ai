@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
         text,
         authorName: authorName || 'Gast',
         authorHandle: authorHandle || '@gast',
-        authorAvatar: authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+        authorAvatar: resolveAvatarUrl(authorAvatar),
         isEdited: false,
         depth: calculatedDepth,
         repliesCount: 0,

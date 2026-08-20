@@ -42,6 +42,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { formatRelativeDate } from '@/lib/date';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER } from '@/lib/avatar';
 import {
   fetchCommentsForSlug,
   createCommentInStrapi,
@@ -184,7 +185,7 @@ export default function VideoPageClient({
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const fallbackCreator = useMemo(() => {
-    return { username: 'Omni Creator', handle: '@omni', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'Creator im Omni Network.' };
+    return { username: 'Omni Creator', handle: '@omni', avatarUrl: AVATAR_PLACEHOLDER, bio: 'Creator im Omni Network.' };
   }, []);
 
   const creator = video?.creator || video?.author || initialVideo?.creator || initialVideo?.author;

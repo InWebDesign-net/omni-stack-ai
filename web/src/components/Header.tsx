@@ -30,6 +30,7 @@ import { DEMO_CREATORS } from '@/config/demo';
 import Image from 'next/image';
 import NotificationDrawer from '@/components/NotificationDrawer';
 import ThemeToggle from '@/components/ThemeToggle';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 export function OmniLogo({ size = 28 }: { size?: number }) {
   return (
@@ -324,7 +325,7 @@ export default function Header({
                 aria-expanded={userDropdownOpen}
               >
                 <Image
-                  src={activeUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
+                  src={resolveAvatarUrl(activeUser.avatarUrl)}
                   alt={activeUser.username}
                   width={28}
                   height={28}

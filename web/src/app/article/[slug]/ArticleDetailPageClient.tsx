@@ -20,6 +20,7 @@ import { useContentList, ArticleItem } from '@/lib/hooks/useContentList';
 import { getRotatedRecommendations } from '@/lib/recommendations';
 import { getArticleOwnerStatus } from './actions';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER } from '@/lib/avatar';
 
 function pickLocalized(source: any, useLang: string) {
   if (!source) return null;
@@ -91,7 +92,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     return {
       username: 'Omni Redaktion',
       handle: '@omni',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      avatarUrl: AVATAR_PLACEHOLDER,
       bio: 'Inhalte & Magazin im Omni Network.',
     };
   }, []);

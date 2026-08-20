@@ -1,4 +1,5 @@
 import { formatRelativeDate } from '@/lib/date';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 export interface CommentItem {
   id: number | string;
@@ -112,7 +113,7 @@ export async function createCommentInStrapi(params: {
       text: item.text,
       authorName: item.authorName || params.authorName || 'Du',
       authorHandle: item.authorHandle || params.authorHandle || '@du',
-      authorAvatar: item.authorAvatar || params.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+      authorAvatar: item.authorAvatar || resolveAvatarUrl(params.authorAvatar),
       isEdited: item.isEdited || false,
       feedSlug: item.feedSlug,
       createdAt: 'Gerade eben',

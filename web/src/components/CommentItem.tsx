@@ -16,6 +16,7 @@ import {
 import { CommentItem as CommentItemType } from '@/lib/comments';
 import { useApp } from '@/context/AppContext';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 interface CommentItemProps {
   comment: CommentItemType;
@@ -100,8 +101,8 @@ export default function CommentItem({
         <Image
           src={
             (isOwner && typeof currentUser?.avatarUrl !== 'undefined')
-              ? (currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80')
-              : (comment.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80')
+              ? (resolveAvatarUrl(currentUser.avatarUrl))
+              : (resolveAvatarUrl(comment.authorAvatar))
           }
           alt={comment.authorName}
           loading="lazy"

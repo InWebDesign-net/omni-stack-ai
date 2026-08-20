@@ -28,6 +28,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
 import { formatRelativeDate } from '@/lib/date';
 import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 interface ImagePageClientProps {
   initialImage: any;
@@ -215,8 +216,8 @@ export default function ImagePageClient({
         (currentUser.handle && rawCreatorObj.handle && currentUser.handle.toLowerCase() === rawCreatorObj.handle.toLowerCase()))
   );
   const effectiveCreatorAvatar = (isCreatorOwner && typeof currentUser?.avatarUrl !== 'undefined')
-    ? (currentUser.avatarUrl || rawCreatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80')
-    : (rawCreatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80');
+    ? (currentUser.avatarUrl || resolveAvatarUrl(rawCreatorObj.avatarUrl))
+    : (resolveAvatarUrl(rawCreatorObj.avatarUrl));
 
   const creatorObj = {
     ...rawCreatorObj,
@@ -229,7 +230,7 @@ export default function ImagePageClient({
       documentId: creator.documentId,
       username: creator.username || 'Omni Creator',
       handle: creator.handle || `@${(creator.username || 'creator').toLowerCase()}`,
-      avatarUrl: creator.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+      avatarUrl: resolveAvatarUrl(creator.avatarUrl),
       bio: creator.bio || 'Omni Network Content Creator',
       subscribersCount: Number(creator.subscribersCount || 0),
     });
@@ -340,7 +341,7 @@ export default function ImagePageClient({
                 <div className="flex items-center justify-between pt-4 border-t border-subtle">
                   <div className="flex items-center gap-3">
                     <Image
-                      src={creatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
+                      src={resolveAvatarUrl(creatorObj.avatarUrl)}
                       alt={creatorObj.username}
                       width={40}
                       height={40}

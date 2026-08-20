@@ -9,6 +9,7 @@ import { useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import { useContentList, ImageItem, VideoItem, ArticleItem } from '@/lib/hooks/useContentList';
 import Image from 'next/image';
+import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 
 interface ChannelItem {
   id: string | number;
@@ -110,7 +111,7 @@ export default function HomeClient() {
             documentId: c.documentId,
             username: c.username || 'Creator',
             handle: c.handle || `@${(c.username || 'creator').toLowerCase()}`,
-            avatarUrl: c.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80',
+            avatarUrl: resolveAvatarUrl(c.avatarUrl),
             bio: c.bio || '',
             subscribersCount: Number(c.subscribersCount || 0),
             hasNewContent: false,
@@ -396,7 +397,7 @@ export default function HomeClient() {
                       currentUser.username === creatorName ||
                       (currentUser.handle && (creator?.handle || item.authorHandle) && currentUser.handle.toLowerCase() === (creator?.handle || item.authorHandle).toLowerCase()))
                 );
-                const rawCreatorAvatar = creator?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+                const rawCreatorAvatar = creator?.avatarUrl || resolveAvatarUrl(item.authorAvatar);
                 const creatorAvatar = (isItemOwner && typeof currentUser?.avatarUrl !== 'undefined')
                   ? (currentUser.avatarUrl || rawCreatorAvatar)
                   : rawCreatorAvatar;
@@ -526,7 +527,7 @@ export default function HomeClient() {
                       currentUser.username === creatorName ||
                       (currentUser.handle && (creator?.handle || item.authorHandle) && currentUser.handle.toLowerCase() === (creator?.handle || item.authorHandle).toLowerCase()))
                 );
-                const rawCreatorAvatar = creator?.avatarUrl || item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+                const rawCreatorAvatar = creator?.avatarUrl || resolveAvatarUrl(item.authorAvatar);
                 const creatorAvatar = (isItemOwner && typeof currentUser?.avatarUrl !== 'undefined')
                   ? (currentUser.avatarUrl || rawCreatorAvatar)
                   : rawCreatorAvatar;
