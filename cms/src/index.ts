@@ -68,12 +68,27 @@ export default {
           return next();
         }
 
-        // Single-item lookup by slug/documentId/id allows public, unlisted, and subscribers items
+        // Single-item lookup by slug/documentId/id.
+        //
+        // Anonymous callers see public, unlisted and subscribers entries. An
+        // authenticated caller additionally sees their OWN private entries —
+        // without that, an author cannot open the article they just created,
+        // since new articles start out private. Scoping the private branch to
+        // the owner keeps it tighter than a blanket bypass would: being logged
+        // in is not enough to read someone else's private item by guessing its
+        // slug.
         if (isSpecificItemQuery) {
-          context.params.filters = {
-            ...filters,
-            visibility: { $in: ['public', 'unlisted', 'subscribers'] },
-          };
+          const ownerField = usesCreator ? 'creator' : 'author';
+          const visibleBranches: any[] = [
+            { visibility: { $in: ['public', 'unlisted', 'subscribers'] } },
+          ];
+          if (uidNum != null) {
+            visibleBranches.push({
+              visibility: { $eq: 'private' },
+              [ownerField]: { id: { $eq: uidNum } },
+            });
+          }
+          context.params.filters = { ...filters, $or: visibleBranches };
           return next();
         }
 

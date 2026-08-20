@@ -142,7 +142,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ kind: s
       return NextResponse.json({ error: 'title and slug are required' }, { status: 400 });
     }
 
-    const res = await fetch(`${strapiBase()}/api/${plural}`, {
+    // The locale of a new document is a query parameter in Strapi 5. Passing it
+    // inside `data` — as this did — is silently ignored, so every article was
+    // created in the default locale (en) regardless of what the author picked.
+    // The follow-up localization then tried to create the locale that already
+    // existed, failed, and left the requested language missing entirely.
+    const createLocale = lang || 'de';
+    const res = await fetch(
+      `${strapiBase()}/api/${plural}?locale=${encodeURIComponent(createLocale)}`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -171,22 +178,37 @@ export async function POST(req: Request, { params }: { params: Promise<{ kind: s
     const createdItem = data.data;
 
     if (createdItem?.documentId) {
-      const targetLocale = (lang || 'de') === 'de' ? 'en' : 'de';
-      try {
-        await fetch(`${strapiBase()}/api/${plural}/${createdItem.documentId}/localizations`, {
-          method: 'POST',
+      // Strapi 5 removed the v4 `/localizations` endpoint — it answers 405, and
+      // because the previous code never checked res.ok that failure was
+      // invisible: every article was created in one language only. In v5 a
+      // locale is written with a PUT carrying ?locale=.
+      const targetLocale = createLocale === 'de' ? 'en' : 'de';
+      const locRes = await fetch(
+        `${strapiBase()}/api/${plural}/${createdItem.documentId}?locale=${encodeURIComponent(targetLocale)}`,
+        {
+          method: 'PUT',
           headers,
           body: JSON.stringify({
             data: {
               title,
               slug,
               visibility: visibility || 'private',
-              locale: targetLocale,
+              // The second locale needs the creator too. Without it the row has
+              // no author: it is hidden from the owner's own single-item lookups
+              // (which scope private entries by creator) and shows up unattributed.
+              ...(user?.id ? { creator: user.id } : {}),
             },
           }),
-        });
-      } catch (locErr) {
-        console.warn(`Failed to create secondary localization for ${kind}:`, locErr);
+        }
+      );
+
+      if (!locRes.ok) {
+        // Not fatal — the article exists in the requested language — but it must
+        // not vanish into silence, or a half-created bilingual article looks
+        // complete.
+        console.error(
+          `[content-api] secondary localization (${targetLocale}) for ${kind} ${createdItem.documentId} failed: ${locRes.status} ${await locRes.text()}`
+        );
       }
     }
 

@@ -41,7 +41,11 @@ async function getArticleData(slug: string, lang: string = 'de') {
     // Fallback to standard articles query if filtered returned no items
     if (!items || items.length === 0) {
       res = await fetch(
-        `${strapiUrl}/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&status=draft&populate[creator]=true&populate[blocks][populate][video][populate][creator]=true&populate[blocks][populate][image][populate][creator]=true&locale=*`,
+        // `populate[blocks][populate][video]…` is not valid for a dynamic zone —
+        // Strapi answers 400 "Invalid key populate at blocks", so this fallback
+        // never returned anything. Public articles are found by the `filtered`
+        // endpoint above, which is why only private and draft ones 404'd.
+        `${strapiUrl}/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&status=draft&populate[creator]=true&populate[blocks][populate]=*&locale=*`,
         { headers: reqHeaders, cache: 'no-store' }
       );
       if (res.ok) {
