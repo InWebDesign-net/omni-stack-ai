@@ -6,6 +6,8 @@ import Header from '@/components/Header';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { useApp } from '@/context/AppContext';
 import { ImageItem } from '@/lib/hooks/useContentList';
+import { ContentTagFilter } from '@/components/content/ContentTagFilter';
+import { ContentSearchBar } from '@/components/content/ContentSearchBar';
 import { useContentListPage } from '@/lib/hooks/useContentListPage';
 import {
   Search,
@@ -165,29 +167,16 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
           {/* Search & Sort Control Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
             {/* Search Input Form */}
-            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                id="images-search-input"
-                type="text"
-                aria-label={t.common.searchPlaceholder}
-                placeholder="Bilder, Renderings & Fotografien suchen..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 outline-none focus:outline-none focus:border-teal-500 transition-all"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  aria-label="Suche zurücksetzen"
-                  title="Suche zurücksetzen"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </form>
+            <ContentSearchBar
+              kind="image"
+              accent="teal"
+              placeholder={t.images?.searchPlaceholder || 'Bilder, Renderings & Fotografien suchen...'}
+              clearLabel={t.common?.clearSearch || 'Suche zurücksetzen'}
+              value={searchInput}
+              onChange={setSearchInput}
+              onSubmit={handleSearchSubmit}
+              onClear={clearSearch}
+            />
 
             <div className="flex items-center gap-3">
               {/* Sort Selector Dropdown */}
@@ -231,114 +220,31 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
             </div>
           </div>
 
-          {/* Interactive Multi-Tag Filter Cloud */}
-          {allTags.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-slate-800/60">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Tag className="w-3.5 h-3.5 text-teal-400" />
-                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                    Kategorien & Tags Filter
-                  </span>
-                  {(includedTags.length > 0 || excludedTags.length > 0) && (
-                    <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-mono border border-teal-500/30">
-                      {includedTags.length + excludedTags.length} aktiv
-                    </span>
-                  )}
-
-                  {includedTags.length > 1 && (
-                    <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-[11px] ml-2">
-                      <button
-                        type="button"
-                        onClick={() => toggleMatchMode('any')}
-                        className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                          matchMode === 'any'
-                            ? 'bg-teal-500/20 text-teal-300 font-bold'
-                            : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        Irgendein Tag
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleMatchMode('all')}
-                        className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                          matchMode === 'all'
-                            ? 'bg-teal-500/20 text-teal-300 font-bold'
-                            : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        Alle Tags
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {allTags.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Tag suchen..."
-                      value={tagSearch}
-                      onChange={(e) => setTagSearch(e.target.value)}
-                      className="px-2.5 py-1 bg-slate-950/80 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowAllTags(!showAllTags)}
-                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-teal-400 font-medium transition-colors cursor-pointer"
-                    >
-                      <span>{showAllTags ? 'Weniger anzeigen' : `Alle Tags (${allTags.length})`}</span>
-                      {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
-                  showAllTags || tagSearch.trim()
-                    ? 'max-h-[380px] sm:max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700'
-                    : 'max-h-[68px] sm:max-h-[72px] overflow-hidden'
-                }`}
-              >
-                {displayedTags.map((item: any) => {
-                  const tag = typeof item === 'string' ? item : item?.tag || '';
-                  const count = typeof item === 'object' ? item?.count : null;
-                  const isInc = includedTags.includes(tag);
-                  const isExc = excludedTags.includes(tag);
-                  const state = isInc ? 'include' : isExc ? 'exclude' : 'none';
-
-                  const baseClass =
-                    'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border select-none group shrink-0';
-
-                  const stateClass =
-                    state === 'include'
-                      ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 hover:bg-teal-500/30'
-                      : state === 'exclude'
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
-                      : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:border-teal-500/40 hover:text-white';
-
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => toggleTag(tag)}
-                      className={`${baseClass} ${stateClass}`}
-                    >
-                      {state === 'include' && <Plus className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
-                      {state === 'exclude' && <Minus className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
-                      {state === 'none' && <Plus className="w-3.5 h-3.5 text-slate-500 opacity-60 group-hover:opacity-100 shrink-0" />}
-                      <span>{tag}</span>
-                      {count !== null && count !== undefined && (
-                        <span className="text-[10px] opacity-60 font-mono">({count})</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+        <ContentTagFilter
+            accent="teal"
+            labels={{
+              heading: t.tagFilter?.allTags || 'Alle Tags',
+              activeSuffix: t.tagFilter?.activeTags || 'aktiv',
+              matchAny: t.tagFilter?.matchAny || 'Irgendein Tag',
+              matchAll: t.tagFilter?.matchAll || 'Alle Tags',
+              searchTagsPlaceholder: t.tagFilter?.searchTagsPlaceholder || 'Tag suchen...',
+              noTagsFound: t.tagFilter?.noTagsFound || 'Keine Tags für "{query}" gefunden.',
+              showLess: t.tagFilter?.showLess || 'Weniger anzeigen',
+              showAll: t.tagFilter?.showAll || 'Alle Tags',
+            }}
+            allTags={allTags}
+            filteredAllTags={displayedTags}
+            includedTags={includedTags}
+            excludedTags={excludedTags}
+            matchMode={matchMode}
+            hasTagFilters={hasTagFilters}
+            tagSearch={tagSearch}
+            isTagCloudExpanded={showAllTags}
+            toggleTag={toggleTag}
+            setMatchMode={toggleMatchMode}
+            setTagSearch={setTagSearch}
+            setIsTagCloudExpanded={setShowAllTags}
+          />
         </div>
 
         {/* Gallery Grid */}

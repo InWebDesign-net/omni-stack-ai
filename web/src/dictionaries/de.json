@@ -38,7 +38,8 @@
     "commentError": "Fehler beim Kommentieren",
     "writeComment": "Kommentar schreiben...",
     "loginToComment": "Anmelden zum Kommentieren...",
-    "noComments": "Noch keine Kommentare"
+    "noComments": "Noch keine Kommentare",
+    "clearSearch": "Suche zurücksetzen"
   },
   "header": {
     "searchPlaceholder": "Was möchtest du heute entdecken?",
@@ -83,7 +84,8 @@
     "deleteConfirm": "Wirklich löschen?",
     "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
     "softDelete": "Soft Delete",
-    "hardDelete": "Endgültig löschen"
+    "hardDelete": "Endgültig löschen",
+    "searchPlaceholder": "Bilder, Renderings & Fotografien suchen..."
   },
   "videos": {
     "title": "Video-Bibliothek",
@@ -110,7 +112,8 @@
     "noVideosFound": "Keine Videos gefunden",
     "noVideosSub": "Für deine aktuellen Such- und Filterkriterien wurden leider keine Video-Einträge gefunden.",
     "searchTagsPlaceholder": "Tags durchsuchen...",
-    "noTagsFound": "Keine Tags für \"{query}\" gefunden."
+    "noTagsFound": "Keine Tags für \"{query}\" gefunden.",
+    "searchPlaceholder": "Videos durchsuchen..."
   },
   "articles": {
     "title": "Artikel & Magazin",
@@ -447,5 +450,15 @@
       "subtitle": "Omni Network – Hyper-Personalisiertes KI Mediennetzwerk",
       "rights": "© 2026 InWebDesign. Alle Rechte vorbehalten."
     }
+  },
+  "tagFilter": {
+    "allTags": "Alle Tags",
+    "activeTags": "aktiv",
+    "matchAny": "Irgendein Tag",
+    "matchAll": "Alle Tags",
+    "searchTagsPlaceholder": "Tag suchen...",
+    "noTagsFound": "Keine Tags für \"{query}\" gefunden.",
+    "showAll": "Alle Tags",
+    "showLess": "Weniger anzeigen"
   }
 }

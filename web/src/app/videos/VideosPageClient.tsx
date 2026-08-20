@@ -29,6 +29,8 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { ActionButton } from '@/components/ActionButton';
+import { ContentTagFilter } from '@/components/content/ContentTagFilter';
+import { ContentSearchBar } from '@/components/content/ContentSearchBar';
 import Image from 'next/image';
 
 export default function VideosPageClient({
@@ -99,29 +101,16 @@ export default function VideosPageClient({
           {/* Search & Sort Control Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
             {/* Search Input Form */}
-            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                id="videos-search-input"
-                type="text"
-                aria-label={t.common.searchPlaceholder}
-                placeholder={t.common.searchPlaceholder}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 outline-none focus:outline-none focus:border-indigo-500 focus:ring-0 ring-0 transition-all"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  aria-label="Suche zurücksetzen"
-                  title="Suche zurücksetzen"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </form>
+            <ContentSearchBar
+              kind="video"
+              accent="indigo"
+              placeholder={t.videos?.searchPlaceholder || t.common?.searchPlaceholder || 'Videos durchsuchen...'}
+              clearLabel={t.common?.clearSearch || 'Suche zurücksetzen'}
+              value={searchInput}
+              onChange={setSearchInput}
+              onSubmit={handleSearchSubmit}
+              onClear={clearSearch}
+            />
 
             <div className="flex items-center gap-3">
               {/* Sort Selector Dropdown */}
@@ -174,141 +163,31 @@ export default function VideosPageClient({
             </div>
           </div>
 
-          {/* Tag filter (same control panel as search/sort) */}
-          <div className="pt-4 border-t border-slate-800/60 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              {/* Left Side: Title + Active Filter Count + Match Mode Toggle */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <Tag className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{t.videos.allTags}</span>
-                {hasTagFilters && (
-                  <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
-                    {includedTags.length + excludedTags.length} {t.videos.activeTags || 'aktiv'}
-                  </span>
-                )}
-                {includedTags.length > 1 && (
-                  <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-[11px] ml-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setMatchMode('any')}
-                      className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                        matchMode === 'any'
-                          ? 'bg-indigo-500/20 text-indigo-300 font-bold'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      {t.videos?.matchAny || 'Irgendein Tag'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMatchMode('all')}
-                      className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                        matchMode === 'all'
-                          ? 'bg-indigo-500/20 text-indigo-300 font-bold'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      {t.videos?.matchAll || 'Alle Tags'}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Right Side: Tag Search Input + Count & Expand/Collapse Toggle Button */}
-              <div className="flex items-center gap-2 self-end sm:self-auto">
-                <div className="relative flex items-center bg-slate-950/80 border border-slate-800 focus-within:border-indigo-500/80 rounded-xl px-2.5 py-1 text-xs transition-all">
-                  <input
-                    type="text"
-                    placeholder={t.videos?.searchTagsPlaceholder || "Tag suchen..."}
-                    value={tagSearch}
-                    onChange={(e) => setTagSearch(e.target.value)}
-                    className="w-28 sm:w-36 bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
-                  />
-                  {tagSearch && (
-                    <button
-                      type="button"
-                      onClick={() => setTagSearch("")}
-                      className="p-0.5 text-slate-400 hover:text-slate-200 shrink-0 ml-1"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-
-                {allTags.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setIsTagCloudExpanded(!isTagCloudExpanded)}
-                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 font-medium transition-colors cursor-pointer"
-                  >
-                    <span>{isTagCloudExpanded ? (t.common?.showLess || "Weniger anzeigen") : `Alle Tags (${allTags.length})`}</span>
-                    {isTagCloudExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Tag cloud: height-capped 2-row (collapsed) / 12-row scrollable (expanded) container */}
-            <div
-              className={`flex flex-wrap items-center gap-2 transition-all duration-300 ${
-                isTagCloudExpanded || tagSearch.trim()
-                  ? "max-h-[380px] sm:max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700"
-                  : "max-h-[68px] sm:max-h-[72px] overflow-hidden"
-              }`}
-            >
-              {allTags.length === 0 ? (
-                // Skeleton pills matching exact height
-                Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={`tag-skeleton-${i}`}
-                    style={{ width: `${64 + ((i * 17) % 52)}px` }}
-                    className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
-                  />
-                ))
-              ) : filteredAllTags.length === 0 ? (
-                <div className="text-xs text-slate-500 italic py-1">
-                  {(t.videos?.noTagsFound || 'Keine Tags für "{query}" gefunden.').replace('{query}', tagSearch)}
-                </div>
-              ) : (
-                filteredAllTags.map(({ tag, count }) => {
-                  const state = includedTags.includes(tag)
-                    ? 'include'
-                    : excludedTags.includes(tag)
-                    ? 'exclude'
-                    : 'none';
-
-                  const baseClass =
-                    'px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border select-none group shrink-0';
-
-                  const stateClass =
-                    state === 'include'
-                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30'
-                      : state === 'exclude'
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
-                      : 'bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:border-indigo-500/40 hover:text-white';
-
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => toggleTag(tag)}
-                      className={`${baseClass} ${stateClass}`}
-                    >
-                      {state === 'include' && <Plus className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
-                      {state === 'exclude' && <Minus className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
-                      {state === 'none' && <Plus className="w-3.5 h-3.5 text-slate-500 opacity-60 group-hover:opacity-100 shrink-0" />}
-                      <span>{tag}</span>
-                      <span className="text-[10px] opacity-60 font-mono">({count})</span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </div>
+          <ContentTagFilter
+            accent="indigo"
+            labels={{
+              heading: t.tagFilter?.allTags || 'Alle Tags',
+              activeSuffix: t.tagFilter?.activeTags || 'aktiv',
+              matchAny: t.tagFilter?.matchAny || 'Irgendein Tag',
+              matchAll: t.tagFilter?.matchAll || 'Alle Tags',
+              searchTagsPlaceholder: t.tagFilter?.searchTagsPlaceholder || 'Tag suchen...',
+              noTagsFound: t.tagFilter?.noTagsFound || 'Keine Tags für "{query}" gefunden.',
+              showLess: t.tagFilter?.showLess || 'Weniger anzeigen',
+              showAll: t.tagFilter?.showAll || 'Alle Tags',
+            }}
+            allTags={allTags}
+            filteredAllTags={filteredAllTags}
+            includedTags={includedTags}
+            excludedTags={excludedTags}
+            matchMode={matchMode}
+            hasTagFilters={hasTagFilters}
+            tagSearch={tagSearch}
+            isTagCloudExpanded={isTagCloudExpanded}
+            toggleTag={toggleTag}
+            setMatchMode={setMatchMode}
+            setTagSearch={setTagSearch}
+            setIsTagCloudExpanded={setIsTagCloudExpanded}
+          />
         </div>
 
         {/* Video Card Grid */}

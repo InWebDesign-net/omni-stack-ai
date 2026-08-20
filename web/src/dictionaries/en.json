@@ -38,7 +38,8 @@
     "commentError": "Error commenting",
     "writeComment": "Write a comment...",
     "loginToComment": "Login to comment...",
-    "noComments": "No comments yet"
+    "noComments": "No comments yet",
+    "clearSearch": "Clear search"
   },
   "header": {
     "searchPlaceholder": "What would you like to discover today?",
@@ -83,7 +84,8 @@
     "deleteConfirm": "Really delete?",
     "deleteWarning": "This action cannot be undone.",
     "softDelete": "Soft Delete",
-    "hardDelete": "Delete Permanently"
+    "hardDelete": "Delete Permanently",
+    "searchPlaceholder": "Search images, renders & photography..."
   },
   "videos": {
     "title": "Video Library",
@@ -110,7 +112,8 @@
     "noVideosFound": "No videos found",
     "noVideosSub": "No video entries found for your current search and filter criteria.",
     "searchTagsPlaceholder": "Search tags...",
-    "noTagsFound": "No tags found for \"{query}\""
+    "noTagsFound": "No tags found for \"{query}\"",
+    "searchPlaceholder": "Search videos..."
   },
   "articles": {
     "title": "Articles & Magazine",
@@ -447,5 +450,15 @@
       "subtitle": "Omni Network – Hyper-Personalized AI Media Network",
       "rights": "© 2026 InWebDesign. All rights reserved."
     }
+  },
+  "tagFilter": {
+    "allTags": "All tags",
+    "activeTags": "active",
+    "matchAny": "Any tag",
+    "matchAll": "All tags",
+    "searchTagsPlaceholder": "Search tag...",
+    "noTagsFound": "No tags found for \"{query}\".",
+    "showAll": "All tags",
+    "showLess": "Show less"
   }
 }
