@@ -459,6 +459,7 @@
     "searchTagsPlaceholder": "Tag suchen...",
     "noTagsFound": "Keine Tags für \"{query}\" gefunden.",
     "showAll": "Alle Tags",
-    "showLess": "Weniger anzeigen"
+    "showLess": "Weniger anzeigen",
+    "noTagsAtAll": "Keine Tags vorhanden."
   }
 }

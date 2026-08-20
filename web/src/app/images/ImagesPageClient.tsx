@@ -112,7 +112,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     setTagSearch,
     setIsTagCloudExpanded: setShowAllTags,
     resetTagFilters: resetAllFilters,
-    allTags,
+    allTags, isLoadingTags,
     items: images, total, isLoading, isError, refresh,
     totalPages, updateURL, handleSortChange, handlePageChange, hardReset,
     hasActiveFilters,
@@ -231,8 +231,10 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
               noTagsFound: t.tagFilter?.noTagsFound || 'Keine Tags für "{query}" gefunden.',
               showLess: t.tagFilter?.showLess || 'Weniger anzeigen',
               showAll: t.tagFilter?.showAll || 'Alle Tags',
+              noTagsAtAll: t.tagFilter?.noTagsAtAll || 'Keine Tags vorhanden.',
             }}
             allTags={allTags}
+            isLoadingTags={isLoadingTags}
             filteredAllTags={displayedTags}
             includedTags={includedTags}
             excludedTags={excludedTags}

@@ -47,7 +47,7 @@ export default function VideosPageClient({
     searchInput, setSearchInput, handleSearchSubmit, clearSearch,
     includedTags, excludedTags, matchMode, tagSearch, isTagCloudExpanded,
     filteredAllTags, hasTagFilters, toggleTag, setMatchMode, setTagSearch,
-    setIsTagCloudExpanded, allTags,
+    setIsTagCloudExpanded, allTags, isLoadingTags,
     items: videos, total: totalVideos, isLoading, isError, refresh,
     totalPages, updateURL, handleSortChange, handlePageChange, hardReset,
     hasActiveFilters,
@@ -174,8 +174,10 @@ export default function VideosPageClient({
               noTagsFound: t.tagFilter?.noTagsFound || 'Keine Tags für "{query}" gefunden.',
               showLess: t.tagFilter?.showLess || 'Weniger anzeigen',
               showAll: t.tagFilter?.showAll || 'Alle Tags',
+              noTagsAtAll: t.tagFilter?.noTagsAtAll || 'Keine Tags vorhanden.',
             }}
             allTags={allTags}
+            isLoadingTags={isLoadingTags}
             filteredAllTags={filteredAllTags}
             includedTags={includedTags}
             excludedTags={excludedTags}

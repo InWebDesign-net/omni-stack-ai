@@ -60,7 +60,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
     [searchParams, pathname, router]
   );
 
-  const { tags: allTags } = useContentTags(kind, lang);
+  const { tags: allTags, isLoading: isLoadingTags } = useContentTags(kind, lang);
 
   const tagFilter = useTagFilter(allTags, updateURL);
   const { includedTags, excludedTags, matchMode } = tagFilter;
@@ -145,6 +145,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
     // tag filtering
     ...tagFilter,
     allTags,
+    isLoadingTags,
     // data
     items,
     total,

@@ -24,6 +24,8 @@ export interface ContentTagFilterLabels {
   noTagsFound: string;
   showLess: string;
   showAll: string;
+  /** Shown when loading finished and the kind genuinely has no tags. */
+  noTagsAtAll: string;
 }
 
 export interface ContentTagFilterProps {
@@ -31,6 +33,8 @@ export interface ContentTagFilterProps {
   labels: ContentTagFilterLabels;
   allTags: TagCount[];
   filteredAllTags: TagCount[];
+  /** Skeletons are shown only while this is true — an empty list must not look like loading. */
+  isLoadingTags?: boolean;
   includedTags: string[];
   excludedTags: string[];
   matchMode: 'any' | 'all';
@@ -48,6 +52,7 @@ export function ContentTagFilter({
   labels,
   allTags,
   filteredAllTags,
+  isLoadingTags = false,
   includedTags,
   excludedTags,
   matchMode,
@@ -152,8 +157,11 @@ export function ContentTagFilter({
             : 'max-h-[68px] sm:max-h-[72px] overflow-hidden'
         }`}
       >
-        {allTags.length === 0 ? (
+        {isLoadingTags ? (
           // Skeletons sized to the real pills so the panel does not jump on load.
+          // Shown ONLY while loading: a permanently empty list that renders as
+          // skeletons is indistinguishable from a slow request, which is exactly
+          // how a broken tag response stayed unnoticed on all three pages.
           Array.from({ length: 12 }).map((_, i) => (
             <div
               key={`tag-skeleton-${i}`}
@@ -161,6 +169,8 @@ export function ContentTagFilter({
               className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
             />
           ))
+        ) : allTags.length === 0 ? (
+          <div className="text-xs text-slate-500 italic py-1">{labels.noTagsAtAll}</div>
         ) : filteredAllTags.length === 0 ? (
           <div className="text-xs text-slate-500 italic py-1">
             {labels.noTagsFound.replace('{query}', tagSearch)}

@@ -193,15 +193,33 @@ export function useContentList<T>(kind: ContentKind, params: UseContentListParam
   };
 }
 
+export interface ContentTag {
+  tag: string;
+  count: number;
+}
+
+/**
+ * The tags endpoint answers with a bare array, while some Strapi responses come
+ * wrapped in `{ data: [...] }`. Accepting both is deliberate: assuming the
+ * wrapper silently produced an empty tag list on every list page, which looks
+ * exactly like "still loading" and so went unnoticed.
+ */
+function normalizeTags(payload: unknown): ContentTag[] {
+  if (Array.isArray(payload)) return payload as ContentTag[];
+  const inner = (payload as { data?: unknown } | null | undefined)?.data;
+  if (Array.isArray(inner)) return inner as ContentTag[];
+  return [];
+}
+
 export function useContentTags(kind: ContentKind, lang: string = 'de') {
-  const { data, error, isLoading } = useSWR<{ data: { tag: string; count: number }[] }>(
+  const { data, error, isLoading } = useSWR<ContentTag[] | { data: ContentTag[] }>(
     `/api/content/${kind}/tags?lang=${lang}`,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   return {
-    tags: data?.data || [],
+    tags: normalizeTags(data),
     isLoading,
     isError: !!error,
   };
