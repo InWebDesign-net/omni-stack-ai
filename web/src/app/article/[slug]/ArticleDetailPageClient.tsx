@@ -282,7 +282,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-purple-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>
@@ -293,7 +293,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all text-xs font-semibold cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary transition-all text-xs font-semibold cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.common?.back || (effectiveLang === 'de' ? 'Zurück' : 'Back')}</span>
@@ -313,18 +313,18 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           {/* Main Content Column (2 Cols) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Article Header Card */}
-            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="bg-surface border border-subtle backdrop-blur-xl rounded-2xl p-6 shadow-2xl space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
                 <FileText className="w-4 h-4" />
                 <span>Omni Magazine & Articles</span>
               </div>
 
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-primary tracking-tight leading-tight">
                 {item.title}
               </h1>
 
               {/* Creator Row */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-800/60">
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-subtle">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -356,12 +356,12 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                           avatarUrl: creatorAvatar,
                         })
                       }
-                      className="text-sm font-bold text-white hover:text-purple-300 transition-colors text-left flex items-center gap-1.5 cursor-pointer"
+                      className="text-sm font-bold text-primary hover:text-purple-300 transition-colors text-left flex items-center gap-1.5 cursor-pointer"
                     >
                       <span>{creatorName}</span>
                       <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
                     </button>
-                    <div className="text-xs font-mono text-slate-400">{creatorHandle}</div>
+                    <div className="text-xs font-mono text-muted">{creatorHandle}</div>
                   </div>
                 </div>
 
@@ -369,7 +369,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                   {isEffectiveOwner ? (
                     <button
                       onClick={() => setShowSettingsModal(true)}
-                      className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-surface-raised border border-subtle text-muted hover:text-primary text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
                     >
                       <Settings className="w-4 h-4 text-purple-400" />
                       <span>{effectiveLang === 'de' ? 'Artikel bearbeiten' : 'Edit article'}</span>
@@ -383,7 +383,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                     className={`p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
                       isLiked
                         ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/20'
-                        : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                        : 'bg-surface-raised border border-subtle text-muted hover:text-primary'
                     }`}
                   >
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-rose-400' : ''}`} />
@@ -392,7 +392,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
                   <button
                     onClick={handleShare}
-                    className="p-2.5 rounded-xl border border-slate-800 bg-slate-950/80 text-slate-300 hover:text-white hover:border-slate-700 transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    className="p-2.5 rounded-xl border border-subtle bg-surface-raised text-muted hover:text-primary transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                     title="Teilen"
                   >
                     <Share2 className="w-4 h-4" />
@@ -401,37 +401,37 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               </div>
 
               {/* Article Information Grid (Left Column) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-800/60 text-xs">
-                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                  <div className="text-slate-400 flex items-center gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-subtle text-xs">
+                <div className="p-3 bg-surface-raised border border-subtle rounded-xl space-y-1">
+                  <div className="text-muted flex items-center gap-1.5">
                     <Eye className="w-3.5 h-3.5 text-purple-400" />
                     <span>Aufrufe</span>
                   </div>
-                  <div className="text-base font-extrabold text-white font-mono">{viewsCount}</div>
+                  <div className="text-base font-extrabold text-primary font-mono">{viewsCount}</div>
                 </div>
 
-                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                  <div className="text-slate-400 flex items-center gap-1.5">
+                <div className="p-3 bg-surface-raised border border-subtle rounded-xl space-y-1">
+                  <div className="text-muted flex items-center gap-1.5">
                     <Heart className="w-3.5 h-3.5 text-rose-400" />
                     <span>Likes</span>
                   </div>
-                  <div className="text-base font-extrabold text-white font-mono">{likesCount}</div>
+                  <div className="text-base font-extrabold text-primary font-mono">{likesCount}</div>
                 </div>
 
-                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                  <div className="text-slate-400 flex items-center gap-1.5">
+                <div className="p-3 bg-surface-raised border border-subtle rounded-xl space-y-1">
+                  <div className="text-muted flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
                     <span>Kommentare</span>
                   </div>
-                  <div className="text-base font-extrabold text-white font-mono">{commentsCount}</div>
+                  <div className="text-base font-extrabold text-primary font-mono">{commentsCount}</div>
                 </div>
 
-                <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                  <div className="text-slate-400 flex items-center gap-1.5">
+                <div className="p-3 bg-surface-raised border border-subtle rounded-xl space-y-1">
+                  <div className="text-muted flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-teal-400" />
                     <span>Datum</span>
                   </div>
-                  <div className="text-xs font-semibold text-slate-200 truncate">
+                  <div className="text-xs font-semibold text-primary truncate">
                     {formatDate(item.createdAt)}
                   </div>
                 </div>
@@ -440,7 +440,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
             {/* Hero Thumbnail */}
             {item.thumbnail && (
-              <div className="relative aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
+              <div className="relative aspect-video bg-surface rounded-2xl overflow-hidden border border-subtle shadow-2xl">
                 <Image
                   src={item.thumbnail}
                   alt={item.title}
@@ -462,7 +462,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
             )}
 
             {/* Article Main Body Content Blocks */}
-            <article className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <article className="bg-surface border border-subtle backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
               <ArticleBlockRenderer blocks={item.blocks || item.content || []} />
             </article>
 
@@ -474,7 +474,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                   <Link
                     key={tag}
                     href={`/articles?page=1&includetag=${encodeURIComponent(tag)}`}
-                    className="px-3 py-1 bg-slate-900 border border-slate-800 hover:border-purple-500/50 hover:bg-slate-800 rounded-xl text-xs font-mono text-purple-300 hover:text-purple-200 transition-all cursor-pointer"
+                    className="px-3 py-1 bg-surface-raised border border-subtle hover:border-purple-500/50 hover:bg-surface-raised/80 rounded-xl text-xs font-mono text-purple-300 hover:text-purple-200 transition-all cursor-pointer"
                   >
                     #{tag}
                   </Link>
@@ -507,7 +507,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                     href={`/article/${rel.slug}`}
                     className="flex gap-3 p-1.5 rounded-xl hover:bg-surface transition-colors duration-150 group min-h-[44px]"
                   >
-                    <div className="relative aspect-video w-36 sm:w-40 shrink-0 rounded-xl overflow-hidden bg-slate-900 shadow-sm">
+                    <div className="relative aspect-video w-36 sm:w-40 shrink-0 rounded-xl overflow-hidden bg-surface shadow-sm">
                       <Image
                         src={relThumbnail}
                         alt={rel.title}

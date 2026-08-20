@@ -51,7 +51,7 @@ export default function VideoUploadModal({
               <FileVideo className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white">{t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}</h3>
+              <h3 className="text-base font-extrabold text-primary">{t.upload?.uploadVideo || (lang === 'de' ? 'Video hochladen' : 'Upload Video')}</h3>
               <p className="text-xs text-muted">{t.upload?.selectVideosSubtitle || (lang === 'de' ? 'Wähle Videos zum Hochladen aus' : 'Select videos to upload')}</p>
             </div>
           </div>
@@ -59,7 +59,7 @@ export default function VideoUploadModal({
             onClick={onClose}
             aria-label={t.common?.close || 'Schließen'}
             title={t.common?.close || 'Schließen'}
-            className="p-2 rounded-xl text-muted hover:text-white hover:bg-white/5 transition-colors"
+            className="p-2 rounded-xl text-muted hover:text-primary hover:bg-surface-raised transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -80,8 +80,8 @@ export default function VideoUploadModal({
             onChange={(e) => handleFileChange(e.target.files)}
           />
           <Upload className="h-8 w-8 text-indigo-400 mb-3" />
-          <h4 className="text-sm font-bold text-white mb-1">{t.upload?.dragVideosHere || (lang === 'de' ? 'Video-Dateien hier hineinziehen' : 'Drag & drop video files here')}</h4>
-          <p className="text-xs text-[#9ba4bf]">{t.upload?.orClickVideos || (lang === 'de' ? 'oder klicken um Dateien auszuwählen (MP4, MOV, MKV)' : 'or click to select files (MP4, MOV, MKV)')}</p>
+          <h4 className="text-sm font-bold text-primary mb-1">{t.upload?.dragVideosHere || (lang === 'de' ? 'Video-Dateien hier hineinziehen' : 'Drag & drop video files here')}</h4>
+          <p className="text-xs text-muted">{t.upload?.orClickVideos || (lang === 'de' ? 'oder klicken um Dateien auszuwählen (MP4, MOV, MKV)' : 'or click to select files (MP4, MOV, MKV)')}</p>
         </div>
       </div>
     </div>

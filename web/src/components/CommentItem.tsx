@@ -119,15 +119,15 @@ export default function CommentItem({
               <button
                 type="button"
                 onClick={handleAuthorClick}
-                className="font-semibold text-xs text-slate-200 hover:text-indigo-300 transition-colors cursor-pointer truncate text-left"
+                className="font-semibold text-xs text-primary hover:text-indigo-400 transition-colors cursor-pointer truncate text-left"
               >
                 {comment.authorName}
               </button>
-              <span className="text-[10px] text-slate-500 font-mono">
+              <span className="text-[10px] text-muted font-mono">
                 {comment.createdAt}
               </span>
               {comment.isEdited && (
-                <span className="text-[9px] text-slate-500 italic">(bearbeitet)</span>
+                <span className="text-[9px] text-muted italic">(bearbeitet)</span>
               )}
             </div>
 
@@ -136,7 +136,7 @@ export default function CommentItem({
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="p-1 text-slate-400 hover:text-indigo-300 transition-colors"
+                  className="p-1 text-muted hover:text-indigo-400 transition-colors"
                   title="Bearbeiten"
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -144,7 +144,7 @@ export default function CommentItem({
                 <button
                   type="button"
                   onClick={() => onDeleteComment(comment.id)}
-                  className="p-1 text-slate-400 hover:text-rose-400 transition-colors"
+                  className="p-1 text-muted hover:text-rose-400 transition-colors"
                   title="Löschen"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -160,7 +160,7 @@ export default function CommentItem({
                 aria-label="Kommentar bearbeiten"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="flex-1 px-3 py-1 bg-slate-950 border border-indigo-500/80 rounded-lg text-xs text-white outline-none"
+                className="flex-1 px-3 py-1 bg-base border border-indigo-500/80 rounded-lg text-xs text-primary outline-none"
               />
               <button
                 type="button"
@@ -176,19 +176,19 @@ export default function CommentItem({
                 onClick={() => setIsEditing(false)}
                 aria-label="Abbrechen"
                 title="Abbrechen"
-                className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition-all"
+                className="p-1.5 rounded-lg bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle transition-all"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
           ) : (
-            <p className="text-xs text-slate-300 leading-relaxed break-words">
+            <p className="text-xs text-primary leading-relaxed break-words">
               {comment.text}
             </p>
           )}
 
           {/* Action Footer (Reply Button & Thread Toggle) */}
-          <div className="flex items-center gap-4 pt-1 text-[11px] font-medium text-slate-400">
+          <div className="flex items-center gap-4 pt-1 text-[11px] font-medium text-muted">
             <button
               type="button"
               onClick={() => setShowReplyForm(!showReplyForm)}
@@ -237,7 +237,7 @@ export default function CommentItem({
             }
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            className="flex-1 px-3 py-1.5 bg-slate-950/80 border border-slate-800 focus:border-indigo-500/80 rounded-xl text-xs text-slate-100 placeholder-slate-500 outline-none transition-all"
+            className="flex-1 px-3 py-1.5 bg-base border border-subtle focus:border-indigo-500/80 rounded-xl text-xs text-primary placeholder-faint outline-none transition-all"
             autoFocus
           />
           <button
@@ -259,7 +259,7 @@ export default function CommentItem({
             onClick={() => setShowReplyForm(false)}
             aria-label="Antwort abbrechen"
             title="Abbrechen"
-            className="p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+            className="p-1.5 text-muted hover:text-primary transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>

@@ -68,11 +68,11 @@ function CardThumbnail({
 
   if (hasError || !item.thumbnailUrl) {
     return (
-      <div className="w-full h-full bg-gradient-to-tr from-[#0d1528] via-[#161f38] to-[#251f42] flex flex-col items-center justify-center gap-2 p-3 text-center">
-        <div className="h-9 w-9 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
-          <BookOpen className="h-4 w-4 text-[#8083ff]" />
+      <div className="w-full h-full bg-gradient-to-tr from-surface via-surface-raised to-base flex flex-col items-center justify-center gap-2 p-3 text-center">
+        <div className="h-9 w-9 rounded-2xl bg-surface-raised border border-subtle flex items-center justify-center">
+          <BookOpen className="h-4 w-4 text-indigo-400" />
         </div>
-        <span className="text-[10px] font-mono text-[#9ba4bf] line-clamp-1">{item.title}</span>
+        <span className="text-[10px] font-mono text-muted line-clamp-1">{item.title}</span>
       </div>
     );
   }
@@ -371,33 +371,68 @@ export default function ContentPageClient({
     }
   };
 
-  const fallbackCreator = useMemo(() => {
-    return { username: 'Omni Creator', handle: '@omni', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80', bio: 'Creator im Omni Network.' };
-  }, []);
+  const updateCommentInStrapi = async (id: string | number, text: string) => {
+    try {
+      const res = await fetch(`/api/comments?id=${id}`, {
+        method: 'PUT',
+        headers: jsonAuthHeaders(),
+        body: JSON.stringify({ text }),
+      });
+      return res.ok;
+    } catch (e) {
+      return false;
+    }
+  };
 
-  const creator = item?.creator || item?.author || initialItem?.creator || initialItem?.author;
-  const rawHandle = creator?.handle || item?.authorHandle || initialItem?.authorHandle;
-  const authorName =
-    creator?.username || creator?.name || item?.authorName || initialItem?.authorName || (rawHandle ? rawHandle.replace(/^@/, '') : fallbackCreator.username);
-  const authorHandle = rawHandle ? (rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`) : fallbackCreator.handle;
+  const deleteCommentFromStrapi = async (id: string | number) => {
+    try {
+      const res = await fetch(`/api/comments?id=${id}`, {
+        method: 'DELETE',
+        headers: jsonAuthHeaders(),
+      });
+      return res.ok;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const getAuthorName = (art: any) => {
+    if (art?.creator?.username) return art.creator.username;
+    if (art?.creator?.handle) return art.creator.handle;
+    if (art?.authorName) return art.authorName;
+    return 'Omni Creator';
+  };
+
+  const fallbackCreator = {
+    username: item?.creator?.username || item?.authorName || 'Omni Creator',
+    handle: item?.creator?.handle || '@omnicreator',
+    avatarUrl: item?.creator?.avatarUrl || item?.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+    bio: item?.creator?.bio || 'Omni Verified Content Creator & Writer.',
+  };
+
+  const creator = item?.creator || fallbackCreator;
+  const authorName = getAuthorName(item);
+  const authorHandle = creator?.handle || `@${authorName.toLowerCase().replace(/[^a-z0-9_]/g, '')}`;
+
   const isAuthorOwner = Boolean(
-    currentUser &&
-      (currentUser.id === creator?.id ||
-        currentUser.username === authorName ||
-        (currentUser.handle && authorHandle && currentUser.handle.toLowerCase() === authorHandle.toLowerCase()))
+    currentUser && (
+      (creator?.id && String(creator.id) === String(currentUser.id)) ||
+      (creator?.documentId && (currentUser as any)?.documentId && creator.documentId === (currentUser as any).documentId) ||
+      (creator?.username && creator.username === currentUser.username) ||
+      (authorName && authorName === currentUser.username)
+    )
   );
+
   const rawAuthorAvatar =
     creator?.avatarUrl || creator?.avatar || item?.authorAvatar || initialItem?.authorAvatar || fallbackCreator.avatarUrl;
   const authorAvatar = (isAuthorOwner && typeof currentUser?.avatarUrl !== 'undefined')
     ? (currentUser.avatarUrl || rawAuthorAvatar)
     : rawAuthorAvatar;
 
-  
-  
   const readTime = Math.max(1, Math.ceil(((item.content || '').length + (item.summary || '').length) / 800));
 
   return (
-    <div className="min-h-screen bg-base text-primary font-sans selection:bg-[#8083ff]/30 selection:text-white">
+    <div className="min-h-screen bg-base text-primary font-sans selection:bg-indigo-500/30">
       <Header />
       <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
@@ -405,7 +440,7 @@ export default function ContentPageClient({
         <div className="flex items-center justify-between mb-6">
           <Link
             href="/"
-            className="group flex items-center gap-2 text-sm font-semibold text-[#8083ff] hover:text-[#a0a3ff] transition-colors bg-[#8083ff]/10 hover:bg-[#8083ff]/20 px-4 py-2 rounded-xl backdrop-blur-sm"
+            className="group flex items-center gap-2 text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 hover:bg-indigo-500/20 px-4 py-2 rounded-xl backdrop-blur-sm"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             {t.common.backToHome}
@@ -415,7 +450,7 @@ export default function ContentPageClient({
               onClick={() => setIsBookmarked(!isBookmarked)}
               className={`p-2 rounded-xl border transition-all ${
                 isBookmarked
-                  ? 'bg-[#8083ff] border-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/25'
                   : 'bg-surface-raised border-subtle text-primary hover:bg-surface'
               }`}
               title={'Merken'}
@@ -433,16 +468,16 @@ export default function ContentPageClient({
         </div>
 
         {isPreviewActive && (
-          <div className="mb-6 bg-[#ffb783]/10 border border-[#ffb783]/20 rounded-2xl p-4 flex items-center justify-between">
+          <div className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#ffb783]/20 rounded-full">
-                <Eye className="h-4 w-4 text-[#ffb783]" />
+              <div className="p-2 bg-amber-500/20 rounded-full">
+                <Eye className="h-4 w-4 text-amber-400" />
               </div>
-              <span className="text-sm font-bold text-[#ffb783]">{t.content.draftModeActive || 'Vorschau-Modus aktiv'}</span>
+              <span className="text-sm font-bold text-amber-400">{t.content.draftModeActive || 'Vorschau-Modus aktiv'}</span>
             </div>
             <a
               href="/api/exit-preview"
-              className="px-4 py-2 rounded-xl bg-[#ffb783]/20 hover:bg-[#ffb783]/30 text-[#ffb783] text-xs font-bold transition-colors"
+              className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold transition-colors"
             >
               {t.content.exitPreview || 'Vorschau beenden'}
             </a>
@@ -460,7 +495,7 @@ export default function ContentPageClient({
                   </span>
                 )}
                 {item.aiRelevanceScore && item.aiRelevanceScore > 80 && (
-                  <span className="bg-[#8083ff]/20 text-[#8083ff] border border-[#8083ff]/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-lg flex items-center gap-1.5">
+                  <span className="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-lg flex items-center gap-1.5">
                     <Sparkles className="h-3 w-3" /> KI-Empfehlung
                   </span>
                 )}
@@ -475,14 +510,14 @@ export default function ContentPageClient({
               <div className="p-8 -mt-20 relative z-10 flex flex-col gap-6">
                 {/* Meta Tags */}
                 <div className="flex flex-wrap gap-2">
-                  <span className="bg-surface-raised/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-[#44e2cd] uppercase tracking-wider border border-subtle flex items-center gap-1.5">
+                  <span className="bg-surface-raised/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-teal-400 uppercase tracking-wider border border-subtle flex items-center gap-1.5">
                     <FileText className="h-3.5 w-3.5" />
                     Artikel
                   </span>
                   {(item.tags || []).slice(0, 3).map((tag: any, i: number) => {
                     const tagObj = typeof tag === 'object' && tag !== null ? tag : { name: tag, color: '#8083ff' };
                     return (
-                      <span key={i} className="bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-lg text-[10px] font-mono text-[#9ba4bf] uppercase tracking-wider border border-white/5 flex items-center gap-1">
+                      <span key={i} className="bg-surface-raised backdrop-blur-md px-3 py-1.5 rounded-lg text-[10px] font-mono text-muted uppercase tracking-wider border border-subtle flex items-center gap-1">
                         <Tag className="h-3 w-3 opacity-70" />
                         {tagObj.name}
                       </span>
@@ -490,19 +525,19 @@ export default function ContentPageClient({
                   })}
                 </div>
 
-                <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.1] tracking-tight [text-wrap:balance]">
+                <h1 className="text-3xl md:text-5xl font-black text-primary leading-[1.1] tracking-tight [text-wrap:balance]">
                   {item.title}
                 </h1>
 
                 {/* Article Meta Bar */}
-                <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#9ba4bf] py-4 border-y border-white/5 bg-white/5 rounded-2xl px-5">
+                <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted py-4 border-y border-subtle bg-surface-raised rounded-2xl px-5">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-[#8083ff]" />
+                    <Clock className="h-4 w-4 text-indigo-400" />
                     <span>{readTime} Min {'Lesezeit'}</span>
                   </div>
-                  <div className="w-1 h-1 rounded-full bg-white/20" />
+                  <div className="w-1 h-1 rounded-full bg-muted/40" />
                   <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-[#44e2cd]" />
+                    <Eye className="h-4 w-4 text-teal-400" />
                     <span>{viewsCount} {t.common.views || 'Aufrufe'}</span>
                   </div>
                 </div>
@@ -514,13 +549,13 @@ export default function ContentPageClient({
                     className="flex items-center gap-3 cursor-pointer group/author transition-all"
                     title={t.content.openProfileTitle.replace('{name}', authorName)}
                   >
-                    <Image src={authorAvatar} alt={authorName} width={44} height={44} className="h-11 w-11 rounded-full object-cover border border-white/10 group-hover/author:border-[#8083ff] group-hover/author:scale-105 transition-all" unoptimized />
+                    <Image src={authorAvatar} alt={authorName} width={44} height={44} className="h-11 w-11 rounded-full object-cover border border-subtle group-hover/author:border-indigo-500 group-hover/author:scale-105 transition-all" unoptimized />
                     <div>
                       <div className="flex items-center gap-1">
-                        <p className="text-sm font-bold text-white group-hover/author:text-[#44e2cd] transition-colors">{authorName}</p>
-                        <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
+                        <p className="text-sm font-bold text-primary group-hover/author:text-teal-400 transition-colors">{authorName}</p>
+                        <CheckCircle2 className="h-4 w-4 text-teal-400" />
                       </div>
-                      <p className="text-xs font-mono text-[#8083ff]">{authorHandle}</p>
+                      <p className="text-xs font-mono text-indigo-400">{authorHandle}</p>
                     </div>
                   </div>
 
@@ -529,7 +564,7 @@ export default function ContentPageClient({
                       onClick={handleLikeToggle}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
                         isLiked
-                          ? 'bg-[#ff6b81] border-[#ff6b81] text-white shadow-lg shadow-[#ff6b81]/25'
+                          ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/25'
                           : 'bg-surface-raised border-subtle text-primary hover:bg-surface'
                       }`}
                     >
@@ -541,7 +576,7 @@ export default function ContentPageClient({
 
                 {/* Highlight Callout */}
                 {item.summary && (
-                  <div className="bg-[#8083ff]/10 border border-[#8083ff]/25 p-5 rounded-2xl text-xs text-[#c0c1ff] font-semibold leading-relaxed shadow-inner">
+                  <div className="bg-indigo-500/10 border border-indigo-500/25 p-5 rounded-2xl text-xs text-indigo-300 font-semibold leading-relaxed shadow-inner">
                     💡 {item.summary}
                   </div>
                 )}
@@ -553,31 +588,31 @@ export default function ContentPageClient({
                       const comp = block.__component || '';
                       if (comp === 'shared.rich-text' || block.body) {
                         return (
-                          <div key={idx} className="text-sm text-[#dae2fd] leading-relaxed space-y-4 whitespace-pre-line">
+                          <div key={idx} className="text-sm text-primary leading-relaxed space-y-4 whitespace-pre-line">
                             {block.body}
                           </div>
                         );
                       }
                       if (comp === 'shared.headline' || block.title) {
                         return (
-                          <h2 key={idx} className="text-xl font-bold text-white mt-6 mb-2">
+                          <h2 key={idx} className="text-xl font-bold text-primary mt-6 mb-2">
                             {block.title}
                           </h2>
                         );
                       }
                       if (comp === 'shared.quote' || block.quote) {
                         return (
-                          <blockquote key={idx} className="border-l-4 border-[#8083ff] pl-4 py-2 italic text-white bg-[#8083ff]/5 rounded-r-2xl my-4">
+                          <blockquote key={idx} className="border-l-4 border-indigo-500 pl-4 py-2 italic text-primary bg-indigo-500/5 rounded-r-2xl my-4">
                             <p className="text-sm">"{block.quote}"</p>
-                            {block.author && <cite className="text-xs text-[#9ba4bf] font-sans block mt-1">— {block.author}</cite>}
+                            {block.author && <cite className="text-xs text-muted font-sans block mt-1">— {block.author}</cite>}
                           </blockquote>
                         );
                       }
                       if (comp === 'shared.media' || block.imageUrl) {
                         return (
                           <figure key={idx} className="my-4">
-                            <Image src={block.imageUrl} alt={block.caption || ''} className="rounded-2xl border border-white/10 w-full object-cover max-h-[500px]" />
-                            {block.caption && <figcaption className="text-xs text-[#9ba4bf] mt-2 text-center">{block.caption}</figcaption>}
+                            <Image src={block.imageUrl} alt={block.caption || ''} className="rounded-2xl border border-subtle w-full object-cover max-h-[500px]" />
+                            {block.caption && <figcaption className="text-xs text-muted mt-2 text-center">{block.caption}</figcaption>}
                           </figure>
                         );
                       }
@@ -585,7 +620,7 @@ export default function ContentPageClient({
                     })}
                   </div>
                 ) : (
-                  <div className="text-sm text-[#dae2fd] leading-relaxed space-y-4 whitespace-pre-line font-mono">
+                  <div className="text-sm text-primary leading-relaxed space-y-4 whitespace-pre-line font-mono">
                     {item.content}
                   </div>
                 )}
@@ -595,8 +630,8 @@ export default function ContentPageClient({
             {/* Interactive Comments Section */}
             <section className="bg-surface p-6 rounded-3xl border border-subtle flex flex-col gap-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-[#8083ff]" />
+                <h3 className="text-base font-bold text-primary flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-indigo-400" />
                   <span>{lang === 'de' ? `Kommentare (${comments.length})` : `Comments (${comments.length})`}</span>
                 </h3>
               </div>
@@ -606,7 +641,7 @@ export default function ContentPageClient({
                 <Image
                   src={userData?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
                   alt="Dein Avatar"
-                  className="h-9 w-9 rounded-full object-cover border border-white/10 shrink-0 mt-1"
+                  className="h-9 w-9 rounded-full object-cover border border-subtle shrink-0 mt-1"
                 />
                 <div className="flex-1 flex flex-col gap-2">
                   <textarea
@@ -614,13 +649,13 @@ export default function ContentPageClient({
                     onChange={(e) => setNewCommentText(e.target.value)}
                     placeholder={t.common.commentPlaceholder}
                     rows={2}
-                    className="w-full bg-base border border-subtle focus:border-[#8083ff]/60 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"
+                    className="w-full bg-base border border-subtle focus:border-indigo-500 rounded-xl p-3 text-xs text-primary placeholder-faint focus:outline-none resize-none"
                   />
                   <div className="flex justify-end">
                     <button
                       type="submit"
                       disabled={isSubmittingComment || !newCommentText.trim()}
-                      className="px-4 py-2 rounded-xl bg-[#8083ff] hover:bg-[#6b6eff] text-white font-extrabold text-xs transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-md shadow-[#8083ff]/20"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
                     >
                       <Send className="h-3.5 w-3.5" />
                       <span>{t.common.comment}</span>
@@ -631,15 +666,15 @@ export default function ContentPageClient({
 
               {/* Comment List */}
               {loadingComments ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf]">
+                <div className="py-6 text-center text-xs text-muted">
                   {t.common.loadingComments}
                 </div>
               ) : comments.length === 0 ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf]">
+                <div className="py-6 text-center text-xs text-muted">
                   {t.common.noCommentsYet}
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 divide-y divide-slate-800/60">
+                <div className="flex flex-col gap-4 divide-y divide-subtle">
                   {comments.map((comment) => (
                     <div key={comment.id} className="pt-3">
                       <CommentItem
@@ -667,8 +702,8 @@ export default function ContentPageClient({
 
           {/* Right Sidebar: Recommended Articles */}
           <aside className="lg:col-span-4 flex flex-col gap-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Flame className="h-4 w-4 text-[#ffb783]" />
+            <h3 className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+              <Flame className="h-4 w-4 text-amber-400" />
               <span>{t.common.moreArticles}</span>
             </h3>
 
@@ -677,16 +712,16 @@ export default function ContentPageClient({
                 <Link
                   key={rel.id}
                   href={`/content/${rel.slug}`}
-                  className="flex gap-3 bg-[#0d1528] hover:bg-[#121a30] p-2.5 rounded-2xl border border-white/6 hover:border-white/15 transition-all group"
+                  className="flex gap-3 bg-surface hover:bg-surface-raised p-2.5 rounded-2xl border border-subtle transition-all group"
                 >
                   <div className="w-28 aspect-video rounded-xl overflow-hidden bg-black shrink-0 relative">
                     <CardThumbnail item={rel} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   </div>
                   <div className="flex flex-col justify-center min-w-0 flex-1">
-                    <h4 className="text-xs font-bold text-white group-hover:text-[#44e2cd] transition-colors line-clamp-2 leading-snug">
+                    <h4 className="text-xs font-bold text-primary group-hover:text-teal-400 transition-colors line-clamp-2 leading-snug">
                       {rel.title}
                     </h4>
-                    <span className="text-[10px] font-mono text-[#9ba4bf] mt-1">{getAuthorName(rel)}</span>
+                    <span className="text-[10px] font-mono text-muted mt-1">{getAuthorName(rel)}</span>
                   </div>
                 </Link>
               ))}
@@ -698,7 +733,7 @@ export default function ContentPageClient({
 
       {/* Toast Notification Banner */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#121a30]/95 border border-[#8083ff]/40 text-white px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-semibold animate-bounceIn flex items-center gap-2">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-surface-raised/95 border border-indigo-500/40 text-primary px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-semibold animate-bounceIn flex items-center gap-2">
           <span>{toastMessage}</span>
         </div>
       )}

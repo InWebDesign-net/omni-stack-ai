@@ -60,18 +60,18 @@ export function VideoControls({
 }: VideoControlsProps) {
   return (
     <div
-      className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950/95 via-slate-950/60 to-transparent pt-10 pb-3 px-3 transition-opacity duration-300 ${
+      className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-10 pb-3 px-3 transition-opacity duration-300 ${
         showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       {/* Progress Bar */}
       <div
-        className="relative h-1.5 bg-slate-700/60 rounded-full cursor-pointer group mb-3"
+        className="relative h-1.5 bg-white/20 rounded-full cursor-pointer group mb-3"
         onMouseMove={onTimelineMouseMove}
       >
         {/* Buffered */}
         <div
-          className="absolute top-0 left-0 h-full bg-slate-500/40 rounded-full"
+          className="absolute top-0 left-0 h-full bg-white/40 rounded-full"
           style={{ width: duration ? `${(buffered / duration) * 100}%` : '0%' }}
         />
         {/* Progress */}
@@ -82,7 +82,7 @@ export function VideoControls({
         {/* Hover Tooltip */}
         {hoverTime !== null && (
           <div
-            className="absolute -top-8 px-2 py-1 bg-slate-900 text-white text-[10px] font-mono rounded-lg border border-slate-700 -translate-x-1/2 pointer-events-none"
+            className="absolute -top-8 px-2 py-1 bg-surface-raised text-primary text-[10px] font-mono rounded-lg border border-subtle -translate-x-1/2 pointer-events-none shadow-lg"
             style={{ left: `${hoverPosition}px` }}
           >
             {formatTime(hoverTime)}
@@ -142,7 +142,7 @@ export function VideoControls({
           </div>
 
           {/* Time */}
-          <span className="text-xs font-mono text-slate-300">
+          <span className="text-xs font-mono text-white/80">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         </div>
@@ -153,7 +153,7 @@ export function VideoControls({
           <button
             onClick={onToggleLoop}
             className={`p-2 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-              isLooping ? 'bg-indigo-600 text-white' : 'hover:bg-white/10 text-slate-300'
+              isLooping ? 'bg-indigo-600 text-white' : 'hover:bg-white/10 text-white/80'
             }`}
             title={t?.player?.loop || 'Loop'}
             aria-label={t?.player?.loop || 'Loop'}
@@ -168,7 +168,7 @@ export function VideoControls({
               <button
                 onClick={onToggleSettings}
                 className={`p-2 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  isSettingsOpen ? 'bg-indigo-600 text-white' : 'hover:bg-white/10 text-slate-300'
+                  isSettingsOpen ? 'bg-indigo-600 text-white' : 'hover:bg-white/10 text-white/80'
                 }`}
                 title={t?.player?.quality || 'Qualität'}
                 aria-label={t?.player?.quality || 'Qualität'}
@@ -178,8 +178,8 @@ export function VideoControls({
                 <Settings className="w-4 h-4" />
               </button>
               {isSettingsOpen && (
-                <div role="menu" className="absolute bottom-full right-0 mb-2 bg-slate-900 border border-slate-700 rounded-xl p-2 min-w-[120px] shadow-xl">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
+                <div role="menu" className="absolute bottom-full right-0 mb-2 bg-surface-raised border border-subtle rounded-xl p-2 min-w-[120px] shadow-xl">
+                  <div className="text-[10px] font-bold text-muted uppercase tracking-wider px-2 py-1">
                     {t?.player?.quality || 'Qualität'}
                   </div>
                   <button
@@ -187,7 +187,7 @@ export function VideoControls({
                     role="menuitemradio"
                     aria-checked={currentLevel === -1}
                     className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                      currentLevel === -1 ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+                      currentLevel === -1 ? 'bg-indigo-600 text-white' : 'text-muted hover:text-primary hover:bg-surface'
                     }`}
                   >
                     Auto
@@ -199,7 +199,7 @@ export function VideoControls({
                       role="menuitemradio"
                       aria-checked={currentLevel === lvl.index}
                       className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                        currentLevel === lvl.index ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+                        currentLevel === lvl.index ? 'bg-indigo-600 text-white' : 'text-muted hover:text-primary hover:bg-surface'
                       }`}
                     >
                       {lvl.label}

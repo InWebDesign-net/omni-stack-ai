@@ -334,13 +334,13 @@ export default function ShortsFeedPage() {
           href="/"
           className="flex items-center gap-2 px-3 py-2 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-xs font-semibold text-white backdrop-blur-md transition-all"
         >
-          <ArrowLeft className="h-4 w-4 text-[#8083ff]" />
+          <ArrowLeft className="h-4 w-4 text-indigo-400" />
           <span>Home</span>
         </Link>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-[#8083ff]/20 border border-[#8083ff]/40 text-[#c0c1ff] px-3 py-1 rounded-full backdrop-blur-md">
-            <Flame className="h-3.5 w-3.5 text-[#ffb783] animate-pulse" />
+          <div className="flex items-center gap-1.5 bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-3 py-1 rounded-full backdrop-blur-md">
+            <Flame className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
             <span className="text-xs font-extrabold tracking-wide">Omni Shorts</span>
           </div>
 
@@ -361,7 +361,7 @@ export default function ShortsFeedPage() {
           className="p-2.5 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transition-all"
           title={isMuted ? 'Ton einschalten' : 'Stummschalten'}
         >
-          {isMuted ? <VolumeX className="h-4 w-4 text-red-400" /> : <Volume2 className="h-4 w-4 text-[#44e2cd]" />}
+          {isMuted ? <VolumeX className="h-4 w-4 text-red-400" /> : <Volume2 className="h-4 w-4 text-teal-400" />}
         </button>
       </header>
 
@@ -411,8 +411,8 @@ export default function ShortsFeedPage() {
                     onClick={() => toggleSubscribe(authorHandle)}
                     className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-md ${
                       isSubscribed
-                        ? 'bg-[#44e2cd] text-black'
-                        : 'bg-[#8083ff] text-white hover:scale-110'
+                        ? 'bg-teal-400 text-black'
+                        : 'bg-indigo-600 text-white hover:scale-110'
                     }`}
                     title={isSubscribed ? t.videoDetail.subscribedBtn : t.videoDetail.subscribeBtn}
                   >
@@ -427,7 +427,7 @@ export default function ShortsFeedPage() {
                 >
                   <div className={`p-3 rounded-full backdrop-blur-md border transition-all ${
                     isLiked
-                      ? 'bg-[#ff6b81] border-[#ff6b81] text-white shadow-lg shadow-[#ff6b81]/40 scale-110'
+                      ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/40 scale-110'
                       : 'bg-black/50 border-white/10 text-white hover:bg-black/80'
                   }`}>
                     <Heart className={`h-6 w-6 ${isLiked ? 'fill-current' : ''}`} />
@@ -457,7 +457,7 @@ export default function ShortsFeedPage() {
                 >
                   <div className={`p-3 rounded-full backdrop-blur-md border transition-all ${
                     isBookmarked
-                      ? 'bg-[#8083ff] border-[#8083ff] text-white'
+                      ? 'bg-indigo-600 border-indigo-600 text-white'
                       : 'bg-black/50 border-white/10 text-white hover:bg-black/80'
                   }`}>
                     <Bookmark className={`h-6 w-6 ${isBookmarked ? 'fill-current' : ''}`} />
@@ -479,7 +479,7 @@ export default function ShortsFeedPage() {
                 </button>
 
                 {/* Spinning Music Disc Icon */}
-                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#8083ff] to-[#44e2cd] p-0.5 animate-spin-slow shadow-lg">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 p-0.5 animate-spin-slow shadow-lg">
                   <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
                     <Music className="h-4 w-4 text-white" />
                   </div>
@@ -490,28 +490,28 @@ export default function ShortsFeedPage() {
               <div className="absolute left-4 sm:left-6 bottom-6 right-20 z-30 flex flex-col gap-2 max-w-lg">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm text-white drop-shadow-md">{getAuthorName(short)}</span>
-                  <span className="text-xs font-mono font-semibold text-[#8083ff] bg-black/50 border border-[#8083ff]/40 px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-mono font-semibold text-indigo-400 bg-black/50 border border-indigo-500/40 px-2 py-0.5 rounded-md">
                     {authorHandle}
                   </span>
-                  <CheckCircle2 className="h-4 w-4 text-[#44e2cd]" />
+                  <CheckCircle2 className="h-4 w-4 text-teal-400" />
                 </div>
 
                 <h3 className="text-sm font-semibold text-white leading-snug drop-shadow-md">
                   {short.title}
                 </h3>
 
-                <p className="text-xs text-[#dae2fd] line-clamp-2 leading-relaxed opacity-90">
+                <p className="text-xs text-white/90 line-clamp-2 leading-relaxed opacity-90">
                   {short.summary}
                 </p>
 
                 {/* Hashtags & AI Bucket */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {short.tags.map((t) => (
-                    <span key={t} className="text-[10px] font-mono font-bold text-[#44e2cd] bg-black/60 px-2 py-0.5 rounded-md border border-[#44e2cd]/30">
+                    <span key={t} className="text-[10px] font-mono font-bold text-teal-400 bg-black/60 px-2 py-0.5 rounded-md border border-teal-500/30">
                       #{t}
                     </span>
                   ))}
-                  <span className="text-[10px] font-mono text-[#ffb783] bg-black/60 px-2 py-0.5 rounded-md border border-[#ffb783]/30">
+                  <span className="text-[10px] font-mono text-amber-400 bg-black/60 px-2 py-0.5 rounded-md border border-amber-500/30">
                     ⚡ {short.bucketSource || 'Omni AI Short'}
                   </span>
                 </div>
@@ -524,16 +524,16 @@ export default function ShortsFeedPage() {
       {/* ── Slide-over Comments Drawer ───────────────────────────────────────── */}
       {commentsOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-fadeIn">
-          <div className="w-full max-w-md bg-[#0d1528] border-l border-white/10 h-full flex flex-col p-5 shadow-2xl animate-slideDown">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-[#8083ff]" />
+          <div className="w-full max-w-md bg-surface-raised border-l border-subtle h-full flex flex-col p-5 shadow-2xl animate-slideDown">
+            <div className="flex items-center justify-between pb-4 border-b border-subtle">
+              <h3 className="text-sm font-bold text-primary flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-indigo-400" />
                 <span>{lang === 'de' ? `${t.shorts.commentsLabel} (${activeComments.length})` : `${t.shorts.commentsLabel} (${activeComments.length})`}</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setCommentsOpen(false)}
-                className="p-1 text-[#9ba4bf] hover:text-white rounded-lg transition-colors"
+                className="p-1 text-muted hover:text-primary rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -541,11 +541,11 @@ export default function ShortsFeedPage() {
 
             <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-3">
               {loadingComments ? (
-                <div className="py-6 text-center text-xs text-[#9ba4bf] font-mono animate-pulse">
+                <div className="py-6 text-center text-xs text-muted font-mono animate-pulse">
                   {t.common.loadingComments}
                 </div>
               ) : activeComments.length === 0 ? (
-                <div className="py-6 text-center text-xs text-[#5c657d] font-mono">
+                <div className="py-6 text-center text-xs text-faint font-mono">
                   {t.common.noCommentsYet}
                 </div>
               ) : (
@@ -555,26 +555,26 @@ export default function ShortsFeedPage() {
                   const isOwner = c.isCurrentUser || c.authorHandle === '@du' || (userData && c.authorHandle === userData.handle);
 
                   return (
-                    <div key={commentKey} className="bg-[#080e1e] p-3 rounded-xl border border-white/5 flex gap-3 group transition-all">
-                      <Image src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 rounded-full object-cover border border-white/10 shrink-0" />
+                    <div key={commentKey} className="bg-surface p-3 rounded-xl border border-subtle flex gap-3 group transition-all">
+                      <Image src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 rounded-full object-cover border border-subtle shrink-0" />
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-bold text-white">{c.authorName}</span>
-                            <span className="font-mono text-[#8083ff] text-[10px]">{c.authorHandle}</span>
+                            <span className="text-xs font-bold text-primary">{c.authorName}</span>
+                            <span className="font-mono text-indigo-400 text-[10px]">{c.authorHandle}</span>
                             {c.isEdited && (
-                              <span className="text-[9px] text-[#9ba4bf] italic font-mono">{t.common.edited}</span>
+                              <span className="text-[9px] text-muted italic font-mono">{t.common.edited}</span>
                             )}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] text-[#5c657d]">{c.createdAt}</span>
+                            <span className="text-[9px] text-faint">{c.createdAt}</span>
                             {isOwner && !isEditing && (
                               <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                                 <button
                                   type="button"
                                   onClick={() => handleStartEdit(c)}
                                   title={t.common.commentEdit}
-                                  className="p-1 text-[#9ba4bf] hover:text-[#8083ff] rounded hover:bg-white/5 transition-all"
+                                  className="p-1 text-muted hover:text-indigo-400 rounded hover:bg-surface-raised transition-all"
                                 >
                                   <Pencil className="h-3 w-3" />
                                 </button>
@@ -582,7 +582,7 @@ export default function ShortsFeedPage() {
                                   type="button"
                                   onClick={() => handleDeleteComment(commentKey)}
                                   title={t.common.commentDelete}
-                                  className="p-1 text-[#9ba4bf] hover:text-red-400 rounded hover:bg-white/5 transition-all"
+                                  className="p-1 text-muted hover:text-rose-400 rounded hover:bg-surface-raised transition-all"
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </button>
@@ -596,20 +596,20 @@ export default function ShortsFeedPage() {
                             <textarea
                               value={editCommentText}
                               onChange={(e) => setEditCommentText(e.target.value)}
-                              className="w-full bg-[#080e1e] border border-[#8083ff] rounded-lg p-2 text-xs text-white focus:outline-none resize-y min-h-[50px]"
+                              className="w-full bg-base border border-indigo-500 rounded-lg p-2 text-xs text-primary focus:outline-none resize-y min-h-[50px]"
                             />
                             <div className="flex justify-end gap-2">
                               <button
                                 type="button"
                                 onClick={() => setEditingCommentId(null)}
-                                className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-[#9ba4bf] font-medium transition-all"
+                                className="px-2.5 py-1 rounded bg-surface hover:bg-surface-raised text-[10px] text-muted font-medium transition-all"
                               >
                                 {t.common.cancel}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleSaveEdit(commentKey)}
-                                className="px-2.5 py-1 rounded bg-[#8083ff] hover:bg-[#6b6eff] text-[10px] text-white font-medium flex items-center gap-1 transition-all"
+                                className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-[10px] text-white font-medium flex items-center gap-1 transition-all"
                               >
                                 <Check className="h-3 w-3" />
                                 <span>{t.common.save}</span>
@@ -617,7 +617,7 @@ export default function ShortsFeedPage() {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-xs text-[#dae2fd] leading-relaxed break-words">{c.text}</p>
+                          <p className="text-xs text-primary leading-relaxed break-words">{c.text}</p>
                         )}
                       </div>
                     </div>
@@ -626,7 +626,7 @@ export default function ShortsFeedPage() {
               )}
             </div>
 
-            <form onSubmit={handleAddComment} className="pt-3 border-t border-white/10 flex gap-2">
+            <form onSubmit={handleAddComment} className="pt-3 border-t border-subtle flex gap-2">
               <input
                 id="shorts-comment-input"
                 type="text"
@@ -638,7 +638,7 @@ export default function ShortsFeedPage() {
                     ? (lang === 'de' ? `Als ${userData.username} kommentieren...` : `Comment as ${userData.username}...`)
                     : (t.common.commentPlaceholder)
                 }
-                className="flex-1 bg-[#080e1e] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-[#5c657d] focus:outline-none"
+                className="flex-1 bg-surface border border-subtle rounded-xl px-3 py-2 text-xs text-primary placeholder-faint focus:outline-none"
                 disabled={isSubmittingComment}
               />
               <button
@@ -646,7 +646,7 @@ export default function ShortsFeedPage() {
                 disabled={isSubmittingComment || !commentText.trim()}
                 aria-label={lang === 'de' ? 'Kommentar absenden' : 'Submit comment'}
                 title={lang === 'de' ? 'Kommentar absenden' : 'Submit comment'}
-                className="bg-[#8083ff] hover:bg-[#6b6eff] disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 shrink-0 transition-all"
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 shrink-0 transition-all"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>

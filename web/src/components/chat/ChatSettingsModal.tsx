@@ -75,16 +75,16 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
         className="bg-base border border-subtle rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/80">
+        <div className="flex items-center justify-between p-5 border-b border-subtle bg-surface-raised">
           <div className="flex items-center gap-2.5">
             <Shield className="w-5 h-5 text-indigo-400" />
-            <h2 className="font-bold text-lg text-white">{t.chat?.settingsTitle || 'Chat-Einstellungen & Privatsphäre'}</h2>
+            <h2 className="font-bold text-lg text-primary">{t.chat?.settingsTitle || 'Chat-Einstellungen & Privatsphäre'}</h2>
           </div>
           <button
             onClick={onClose}
             aria-label={t.common?.close || 'Schließen'}
             title={t.common?.close || 'Schließen'}
-            className="p-1.5 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-surface rounded-xl transition-colors text-muted hover:text-primary"
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,60 +99,60 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
           )}
 
           <div className="space-y-3">
-            <label className="block text-sm font-bold text-slate-200">
+            <label className="block text-sm font-bold text-primary">
               {t.chat?.allowDirectMessages || 'Wer darf mir Direktnachrichten senden?'}
             </label>
             <div className="space-y-2">
-              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
+              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-subtle cursor-pointer hover:bg-surface-raised transition-colors">
                 <input
                   type="radio"
                   name="allowDirectMessages"
                   value="everyone"
                   checked={form.allowDirectMessages === 'everyone'}
                   onChange={(e) => setForm({ ...form, allowDirectMessages: e.target.value as any })}
-                  className="w-4 h-4 text-indigo-500 bg-slate-950 border-slate-700 focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-500 bg-surface border-subtle focus:ring-indigo-500"
                 />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">{t.chat?.everyone || 'Alle Nutzer'}</span>
+                  <span className="text-sm font-semibold text-primary">{t.chat?.everyone || 'Alle Nutzer'}</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
+              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-subtle cursor-pointer hover:bg-surface-raised transition-colors">
                 <input
                   type="radio"
                   name="allowDirectMessages"
                   value="subscribers_only"
                   checked={form.allowDirectMessages === 'subscribers_only'}
                   onChange={(e) => setForm({ ...form, allowDirectMessages: e.target.value as any })}
-                  className="w-4 h-4 text-indigo-500 bg-slate-950 border-slate-700 focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-500 bg-surface border-subtle focus:ring-indigo-500"
                 />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">{t.chat?.subscribersOnly || 'Nur Abonnenten'}</span>
+                  <span className="text-sm font-semibold text-primary">{t.chat?.subscribersOnly || 'Nur Abonnenten'}</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:bg-slate-900/60 transition-colors">
+              <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-subtle cursor-pointer hover:bg-surface-raised transition-colors">
                 <input
                   type="radio"
                   name="allowDirectMessages"
                   value="nobody"
                   checked={form.allowDirectMessages === 'nobody'}
                   onChange={(e) => setForm({ ...form, allowDirectMessages: e.target.value as any })}
-                  className="w-4 h-4 text-indigo-500 bg-slate-950 border-slate-700 focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-500 bg-surface border-subtle focus:ring-indigo-500"
                 />
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">{t.chat?.nobody || 'Niemand (Chats deaktiviert)'}</span>
+                  <span className="text-sm font-semibold text-primary">{t.chat?.nobody || 'Niemand (Chats deaktiviert)'}</span>
                 </div>
               </label>
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-slate-800">
+          <div className="space-y-4 pt-4 border-t border-subtle">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-white block">{t.chat?.soundNotifications || 'Sound-Benachrichtigungen'}</span>
+                <span className="text-sm font-semibold text-primary block">{t.chat?.soundNotifications || 'Sound-Benachrichtigungen'}</span>
               </div>
-              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.soundNotifications ? 'bg-indigo-600' : 'bg-slate-800'}`}>
+              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.soundNotifications ? 'bg-indigo-600' : 'bg-surface-raised border border-subtle'}`}>
                 <input
                   type="checkbox"
                   className="sr-only"
@@ -165,9 +165,9 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-white block">{t.chat?.onlineStatus || 'Online-Status anzeigen'}</span>
+                <span className="text-sm font-semibold text-primary block">{t.chat?.onlineStatus || 'Online-Status anzeigen'}</span>
               </div>
-              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.showOnlineStatus ? 'bg-indigo-600' : 'bg-slate-800'}`}>
+              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.showOnlineStatus ? 'bg-indigo-600' : 'bg-surface-raised border border-subtle'}`}>
                 <input
                   type="checkbox"
                   className="sr-only"
@@ -180,9 +180,9 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-white block">{t.chat?.readReceipts || 'Lesebestätigungen anzeigen'}</span>
+                <span className="text-sm font-semibold text-primary block">{t.chat?.readReceipts || 'Lesebestätigungen anzeigen'}</span>
               </div>
-              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.showReadReceipts ? 'bg-indigo-600' : 'bg-slate-800'}`}>
+              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.showReadReceipts ? 'bg-indigo-600' : 'bg-surface-raised border border-subtle'}`}>
                 <input
                   type="checkbox"
                   className="sr-only"
@@ -194,11 +194,11 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-subtle">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-muted hover:text-primary hover:bg-surface rounded-xl transition-colors"
             >
               {t.common.cancel}
             </button>

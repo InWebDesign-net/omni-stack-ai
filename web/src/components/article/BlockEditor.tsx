@@ -74,7 +74,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
             key={bt.type}
             type="button"
             onClick={() => addBlock(bt.type as Block['type'])}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle rounded-lg text-xs transition-colors"
           >
             <bt.icon className="w-3 h-3" />
             {bt.label}
@@ -87,22 +87,22 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
         {blocks.map((block) => (
           <div
             key={block.id}
-            className={`relative bg-slate-900/60 border rounded-xl p-3 ${
-              activeBlockId === block.id ? 'border-indigo-500' : 'border-slate-800'
+            className={`relative bg-surface border rounded-xl p-3 ${
+              activeBlockId === block.id ? 'border-indigo-500' : 'border-subtle'
             }`}
             onClick={() => setActiveBlockId(block.id)}
           >
             {/* Block Header */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <GripVertical className="w-4 h-4 text-slate-500 cursor-move" />
-                <span className="text-xs font-semibold text-slate-400 uppercase">{block.type}</span>
+                <GripVertical className="w-4 h-4 text-muted cursor-move" />
+                <span className="text-xs font-semibold text-muted uppercase">{block.type}</span>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); moveBlock(block.id, 'up'); }}
-                  className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+                  className="p-1 hover:bg-surface-raised rounded text-muted hover:text-primary"
                   title="Move up"
                 >
                   ↑
@@ -110,7 +110,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); moveBlock(block.id, 'down'); }}
-                  className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+                  className="p-1 hover:bg-surface-raised rounded text-muted hover:text-primary"
                   title="Move down"
                 >
                   ↓
@@ -118,7 +118,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }}
-                  className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-rose-400"
+                  className="p-1 hover:bg-surface-raised rounded text-muted hover:text-rose-400"
                   title="Remove"
                 >
                   <Trash2 className="w-3 h-3" />
@@ -132,7 +132,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 <select
                   value={block.content.level || 2}
                   onChange={(e) => updateBlock(block.id, { ...block.content, level: parseInt(e.target.value) })}
-                  className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white"
+                  className="bg-base border border-subtle rounded-lg px-3 py-1.5 text-sm text-primary"
                 >
                   <option value={1}>H1</option>
                   <option value={2}>H2</option>
@@ -144,7 +144,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                   value={block.content.text || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
                   placeholder="Heading text..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
               </div>
             )}
@@ -155,7 +155,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
                 placeholder="Paragraph text..."
                 rows={3}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 resize-none"
+                className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint resize-none"
               />
             )}
 
@@ -165,7 +165,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
                 placeholder="Quote text..."
                 rows={2}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 resize-none italic"
+                className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint resize-none italic"
               />
             )}
 
@@ -176,14 +176,14 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                   value={block.content.url || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, url: e.target.value })}
                   placeholder="Image URL..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
                 <input
                   type="text"
                   value={block.content.alt || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, alt: e.target.value })}
                   placeholder="Alt text..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
               </div>
             )}
@@ -194,7 +194,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 value={block.content.url || ''}
                 onChange={(e) => updateBlock(block.id, { ...block.content, url: e.target.value })}
                 placeholder="Video URL..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
               />
             )}
 
@@ -205,21 +205,21 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                   value={block.content.language || 'javascript'}
                   onChange={(e) => updateBlock(block.id, { ...block.content, language: e.target.value })}
                   placeholder="Language..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
                 <textarea
                   value={block.content.code || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, code: e.target.value })}
                   placeholder="Code..."
                   rows={4}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 font-mono resize-none"
+                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint font-mono resize-none"
                 />
               </div>
             )}
 
             {block.type === 'list' && (
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-xs text-slate-400">
+                <label className="flex items-center gap-2 text-xs text-muted">
                   <input
                     type="checkbox"
                     checked={block.content.ordered || false}
@@ -239,7 +239,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                       updateBlock(block.id, { ...block.content, items: newItems });
                     }}
                     placeholder={`Item ${i + 1}...`}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500"
+                    className="w-full bg-base border border-subtle rounded-lg px-3 py-1.5 text-sm text-primary placeholder-faint"
                   />
                 ))}
                 <button

@@ -101,25 +101,25 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-5 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+        className="bg-surface-raised border border-subtle rounded-3xl p-6 max-w-lg w-full space-y-5 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div className="flex items-center justify-between pb-3 border-b border-subtle shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-white">{room.name}</h3>
-              <p className="text-xs text-slate-400">
+              <h3 className="font-bold text-base text-primary">{room.name}</h3>
+              <p className="text-xs text-muted">
                 {room.participants?.length || 0} Mitglieder • {isAdmin ? 'Du bist Admin' : 'Mitglied'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors"
+            className="p-2 hover:bg-surface rounded-xl text-muted hover:text-primary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -142,7 +142,7 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
         <div className="space-y-5 overflow-y-auto pr-1 flex-1">
           {/* Section: Current Members */}
           <div className="space-y-2.5">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-primary uppercase tracking-wider">
               Mitglieder ({room.participants?.length || 0})
             </h4>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -153,10 +153,10 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
                 return (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between p-2.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl"
+                    className="flex items-center justify-between p-2.5 bg-surface border border-subtle rounded-2xl"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-200 border border-slate-700 shrink-0 overflow-hidden">
+                      <div className="w-8 h-8 rounded-full bg-surface-raised flex items-center justify-center font-bold text-xs text-primary border border-subtle shrink-0 overflow-hidden">
                         {p.avatarUrl ? (
                           <img src={p.avatarUrl} alt={p.username} className="w-full h-full object-cover" />
                         ) : (
@@ -164,9 +164,9 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+                        <div className="text-xs font-semibold text-primary truncate flex items-center gap-1.5">
                           <span className="truncate">{p.username}</span>
-                          {isSelf && <span className="text-[10px] text-slate-500 font-normal">(Du)</span>}
+                          {isSelf && <span className="text-[10px] text-muted font-normal">(Du)</span>}
                         </div>
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
                         <button
                           onClick={() => handleRemoveMember(String(p.id), p.username)}
                           disabled={loadingUserId === p.id}
-                          className="p-1.5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 rounded-xl transition-all border border-transparent hover:border-rose-500/30"
+                          className="p-1.5 hover:bg-rose-500/20 text-muted hover:text-rose-300 rounded-xl transition-all border border-transparent hover:border-rose-500/30"
                           title="Mitglied aus Gruppe entfernen"
                         >
                           <UserX className="w-4 h-4" />
@@ -198,25 +198,25 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
 
           {/* Section: Add Members (Admin Only) */}
           {isAdmin ? (
-            <div className="space-y-3 pt-3 border-t border-slate-800">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="space-y-3 pt-3 border-t border-subtle">
+              <h4 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
                 <UserPlus className="w-4 h-4 text-indigo-400" />
                 <span>Neues Mitglied hinzufügen</span>
               </h4>
 
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Nach Nutzern suchen..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-surface border border-subtle rounded-xl pl-10 pr-4 py-2 text-xs text-primary placeholder-faint focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               {isSearching && (
-                <div className="text-xs text-slate-400 text-center py-2 animate-pulse">
+                <div className="text-xs text-muted text-center py-2 animate-pulse">
                   Suche nach Nutzern...
                 </div>
               )}
@@ -225,17 +225,17 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
                 {searchResults.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 rounded-2xl transition-all"
+                    className="flex items-center justify-between p-2.5 bg-surface hover:bg-surface-raised border border-subtle rounded-2xl transition-all"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-200 border border-slate-700 shrink-0 overflow-hidden">
+                      <div className="w-8 h-8 rounded-full bg-surface-raised flex items-center justify-center font-bold text-xs text-primary border border-subtle shrink-0 overflow-hidden">
                         {user.avatarUrl ? (
                           <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
                         ) : (
                           user.username.charAt(0).toUpperCase()
                         )}
                       </div>
-                      <span className="text-xs font-medium text-slate-200 truncate">{user.username}</span>
+                      <span className="text-xs font-medium text-primary truncate">{user.username}</span>
                     </div>
 
                     <button
@@ -250,14 +250,14 @@ export function GroupManageModal({ isOpen, onClose, room }: GroupManageModalProp
                 ))}
 
                 {searchQuery.trim() && !isSearching && searchResults.length === 0 && (
-                  <div className="text-xs text-slate-500 text-center py-3">
+                  <div className="text-xs text-muted text-center py-3">
                     Keine passenden Nutzer gefunden.
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-2xl text-xs text-slate-400 text-center">
+            <div className="p-3 bg-surface border border-subtle rounded-2xl text-xs text-muted text-center">
               Nur der Gruppen-Admin kann neue Mitglieder hinzufügen oder entfernen.
             </div>
           )}

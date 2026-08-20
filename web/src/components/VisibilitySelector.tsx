@@ -39,7 +39,7 @@ export function VisibilitySelector({ value, onChange, t }: VisibilitySelectorPro
 
   return (
     <div className="space-y-2">
-      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+      <label className="block text-xs font-semibold text-primary mb-1.5">
         {t?.videoSettings?.visibilityLabel || 'Sichtbarkeit'}
       </label>
       <div className="grid grid-cols-1 gap-2">
@@ -52,8 +52,8 @@ export function VisibilitySelector({ value, onChange, t }: VisibilitySelectorPro
               onClick={() => onChange(opt.id)}
               className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-indigo-500/15 border-indigo-500 text-white shadow-sm'
-                  : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700'
+                  ? 'bg-indigo-500/15 border-indigo-500 text-primary shadow-sm'
+                  : 'bg-surface border-subtle text-muted hover:text-primary hover:border-indigo-500/30'
               }`}
             >
               <input
@@ -64,10 +64,10 @@ export function VisibilitySelector({ value, onChange, t }: VisibilitySelectorPro
                 onChange={() => onChange(opt.id)}
                 className="mt-1 text-indigo-500 focus:ring-indigo-500 cursor-pointer"
               />
-              <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${isSelected ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${isSelected ? 'text-indigo-400' : 'text-muted'}`} />
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold">{opt.label}</div>
-                <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">{opt.desc}</div>
+                <div className="text-[11px] text-muted mt-0.5 leading-snug">{opt.desc}</div>
               </div>
             </label>
           );

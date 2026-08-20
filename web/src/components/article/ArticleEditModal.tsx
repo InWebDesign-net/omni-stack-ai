@@ -77,20 +77,20 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto text-slate-100">
+      <div className="relative w-full max-w-2xl bg-surface-raised border border-subtle rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto text-primary">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-subtle">
           <div>
-            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+            <h2 className="text-xl font-extrabold text-primary flex items-center gap-2">
               <span>{t?.article?.editTitle || 'Artikel bearbeiten'}</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               Sprachversionen (DE/EN) und Sichtbarkeit für diesen Artikel anpassen.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-muted hover:text-primary hover:bg-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -103,21 +103,21 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
         )}
 
         {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-3">
+          <div className="py-12 flex flex-col items-center justify-center text-muted gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
             <span className="text-sm">Lade Artikeldaten...</span>
           </div>
         ) : (
           <>
             {/* Locale Tabs DE / EN */}
-            <div className="flex items-center gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+            <div className="flex items-center gap-2 p-1 bg-surface border border-subtle rounded-xl">
               <button
                 type="button"
                 onClick={() => setActiveLocale('de')}
                 className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                   activeLocale === 'de'
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-muted hover:text-primary'
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
@@ -129,7 +129,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                 className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                   activeLocale === 'en'
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-muted hover:text-primary'
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
@@ -140,7 +140,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
             {/* Language-Specific Form */}
             <div className="space-y-4 pt-2">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-primary uppercase tracking-wider mb-2">
                   Titel ({activeLocale.toUpperCase()})
                 </label>
                 <input
@@ -148,12 +148,12 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                   value={currentData.title}
                   onChange={(e) => updateCurrentLocale('title', e.target.value)}
                   placeholder={`Artikeltitel auf ${activeLocale.toUpperCase()}...`}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-2.5 bg-surface border border-subtle rounded-xl text-sm text-primary placeholder-faint focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-primary uppercase tracking-wider mb-2">
                   Zusammenfassung / Einleitung ({activeLocale.toUpperCase()})
                 </label>
                 <textarea
@@ -161,12 +161,12 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                   value={currentData.summary}
                   onChange={(e) => updateCurrentLocale('summary', e.target.value)}
                   placeholder={`Kurze Zusammenfassung für die Vorschau auf ${activeLocale.toUpperCase()}...`}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-2.5 bg-surface border border-subtle rounded-xl text-sm text-primary placeholder-faint focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-primary uppercase tracking-wider mb-2">
                   Tags ({activeLocale.toUpperCase()})
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -176,12 +176,12 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={handleAddTag}
                     placeholder="Tag hinzufügen + Enter"
-                    className="flex-1 px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 outline-none focus:border-purple-500"
+                    className="flex-1 px-4 py-2 bg-surface border border-subtle rounded-xl text-xs text-primary outline-none focus:border-purple-500"
                   />
                   <button
                     type="button"
                     onClick={handleAddTag}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors"
+                    className="px-4 py-2 bg-surface-raised hover:bg-surface-raised/80 text-primary border border-subtle text-xs font-bold rounded-xl transition-colors"
                   >
                     + Hinzufügen
                   </button>
@@ -207,12 +207,12 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
             </div>
 
             {/* Global Visibility */}
-            <div className="pt-4 border-t border-slate-800 space-y-2">
+            <div className="pt-4 border-t border-subtle space-y-2">
               <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
             </div>
 
             {/* Actions */}
-            <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="pt-6 border-t border-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
@@ -226,7 +226,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle text-xs font-bold transition-all"
                 >
                   Abbrechen
                 </button>
@@ -260,13 +260,13 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                     type="button"
                     disabled={deleting}
                     onClick={() => handleDelete(false)}
-                    className="p-3 bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl text-left transition-all space-y-1 group"
+                    className="p-3 bg-surface hover:bg-surface-raised border border-subtle hover:border-amber-500/50 rounded-xl text-left transition-all space-y-1 group"
                   >
                     <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
                       <Archive className="w-4 h-4" />
                       <span>Soft Delete (Privat schalten)</span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-muted">
                       Der Artikel wird auf <strong>privat</strong> gesetzt. Er bleibt in deiner Datenbank und auf deinem Profil, wird aber aus allen öffentlichen Feeds entfernt.
                     </p>
                   </button>
@@ -275,13 +275,13 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                     type="button"
                     disabled={deleting}
                     onClick={() => handleDelete(true)}
-                    className="p-3 bg-slate-900 border border-slate-800 hover:border-red-500/50 rounded-xl text-left transition-all space-y-1 group"
+                    className="p-3 bg-surface hover:bg-surface-raised border border-subtle hover:border-red-500/50 rounded-xl text-left transition-all space-y-1 group"
                   >
                     <div className="flex items-center gap-2 text-red-400 font-bold text-xs">
                       <Trash className="w-4 h-4" />
                       <span>Endgültig löschen</span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-muted">
                       Der Eintrag wird <strong>unwiderruflich</strong> aus Strapi gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
                     </p>
                   </button>

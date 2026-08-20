@@ -69,17 +69,17 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-5 right-5 text-faint hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all"
+          className="absolute top-5 right-5 text-faint hover:text-primary p-2 rounded-xl hover:bg-surface-raised transition-all"
         >
           <X className="h-5 w-5" />
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-[#44e2cd]/10 border border-[#44e2cd]/20 flex items-center justify-center">
-            <Sliders className="h-5 w-5 text-[#44e2cd]" />
+          <div className="h-10 w-10 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+            <Sliders className="h-5 w-5 text-teal-400" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white leading-tight">
+            <h2 className="text-lg font-bold text-primary leading-tight">
               {t.settings.title}
             </h2>
             <p className="text-xs text-faint">
@@ -99,7 +99,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
               placeholder="z.B. Max Mustermann"
-              className="bg-base border border-subtle focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"
+              className="bg-base border border-subtle focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary focus:outline-none"
             />
           </div>
 
@@ -107,15 +107,15 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
             <label htmlFor="handle" className="text-[11px] font-semibold text-muted uppercase tracking-wider">
               {t.settings.handleLabel}
             </label>
-            <div className="flex items-center bg-base border border-subtle focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white">
-              <span className="text-[#8083ff] font-mono font-bold mr-1">@</span>
+            <div className="flex items-center bg-base border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary">
+              <span className="text-indigo-400 font-mono font-bold mr-1">@</span>
               <input
                 id="handle"
                 type="text"
                 value={form.handle}
                 onChange={(e) => setForm({ ...form, handle: e.target.value })}
                 placeholder="maxtech"
-                className="bg-transparent w-full focus:outline-none text-white font-mono"
+                className="bg-transparent w-full focus:outline-none text-primary font-mono"
               />
             </div>
           </div>
@@ -138,13 +138,13 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
               value={form.bio}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               placeholder={t.settings.bioPlaceholder}
-              className="bg-base border border-subtle focus:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none resize-none"
+              className="bg-base border border-subtle focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary focus:outline-none resize-none"
             />
           </div>
 
           <button
             type="submit"
-            className="mt-2 bg-[#44e2cd] hover:bg-[#34c4b2] text-[#080e1e] font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#44e2cd]/20 flex items-center justify-center gap-2"
+            className="mt-2 bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-teal-400/20 flex items-center justify-center gap-2"
           >
             <CheckCircle2 className="h-4 w-4" />
             <span>{t.settings.save}</span>

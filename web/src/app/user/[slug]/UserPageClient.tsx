@@ -113,12 +113,12 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                     alt={profile.username}
                                     width={128}
                                     height={128}
-                                    className="w-full h-full object-cover rounded-[22px] bg-slate-950"
+                                    className="w-full h-full object-cover rounded-[22px] bg-surface"
                                     unoptimized
                                 />
                             </div>
                             {isOwner && (
-                                <div className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-indigo-500 text-white shadow-lg text-xs font-bold border border-slate-900 flex items-center gap-1" title="Du bist der Eigentümer">
+                                <div className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-indigo-500 text-white shadow-lg text-xs font-bold border border-subtle flex items-center gap-1" title="Du bist der Eigentümer">
                                     <ShieldCheck className="w-4 h-4" />
                                 </div>
                             )}
@@ -129,7 +129,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
                                 <div>
                                     <div className="flex items-center gap-3 justify-center sm:justify-start flex-wrap">
-                                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary">
                                             {profile.username}
                                         </h1>
                                         {isOwner ? (
@@ -138,12 +138,12 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 {(t as any).channel?.ownerBadge || 'Dein Profil (Eigentümer)'}
                                             </span>
                                         ) : (
-                                            <span className="px-2.5 py-0.5 rounded-md text-[11px] font-mono bg-slate-800 border border-slate-700 text-slate-300">
+                                            <span className="px-2.5 py-0.5 rounded-md text-[11px] font-mono bg-surface-raised border border-subtle text-muted">
                                                 {profile.handle}
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm font-mono text-slate-400 mt-1">
+                                    <p className="text-sm font-mono text-muted mt-1">
                                         {profile.handle}
                                     </p>
                                 </div>
@@ -176,28 +176,28 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 )}
                             </div>
 
-                            <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
+                            <p className="text-sm text-primary max-w-2xl leading-relaxed">
                                 {profile.bio}
                             </p>
 
                             {/* Stats Bar */}
-                            <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-slate-400 font-medium justify-center md:justify-start">
-                                <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
+                            <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-muted font-medium justify-center md:justify-start">
+                                <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                     <Film className="w-4 h-4 text-indigo-400" />
-                                    <span className="font-bold text-white">{stats.totalVideos}</span> {(t as any).userProfile?.stats?.videos || 'Videos'}
+                                    <span className="font-bold text-primary">{stats.totalVideos}</span> {(t as any).userProfile?.stats?.videos || 'Videos'}
                                 </div>
-                                <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
+                                <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                     <Eye className="w-4 h-4 text-teal-400" />
-                                    <span className="font-bold text-white">{stats.totalViews.toLocaleString()}</span> {(t as any).userProfile?.stats?.views || t.common.views || 'Aufrufe'}
+                                    <span className="font-bold text-primary">{stats.totalViews.toLocaleString()}</span> {(t as any).userProfile?.stats?.views || t.common.views || 'Aufrufe'}
                                 </div>
-                                <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
+                                <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                     <Heart className="w-4 h-4 text-rose-400" />
-                                    <span className="font-bold text-white">{stats.totalLikes.toLocaleString()}</span> {(t as any).userProfile?.stats?.likes || 'Likes'}
+                                    <span className="font-bold text-primary">{stats.totalLikes.toLocaleString()}</span> {(t as any).userProfile?.stats?.likes || 'Likes'}
                                 </div>
                                 {!isOwner && (
-                                    <div className="flex items-center gap-2 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-slate-800/80">
+                                    <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                         <UserCheck className="w-4 h-4 text-amber-400" />
-                                        <span className="font-bold text-white">{subscriberCount.toLocaleString()}</span> {(t as any).userProfile?.stats?.subscribers || 'Abonnenten'}
+                                        <span className="font-bold text-primary">{subscriberCount.toLocaleString()}</span> {(t as any).userProfile?.stats?.subscribers || 'Abonnenten'}
                                     </div>
                                 )}
                             </div>
@@ -207,14 +207,14 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* Owner Control Callout Banner */}
                 {isOwner && (
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-slate-950 border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-surface to-base border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-white">{(t as any).userProfile?.ownerModeTitle || 'Eigentümer-Modus aktiv'}</h4>
-                                <p className="text-xs text-slate-400">
+                                <h4 className="text-sm font-bold text-primary">{(t as any).userProfile?.ownerModeTitle || 'Eigentümer-Modus aktiv'}</h4>
+                                <p className="text-xs text-muted">
                                     {(t as any).userProfile?.ownerModeDesc || 'Du siehst zusätzlich alle deine privaten Entwürfe & kannst deinen Kanal verwalten.'}
                                 </p>
                             </div>
@@ -230,13 +230,13 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                 )}
 
                 {/* Navigation Tabs */}
-                <div className="flex items-center border-b border-slate-800 gap-4 sm:gap-8 overflow-x-auto">
+                <div className="flex items-center border-b border-subtle gap-4 sm:gap-8 overflow-x-auto">
                     {/* TAB 1: Articles */}
                     <button
                         onClick={() => setActiveTab('articles')}
                         className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'articles'
                                 ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                                : 'border-transparent text-muted hover:text-primary'
                             }`}
                     >
                         <FileText className="w-4 h-4" />
@@ -248,7 +248,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         onClick={() => setActiveTab('videos')}
                         className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'videos'
                                 ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                                : 'border-transparent text-muted hover:text-primary'
                             }`}
                     >
                         <Video className="w-4 h-4" />
@@ -260,7 +260,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         onClick={() => setActiveTab('images')}
                         className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'images'
                                 ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                                : 'border-transparent text-muted hover:text-primary'
                             }`}
                     >
                         <ImageIcon className="w-4 h-4" />
@@ -272,7 +272,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         onClick={() => setActiveTab('favorites')}
                         className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'favorites'
                                 ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                                : 'border-transparent text-muted hover:text-primary'
                             }`}
                     >
                         <Heart className="w-4 h-4" />
@@ -284,7 +284,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         onClick={() => setActiveTab('about')}
                         className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'about'
                                 ? 'border-indigo-500 text-indigo-400'
-                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                                : 'border-transparent text-muted hover:text-primary'
                             }`}
                     >
                         <UserCheck className="w-4 h-4" />
@@ -307,10 +307,10 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                 {activeTab === 'videos' && (
                     <div>
                         {videos.length === 0 ? (
-                            <div className="text-center py-16 bg-slate-900/30 rounded-3xl border border-slate-800/80 p-8 space-y-4">
-                                <Film className="w-12 h-12 text-slate-600 mx-auto" />
-                                <h3 className="text-lg font-bold text-slate-300">{(t as any).userProfile?.emptyVideos?.title || 'Noch keine Videos hochgeladen'}</h3>
-                                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                            <div className="text-center py-16 bg-surface/40 rounded-3xl border border-subtle p-8 space-y-4">
+                                <Film className="w-12 h-12 text-muted mx-auto" />
+                                <h3 className="text-lg font-bold text-primary">{(t as any).userProfile?.emptyVideos?.title || 'Noch keine Videos hochgeladen'}</h3>
+                                <p className="text-xs text-muted max-w-sm mx-auto">
                                     {isOwner
                                         ? ((t as any).userProfile?.emptyVideos?.ownerSub || 'Lade jetzt dein erstes Video auf Omni hoch!')
                                         : ((t as any).userProfile?.emptyVideos?.guestSub || 'Dieser Ersteller hat noch keine öffentlichen Videos veröffentlicht.')}
@@ -334,10 +334,10 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                     return (
                                         <div
                                             key={item.slug || item.id}
-                                            className="group relative bg-slate-900/60 rounded-xl sm:rounded-2xl border border-slate-800/80 overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
+                                            className="group relative bg-surface rounded-xl sm:rounded-2xl border border-subtle overflow-hidden hover:border-indigo-500/50 transition-all duration-300 shadow-lg flex flex-col"
                                         >
                                             {/* Thumbnail Container */}
-                                            <Link href={`/video/${item.slug}`} className="relative aspect-video bg-slate-950 overflow-hidden block">
+                                            <Link href={`/video/${item.slug}`} className="relative aspect-video bg-surface-raised overflow-hidden block">
                                                 <Image
                                                     src={thumb}
                                                     alt={item.title}
@@ -345,7 +345,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
                                                 {/* Play Button Overlay */}
                                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -356,7 +356,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                                                 {/* Duration Badge */}
                                                 {item.duration > 0 && (
-                                                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 rounded bg-slate-950/80 text-[9px] sm:text-[11px] font-mono text-slate-200 border border-slate-800">
+                                                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 rounded bg-black/80 text-[9px] sm:text-[11px] font-mono text-white border border-white/10">
                                                         {formatDuration(item.duration)}
                                                     </div>
                                                 )}
@@ -380,14 +380,14 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                             {/* Details */}
                                             <div className="p-2.5 sm:p-4 space-y-2 flex-1 flex flex-col justify-between">
                                                 <Link href={`/video/${item.slug}`} className="block group-hover:text-indigo-400 transition-colors">
-                                                    <h3 className="font-bold text-xs sm:text-sm text-slate-100 line-clamp-2 leading-snug">
+                                                    <h3 className="font-bold text-xs sm:text-sm text-primary line-clamp-2 leading-snug">
                                                         {item.title}
                                                     </h3>
                                                 </Link>
 
-                                                <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 font-mono border-t border-slate-800/60">
+                                                <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-muted font-mono border-t border-subtle">
                                                     <div className="flex items-center gap-1">
-                                                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" />
+                                                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted" />
                                                         <span>{(item.viewsCount || 0).toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
@@ -397,7 +397,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                                 onClick={() => setEditingVideo(item)}
                                                                 aria-label={t.header.settings}
                                                                 title={t.header.settings}
-                                                                className="p-1 rounded-md text-slate-500 hover:text-indigo-400 hover:bg-slate-800 transition-all"
+                                                                className="p-1 rounded-md text-muted hover:text-indigo-400 hover:bg-surface-raised transition-all"
                                                             >
                                                                 <Settings className="w-3.5 h-3.5" />
                                                             </button>
@@ -433,26 +433,26 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* TAB 5: About Channel Info */}
                 {activeTab === 'about' && (
-                    <div className="bg-slate-900/60 rounded-3xl border border-slate-800/80 p-8 space-y-6">
+                    <div className="bg-surface rounded-3xl border border-subtle p-8 space-y-6">
                         <div>
-                            <h3 className="text-base font-bold text-white mb-2">{(t as any).userProfile?.about?.title || 'Über diesen Kanal'}</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
+                            <h3 className="text-base font-bold text-primary mb-2">{(t as any).userProfile?.about?.title || 'Über diesen Kanal'}</h3>
+                            <p className="text-sm text-primary leading-relaxed max-w-3xl">
                                 {profile.bio || ((t as any).userProfile?.about?.noBio || 'Keine Beschreibung angegeben.')}
                             </p>
                         </div>
 
-                        <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
+                        <div className="pt-6 border-t border-subtle grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
                             <div>
-                                <span className="text-xs text-slate-500 block mb-1">{(t as any).userProfile?.about?.username || 'Nutzername'}</span>
-                                <span className="font-bold text-white">{profile.username}</span>
+                                <span className="text-xs text-muted block mb-1">{(t as any).userProfile?.about?.username || 'Nutzername'}</span>
+                                <span className="font-bold text-primary">{profile.username}</span>
                             </div>
                             <div>
-                                <span className="text-xs text-slate-500 block mb-1">{(t as any).userProfile?.about?.handle || 'Handle'}</span>
+                                <span className="text-xs text-muted block mb-1">{(t as any).userProfile?.about?.handle || 'Handle'}</span>
                                 <span className="font-mono text-indigo-400">{profile.handle}</span>
                             </div>
                             <div>
-                                <span className="text-xs text-slate-500 block mb-1">{(t as any).userProfile?.about?.joined || 'Mitglied seit'}</span>
-                                <span className="text-slate-300 font-mono">
+                                <span className="text-xs text-muted block mb-1">{(t as any).userProfile?.about?.joined || 'Mitglied seit'}</span>
+                                <span className="text-muted font-mono">
                                     {profile.createdAt
                                         ? formatAbsoluteDate(profile.createdAt, lang)
                                         : '2026'}
@@ -563,7 +563,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
             {/* Toast Notification */}
             {toastMessage && (
-                <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 bg-slate-950/90 text-white font-medium text-xs rounded-xl shadow-2xl border border-slate-700/60 backdrop-blur-md animate-fadeIn">
+                <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 bg-surface-raised/95 text-primary font-medium text-xs rounded-xl shadow-2xl border border-subtle backdrop-blur-md animate-fadeIn">
                     {toastMessage}
                 </div>
             )}

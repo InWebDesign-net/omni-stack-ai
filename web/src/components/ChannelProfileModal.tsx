@@ -87,12 +87,12 @@ export default function ChannelProfileModal({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 truncate">
-                <h3 className="text-base font-extrabold text-white truncate">{selectedChannel.username}</h3>
-                <CheckCircle2 className="h-4 w-4 text-[#44e2cd] shrink-0" />
+                <h3 className="text-base font-extrabold text-primary truncate">{selectedChannel.username}</h3>
+                <CheckCircle2 className="h-4 w-4 text-teal-400 shrink-0" />
               </div>
               <p className="text-xs font-mono text-muted truncate">{selectedChannel.handle}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[11px] text-[#44e2cd] font-semibold flex items-center gap-1">
+                <span className="text-[11px] text-teal-400 font-semibold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   {selectedChannel.subscribersCount && selectedChannel.subscribersCount >= 1000
                     ? `${(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten`
@@ -128,7 +128,7 @@ export default function ChannelProfileModal({
               onClick={onClose}
               aria-label={t.common?.close || 'Schließen'}
               title={t.common?.close || 'Schließen'}
-              className="p-2 text-muted hover:text-white rounded-xl hover:bg-white/5 transition-all"
+              className="p-2 text-muted hover:text-primary rounded-xl hover:bg-surface-raised transition-all"
             >
               <X className="h-5 w-5" />
             </button>
@@ -141,7 +141,7 @@ export default function ChannelProfileModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/6 gap-2">
+        <div className="flex items-center justify-between pt-2 border-t border-subtle gap-2">
           <button
             onClick={() => {
               const channelHandle = (selectedChannel.handle || '').replace(/^@/, '');
@@ -150,7 +150,7 @@ export default function ChannelProfileModal({
                 router.push(`/user/${encodeURIComponent(channelHandle)}`);
               }
             }}
-            className="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-[#44e2cd] text-[#003731] hover:bg-[#3bcbb8] shadow-lg shadow-[#44e2cd]/20 active:scale-95 cursor-pointer"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-teal-400 text-slate-950 hover:bg-teal-300 shadow-lg shadow-teal-400/20 active:scale-95 cursor-pointer"
           >
             <ArrowUpRight className="h-4 w-4" />
             <span>Zum Kanal</span>
@@ -158,7 +158,7 @@ export default function ChannelProfileModal({
 
           <button
             onClick={onClose}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs rounded-xl transition-all"
+            className="px-4 py-2.5 bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle font-semibold text-xs rounded-xl transition-all"
           >
             {t.common.close}
           </button>

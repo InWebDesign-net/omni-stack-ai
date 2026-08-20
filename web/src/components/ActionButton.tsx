@@ -60,7 +60,7 @@ export function ActionButton({ isFilterActive, onUpload, onReset, uploadLabel, r
       aria-label={label}
       className={`px-4 py-2.5 rounded-2xl font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shrink-0 ${
         displayMode === 'reset'
-          ? 'bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white shadow-sm'
+          ? 'bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary shadow-sm'
           : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
       }`}
     >

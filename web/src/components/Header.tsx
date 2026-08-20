@@ -29,6 +29,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { DEMO_CREATORS } from '@/config/demo';
 import Image from 'next/image';
 import NotificationDrawer from '@/components/NotificationDrawer';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export function OmniLogo({ size = 28 }: { size?: number }) {
   return (
@@ -226,7 +227,7 @@ export default function Header({
           {showMenuButton && (
             <button
               onClick={handleMenuClick}
-              className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl text-[#9ba4bf] hover:text-white transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
+              className="w-10 h-10 flex items-center justify-center hover:bg-surface-raised rounded-xl text-muted hover:text-primary transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title={t.header.openNav}
               aria-label="Toggle navigation drawer"
               aria-haspopup="dialog"
@@ -238,16 +239,16 @@ export default function Header({
 
           <Link href="/" className="flex items-center gap-3 group select-none">
             <div className="relative flex-shrink-0">
-              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-indigo-600 via-[#8083ff] to-purple-600 opacity-40 blur-md group-hover:opacity-75 transition-opacity duration-300" />
-              <div className="relative rounded-xl bg-[#0d1528] border border-white/15 p-1 group-hover:border-indigo-400/40 transition-colors duration-200 flex items-center justify-center">
+              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 opacity-40 blur-md group-hover:opacity-75 transition-opacity duration-300" />
+              <div className="relative rounded-xl bg-surface-1 border border-subtle p-1 group-hover:border-indigo-400/40 transition-colors duration-200 flex items-center justify-center">
                 <OmniLogo size={28} />
               </div>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-extrabold text-[17px] tracking-[-0.04em] text-white leading-tight">
+              <span className="font-extrabold text-[17px] tracking-[-0.04em] text-primary leading-tight">
                 Omni
               </span>
-              <span className="hidden sm:inline-block text-[9px] font-semibold tracking-[0.12em] uppercase text-[#8083ff] leading-none mt-0.5">
+              <span className="hidden sm:inline-block text-[9px] font-semibold tracking-[0.12em] uppercase text-indigo-400 leading-none mt-0.5">
                 BY INWEBDESIGN
               </span>
             </div>
@@ -260,21 +261,22 @@ export default function Header({
           <button
             onClick={handleAlgoClick}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${algoDrawerOpen
-              ? 'bg-[#8083ff] text-white border-[#8083ff] shadow-lg shadow-[#8083ff]/25'
-              : 'glass-surface hover:bg-white/6 text-[#dae2fd] border-white/8 hover:border-white/20'
+              ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/25'
+              : 'bg-surface hover:bg-surface-raised text-primary border-subtle hover:border-subtle'
               }`}
             title="Algorithm Control"
           >
-            <Sliders className="h-3.5 w-3.5 text-[#8083ff]" />
+            <Sliders className="h-3.5 w-3.5 text-indigo-400" />
             <span className="hidden sm:inline">{activeLang === 'de' ? t.header.algorithm : t.header.algorithm}</span>
           </button>
 
           {/* Theme Switcher */}
+          <ThemeToggle />
 
           {/* Language Switch */}
           <button
             onClick={handleLanguageClick}
-            className="flex items-center gap-1.5 glass-surface hover:bg-white/6 text-primary px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border border-subtle hover:border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
+            className="flex items-center gap-1.5 bg-surface hover:bg-surface-raised text-primary px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border border-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title="Language"
             aria-label={activeLang === 'de' ? "Sprache wechseln zu Englisch" : "Switch language to German"}
           >
@@ -289,7 +291,7 @@ export default function Header({
               className={`relative flex items-center justify-center p-2 rounded-xl text-xs font-semibold transition-all duration-200 border focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
                 notificationDrawerOpen
                   ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/25'
-                  : 'glass-surface hover:bg-white/6 text-[#dae2fd] border-white/8 hover:border-white/20'
+                  : 'bg-surface hover:bg-surface-raised text-primary border-subtle'
               }`}
               title="Benachrichtigungen"
               aria-label="Benachrichtigungen"
@@ -316,7 +318,7 @@ export default function Header({
               <button
                 type="button"
                 onClick={toggleUserDropdown}
-                className="flex items-center gap-2 glass-surface hover:bg-white/8 p-1 sm:pr-2.5 rounded-xl border border-white/8 hover:border-white/20 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff]"
+                className="flex items-center gap-2 bg-surface hover:bg-surface-raised p-1 sm:pr-2.5 rounded-xl border border-subtle transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 aria-label="Benutzermenü"
                 aria-haspopup="menu"
                 aria-expanded={userDropdownOpen}
@@ -326,13 +328,13 @@ export default function Header({
                   alt={activeUser.username}
                   width={28}
                   height={28}
-                  className="w-7 h-7 rounded-lg object-cover border border-white/20 shrink-0"
+                  className="w-7 h-7 rounded-lg object-cover border border-subtle shrink-0"
                   unoptimized
                 />
-                <span className="text-xs font-semibold text-white hidden md:inline truncate max-w-[100px]">
+                <span className="text-xs font-semibold text-primary hidden md:inline truncate max-w-[100px]">
                   {activeUser.username}
                 </span>
-                <ChevronDown className={`h-3.5 w-3.5 text-[#9ba4bf] group-hover:text-white transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 text-muted group-hover:text-primary transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* User Dropdown Menu */}
@@ -343,7 +345,7 @@ export default function Header({
                 >
                   <div className="px-3 py-2 border-b border-subtle flex flex-col">
                     <span className="text-xs font-bold text-primary truncate">{activeUser.username}</span>
-                    <span className="text-[10px] font-mono text-[#8083ff] truncate">
+                    <span className="text-[10px] font-mono text-indigo-400 truncate">
                       {getUserHandleString(activeUser)}
                     </span>
                   </div>
@@ -359,7 +361,7 @@ export default function Header({
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-primary hover:bg-surface transition-all text-left"
                   >
-                    <Tv className="h-4 w-4 text-[#8083ff]" />
+                    <Tv className="h-4 w-4 text-indigo-400" />
                     <span>{t.header.myChannel}</span>
                   </button>
 
@@ -375,7 +377,7 @@ export default function Header({
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-primary hover:bg-surface transition-all text-left"
                   >
-                    <User className="h-4 w-4 text-[#44e2cd]" />
+                    <User className="h-4 w-4 text-teal-400" />
                     <span>{t.header.settings}</span>
                   </button>
 
@@ -404,7 +406,7 @@ export default function Header({
                   openAuthModal();
                 }
               }}
-              className="flex items-center gap-1.5 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-[#8083ff]/25"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-lg shadow-indigo-500/25"
             >
               <User className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{activeLang === 'de' ? t.header.login : t.header.login}</span>
@@ -431,19 +433,19 @@ export default function Header({
                 onClick={() => setUniversalNavOpen(false)}
                 className="flex items-center gap-3 group"
               >
-                <div className="rounded-xl bg-surface border border-subtle p-1 group-hover:border-[#8083ff]/40 transition-colors flex items-center justify-center">
+                <div className="rounded-xl bg-surface border border-subtle p-1 group-hover:border-indigo-400/40 transition-colors flex items-center justify-center">
                   <OmniLogo size={28} />
                 </div>
                 <div className="flex flex-col leading-none">
-                  <span className="font-extrabold text-base text-white">Omni Network</span>
-                  <span className="text-[9px] font-mono text-[#8083ff] uppercase tracking-wider mt-0.5">
+                  <span className="font-extrabold text-base text-primary">Omni Network</span>
+                  <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider mt-0.5">
                     {t.header.navigation}
                   </span>
                 </div>
               </Link>
               <button
                 onClick={() => setUniversalNavOpen(false)}
-                className="p-2 rounded-xl text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-colors"
+                className="p-2 rounded-xl text-muted hover:text-primary hover:bg-surface-raised transition-colors"
                 title={t.common.close}
               >
                 <X className="h-5 w-5" />
@@ -452,53 +454,53 @@ export default function Header({
 
             {/* Section 1: Main Navigation Links */}
             <div className="flex flex-col gap-1">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5c657d] mb-1">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-faint mb-1">
                 {t.header.mainNav}
               </p>
 
               <Link
                 href="/"
                 onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-primary hover:bg-surface-raised transition-all font-medium"
               >
-                <Home className="h-4.5 w-4.5 text-[#8083ff]" />
+                <Home className="h-4.5 w-4.5 text-indigo-400" />
                 <span>{t.header.homeFeed}</span>
               </Link>
 
               <Link
                 href="/articles"
                 onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-primary hover:bg-surface-raised transition-all font-medium"
               >
-                <FileText className="h-4.5 w-4.5 text-[#a855f7]" />
+                <FileText className="h-4.5 w-4.5 text-purple-400" />
                 <span>{t.header?.articles || 'Articles'}</span>
               </Link>
 
               <Link
                 href="/videos"
                 onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-primary hover:bg-surface-raised transition-all font-medium"
               >
-                <Play className="h-4.5 w-4.5 text-[#8083ff]" />
+                <Play className="h-4.5 w-4.5 text-indigo-400" />
                 <span>{t.header.videos}</span>
               </Link>
 
               <Link
                 href="/images"
                 onClick={() => setUniversalNavOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#dae2fd] hover:bg-white/6 hover:text-white transition-all font-medium"
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-primary hover:bg-surface-raised transition-all font-medium"
               >
-                <ImageIcon className="h-4.5 w-4.5 text-[#44e2cd]" />
+                <ImageIcon className="h-4.5 w-4.5 text-teal-400" />
                 <span>{t.header?.images || 'Images'}</span>
               </Link>
             </div>
 
-            <div className="border-t border-white/5 my-1" />
+            <div className="border-t border-subtle my-1" />
 
             {/* Section 2: Creator Channels */}
             <div className="flex flex-col gap-1">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5c657d] mb-1 flex items-center gap-1">
-                <Users className="h-3 w-3 text-[#8083ff]" />
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-faint mb-1 flex items-center gap-1">
+                <Users className="h-3 w-3 text-indigo-400" />
                 <span>{t.header.channelsCreators}</span>
               </p>
               {DEMO_CREATORS.map((creator) => (
@@ -513,24 +515,24 @@ export default function Header({
                       avatarUrl: creator.avatarUrl,
                     });
                   }}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[#9ba4bf] hover:text-white hover:bg-white/5 transition-all text-left w-full cursor-pointer"
+                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-muted hover:text-primary hover:bg-surface-raised transition-all text-left w-full cursor-pointer"
                 >
-                  <Image src={creator.avatarUrl} alt={creator.username} className="h-5 w-5 rounded-full object-cover border border-white/20 shrink-0" />
-                  <span className="font-mono text-[#c0c1ff]">@{creator.handle}</span>
-                  <span className="text-[10px] text-[#5c657d] truncate ml-auto">{creator.username}</span>
+                  <Image src={creator.avatarUrl} alt={creator.username} className="h-5 w-5 rounded-full object-cover border border-subtle shrink-0" />
+                  <span className="font-mono text-indigo-300">@{creator.handle}</span>
+                  <span className="text-[10px] text-faint truncate ml-auto">{creator.username}</span>
                 </button>
               ))}
             </div>
 
             {/* Drawer Footer Link Card */}
-            <div className="mt-auto pt-3 border-t border-white/10 flex flex-col gap-2">
-              <div className="bg-[#0d1528] border border-white/6 p-3 rounded-2xl flex flex-col gap-1">
-                <span className="text-[10px] text-[#5c657d] uppercase tracking-wider font-semibold">Managed AI Stack</span>
+            <div className="mt-auto pt-3 border-t border-subtle flex flex-col gap-2">
+              <div className="bg-surface-1 border border-subtle p-3 rounded-2xl flex flex-col gap-1">
+                <span className="text-[10px] text-faint uppercase tracking-wider font-semibold">Managed AI Stack</span>
                 <a
                   href="https://inwebdesign.net"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group/link flex items-center justify-between text-[#8083ff] hover:text-[#c0c1ff] text-xs font-semibold transition-colors mt-0.5"
+                  className="group/link flex items-center justify-between text-indigo-400 hover:text-indigo-300 text-xs font-semibold transition-colors mt-0.5"
                 >
                   <span>InWebDesign.net</span>
                   <ExternalLink className="h-3.5 w-3.5 group-hover/link:translate-x-0.5 transition-transform" />

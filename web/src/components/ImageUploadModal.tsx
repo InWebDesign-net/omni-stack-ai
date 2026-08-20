@@ -48,7 +48,7 @@ export default function ImageUploadModal({
               <ImageIcon className="h-5 w-5 text-teal-400" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white">{t.upload?.uploadImage || (lang === 'de' ? 'Bilder hochladen' : 'Upload Images')}</h3>
+              <h3 className="text-base font-extrabold text-primary">{t.upload?.uploadImage || (lang === 'de' ? 'Bilder hochladen' : 'Upload Images')}</h3>
               <p className="text-xs text-muted">{t.upload?.selectImagesSubtitle || (lang === 'de' ? 'Wähle ein oder mehrere Bilder aus' : 'Select one or more images')}</p>
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function ImageUploadModal({
             onClick={onClose}
             aria-label={t.common?.close || 'Schließen'}
             title={t.common?.close || 'Schließen'}
-            className="p-2 rounded-xl text-muted hover:text-white hover:bg-white/5 transition-colors"
+            className="p-2 rounded-xl text-muted hover:text-primary hover:bg-surface-raised transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -77,8 +77,8 @@ export default function ImageUploadModal({
             onChange={(e) => handleFileChange(e.target.files)}
           />
           <Upload className="h-8 w-8 text-teal-400 mb-3" />
-          <h4 className="text-sm font-bold text-white mb-1">{t.upload?.dragImagesHere || (lang === 'de' ? 'Bilder hier hineinziehen' : 'Drag & drop images here')}</h4>
-          <p className="text-xs text-[#9ba4bf]">{t.upload?.orClickImages || (lang === 'de' ? 'oder klicken um Dateien auszuwählen (JPG, PNG, WebP)' : 'or click to select files (JPG, PNG, WebP)')}</p>
+          <h4 className="text-sm font-bold text-primary mb-1">{t.upload?.dragImagesHere || (lang === 'de' ? 'Bilder hier hineinziehen' : 'Drag & drop images here')}</h4>
+          <p className="text-xs text-muted">{t.upload?.orClickImages || (lang === 'de' ? 'oder klicken um Dateien auszuwählen (JPG, PNG, WebP)' : 'or click to select files (JPG, PNG, WebP)')}</p>
         </div>
       </div>
     </div>

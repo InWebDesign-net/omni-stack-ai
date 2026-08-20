@@ -74,14 +74,14 @@ export default function VideosPageClient({
                 <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-cyan-500/20 border border-indigo-500/30 text-indigo-400">
                   <Film className="w-6 h-6" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
                   {t.videos.title}
                 </h1>
                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">
                   {isLoading ? "..." : `${totalVideos} ${t.videos.clipsCount}`}
                 </span>
               </div>
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-muted text-sm mt-1">
                 {t.videos.subtitle}
               </p>
             </div>
@@ -99,7 +99,7 @@ export default function VideosPageClient({
           </div>
 
           {/* Search & Sort Control Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-subtle">
             {/* Search Input Form */}
             <ContentSearchBar
               kind="video"
@@ -114,48 +114,48 @@ export default function VideosPageClient({
 
             <div className="flex items-center gap-3">
               {/* Sort Selector Dropdown */}
-              <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-2 bg-surface-raised border border-subtle rounded-xl px-3 py-1.5">
                 <SlidersHorizontal className="w-4 h-4 text-indigo-400 shrink-0" />
                 <select
                   id="videos-sort-select"
                   aria-label="Sortierung"
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value)}
-                  className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
+                  className="bg-transparent text-sm text-primary focus:outline-none cursor-pointer pr-2"
                 >
-                  <option value="createdatasc" className="bg-slate-900 text-slate-200">
+                  <option value="createdatasc" className="bg-surface-raised text-primary">
                     ✨ Neueste zuerst
                   </option>
-                  <option value="trending" className="bg-slate-900 text-slate-200">
+                  <option value="trending" className="bg-surface-raised text-primary">
                     🔥 Trending (Beliebt & Neu)
                   </option>
                   {currentUser && (
-                    <option value="affinity" className="bg-slate-900 text-slate-200">
+                    <option value="affinity" className="bg-surface-raised text-primary">
                       🎯 KI-Interessen Profil
                     </option>
                   )}
-                  <option value="mostliked" className="bg-slate-900 text-slate-200">
+                  <option value="mostliked" className="bg-surface-raised text-primary">
                     ❤️ Beliebteste / Likes
                   </option>
-                  <option value="mostcommented" className="bg-slate-900 text-slate-200">
+                  <option value="mostcommented" className="bg-surface-raised text-primary">
                     💬 Meist-Kommentiert (Aktivität)
                   </option>
-                  <option value="mostpopular" className="bg-slate-900 text-slate-200">
+                  <option value="mostpopular" className="bg-surface-raised text-primary">
                     👑 Höchste Reichweite (Popular)
                   </option>
-                  <option value="createdatdesc" className="bg-slate-900 text-slate-200">
+                  <option value="createdatdesc" className="bg-surface-raised text-primary">
                     ⌛ Älteste zuerst
                   </option>
-                  <option value="titleasc" className="bg-slate-900 text-slate-200">
+                  <option value="titleasc" className="bg-surface-raised text-primary">
                     🔤 Titel (A → Z)
                   </option>
-                  <option value="titledesc" className="bg-slate-900 text-slate-200">
+                  <option value="titledesc" className="bg-surface-raised text-primary">
                     🔤 Titel (Z → A)
                   </option>
-                  <option value="durationasc" className="bg-slate-900 text-slate-200">
+                  <option value="durationasc" className="bg-surface-raised text-primary">
                     ⚡ Kürzeste zuerst
                   </option>
-                  <option value="durationdesc" className="bg-slate-900 text-slate-200">
+                  <option value="durationdesc" className="bg-surface-raised text-primary">
                     🎬 Längste zuerst
                   </option>
                 </select>
@@ -163,22 +163,23 @@ export default function VideosPageClient({
             </div>
           </div>
 
+          {/* Collapsible Tag Filter Panel */}
           <ContentTagFilter
             accent="indigo"
             labels={{
-              heading: t.tagFilter?.allTags || 'Alle Tags',
-              activeSuffix: t.tagFilter?.activeTags || 'aktiv',
-              matchAny: t.tagFilter?.matchAny || 'Irgendein Tag',
-              matchAll: t.tagFilter?.matchAll || 'Alle Tags',
-              searchTagsPlaceholder: t.tagFilter?.searchTagsPlaceholder || 'Tag suchen...',
-              noTagsFound: t.tagFilter?.noTagsFound || 'Keine Tags für "{query}" gefunden.',
-              showLess: t.tagFilter?.showLess || 'Weniger anzeigen',
-              showAll: t.tagFilter?.showAll || 'Alle Tags',
-              noTagsAtAll: t.tagFilter?.noTagsAtAll || 'Keine Tags vorhanden.',
+              heading: t.videos?.allTags || 'Alle Tags',
+              activeSuffix: t.videos?.activeTags || 'aktiv',
+              matchAny: t.videos?.matchAny || 'Irgendein Tag',
+              matchAll: t.videos?.matchAll || 'Alle Tags',
+              searchTagsPlaceholder: t.videos?.searchTagsPlaceholder || 'Tags durchsuchen...',
+              noTagsFound: t.videos?.noTagsFound || 'Keine Tags für "{query}" gefunden.',
+              showLess: t.common?.showLess || 'Weniger anzeigen',
+              showAll: t.common?.showMore || 'Alle anzeigen',
+              noTagsAtAll: t.videos?.noTagsFound || 'Keine Tags vorhanden.',
             }}
             allTags={allTags}
-            isLoadingTags={isLoadingTags}
             filteredAllTags={filteredAllTags}
+            isLoadingTags={isLoadingTags}
             includedTags={includedTags}
             excludedTags={excludedTags}
             matchMode={matchMode}
@@ -192,7 +193,7 @@ export default function VideosPageClient({
           />
         </div>
 
-        {/* Video Card Grid */}
+        {/* Video Grid Section */}
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6 gap-x-4 gap-y-6">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -200,10 +201,10 @@ export default function VideosPageClient({
                 key={`skeleton-${i}`}
                 className="animate-pulse flex flex-col space-y-2"
               >
-                <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
+                <div className="aspect-video bg-surface-raised/80 rounded-xl w-full" />
                 <div className="space-y-1.5 pt-1 flex-1 flex flex-col justify-between">
-                  <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
-                  <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                  <div className="h-3.5 bg-surface-raised/60 rounded w-3/4" />
+                  <div className="h-3 bg-surface-raised/40 rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -220,9 +221,9 @@ export default function VideosPageClient({
           </div>
         ) : videos.length === 0 ? (
           <div className="bg-surface border border-subtle rounded-2xl p-8 sm:p-12 text-center space-y-4">
-            <Film className="w-10 h-10 sm:w-12 sm:h-12 text-slate-600 mx-auto" />
-            <h3 className="text-base sm:text-lg font-semibold text-slate-200">{t.videos.noVideosFound}</h3>
-            <p className="text-slate-400 text-xs sm:text-sm max-w-md mx-auto">
+            <Film className="w-10 h-10 sm:w-12 sm:h-12 text-faint mx-auto" />
+            <h3 className="text-base sm:text-lg font-semibold text-primary">{t.videos.noVideosFound}</h3>
+            <p className="text-muted text-xs sm:text-sm max-w-md mx-auto">
               {t.videos.noVideosSub}
             </p>
             <button
@@ -254,7 +255,7 @@ export default function VideosPageClient({
                   className="group flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   {/* Video Thumbnail & Play Overlay */}
-                  <Link href={`/video/${video.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-slate-950 shadow-md">
+                  <Link href={`/video/${video.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-surface shadow-md">
                     {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
                     <Image
                       src={video.thumbnailUrl || "/media/thumbnails/default.png"}
@@ -262,7 +263,7 @@ export default function VideosPageClient({
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
                     {/* Play Icon Badge */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -273,7 +274,7 @@ export default function VideosPageClient({
 
                     {/* Duration Badge */}
                     {video.duration && (
-                      <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[9px] sm:text-[10px] font-mono text-slate-200 flex items-center gap-1">
+                      <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-surface-raised/80 backdrop-blur-md border border-subtle text-[9px] sm:text-[10px] font-mono text-primary flex items-center gap-1">
                         <Clock className="w-2.5 h-2.5 text-indigo-400" />
                         <span>{formatDuration(video.duration)}</span>
                       </div>
@@ -285,14 +286,14 @@ export default function VideosPageClient({
                     <div>
                       <Link
                         href={`/video/${video.slug}`}
-                        className="font-semibold text-slate-100 group-hover:text-indigo-300 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
+                        className="font-semibold text-primary group-hover:text-indigo-300 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
                       >
                         {video.title}
                       </Link>
                     </div>
 
                     {/* Creator & Meta */}
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <div className="flex items-center justify-between text-[11px] text-muted">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -314,16 +315,16 @@ export default function VideosPageClient({
                           loading="lazy"
                           width={20}
                           height={20}
-                          className="w-5 h-5 rounded-full object-cover border border-slate-700 shrink-0"
+                          className="w-5 h-5 rounded-full object-cover border border-subtle shrink-0"
                           unoptimized
                         />
-                        <span className="truncate max-w-[70px] sm:max-w-[120px] text-slate-300 font-medium">{creatorName}</span>
+                        <span className="truncate max-w-[70px] sm:max-w-[120px] text-muted font-medium">{creatorName}</span>
                       </button>
 
-                      <div className="flex items-center gap-2 text-slate-400 shrink-0 font-mono text-[10px]">
+                      <div className="flex items-center gap-2 text-muted shrink-0 font-mono text-[10px]">
                         {video.viewsCount !== undefined && (
                           <div className="flex items-center gap-0.5" title="Aufrufe">
-                            <Eye className="w-3 h-3 text-slate-400" />
+                            <Eye className="w-3 h-3 text-muted" />
                             <span>{video.viewsCount.toLocaleString()}</span>
                           </div>
                         )}
@@ -350,22 +351,22 @@ export default function VideosPageClient({
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/80 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="p-2.5 rounded-xl border border-subtle bg-surface-raised text-muted hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-1.5 px-3">
-              <span className="text-sm font-medium text-slate-300">
-                Seite <span className="text-white font-bold">{currentPage}</span> von{" "}
-                <span className="text-slate-400">{totalPages}</span>
+              <span className="text-sm font-medium text-muted">
+                Seite <span className="text-primary font-bold">{currentPage}</span> von{" "}
+                <span className="text-muted">{totalPages}</span>
               </span>
             </div>
 
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/80 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="p-2.5 rounded-xl border border-subtle bg-surface-raised text-muted hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

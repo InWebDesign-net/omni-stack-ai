@@ -358,7 +358,7 @@ export default function VideoPageClient({
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>
@@ -379,7 +379,7 @@ export default function VideoPageClient({
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all text-xs font-semibold"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary transition-all text-xs font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.common.back}</span>
@@ -399,17 +399,17 @@ export default function VideoPageClient({
           {/* Main Video Section */}
           <div className="lg:col-span-2 space-y-6">
             {/* 16:9 Video Player Container */}
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface border border-subtle shadow-2xl">
               {accessStatus && accessStatus.isAllowed === false && accessStatus.isSubscribersOnly ? (
-                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-slate-900 to-slate-950 text-slate-200 space-y-4">
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-surface to-base text-primary space-y-4">
                   <div className="p-4 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 shadow-xl animate-pulse">
                     <Users className="w-8 h-8" />
                   </div>
                   <div className="max-w-md space-y-1">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold text-primary">
                       {t?.contentAccess?.subscribersOnlyTitle || 'Nur für Abonnenten'}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted">
                       {t?.contentAccess?.subscribersOnlySubtitle || 'Dieser Inhalt ist exklusiv für Abonnenten dieses Kanals verfügbar.'}
                     </p>
                   </div>
@@ -436,9 +436,9 @@ export default function VideoPageClient({
             </div>
 
             {/* Video Details Header */}
-            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
+            <div className="bg-surface border border-subtle rounded-2xl p-6 shadow-xl space-y-6">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tight">
                   {video.title}
                 </h1>
                 {accessStatus?.isPrivate && accessStatus?.isOwner && (
@@ -449,15 +449,15 @@ export default function VideoPageClient({
               </div>
 
               {/* Views, Date & Interactive Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-800/60">
-                <div className="flex items-center gap-4 text-xs text-slate-400">
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-subtle">
+                <div className="flex items-center gap-4 text-xs text-muted">
                   <div className="flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-indigo-400" />
                     <span>{viewsCount.toLocaleString()} {getDictionary(effectiveLang).common.views}</span>
                   </div>
                   {video.createdAt && (
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-slate-500" />
+                      <Clock className="w-4 h-4 text-faint" />
                       <span>{formatRelativeDate(video.createdAt, effectiveLang)}</span>
                     </div>
                   )}
@@ -470,7 +470,7 @@ export default function VideoPageClient({
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all ${
                       isLiked
                         ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
-                        : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:text-white'
+                        : 'bg-surface-raised border border-subtle text-muted hover:text-primary'
                     }`}
                   >
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-400 text-rose-400' : ''}`} />
@@ -479,7 +479,7 @@ export default function VideoPageClient({
 
                   <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all"
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-raised border border-subtle text-muted hover:text-primary text-xs font-semibold transition-all"
                   >
                     <Share2 className="w-4 h-4" />
                     <span className="hidden sm:inline">{t.common.share}</span>
@@ -497,7 +497,7 @@ export default function VideoPageClient({
               </div>
 
               {/* Creator Channel Badge Bar */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/80 border border-slate-800">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-surface-raised border border-subtle">
                 <div
                   onClick={() => openChannelModal(creator || fallbackCreator)}
                   className="flex items-center gap-3 cursor-pointer group"
@@ -512,12 +512,12 @@ export default function VideoPageClient({
                   />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors">
+                      <h3 className="font-bold text-primary text-sm group-hover:text-indigo-300 transition-colors">
                         {creatorName}
                       </h3>
                       <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
                     </div>
-                    <p className="text-xs text-slate-400 font-mono">{creatorHandle}</p>
+                    <p className="text-xs text-muted font-mono">{creatorHandle}</p>
                   </div>
                 </div>
 
@@ -543,11 +543,11 @@ export default function VideoPageClient({
                 const isLongDescription = descriptionText.length > 180 || descriptionText.includes('\n');
 
                 return (
-                  <div className="space-y-3 pt-2 border-t border-slate-800/60">
+                  <div className="space-y-3 pt-2 border-t border-subtle">
                     {descriptionText && (
                       <div>
                         <p
-                          className={`text-sm text-slate-300 leading-relaxed ${
+                          className={`text-sm text-primary leading-relaxed ${
                             !descExpanded && isLongDescription ? 'line-clamp-3' : ''
                           }`}
                         >
@@ -594,7 +594,7 @@ export default function VideoPageClient({
 
           {/* Related Videos Sidebar */}
           <div className="space-y-4">
-            <h3 className="font-bold text-white text-base flex items-center gap-2">
+            <h3 className="font-bold text-primary text-base flex items-center gap-2">
               <Film className="w-4 h-4 text-indigo-400" />
               <span>{t.videoDetail.relatedRecommendations}</span>
             </h3>
@@ -608,7 +608,7 @@ export default function VideoPageClient({
                     href={`/video/${rel.slug}`}
                     className="group flex gap-3 p-1.5 rounded-xl hover:bg-surface transition-colors duration-150 min-h-[44px]"
                   >
-                    <div className="relative aspect-video w-40 sm:w-[168px] shrink-0 rounded-xl overflow-hidden bg-slate-950 shadow-sm">
+                    <div className="relative aspect-video w-40 sm:w-[168px] shrink-0 rounded-xl overflow-hidden bg-surface shadow-sm">
                       <CardThumbnail item={rel} />
                       {rel.duration && (
                         <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white">

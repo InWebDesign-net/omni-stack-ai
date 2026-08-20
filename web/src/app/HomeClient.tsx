@@ -165,7 +165,7 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="min-h-screen bg-base text-primary font-sans selection:bg-[#8083ff] selection:text-white flex flex-col">
+    <div className="min-h-screen bg-base text-primary font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       <Header />
 
       <main className="flex-1 w-full max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -177,7 +177,7 @@ export default function HomeClient() {
             <span>{t.home?.heroBadge || 'Hyper-Personalisiertes KI Mediennetzwerk'}</span>
           </div>
 
-          <h1 className="relative text-3xl sm:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight">
+          <h1 className="relative text-3xl sm:text-5xl font-extrabold tracking-tight text-primary max-w-3xl mx-auto leading-tight">
             {t.home?.heroTitle || 'Was möchtest du heute entdecken?'}
           </h1>
 
@@ -187,7 +187,7 @@ export default function HomeClient() {
 
           <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto">
             <div className="relative flex items-center bg-surface-raised border border-subtle rounded-2xl p-2 shadow-2xl focus-within:border-indigo-500 transition-all">
-              <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
+              <Search className="w-5 h-5 text-muted ml-3 shrink-0" />
               <input
                 id="home-hero-search-input"
                 type="text"
@@ -195,7 +195,7 @@ export default function HomeClient() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.home?.searchPlaceholder || 'Titel, Themen oder KI-Intents suchen...'}
-                className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:outline-none focus:ring-0 ring-0 border-none shadow-none"
+                className="w-full bg-transparent px-3 py-2.5 text-sm text-primary placeholder-slate-500 outline-none focus:outline-none focus:ring-0 ring-0 border-none shadow-none"
               />
               <button
                 type="button"
@@ -238,7 +238,7 @@ export default function HomeClient() {
                 <Link
                   key={label}
                   href={`/videos?page=1&includetag=${encodeURIComponent(tags)}`}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all"
+                  className="px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary transition-all"
                 >
                   {label}
                 </Link>
@@ -254,8 +254,8 @@ export default function HomeClient() {
                 <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="space-y-0.5">
-                <h2 className="font-extrabold text-base sm:text-lg text-white tracking-tight">{t.home?.creatorsTitle || 'Empfohlene Creator & Kanäle'}</h2>
-                <p className="text-xs text-slate-400 leading-normal">{t.home?.creatorsSubtitle || 'Kanäle mit frischem Content werden bevorzugt dargestellt'}</p>
+                <h2 className="font-extrabold text-base sm:text-lg text-primary tracking-tight">{t.home?.creatorsTitle || 'Empfohlene Creator & Kanäle'}</h2>
+                <p className="text-xs text-muted leading-normal">{t.home?.creatorsSubtitle || 'Kanäle mit frischem Content werden bevorzugt dargestellt'}</p>
               </div>
             </div>
 
@@ -377,10 +377,10 @@ export default function HomeClient() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="animate-pulse flex flex-col space-y-2">
-                  <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
+                  <div className="aspect-video bg-surface-raised/80 rounded-xl w-full" />
                   <div className="space-y-1.5 pt-1">
-                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
-                    <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                    <div className="h-3.5 bg-surface-raised/60 rounded w-3/4" />
+                    <div className="h-3 bg-surface-raised/40 rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -407,7 +407,7 @@ export default function HomeClient() {
                     className="group flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5"
                   >
                     {/* Article Thumbnail / Fallback */}
-                    <Link href={`/article/${item.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-slate-950 shadow-md">
+                    <Link href={`/article/${item.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-surface shadow-md">
                       {item.thumbnail || item.thumbnailUrl ? (
                         <Image
                           src={item.thumbnail || item.thumbnailUrl}
@@ -507,10 +507,10 @@ export default function HomeClient() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="animate-pulse flex flex-col space-y-2">
-                  <div className="aspect-video bg-slate-800/80 rounded-xl w-full" />
+                  <div className="aspect-video bg-surface-raised/80 rounded-xl w-full" />
                   <div className="space-y-1.5 pt-1">
-                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
-                    <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                    <div className="h-3.5 bg-surface-raised/60 rounded w-3/4" />
+                    <div className="h-3 bg-surface-raised/40 rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -537,15 +537,14 @@ export default function HomeClient() {
                     className="group flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5"
                   >
                     {/* Video Thumbnail & Play Overlay */}
-                    <Link href={`/video/${item.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-slate-950 shadow-md">
-                      {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen thumbnails, improving initial page load speed. */}
+                    <Link href={`/video/${item.slug}`} className="relative aspect-video w-full overflow-hidden rounded-xl block bg-surface shadow-md">
                       <Image
                         src={item.thumbnailUrl || '/media/thumbnails/default.png'}
                         alt={item.title}
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
                       {/* Play Icon Badge */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -556,7 +555,7 @@ export default function HomeClient() {
 
                       {/* Duration Badge */}
                       {Boolean(item.duration && item.duration > 0) && (
-                        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[9px] sm:text-[10px] font-mono text-slate-200 flex items-center gap-1">
+                        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-surface-raised/80 backdrop-blur-md border border-subtle text-[9px] sm:text-[10px] font-mono text-primary flex items-center gap-1">
                           <Clock className="w-2.5 h-2.5 text-indigo-400" />
                           <span>{formatDuration(item.duration)}</span>
                         </div>
@@ -568,32 +567,31 @@ export default function HomeClient() {
                       <div>
                         <Link
                           href={`/video/${item.slug}`}
-                          className="font-semibold text-slate-100 group-hover:text-indigo-300 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
+                          className="font-semibold text-primary group-hover:text-indigo-300 text-xs sm:text-sm line-clamp-2 transition-colors leading-snug"
                         >
                           {item.title}
                         </Link>
                       </div>
 
                       {/* Creator & Meta */}
-                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <div className="flex items-center justify-between text-[11px] text-muted">
                         <Link href={creator?.handle || creator?.id ? `/user/${creator.handle || creator.id}` : '#'} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity min-w-0">
-                          {/* ⚡ Bolt Optimization: Added loading="lazy" to defer loading of off-screen avatars, saving bandwidth. */}
                           <Image
                             src={creatorAvatar}
                             alt={creatorName}
                             width={20}
                             height={20}
                             loading="lazy"
-                            className="w-5 h-5 rounded-full object-cover border border-slate-700 shrink-0"
+                            className="w-5 h-5 rounded-full object-cover border border-subtle shrink-0"
                             unoptimized
                           />
-                          <span className="truncate max-w-[70px] sm:max-w-[120px] text-slate-300 font-medium">{creatorName}</span>
+                          <span className="truncate max-w-[70px] sm:max-w-[120px] text-muted font-medium">{creatorName}</span>
                         </Link>
 
-                        <div className="flex items-center gap-2 text-slate-400 shrink-0 font-mono text-[10px]">
+                        <div className="flex items-center gap-2 text-muted shrink-0 font-mono text-[10px]">
                           {item.viewsCount !== undefined && (
                             <div className="flex items-center gap-0.5" title="Aufrufe">
-                              <Eye className="w-3 h-3 text-slate-400" />
+                              <Eye className="w-3 h-3 text-muted" />
                               <span>{item.viewsCount.toLocaleString()}</span>
                             </div>
                           )}
@@ -615,7 +613,7 @@ export default function HomeClient() {
           )}
         </section>
 
-        <section className="space-y-6 pt-4 border-t border-slate-800/80">
+        <section className="space-y-6 pt-4 border-t border-subtle">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
               <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30 shrink-0 mt-0.5 sm:mt-0">
@@ -623,7 +621,7 @@ export default function HomeClient() {
               </div>
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-extrabold text-base sm:text-lg text-white tracking-tight">Aktuelle Bilder & Galerie im Network</h2>
+                  <h2 className="font-extrabold text-base sm:text-lg text-primary tracking-tight">Aktuelle Bilder & Galerie im Network</h2>
                   <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${
                     currentUser
                       ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
@@ -632,7 +630,7 @@ export default function HomeClient() {
                     {currentUser ? '✨ Für dich empfohlen' : '🎲 Zufällige Entdeckungen'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 leading-normal">Entdecke Kunstwerke, Renderings & Fotografie im WebP-Format</p>
+                <p className="text-xs text-muted leading-normal">Entdecke Kunstwerke, Renderings & Fotografie im WebP-Format</p>
               </div>
             </div>
 
@@ -649,10 +647,10 @@ export default function HomeClient() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="animate-pulse flex flex-col space-y-2">
-                  <div className="aspect-[4/3] bg-slate-800/80 rounded-xl w-full" />
+                  <div className="aspect-[4/3] bg-surface-raised/80 rounded-xl w-full" />
                   <div className="space-y-1.5 pt-1">
-                    <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
-                    <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                    <div className="h-3.5 bg-surface-raised/60 rounded w-3/4" />
+                    <div className="h-3 bg-surface-raised/40 rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -665,7 +663,7 @@ export default function HomeClient() {
                   href={`/image/${img.slug}`}
                   className="group relative flex flex-col transition-transform duration-200 hover:-translate-y-0.5"
                 >
-                  <div className="relative aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden shadow-md">
+                  <div className="relative aspect-[4/3] bg-surface rounded-xl overflow-hidden shadow-md">
                     <Image
                       src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
                       alt={img.title}
@@ -675,7 +673,7 @@ export default function HomeClient() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   </div>
                   <div className="pt-2 flex flex-col gap-0.5">
-                    <h3 className="font-semibold text-xs text-white group-hover:text-teal-400 transition-colors line-clamp-1">
+                    <h3 className="font-semibold text-xs text-primary group-hover:text-teal-400 transition-colors line-clamp-1">
                       {img.title}
                     </h3>
                     <span className="text-[10px] text-muted font-mono truncate">

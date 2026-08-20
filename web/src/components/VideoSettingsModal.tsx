@@ -97,20 +97,20 @@ export default function VideoSettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 space-y-6">
+      <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-surface-raised border border-subtle rounded-3xl shadow-2xl p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-subtle">
           <div>
-            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+            <h2 className="text-xl font-extrabold text-primary flex items-center gap-2">
               <span>{t?.videoSettings?.title || 'Video bearbeiten'}</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               Sprachversionen (DE/EN) und Sichtbarkeit für dieses Video anpassen.
             </p>
           </div>
           <button
             onClick={requestClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-muted hover:text-primary hover:bg-surface transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -118,7 +118,7 @@ export default function VideoSettingsModal({
         </div>
 
         {loading && (
-          <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-400">
+          <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted">
             <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
             <span>Lade Video-Einstellungen...</span>
           </div>
@@ -133,7 +133,7 @@ export default function VideoSettingsModal({
         {!loading && !showDeleteConfirm && (
           <>
             {/* Language Tabs for translatable content (Full Width) */}
-            <div className="flex items-center gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full">
+            <div className="flex items-center gap-2 p-1 bg-surface border border-subtle rounded-xl w-full">
               {(['de', 'en'] as const).map((loc) => (
                 <button
                   key={loc}
@@ -142,7 +142,7 @@ export default function VideoSettingsModal({
                   className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     activeLocale === loc
                       ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-muted hover:text-primary'
                   }`}
                 >
                   <Globe className="w-3.5 h-3.5" />
@@ -153,7 +153,7 @@ export default function VideoSettingsModal({
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-primary mb-1.5">
                   {t?.videoSettings?.titleLabel || 'Titel'} ({activeLocale.toUpperCase()})
                 </label>
                 <input
@@ -165,12 +165,12 @@ export default function VideoSettingsModal({
                       [activeLocale]: { ...prev[activeLocale], title: e.target.value },
                     }))
                   }
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                  className="w-full bg-surface border border-subtle rounded-xl px-4 py-2.5 text-sm text-primary focus:border-indigo-500 outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-primary mb-1.5">
                   {t?.videoSettings?.descriptionLabel || 'Beschreibung'} ({activeLocale.toUpperCase()})
                 </label>
                 <textarea
@@ -182,13 +182,13 @@ export default function VideoSettingsModal({
                     }))
                   }
                   rows={4}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none transition-all resize-y"
+                  className="w-full bg-surface border border-subtle rounded-xl px-4 py-2.5 text-sm text-primary focus:border-indigo-500 outline-none transition-all resize-y"
                 />
               </div>
 
               {/* Tags: editable per locale */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-primary mb-1.5">
                   {t?.videoSettings?.tagsLabel || 'Tags'} ({activeLocale.toUpperCase()})
                 </label>
 
@@ -197,7 +197,7 @@ export default function VideoSettingsModal({
                     {current.tags.map((tag: string, i: number) => (
                       <span
                         key={`${tag}-${i}`}
-                        className="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-xs font-mono text-slate-300"
+                        className="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-raised border border-subtle text-xs font-mono text-primary"
                       >
                         {tag}
                         <button
@@ -211,7 +211,7 @@ export default function VideoSettingsModal({
                               },
                             }))
                           }
-                          className="text-slate-500 hover:text-rose-400 transition-all cursor-pointer"
+                          className="text-muted hover:text-rose-400 transition-all cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -219,7 +219,7 @@ export default function VideoSettingsModal({
                     ))}
                   </div>
                 ) : (
-                  <span className="text-xs text-slate-500 block mb-2">{t?.videoSettings?.noTags || 'Keine Tags'}</span>
+                  <span className="text-xs text-muted block mb-2">{t?.videoSettings?.noTags || 'Keine Tags'}</span>
                 )}
 
                 <div className="flex items-center gap-2">
@@ -234,7 +234,7 @@ export default function VideoSettingsModal({
                       }
                     }}
                     placeholder={t?.videoSettings?.addTagPlaceholder || 'Tag hinzufügen...'}
-                    className="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:border-indigo-500 outline-none transition-all"
+                    className="flex-1 px-3 py-1.5 bg-surface border border-subtle rounded-lg text-xs text-primary placeholder-faint focus:border-indigo-500 outline-none transition-all"
                   />
                   <button
                     type="button"
@@ -248,12 +248,12 @@ export default function VideoSettingsModal({
             </div>
 
             {/* General settings (non-localized) */}
-            <div className="pt-4 border-t border-slate-800 space-y-2">
+            <div className="pt-4 border-t border-subtle space-y-2">
               <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
             </div>
 
             {/* Save & Delete Action Buttons */}
-            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-800">
+            <div className="flex items-center justify-between gap-3 pt-4 border-t border-subtle">
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
@@ -267,7 +267,7 @@ export default function VideoSettingsModal({
                 <button
                   type="button"
                   onClick={requestClose}
-                  className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition-colors cursor-pointer"
+                  className="py-2.5 px-4 bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle rounded-xl text-xs font-medium transition-colors cursor-pointer"
                 >
                   Abbrechen
                 </button>
@@ -275,7 +275,7 @@ export default function VideoSettingsModal({
                   type="button"
                   onClick={handleSave}
                   disabled={saving || (!form.de.title.trim() && !form.en.title.trim())}
-                  className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-indigo-600/20"
+                  className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-surface-raised disabled:text-faint text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-indigo-600/20"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -295,8 +295,8 @@ export default function VideoSettingsModal({
             <div className="flex items-start gap-3 p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl">
               <AlertTriangle className="w-6 h-6 text-rose-400 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-bold text-white mb-1">Video löschen oder archivieren?</h4>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <h4 className="text-sm font-bold text-primary mb-1">Video löschen oder archivieren?</h4>
+                <p className="text-xs text-primary leading-relaxed">
                   Wähle zwischen dem Archivieren (Soft Delete) oder dem endgültigen Löschen aus der Datenbank.
                 </p>
               </div>
@@ -304,13 +304,13 @@ export default function VideoSettingsModal({
 
             <div className="space-y-3">
               {/* Option 1: Soft Delete */}
-              <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-2xl space-y-2">
+              <div className="p-4 bg-surface border border-subtle rounded-2xl space-y-2">
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
                   <Archive className="w-4 h-4" />
                   <span>Soft Delete (Als privat archivieren)</span>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Das Video wird auf <strong className="text-slate-200">Privat</strong> gesetzt. Es ist für Besucher nicht mehr öffentlich zu sehen, bleibt aber in deinem Profil erhalten.
+                <p className="text-xs text-muted leading-relaxed">
+                  Das Video wird auf <strong className="text-primary">Privat</strong> gesetzt. Es ist für Besucher nicht mehr öffentlich zu sehen, bleibt aber in deinem Profil erhalten.
                 </p>
                 <button
                   type="button"
@@ -324,12 +324,12 @@ export default function VideoSettingsModal({
               </div>
 
               {/* Option 2: Permanent Hard Delete */}
-              <div className="p-4 bg-slate-950/80 border border-rose-500/20 rounded-2xl space-y-2">
+              <div className="p-4 bg-surface border border-rose-500/20 rounded-2xl space-y-2">
                 <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
                   <Trash className="w-4 h-4" />
                   <span>Endgültig löschen (Unwiderruflich)</span>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-muted leading-relaxed">
                   Das Video wird <strong className="text-rose-300">unwiderruflich</strong> aus der Datenbank gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
                 </p>
                 <button
@@ -347,7 +347,7 @@ export default function VideoSettingsModal({
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(false)}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+              className="w-full py-2.5 bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle rounded-xl text-xs font-semibold transition-all cursor-pointer"
             >
               Abbrechen & Zurück
             </button>
@@ -357,14 +357,14 @@ export default function VideoSettingsModal({
         {/* Discard confirmation */}
         {showDiscard && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4">
-              <h3 className="text-base font-bold text-white">{t?.videoSettings?.discardConfirmTitle || 'Änderungen verwerfen?'}</h3>
-              <p className="text-sm text-slate-400">{t?.videoSettings?.discardConfirmText || 'Nicht gespeicherte Änderungen gehen verloren.'}</p>
+            <div className="w-full max-w-sm bg-surface-raised border border-subtle rounded-2xl shadow-2xl p-6 space-y-4">
+              <h3 className="text-base font-bold text-primary">{t?.videoSettings?.discardConfirmTitle || 'Änderungen verwerfen?'}</h3>
+              <p className="text-sm text-muted">{t?.videoSettings?.discardConfirmText || 'Nicht gespeicherte Änderungen gehen verloren.'}</p>
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowDiscard(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle text-sm font-semibold transition-all cursor-pointer"
                 >
                   Weiter bearbeiten
                 </button>

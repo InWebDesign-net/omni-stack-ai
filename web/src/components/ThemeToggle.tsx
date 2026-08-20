@@ -25,6 +25,11 @@ export default function ThemeToggle() {
       resolved = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
     document.documentElement.setAttribute('data-theme', resolved);
+    if (resolved === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     setIsOpen(false);
   };
 
@@ -32,7 +37,13 @@ export default function ThemeToggle() {
     if (theme !== 'system') return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
     const handleChange = (e: MediaQueryListEvent) => {
-      document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
+      const resolved = e.matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', resolved);
+      if (resolved === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     };
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
@@ -69,7 +80,7 @@ export default function ThemeToggle() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 bg-surface hover:bg-surface-raised text-primary px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border border-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8083ff] cursor-pointer"
+        className="flex items-center gap-1.5 bg-surface hover:bg-surface-raised text-primary px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border border-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer"
         title={`Design: ${currentOption.label} (Klicken zum Ändern)`}
         aria-label={`Design wählen (aktuell: ${currentOption.label})`}
         aria-haspopup="listbox"

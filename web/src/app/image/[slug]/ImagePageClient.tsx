@@ -237,12 +237,12 @@ export default function ImagePageClient({
   };
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-sans selection:bg-[#8083ff] selection:text-white">
+    <div className="min-h-screen bg-base text-primary flex flex-col font-sans selection:bg-teal-500 selection:text-white">
       <Header />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>
@@ -253,7 +253,7 @@ export default function ImagePageClient({
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 cursor-pointer"
+            className="flex items-center gap-2 text-xs font-semibold text-muted hover:text-primary transition-colors bg-surface hover:bg-surface-raised border border-subtle rounded-xl px-3 py-2 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.common?.back || (lang === 'de' ? 'Zurück' : 'Back')}</span>
@@ -273,7 +273,7 @@ export default function ImagePageClient({
           <div className="lg:col-span-2 space-y-6">
             {/* Image Viewer Container */}
             <div className="relative bg-surface border border-subtle rounded-3xl overflow-hidden shadow-2xl group">
-              <div className="relative flex items-center justify-center min-h-[400px] max-h-[70vh] bg-slate-950 p-4">
+              <div className="relative flex items-center justify-center min-h-[400px] max-h-[70vh] bg-surface p-4">
                 <Image
                   src={image?.imageUrl || image?.thumbnailUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80'}
                   alt={image?.title || 'Omni Image'}
@@ -307,9 +307,9 @@ export default function ImagePageClient({
               </div>
 
               {/* Title & Action Bar */}
-              <div className="p-6 bg-slate-900/60 border-t border-white/10 space-y-4">
+              <div className="p-6 bg-surface border-t border-subtle space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                  <h1 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tight">
                     {image?.title}
                   </h1>
 
@@ -317,7 +317,7 @@ export default function ImagePageClient({
                     {isOwner && (
                       <button
                         onClick={() => setIsEditModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-slate-800/80 border border-slate-700 text-slate-200 hover:border-teal-500/50 transition-all"
+                        className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-surface-raised border border-subtle text-muted hover:text-primary hover:border-teal-500/50 transition-all"
                       >
                         {t?.images?.editImage || 'Bild bearbeiten'}
                       </button>
@@ -327,7 +327,7 @@ export default function ImagePageClient({
                       className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-md ${
                         isLiked
                           ? 'bg-rose-500 text-white shadow-rose-500/20'
-                          : 'bg-slate-800/80 border border-slate-700 text-slate-200 hover:border-rose-500/50'
+                          : 'bg-surface-raised border border-subtle text-muted hover:border-rose-500/50'
                       }`}
                     >
                       <Heart className={`w-4 h-4 ${isLiked ? 'fill-white' : 'text-rose-400'}`} />
@@ -337,7 +337,7 @@ export default function ImagePageClient({
                 </div>
 
                 {/* Creator Header */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                <div className="flex items-center justify-between pt-4 border-t border-subtle">
                   <div className="flex items-center gap-3">
                     <Image
                       src={creatorObj.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'}
@@ -345,17 +345,17 @@ export default function ImagePageClient({
                       width={40}
                       height={40}
                       onClick={() => handleOpenChannel(creatorObj)}
-                      className="w-10 h-10 rounded-full object-cover border border-white/20 cursor-pointer hover:opacity-80 transition-opacity"
+                      className="w-10 h-10 rounded-full object-cover border border-subtle cursor-pointer hover:opacity-80 transition-opacity"
                       unoptimized
                     />
                     <div className="flex flex-col">
                       <span
                         onClick={() => handleOpenChannel(creatorObj)}
-                        className="font-extrabold text-sm text-white hover:text-teal-400 cursor-pointer transition-colors"
+                        className="font-extrabold text-sm text-primary hover:text-teal-400 cursor-pointer transition-colors"
                       >
                         {creatorObj.username}
                       </span>
-                      <span className="text-[11px] text-slate-400 font-mono">
+                      <span className="text-[11px] text-muted font-mono">
                         {creatorObj.handle || `@${(creatorObj.username || 'creator').toLowerCase()}`}
                       </span>
                     </div>
@@ -364,7 +364,7 @@ export default function ImagePageClient({
                   {isOwner ? (
                     <button
                       onClick={() => setIsEditModalOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-slate-800/80 border border-slate-700 text-slate-200 hover:border-teal-500/50 transition-all cursor-pointer"
+                      className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-surface-raised border border-subtle text-muted hover:text-primary hover:border-teal-500/50 transition-all cursor-pointer"
                     >
                       <Settings className="w-4 h-4 text-teal-400" />
                       <span>{lang === 'de' ? 'Bild bearbeiten' : 'Edit image'}</span>
@@ -376,7 +376,7 @@ export default function ImagePageClient({
 
                 {/* Description & Tags */}
                 {image?.summary && (
-                  <div className="pt-2 text-xs text-slate-300 leading-relaxed font-normal">
+                  <div className="pt-2 text-xs text-primary leading-relaxed font-normal">
                     {image.summary}
                   </div>
                 )}
@@ -387,7 +387,7 @@ export default function ImagePageClient({
                       <Link
                         key={tag}
                         href={`/images?page=1&includetag=${encodeURIComponent(tag)}`}
-                        className="px-2.5 py-1 rounded-xl bg-slate-800/90 text-slate-300 hover:text-teal-300 hover:bg-slate-800 hover:border-teal-500/50 text-xs font-medium border border-slate-700/50 transition-colors"
+                        className="px-2.5 py-1 rounded-xl bg-surface-raised text-muted hover:text-teal-300 hover:bg-surface-raised/80 hover:border-teal-500/50 text-xs font-medium border border-subtle transition-colors"
                       >
                         #{tag}
                       </Link>
@@ -415,7 +415,7 @@ export default function ImagePageClient({
                   href={`/image/${rel.slug}`}
                   className="group flex gap-3 p-1.5 rounded-xl hover:bg-surface transition-colors duration-150 min-h-[44px]"
                 >
-                  <div className="w-28 sm:w-32 aspect-[4/3] rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-sm">
+                  <div className="w-28 sm:w-32 aspect-[4/3] rounded-xl bg-surface overflow-hidden shrink-0 shadow-sm">
                     <Image
                       src={rel.thumbnailUrl || rel.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80'}
                       alt={rel.title}

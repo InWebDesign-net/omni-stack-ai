@@ -195,21 +195,21 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
           onClick={onClose}
           aria-label={t.common?.close || 'Schließen'}
           title={t.common?.close || 'Schließen'}
-          className="absolute top-5 right-5 text-faint hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-all"
+          className="absolute top-5 right-5 text-faint hover:text-primary p-1.5 rounded-lg hover:bg-surface-raised transition-all"
         >
           <X className="h-4 w-4" />
         </button>
 
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-[#8083ff]/30 to-[#44e2cd]/15 blur-lg" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-indigo-500/30 to-teal-400/15 blur-lg" />
             <div className="relative rounded-2xl bg-base border border-subtle p-3">
               <OmniLogo size={32} />
             </div>
           </div>
 
           <div className="text-center">
-            <h2 className="text-xl font-extrabold text-white tracking-tight">
+            <h2 className="text-xl font-extrabold text-primary tracking-tight">
               {authMode === 'register' ? t.auth.registerTitle : t.auth.loginTitle}
             </h2>
             <p className="text-xs text-faint mt-1">
@@ -225,7 +225,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               onClick={() => { setAuthMode(mode); setAuthError(null); }}
               className={`flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                 authMode === mode
-                  ? 'bg-[#8083ff] text-white shadow-lg shadow-[#8083ff]/25'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
                   : 'text-faint hover:text-muted'
               }`}
             >
@@ -261,7 +261,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
             <div className="relative my-0.5 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
+                <div className="w-full border-t border-subtle" />
               </div>
               <span className="relative bg-surface px-3 text-[10px] font-bold text-faint uppercase tracking-wider">
                 {t.auth.orRegisterManually}
@@ -275,7 +275,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <label htmlFor={`reg-${key}`} className="text-[11px] font-semibold text-muted uppercase tracking-wider">{label}</label>
-                <div className="flex items-center bg-base border border-subtle focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 text-sm transition-all">
+                <div className="flex items-center bg-base border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 text-sm transition-all">
                   <Icon className="h-4 w-4 text-faint mr-3 shrink-0" />
                   <input
                     id={`reg-${key}`}
@@ -283,7 +283,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                     value={(regForm as any)[key]}
                     onChange={(e) => setRegForm({ ...regForm, [key]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full bg-transparent text-white focus:outline-none placeholder-slate-500 text-sm"
+                    className="w-full bg-transparent text-primary focus:outline-none placeholder-slate-500 text-sm"
                   />
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             <button
               type="submit"
               disabled={isAuthLoading}
-              className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+              className="mt-1 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2"
             >
               {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
               <span>{t.auth.createStrapiAccount}</span>
@@ -316,16 +316,16 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
             <div className="relative my-0.5 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
+                <div className="w-full border-t border-subtle" />
               </div>
               <span className="relative bg-surface px-3 text-[10px] font-bold text-faint uppercase tracking-wider">
               {t.auth.orWithDemo}
               </span>
             </div>
 
-            <div className="bg-base border border-[#8083ff]/20 p-4 rounded-2xl flex flex-col gap-3">
-              <span className="text-[11px] font-bold text-[#c0c1ff] flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#44e2cd]" />
+            <div className="bg-base border border-indigo-500/20 p-4 rounded-2xl flex flex-col gap-3">
+              <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-teal-400" />
                 Demo Schnell-Login Presets
               </span>
               <div className="flex flex-col gap-1.5">
@@ -334,13 +334,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                     key={i}
                     type="button"
                     onClick={() => setLoginForm({ identifier: preset.identifier, password: preset.password })}
-                    className="bg-surface hover:bg-surface-raised border border-subtle hover:border-[#8083ff]/30 text-left px-3 py-2.5 rounded-xl text-xs transition-all flex justify-between items-center group"
+                    className="bg-surface hover:bg-surface-raised border border-subtle hover:border-indigo-500/30 text-left px-3 py-2.5 rounded-xl text-xs transition-all flex justify-between items-center group"
                   >
                     <div>
                       <p className="font-semibold text-primary">{preset.label}</p>
                       <p className="text-faint text-[10px]">{preset.sub}</p>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-faint group-hover:text-[#44e2cd] transition-colors" />
+                    <ChevronRight className="h-3.5 w-3.5 text-faint group-hover:text-teal-400 transition-colors" />
                   </button>
                 ))}
               </div>
@@ -352,7 +352,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <label htmlFor={`login-${key}`} className="text-[11px] font-semibold text-muted uppercase tracking-wider">{label}</label>
-                <div className="flex items-center bg-base border border-subtle focus-within:border-[#8083ff]/50 rounded-xl px-4 py-3 transition-all">
+                <div className="flex items-center bg-base border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 transition-all">
                   <Icon className="h-4 w-4 text-faint mr-3 shrink-0" />
                   <input
                     id={`login-${key}`}
@@ -360,7 +360,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                     value={(loginForm as any)[key]}
                     onChange={(e) => setLoginForm({ ...loginForm, [key]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full bg-transparent text-white focus:outline-none placeholder-slate-500 text-sm"
+                    className="w-full bg-transparent text-primary focus:outline-none placeholder-slate-500 text-sm"
                   />
                 </div>
               </div>
@@ -368,7 +368,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             <button
               type="submit"
               disabled={isAuthLoading}
-              className="mt-1 bg-[#8083ff] hover:bg-[#6b6eff] active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-[#8083ff]/30 flex items-center justify-center gap-2"
+              className="mt-1 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2"
             >
               {isAuthLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
               <span>{t.auth.loginStrapi}</span>

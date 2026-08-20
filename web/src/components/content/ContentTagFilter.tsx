@@ -67,25 +67,25 @@ export function ContentTagFilter({
   const a = ACCENTS[accent];
 
   return (
-    <div className="pt-4 border-t border-slate-800/60 space-y-3">
+    <div className="pt-4 border-t border-subtle space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Left: heading, active count, match mode */}
         <div className="flex items-center gap-2 flex-wrap">
           <Tag className={`w-4 h-4 ${a.text} shrink-0`} />
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{labels.heading}</span>
+          <span className="text-xs font-bold text-primary uppercase tracking-wider">{labels.heading}</span>
           {hasTagFilters && (
             <span className={`px-2 py-0.5 text-[10px] font-mono rounded-full border ${a.badge}`}>
               {includedTags.length + excludedTags.length} {labels.activeSuffix}
             </span>
           )}
           {includedTags.length > 1 && (
-            <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-0.5 text-[11px] ml-1.5">
+            <div className="flex items-center bg-surface-raised border border-subtle rounded-lg p-0.5 text-[11px] ml-1.5">
               <button
                 type="button"
                 onClick={() => setMatchMode('any')}
                 aria-pressed={matchMode === 'any'}
                 className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                  matchMode === 'any' ? a.toggleActive : 'text-slate-400 hover:text-slate-200'
+                  matchMode === 'any' ? a.toggleActive : 'text-muted hover:text-primary'
                 }`}
               >
                 {labels.matchAny}
@@ -95,7 +95,7 @@ export function ContentTagFilter({
                 onClick={() => setMatchMode('all')}
                 aria-pressed={matchMode === 'all'}
                 className={`px-2 py-0.5 rounded-md font-medium transition-all ${
-                  matchMode === 'all' ? a.toggleActive : 'text-slate-400 hover:text-slate-200'
+                  matchMode === 'all' ? a.toggleActive : 'text-muted hover:text-primary'
                 }`}
               >
                 {labels.matchAll}
@@ -107,7 +107,7 @@ export function ContentTagFilter({
         {/* Right: tag search + expand toggle */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <div
-            className={`relative flex items-center bg-slate-950/80 border border-slate-800 ${a.focusWithin} rounded-xl px-2.5 py-1 text-xs transition-all`}
+            className={`relative flex items-center bg-surface-raised border border-subtle ${a.focusWithin} rounded-xl px-2.5 py-1 text-xs transition-all`}
           >
             <input
               type="text"
@@ -115,14 +115,14 @@ export function ContentTagFilter({
               placeholder={labels.searchTagsPlaceholder}
               value={tagSearch}
               onChange={(e) => setTagSearch(e.target.value)}
-              className="w-28 sm:w-36 bg-transparent text-xs text-slate-200 placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
+              className="w-28 sm:w-36 bg-transparent text-xs text-primary placeholder-slate-500 outline-none border-none focus:outline-none focus:ring-0 ring-0 p-0"
             />
             {tagSearch && (
               <button
                 type="button"
                 onClick={() => setTagSearch('')}
                 aria-label={labels.showLess}
-                className="p-0.5 text-slate-400 hover:text-slate-200 shrink-0 ml-1"
+                className="p-0.5 text-muted hover:text-primary shrink-0 ml-1"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -134,7 +134,7 @@ export function ContentTagFilter({
               type="button"
               onClick={() => setIsTagCloudExpanded(!isTagCloudExpanded)}
               aria-expanded={isTagCloudExpanded}
-              className={`flex items-center gap-1 text-xs text-slate-400 ${a.linkHover} font-medium transition-colors cursor-pointer`}
+              className={`flex items-center gap-1 text-xs text-muted ${a.linkHover} font-medium transition-colors cursor-pointer`}
             >
               <span>
                 {isTagCloudExpanded ? labels.showLess : `${labels.showAll} (${allTags.length})`}
@@ -166,13 +166,13 @@ export function ContentTagFilter({
             <div
               key={`tag-skeleton-${i}`}
               style={{ width: `${64 + ((i * 17) % 52)}px` }}
-              className="h-7 rounded-lg bg-slate-900/80 border border-slate-800/80 animate-pulse shrink-0"
+              className="h-7 rounded-lg bg-surface-raised/80 border border-subtle animate-pulse shrink-0"
             />
           ))
         ) : allTags.length === 0 ? (
-          <div className="text-xs text-slate-500 italic py-1">{labels.noTagsAtAll}</div>
+          <div className="text-xs text-faint italic py-1">{labels.noTagsAtAll}</div>
         ) : filteredAllTags.length === 0 ? (
-          <div className="text-xs text-slate-500 italic py-1">
+          <div className="text-xs text-faint italic py-1">
             {labels.noTagsFound.replace('{query}', tagSearch)}
           </div>
         ) : (
@@ -191,7 +191,7 @@ export function ContentTagFilter({
                 ? a.tagIncluded
                 : state === 'exclude'
                 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
-                : `bg-slate-900/60 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 ${a.tagHover} hover:text-white`;
+                : `bg-surface text-muted border-subtle hover:bg-surface-raised ${a.tagHover} hover:text-primary`;
 
             return (
               <button
@@ -204,7 +204,7 @@ export function ContentTagFilter({
                 {state === 'include' && <Plus className={`w-3.5 h-3.5 ${a.iconPlus} shrink-0`} />}
                 {state === 'exclude' && <Minus className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
                 {state === 'none' && (
-                  <Plus className="w-3.5 h-3.5 text-slate-500 opacity-60 group-hover:opacity-100 shrink-0" />
+                  <Plus className="w-3.5 h-3.5 text-faint opacity-60 group-hover:opacity-100 shrink-0" />
                 )}
                 <span>{tag}</span>
                 <span className="text-[10px] opacity-60 font-mono">({count})</span>

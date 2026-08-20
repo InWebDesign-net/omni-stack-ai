@@ -35,12 +35,12 @@ export function RoomHeader({
   return (
     <>
       {/* Sleek & Compact Chat Room Header */}
-      <div className="px-3 py-2 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-2 shrink-0">
+      <div className="px-3 py-2 border-b border-subtle bg-surface-raised flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           {(onBack || onClose) && (
             <button
               onClick={onBack || onClose}
-              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors shrink-0 cursor-pointer"
+              className="p-1 hover:bg-surface text-muted hover:text-primary rounded-lg transition-colors shrink-0 cursor-pointer"
               title={t?.chat?.backToRooms || 'Zurück zur Übersicht'}
               aria-label={t?.chat?.backToRooms || 'Zurück zur Übersicht'}
             >
@@ -56,7 +56,7 @@ export function RoomHeader({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-xs text-white truncate flex items-center gap-1.5">
+            <h3 className="font-bold text-xs text-primary truncate flex items-center gap-1.5">
               <span className="truncate">{roomName}</span>
               {roomType === 'ai' && (
                 <span className="px-1.5 py-0.2 text-[9px] font-mono bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 rounded-full shrink-0">
@@ -110,7 +110,7 @@ export function RoomHeader({
           {onToggleExpand && (
             <button
               onClick={onToggleExpand}
-              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
+              className="p-1 hover:bg-surface text-muted hover:text-primary rounded-lg transition-all cursor-pointer"
               title="Fenster vergrößern / verkleinern"
               aria-label="Fenster vergrößern / verkleinern"
             >
@@ -121,7 +121,7 @@ export function RoomHeader({
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
+              className="p-1 hover:bg-surface text-muted hover:text-primary rounded-lg transition-all cursor-pointer"
               title={t?.common?.close || 'Schließen'}
               aria-label={t?.common?.close || 'Schließen'}
             >

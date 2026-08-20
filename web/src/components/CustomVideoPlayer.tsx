@@ -339,7 +339,7 @@ export default function CustomVideoPlayer({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
       onContextMenu={handleContextMenu}
-      className={`relative group bg-slate-950 rounded-2xl overflow-hidden select-none font-sans border border-slate-800 ${className}`}
+      className={`relative group bg-black rounded-2xl overflow-hidden select-none font-sans border border-subtle ${className}`}
     >
       {/* HTML5 Video Element */}
       <video
@@ -373,7 +373,7 @@ export default function CustomVideoPlayer({
       {/* Center Play/Pause Animated Splash Indicator */}
       {centerAnimation && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-16 h-16 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-2xl animate-ping">
+          <div className="w-16 h-16 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-2xl animate-ping">
             {centerAnimation === 'play' ? <Play className="w-8 h-8 fill-white ml-1" /> : <Pause className="w-8 h-8 fill-white" />}
           </div>
         </div>
@@ -411,18 +411,18 @@ export default function CustomVideoPlayer({
       {/* Custom Context Menu (Right-Click) */}
       {contextMenu && (
         <div
-          className="absolute z-30 bg-slate-900 border border-slate-700 rounded-xl p-2 shadow-xl min-w-[200px]"
+          className="absolute z-30 bg-surface-raised border border-subtle rounded-xl p-2 shadow-xl min-w-[200px]"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           <button
             onClick={copyTimestampLink}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary hover:bg-surface rounded-lg transition-colors"
           >
             <Link2 className="w-3.5 h-3.5" />
             <span>{copyLabel}</span>
           </button>
-          <div className="border-t border-slate-800 my-1" />
-          <div className="flex items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
+          <div className="border-t border-subtle my-1" />
+          <div className="flex items-center gap-2 px-3 py-2 text-[10px] text-muted">
             <Shield className="w-3 h-3" />
             <span>Omni Player v2.0</span>
           </div>

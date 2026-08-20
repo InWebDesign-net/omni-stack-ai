@@ -121,12 +121,12 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   const displayedTags = filteredTagList;
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif] selection:bg-[#8083ff] selection:text-white">
+    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif] selection:bg-teal-500 selection:text-white">
       <Header />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+        <div className="fixed bottom-24 right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>
@@ -141,14 +141,14 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                 <div className="p-2.5 rounded-xl bg-gradient-to-tr from-teal-500/20 to-indigo-500/20 border border-teal-500/30 text-teal-400">
                   <ImageIcon className="w-6 h-6" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
                   {t.header?.images || 'Images'}
                 </h1>
                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 font-mono">
                   {isLoading ? '...' : `${total} ${lang === 'de' ? 'Bilder' : 'Images'}`}
                 </span>
               </div>
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-muted text-sm mt-1">
                 Entdecke hochauflösende Kunstwerke, Fotografien & Renderings im WebP-Format.
               </p>
             </div>
@@ -165,7 +165,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
           </div>
 
           {/* Search & Sort Control Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-subtle">
             {/* Search Input Form */}
             <ContentSearchBar
               kind="image"
@@ -180,39 +180,39 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
             <div className="flex items-center gap-3">
               {/* Sort Selector Dropdown */}
-              <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-2 bg-surface-raised border border-subtle rounded-xl px-3 py-1.5">
                 <SlidersHorizontal className="w-4 h-4 text-teal-400 shrink-0" />
                 <select
                   id="images-sort-select"
                   aria-label="Sortierung"
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value)}
-                  className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer pr-2"
+                  className="bg-transparent text-sm text-primary focus:outline-none cursor-pointer pr-2"
                 >
-                  <option value="createdatasc" className="bg-slate-900 text-slate-200">
+                  <option value="createdatasc" className="bg-surface-raised text-primary">
                     ✨ Neueste zuerst
                   </option>
-                  <option value="trending" className="bg-slate-900 text-slate-200">
+                  <option value="trending" className="bg-surface-raised text-primary">
                     🔥 Trending (Beliebt & Neu)
                   </option>
                   {currentUser && (
-                    <option value="affinity" className="bg-slate-900 text-slate-200">
+                    <option value="affinity" className="bg-surface-raised text-primary">
                       🎯 KI-Interessen Profil
                     </option>
                   )}
-                  <option value="mostliked" className="bg-slate-900 text-slate-200">
+                  <option value="mostliked" className="bg-surface-raised text-primary">
                     ❤️ Meist-Favorisiert / Likes
                   </option>
-                  <option value="mostcommented" className="bg-slate-900 text-slate-200">
+                  <option value="mostcommented" className="bg-surface-raised text-primary">
                     💬 Meist-Kommentiert (Aktivität)
                   </option>
-                  <option value="createdatdesc" className="bg-slate-900 text-slate-200">
+                  <option value="createdatdesc" className="bg-surface-raised text-primary">
                     ⌛ Älteste zuerst
                   </option>
-                  <option value="titleasc" className="bg-slate-900 text-slate-200">
+                  <option value="titleasc" className="bg-surface-raised text-primary">
                     🔤 Titel (A → Z)
                   </option>
-                  <option value="titledesc" className="bg-slate-900 text-slate-200">
+                  <option value="titledesc" className="bg-surface-raised text-primary">
                     🔤 Titel (Z → A)
                   </option>
                 </select>
@@ -254,10 +254,10 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 3xl:grid-cols-7 gap-x-4 gap-y-6">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="animate-pulse flex flex-col space-y-2">
-                <div className="aspect-[4/3] bg-slate-800/80 rounded-xl w-full" />
+                <div className="aspect-[4/3] bg-surface-raised/80 rounded-xl w-full" />
                 <div className="space-y-1.5 pt-1">
-                  <div className="h-3.5 bg-slate-800/60 rounded w-3/4" />
-                  <div className="h-3 bg-slate-800/40 rounded w-1/2" />
+                  <div className="h-3.5 bg-surface-raised/60 rounded w-3/4" />
+                  <div className="h-3 bg-surface-raised/40 rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -265,8 +265,8 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
         ) : images.length === 0 ? (
           <div className="bg-surface border border-subtle rounded-3xl p-12 text-center space-y-4">
             <Sparkles className="w-12 h-12 text-teal-400/40 mx-auto animate-pulse" />
-            <h3 className="text-lg font-bold text-white">Keine Bilder gefunden</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            <h3 className="text-lg font-bold text-primary">Keine Bilder gefunden</h3>
+            <p className="text-xs text-muted max-w-sm mx-auto">
               Versuche deine Filter zurückzusetzen oder lade dein erstes eigenes Bild hoch!
             </p>
           </div>
@@ -291,7 +291,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   className="group relative flex flex-col transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   {/* Aspect ratio image container */}
-                  <div className="relative aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden shadow-md">
+                  <div className="relative aspect-[4/3] bg-surface rounded-xl overflow-hidden shadow-md">
                     <Image
                       src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
                       alt={img.title}
@@ -334,7 +334,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                           alt={img.creator.username || 'Creator'}
                           width={20}
                           height={20}
-                          className="w-5 h-5 rounded-full object-cover border border-white/20 shrink-0"
+                          className="w-5 h-5 rounded-full object-cover border border-subtle shrink-0"
                           unoptimized
                         />
                         <span className="text-[10px] font-semibold text-white drop-shadow truncate max-w-[100px]">
@@ -346,11 +346,11 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
 
                 {/* Footer Info */}
                 <div className="pt-2 flex flex-col gap-1 flex-1">
-                  <h3 className="font-semibold text-xs sm:text-sm text-white group-hover:text-teal-400 transition-colors line-clamp-1">
+                  <h3 className="font-semibold text-xs sm:text-sm text-primary group-hover:text-teal-400 transition-colors line-clamp-1">
                     {img.title}
                   </h3>
                   {img.summary && (
-                    <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-muted line-clamp-2 leading-relaxed">
                       {img.summary}
                     </p>
                   )}
@@ -359,7 +359,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                       {img.tags.slice(0, 3).map((t) => (
                         <span
                           key={t}
-                          className="px-1.5 py-0.5 rounded bg-slate-800/80 text-[9px] text-slate-300 font-medium"
+                          className="px-1.5 py-0.5 rounded bg-surface-raised text-[9px] text-muted font-medium"
                         >
                           #{t}
                         </span>
@@ -379,18 +379,18 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
             <button
               disabled={currentPage <= 1}
               onClick={() => updateURL({ page: (currentPage - 1).toString() })}
-              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 disabled:opacity-40 text-slate-200 transition-all"
+              className="p-2.5 rounded-xl bg-surface-raised border border-subtle hover:border-teal-500/50 disabled:opacity-40 text-muted hover:text-primary transition-all"
               aria-label="Vorherige Seite"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono font-bold text-teal-400">
+            <span className="px-4 py-2 rounded-xl bg-surface-raised border border-subtle text-xs font-mono font-bold text-teal-400">
               {currentPage} / {totalPages}
             </span>
             <button
               disabled={currentPage >= totalPages}
               onClick={() => updateURL({ page: (currentPage + 1).toString() })}
-              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 disabled:opacity-40 text-slate-200 transition-all"
+              className="p-2.5 rounded-xl bg-surface-raised border border-subtle hover:border-teal-500/50 disabled:opacity-40 text-muted hover:text-primary transition-all"
               aria-label="Nächste Seite"
             >
               <ChevronRight className="w-4 h-4" />

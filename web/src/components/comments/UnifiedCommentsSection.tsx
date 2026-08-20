@@ -194,11 +194,11 @@ export function UnifiedCommentsSection({
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
-        <h3 className="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+      <div className="flex items-center justify-between border-b border-subtle pb-4">
+        <h3 className="text-base sm:text-lg font-extrabold text-primary flex items-center gap-2">
           <MessageSquare className={`w-5 h-5 text-${accentColor}-400`} />
           <span>{translations?.common?.comments || 'Kommentare'}</span>
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-surface-raised text-muted border border-subtle">
             {totalCount}
           </span>
         </h3>
@@ -206,7 +206,7 @@ export function UnifiedCommentsSection({
           type="button"
           onClick={loadComments}
           title="Kommentare neu laden"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-surface-raised transition-all cursor-pointer"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -215,7 +215,7 @@ export function UnifiedCommentsSection({
       {/* Root Comment Form */}
       <form onSubmit={handleRootSubmit} className="space-y-3">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-700 mt-1">
+          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-subtle mt-1">
             <Image
               src={currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80'}
               alt={currentUser?.username || 'Avatar'}
@@ -235,7 +235,7 @@ export function UnifiedCommentsSection({
                   : (translations?.common?.loginToComment || 'Anmelden zum Kommentieren...')
               }
               rows={2}
-              className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-2xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all resize-y"
+              className="w-full bg-base border border-subtle focus:border-indigo-500 rounded-2xl px-4 py-2.5 text-sm text-primary placeholder-faint outline-none transition-all resize-y"
             />
           </div>
         </div>
@@ -244,7 +244,7 @@ export function UnifiedCommentsSection({
           <button
             type="submit"
             disabled={isSubmitting || !newCommentText.trim()}
-            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:opacity-40 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-surface-raised disabled:opacity-40 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all cursor-pointer"
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -258,17 +258,17 @@ export function UnifiedCommentsSection({
 
       {/* Comments List / Tree */}
       {loading ? (
-        <div className="flex items-center justify-center gap-2 py-12 text-slate-400 text-xs">
+        <div className="flex items-center justify-center gap-2 py-12 text-muted text-xs">
           <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
           <span>{translations?.common?.loadingComments || 'Lade Kommentare...'}</span>
         </div>
       ) : commentsTree.length === 0 ? (
-        <div className="text-center py-12 bg-slate-950/40 rounded-2xl border border-slate-800/60 p-6 space-y-2">
-          <MessageSquare className="w-10 h-10 text-slate-600 mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">
+        <div className="text-center py-12 bg-surface/40 rounded-2xl border border-subtle p-6 space-y-2">
+          <MessageSquare className="w-10 h-10 text-muted mx-auto" />
+          <p className="text-sm font-semibold text-primary">
             {translations?.common?.noCommentsTitle || 'Noch keine Kommentare'}
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted">
             {translations?.common?.noCommentsDesc || 'Sei der Erste, der seine Gedanken zu diesem Beitrag teilt!'}
           </p>
         </div>

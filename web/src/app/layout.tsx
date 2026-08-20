@@ -132,7 +132,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de" className="dark bg-base" suppressHydrationWarning data-theme="dark">
+    <html lang="de" className="dark bg-base" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -144,25 +144,13 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdWebsite) }}
         />
-        {/*
-          Theme resolution is deliberately switched off: `data-theme` is pinned to
-          "dark" on <html> above.
-
-          The token layer and the light palette in globals.css are intact and
-          staying — the reason light mode was unusable is that ~1000 call sites
-          still hardcode `text-white`, `bg-slate-*` and raw hex values instead of
-          the tokens, so every unmigrated surface turned white-on-white. That is a
-          migration, not a design problem.
-
-          Re-enabling is this script coming back plus <ThemeToggle /> in the
-          header. Do that once the counts below are near zero:
-
-            grep -rhoE '(bg|text|border)-\[#[0-9a-fA-F]{3,8}\]' web/src --include=*.tsx | wc -l
-            grep -rhoE '\btext-(white|slate-(100|200|300))\b' web/src --include=*.tsx | wc -l
-            grep -rhoE '\bbg-slate-[0-9]{2,3}' web/src --include=*.tsx | wc -l
-        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('omni-theme');var d=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';var theme=t==='dark'||t==='light'?t:d;document.documentElement.setAttribute('data-theme',theme);if(theme==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})()`,
+          }}
+        />
       </head>
-      <body className="antialiased bg-base text-primary min-h-screen flex flex-col selection:bg-[#8083ff] selection:text-white" suppressHydrationWarning>
+      <body className="antialiased bg-base text-primary min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white" suppressHydrationWarning>
         <AppProvider>
           <ChatProvider>
             <UploadProvider>

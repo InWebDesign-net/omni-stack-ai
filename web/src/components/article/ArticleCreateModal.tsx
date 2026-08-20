@@ -91,27 +91,27 @@ export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps)
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-5 shadow-2xl overflow-hidden"
+        className="bg-surface-raised border border-subtle rounded-3xl p-6 max-w-md w-full space-y-5 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-subtle">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-white">
+              <h3 className="font-bold text-base text-primary">
                 {lang === 'de' ? 'Neuen Artikel erstellen' : 'Create New Article'}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 {lang === 'de' ? 'Gib einen Titel ein, um zu beginnen' : 'Enter a title to get started'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors"
+            className="p-2 hover:bg-surface rounded-xl text-muted hover:text-primary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -128,7 +128,7 @@ export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps)
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
+            <label className="text-xs font-semibold text-primary mb-1.5 block">
               {lang === 'de' ? 'Titel des Beitrags' : 'Article Title'} <span className="text-purple-400">*</span>
             </label>
             <input
@@ -143,13 +143,13 @@ export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps)
                   ? 'z.B. Wie KI die Zukunft der Softwareentwicklung verändert...'
                   : 'e.g. How AI is transforming software engineering...'
               }
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all"
+              className="w-full bg-surface border border-subtle rounded-xl px-4 py-2.5 text-sm text-primary placeholder-faint focus:outline-none focus:border-purple-500 transition-all"
               disabled={isSubmitting}
               autoFocus
             />
           </div>
 
-          <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl text-[11px] text-slate-400 flex items-start gap-2">
+          <div className="p-3 bg-surface border border-subtle rounded-xl text-[11px] text-muted flex items-start gap-2">
             <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
             <span>
               {lang === 'de'
@@ -162,7 +162,7 @@ export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps)
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors"
+              className="flex-1 py-2.5 px-4 bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle rounded-xl text-sm font-medium transition-colors"
               disabled={isSubmitting}
             >
               {lang === 'de' ? 'Abbrechen' : 'Cancel'}
