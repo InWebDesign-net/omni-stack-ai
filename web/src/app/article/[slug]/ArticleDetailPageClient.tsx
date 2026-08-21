@@ -518,7 +518,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
           onClose={() => setShowSettingsModal(false)}
           article={item}
           t={t}
-          onSave={async ({ localeUpdates, visibility }) => {
+          onSave={async ({ localeUpdates, visibility, thumbnail }) => {
             const res = await fetch('/api/content/article/settings', {
               method: 'PUT',
               headers: jsonAuthHeaders(),
@@ -526,6 +526,9 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                 documentId: item.documentId,
                 localeUpdates,
                 visibility,
+                // Reported by the modal and previously dropped here, so the
+                // chosen thumbnail never reached the API from any entry point.
+                thumbnail,
               }),
             });
             if (!res.ok) {

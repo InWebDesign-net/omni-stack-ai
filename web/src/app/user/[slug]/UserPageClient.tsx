@@ -480,7 +480,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     onClose={() => setEditingArticle(null)}
                     article={editingArticle}
                     t={t}
-                    onSave={async ({ localeUpdates, visibility }: { localeUpdates: any[]; visibility: string }) => {
+                    onSave={async ({ localeUpdates, visibility, thumbnail }: { localeUpdates: any[]; visibility: string; thumbnail?: string }) => {
                         const res = await fetch('/api/content/article/settings', {
                             method: 'PUT',
                             headers: jsonAuthHeaders(),
@@ -488,6 +488,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 documentId: editingArticle.documentId,
                                 localeUpdates,
                                 visibility,
+                                thumbnail,
                             }),
                         });
                         if (!res.ok) {
@@ -524,17 +525,18 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                     onClose={() => setEditingImage(null)}
                     image={editingImage}
                     t={t}
-                    onSave={async (data: { localeUpdates: any[]; visibility: string }) => {
+                    onSave={async (data: { localeUpdates: any[]; visibility: string; thumbnailUrl?: string }) => {
                         const res = await fetch('/api/content/image/settings', {
                             method: 'PUT',
                             headers: jsonAuthHeaders(),
                             body: JSON.stringify({
                                 documentId: editingImage.documentId,
                                 localeUpdates: data.localeUpdates,
-                                title: (data as any).title,
-                                summary: (data as any).summary,
-                                tags: (data as any).tags,
                                 visibility: data.visibility,
+                                // Same omission as on the detail page: the modal
+                                // reports the chosen thumbnail and nobody passed
+                                // it on, so it silently kept the old one.
+                                thumbnailUrl: data.thumbnailUrl,
                             }),
                         });
                         if (!res.ok) {

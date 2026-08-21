@@ -75,19 +75,36 @@ export default function ImagePageClient({
         body: JSON.stringify({
           documentId: image.documentId,
           localeUpdates: data.localeUpdates,
-          title: data.title,
-          summary: data.summary,
-          tags: data.tags,
           visibility: data.visibility,
+          // The modal reports the chosen thumbnail here. It used to be dropped
+          // on the floor: the file uploaded, the save succeeded, and the old
+          // thumbnail came straight back on reopening the editor.
+          thumbnailUrl: data.thumbnailUrl,
         }),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || 'Speichern des Bildes fehlgeschlagen');
       }
+
+      // Apply what was saved instead of reloading the document. A full reload
+      // threw away scroll position, the like state and the view counter to
+      // change a title.
+      const active = data.localeUpdates?.find((l: any) => l.locale === (lang || 'de'))
+        ?? data.localeUpdates?.[0];
+      setImage((prev: any) => ({
+        ...prev,
+        ...(active?.data?.title !== undefined ? { title: active.data.title } : {}),
+        ...(active?.data?.summary !== undefined ? { summary: active.data.summary } : {}),
+        ...(active?.data?.tags !== undefined ? { tags: active.data.tags } : {}),
+        ...(data.visibility !== undefined ? { visibility: data.visibility } : {}),
+        ...(data.thumbnailUrl !== undefined ? { thumbnailUrl: data.thumbnailUrl } : {}),
+      }));
       showToast('Bild erfolgreich aktualisiert!');
       setIsEditModalOpen(false);
-      if (typeof window !== 'undefined') window.location.reload();
+      // Keeps the server-rendered metadata and any other view of this image in
+      // step, without discarding the page the reader is looking at.
+      router.refresh();
     } catch (e: any) {
       console.error('Failed to save image:', e);
       throw e;
