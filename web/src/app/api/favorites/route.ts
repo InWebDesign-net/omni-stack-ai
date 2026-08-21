@@ -29,19 +29,47 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteFeedItemIds: [] });
     }
 
-    const favRes = await fetch(
-      getStrapiUrl(`/api/favorites?filters[user][id][$eq]=${authUser.id}&populate[video][fields][0]=id&populate[image][fields][0]=id&populate[feedItem][fields][0]=id`),
-      {
-        headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
+    /*
+     * This answers "which items has this user favourited", so a partial answer
+     * is worse than none: the query carried no pagination, Strapi's
+     * `defaultLimit` is 25, and everything past the 25th came back missing.
+     *
+     * The heart on those items then showed as empty. Clicking it did not add a
+     * favourite either — the toggle looks the record up directly, finds the one
+     * that exists, and removes it — so the user pressed "favourite" and
+     * silently un-favourited something, with nothing on screen changing.
+     *
+     * Paged through with only the ids populated, which is all this endpoint
+     * returns.
+     */
+    const PAGE_SIZE = 500;
+    const items: Record<string, any>[] = [];
+    let page = 1;
+    let pageCount = 1;
+
+    do {
+      const favRes = await fetch(
+        getStrapiUrl(
+          `/api/favorites?filters[user][id][$eq]=${authUser.id}` +
+            `&populate[video][fields][0]=id&populate[image][fields][0]=id&populate[feedItem][fields][0]=id` +
+            `&pagination[page]=${page}&pagination[pageSize]=${PAGE_SIZE}`
+        ),
+        {
+          headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
+        }
+      );
+
+      if (!favRes.ok) {
+        // A partial list would misreport the rest as un-favourited, so an
+        // interrupted read reports nothing rather than something wrong.
+        return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteFeedItemIds: [] });
       }
-    );
 
-    if (!favRes.ok) {
-      return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteFeedItemIds: [] });
-    }
-
-    const favData = await favRes.json();
-    const items = favData.data || [];
+      const favData = await favRes.json();
+      items.push(...(favData.data || []));
+      pageCount = Number(favData?.meta?.pagination?.pageCount || 1);
+      page += 1;
+    } while (page <= pageCount);
 
     const favoriteVideoIds: string[] = [];
     const favoriteImageIds: string[] = [];
