@@ -440,19 +440,28 @@ export default function CustomVideoPlayer({
         invisible. It sits at the default level instead and the video box above
         it carries `z-10`.
       */}
-      {isDarkTheme && ambientSettings.enabled && (
+      {isDarkTheme && (
         <div
           aria-hidden="true"
-          className="absolute -inset-8 sm:-inset-16 blur-[60px] sm:blur-[100px] transition-all duration-700 pointer-events-none rounded-3xl"
+          className="absolute -inset-8 sm:-inset-16 blur-[60px] sm:blur-[100px] transition-[background,opacity] duration-700 ease-out pointer-events-none rounded-3xl"
           style={{
-            // Wider colour plateau and a later fade than before: the glow used
-            // to go transparent at 70% of a box only 32px larger than the
+            // The gradient stays put whether or not the video is playing, and
+            // only the opacity moves. Swapping `background` to `transparent` on
+            // pause looked like a hard cut, because a gradient cannot be
+            // interpolated towards a keyword — it snapped while the opacity was
+            // still politely fading. The sampling loop stops on pause, so this
+            // fades out from the last colour it saw.
+            //
+            // Wider colour plateau and a later fade than the original: the glow
+            // used to go transparent at 70% of a box only 32px larger than the
             // video, then get spread thin by a 120px blur, so even full
             // intensity barely registered.
-            background: isPlaying
-              ? `radial-gradient(circle, ${ambientColor} 0%, ${ambientColor} 45%, transparent 80%)`
-              : 'transparent',
-            opacity: isPlaying ? 1 : 0,
+            background: `radial-gradient(circle, ${ambientColor} 0%, ${ambientColor} 45%, transparent 80%)`,
+            // Switching the setting off unmounted the layer, which was the same
+            // hard cut in a different disguise. It stays mounted and fades; the
+            // sampling loop already does nothing while disabled, so an
+            // invisible div is all that remains.
+            opacity: isPlaying && ambientSettings.enabled ? 1 : 0,
           }}
         />
       )}
