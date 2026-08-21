@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { formatCount } from '@/lib/format';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare, Clock, BookOpen } from 'lucide-react';
@@ -336,7 +337,7 @@ export default function HomeClient() {
                   </p>
 
                   <div className="mt-3 pt-2.5 border-t border-subtle flex items-center justify-between text-[11px] text-faint font-mono">
-                    <span>{(channel.subscribersCount || 0).toLocaleString()} {t.home?.subscribers || 'Abonnenten'}</span>
+                    <span>{formatCount(channel.subscribersCount || 0, lang)} {t.home?.subscribers || 'Abonnenten'}</span>
                     <span className="text-indigo-400 font-semibold group-hover:underline">{t.home?.viewChannel || 'Kanal ansehen →'}</span>
                   </div>
                 </div>
@@ -459,12 +460,12 @@ export default function HomeClient() {
                           {item.viewsCount !== undefined && (
                             <div className="flex items-center gap-0.5" title="Aufrufe">
                               <Eye className="w-3 h-3 text-muted" />
-                              <span>{item.viewsCount.toLocaleString()}</span>
+                              <span>{formatCount(item.viewsCount, lang)}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-0.5" title="Likes">
                             <Heart className="w-3 h-3 text-rose-400" />
-                            <span>{(item.likesCount || 0).toLocaleString()}</span>
+                            <span>{formatCount(item.likesCount || 0, lang)}</span>
                           </div>
                         </div>
                       </div>
@@ -596,16 +597,16 @@ export default function HomeClient() {
                           {item.viewsCount !== undefined && (
                             <div className="flex items-center gap-0.5" title="Aufrufe">
                               <Eye className="w-3 h-3 text-muted" />
-                              <span>{item.viewsCount.toLocaleString()}</span>
+                              <span>{formatCount(item.viewsCount, lang)}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-0.5" title="Kommentare">
                             <MessageSquare className="w-3 h-3 text-indigo-400" />
-                            <span>{(item.commentsCount || 0).toLocaleString()}</span>
+                            <span>{formatCount(item.commentsCount || 0, lang)}</span>
                           </div>
                           <div className="flex items-center gap-0.5" title="Likes">
                             <Heart className="w-3 h-3 text-rose-400" />
-                            <span>{(item.likesCount || 0).toLocaleString()}</span>
+                            <span>{formatCount(item.likesCount || 0, lang)}</span>
                           </div>
                         </div>
                       </div>

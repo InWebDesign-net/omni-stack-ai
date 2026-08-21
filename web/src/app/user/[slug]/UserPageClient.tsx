@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { formatCount } from '@/lib/format';
 import Link from 'next/link';
 import {
     Video,
@@ -189,16 +190,16 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 </div>
                                 <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                     <Eye className="w-4 h-4 text-teal-400" />
-                                    <span className="font-bold text-primary">{stats.totalViews.toLocaleString()}</span> {(t as any).userProfile?.stats?.views || t.common.views || 'Aufrufe'}
+                                    <span className="font-bold text-primary">{formatCount(stats.totalViews, lang)}</span> {(t as any).userProfile?.stats?.views || t.common.views || 'Aufrufe'}
                                 </div>
                                 <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                     <Heart className="w-4 h-4 text-rose-400" />
-                                    <span className="font-bold text-primary">{stats.totalLikes.toLocaleString()}</span> {(t as any).userProfile?.stats?.likes || 'Likes'}
+                                    <span className="font-bold text-primary">{formatCount(stats.totalLikes, lang)}</span> {(t as any).userProfile?.stats?.likes || 'Likes'}
                                 </div>
                                 {!isOwner && (
                                     <div className="flex items-center gap-2 bg-surface px-3.5 py-1.5 rounded-xl border border-subtle">
                                         <UserCheck className="w-4 h-4 text-amber-400" />
-                                        <span className="font-bold text-primary">{subscriberCount.toLocaleString()}</span> {(t as any).userProfile?.stats?.subscribers || 'Abonnenten'}
+                                        <span className="font-bold text-primary">{formatCount(subscriberCount, lang)}</span> {(t as any).userProfile?.stats?.subscribers || 'Abonnenten'}
                                     </div>
                                 )}
                             </div>
@@ -389,7 +390,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                 <div className="pt-1.5 sm:pt-2 flex items-center justify-between text-[10px] sm:text-xs text-muted font-mono border-t border-subtle">
                                                     <div className="flex items-center gap-1">
                                                         <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted" />
-                                                        <span>{(item.viewsCount || 0).toLocaleString()}</span>
+                                                        <span>{formatCount(item.viewsCount || 0, lang)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
                                                         {isOwner && (
@@ -404,7 +405,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                                             </button>
                                                         )}
                                                         <Heart className="w-3.5 h-3.5 text-rose-500/80" />
-                                                        <span>{(item.likesCount || 0).toLocaleString()}</span>
+                                                        <span>{formatCount(item.likesCount || 0, lang)}</span>
                                                     </div>
                                                 </div>
                                             </div>

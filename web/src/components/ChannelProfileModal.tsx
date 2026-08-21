@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { formatCount } from '@/lib/format';
 import { useRouter } from 'next/navigation';
 import { X, ArrowUpRight, MessageSquare, Sparkles } from 'lucide-react';
 import { ChannelProfileData, useApp } from '@/context/AppContext';
@@ -94,7 +95,7 @@ export default function ChannelProfileModal({
                   <Sparkles className="w-3 h-3" />
                   {selectedChannel.subscribersCount && selectedChannel.subscribersCount >= 1000
                     ? `${(selectedChannel.subscribersCount / 1000).toFixed(1)}k Abonnenten`
-                    : `${(selectedChannel.subscribersCount || 0).toLocaleString()} Abonnenten`}
+                    : `${formatCount(selectedChannel.subscribersCount || 0)} Abonnenten`}
                 </span>
               </div>
             </div>

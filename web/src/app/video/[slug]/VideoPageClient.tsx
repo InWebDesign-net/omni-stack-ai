@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { formatCount } from '@/lib/format';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -455,7 +456,7 @@ export default function VideoPageClient({
                 <div className="flex items-center gap-4 text-xs text-muted">
                   <div className="flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-indigo-400" />
-                    <span>{viewsCount.toLocaleString()} {getDictionary(effectiveLang).common.views}</span>
+                    <span>{formatCount(viewsCount, lang)} {getDictionary(effectiveLang).common.views}</span>
                   </div>
                   {video.createdAt && (
                     <div className="flex items-center gap-1.5">
@@ -586,7 +587,7 @@ export default function VideoPageClient({
                         <p className="truncate">{relCreator}</p>
                         {rel.viewsCount !== undefined && (
                           <p className="text-[11px] text-faint font-mono">
-                            {rel.viewsCount.toLocaleString()} {t.videoDetail.views}
+                            {formatCount(rel.viewsCount, lang)} {t.videoDetail.views}
                           </p>
                         )}
                       </div>

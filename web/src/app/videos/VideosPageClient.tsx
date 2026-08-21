@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { formatCount } from '@/lib/format';
 import Link from "next/link";
 import Header from "@/components/Header";
 import VideoUploadModal from "@/components/VideoUploadModal";
@@ -326,16 +327,16 @@ export default function VideosPageClient({
                         {video.viewsCount !== undefined && (
                           <div className="flex items-center gap-0.5" title="Aufrufe">
                             <Eye className="w-3 h-3 text-muted" />
-                            <span>{video.viewsCount.toLocaleString()}</span>
+                            <span>{formatCount(video.viewsCount, lang)}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-0.5" title="Kommentare">
                           <MessageSquare className="w-3 h-3 text-indigo-400" />
-                          <span>{(video.commentsCount || 0).toLocaleString()}</span>
+                          <span>{formatCount(video.commentsCount || 0, lang)}</span>
                         </div>
                         <div className="flex items-center gap-0.5" title="Likes">
                           <Heart className="w-3 h-3 text-rose-400" />
-                          <span>{(video.likesCount || 0).toLocaleString()}</span>
+                          <span>{formatCount(video.likesCount || 0, lang)}</span>
                         </div>
                       </div>
                     </div>
