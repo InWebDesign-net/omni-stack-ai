@@ -199,7 +199,7 @@ omni-stack-ai/
 └── LICENSE                  # MIT License (InWebDesign)
 ```
 
-*Note: The [media converter](docs/CONVERTER_SERVICE.md) and the [content-fill service](docs/CONTENT_FILL_SERVICE.md) run in separate LXC containers by design to keep heavy transcoding and Ollama LLM load off the web/CMS container.*
+*Note: The [media converter](docs/CONVERTER_SERVICE.md) runs in a separate LXC container by design, to keep heavy FFmpeg transcoding off the web/CMS container.*
 
 ---
 
@@ -272,7 +272,7 @@ Services will be online:
 Detailed architectural guides and setup instructions for external microservices and AI modules:
 
 - 🎞️ **[Media Converter Service Guide](docs/CONVERTER_SERVICE.md)**: HLS Transcoding pipeline, FFmpeg specs, folder-in/out patterns vs. production button/queue integrations.
-- 📝 **[Content Fill Service Guide](docs/CONTENT_FILL_SERVICE.md)**: Automated metadata generation pipeline, SQLite state DB, dev/demo auto-filling vs. production human-in-the-loop admin workflows.
+- 📝 **[Content Fill Service Guide](docs/CONTENT_FILL_SERVICE.md)**: Automated metadata generation pipeline, SQLite state DB, dev/demo auto-filling vs. production human-in-the-loop admin workflows. Currently a separate process; moving its logic into Strapi as a configurable surface is being worked out in [discussion #94](https://github.com/InWebDesign-net/omni-stack-ai/discussions/94).
 - 🧠 **[Local AI Integration Guide](docs/AI_VISION_AND_LLM_SERVICES.md)**: Ollama setup, Moondream2 Computer Vision, Llama 3.1 bilingual JSON generation, and model swapping guidelines.
 - 🔒 **[Omni Viewer Visibility Guide](docs/OMNI_VIEWER.md)**: Default-deny visibility middleware and user access policy architecture.
 
