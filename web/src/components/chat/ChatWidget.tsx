@@ -117,7 +117,7 @@ export default function ChatWidget() {
       return (
         <button
           onClick={() => openChat()}
-          style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          data-omni-dock="chat" style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
           title={t.chat?.title || 'Omni Chat'}
           aria-label={t.chat?.title || 'Omni Chat öffnen'}
         >
@@ -127,7 +127,7 @@ export default function ChatWidget() {
     }
 
     return (
-      <div style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 flex flex-col w-[360px] sm:w-[400px] bg-surface-raised border border-subtle rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
+      <div data-omni-dock="chat" style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 flex flex-col w-[360px] sm:w-[400px] bg-surface-raised border border-subtle rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
         <div className="p-4 bg-surface border-b border-subtle flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-400 text-white shadow-md">
@@ -244,7 +244,7 @@ export default function ChatWidget() {
     return (
       <button
         onClick={() => openChat()}
-        style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        data-omni-dock="chat" style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 p-4 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white rounded-2xl shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center border border-indigo-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
         title={t.chat?.title || 'Omni Chat'}
         aria-label={t.chat?.title || 'Omni Chat öffnen'}
       >
@@ -421,7 +421,7 @@ export default function ChatWidget() {
         </div>
       ) : (
         /* Compact Floating Window (Telegram Style) */
-        <div style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 flex flex-col w-[360px] sm:w-[420px] h-[580px] sm:h-[620px] max-h-[85vh] bg-base border border-subtle rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
+        <div data-omni-dock="chat" style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 flex flex-col w-[360px] sm:w-[420px] h-[580px] sm:h-[620px] max-h-[85vh] bg-base border border-subtle rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
           {/* Header */}
           <div className="p-3 px-4 bg-surface border-b border-subtle flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">

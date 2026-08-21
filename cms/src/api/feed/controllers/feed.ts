@@ -273,7 +273,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         isForSale: false,
         price: 0,
         creator: targetUserId,
-        visibility: visibility || 'public',
+        // Uploads start private. A file that has just finished uploading has
+        // not been reviewed by anyone — no title check, no thumbnail choice,
+        // and for video not even a finished transcode — so publishing it the
+        // moment it lands takes the decision away from the author. Making it
+        // visible is one switch in the settings modal; unpublishing something
+        // strangers have already seen is not.
+        visibility: visibility || 'private',
       };
 
       // 1. Create primary locale entry - published
@@ -338,7 +344,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         thumbnailUrl: `/media/images/thumbnails/${slug}_thumb.webp`,
         isProcessing: true,
         creator: targetUserId,
-        visibility: visibility || 'public',
+        // Uploads start private. A file that has just finished uploading has
+        // not been reviewed by anyone — no title check, no thumbnail choice,
+        // and for video not even a finished transcode — so publishing it the
+        // moment it lands takes the decision away from the author. Making it
+        // visible is one switch in the settings modal; unpublishing something
+        // strangers have already seen is not.
+        visibility: visibility || 'private',
       };
 
       const i18nPlugin = strapi.plugin('i18n');

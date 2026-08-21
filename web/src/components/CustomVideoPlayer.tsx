@@ -18,6 +18,12 @@ interface CustomVideoPlayerProps {
   recommendations?: any[];
   onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
   className?: string;
+  /**
+   * Start playing as soon as the player mounts. Used where the player replaces
+   * a poster the reader just clicked — the click is the gesture the browser
+   * requires, so this does not need muting to be allowed.
+   */
+  autoPlay?: boolean;
 }
 
 export default function CustomVideoPlayer({
@@ -31,6 +37,7 @@ export default function CustomVideoPlayer({
   recommendations,
   onTimeUpdate,
   className = 'w-full h-full',
+  autoPlay = false,
 }: CustomVideoPlayerProps) {
   const { t, currentUser } = useApp();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -70,12 +77,12 @@ export default function CustomVideoPlayer({
           const parsed = JSON.parse(stored);
           return {
             enabled: parsed.enabled !== false,
-            intensity: typeof parsed.intensity === 'number' ? parsed.intensity : 0.2,
+            intensity: typeof parsed.intensity === 'number' ? parsed.intensity : 0.45,
           };
         }
       } catch (e) {}
     }
-    return { enabled: true, intensity: 0.2 };
+    return { enabled: true, intensity: 0.45 };
   });
 
   const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
@@ -85,6 +92,17 @@ export default function CustomVideoPlayer({
     hlsUrl,
     mp4Url,
   });
+
+  useEffect(() => {
+    if (!autoPlay) return;
+    const video = videoRef.current;
+    if (!video) return;
+    // The source may still be attaching, so try now and again once it is ready.
+    const attempt = () => video.play().catch(() => {});
+    attempt();
+    video.addEventListener('loadeddata', attempt, { once: true });
+    return () => video.removeEventListener('loadeddata', attempt);
+  }, [autoPlay, hlsUrl, mp4Url]);
 
   // Track resolved theme (dark mode check for ambient glow)
   useEffect(() => {
@@ -419,10 +437,14 @@ export default function CustomVideoPlayer({
       {isDarkTheme && ambientSettings.enabled && (
         <div
           aria-hidden="true"
-          className="absolute -inset-4 sm:-inset-8 blur-[80px] sm:blur-[120px] transition-all duration-700 pointer-events-none rounded-3xl"
+          className="absolute -inset-8 sm:-inset-16 blur-[60px] sm:blur-[100px] transition-all duration-700 pointer-events-none rounded-3xl"
           style={{
+            // Wider colour plateau and a later fade than before: the glow used
+            // to go transparent at 70% of a box only 32px larger than the
+            // video, then get spread thin by a 120px blur, so even full
+            // intensity barely registered.
             background: isPlaying
-              ? `radial-gradient(circle, ${ambientColor} 0%, ${ambientColor} 30%, transparent 70%)`
+              ? `radial-gradient(circle, ${ambientColor} 0%, ${ambientColor} 45%, transparent 80%)`
               : 'transparent',
             opacity: isPlaying ? 1 : 0,
           }}

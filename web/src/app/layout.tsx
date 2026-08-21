@@ -124,6 +124,7 @@ import { ChatProvider } from '@/context/ChatContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { UploadProvider } from '@/context/UploadContext';
 import ChatWidget from '@/components/chat/ChatWidget';
+import { FloatingDockProbe } from '@/components/FloatingDockProbe';
 import GlobalUploadManager from '@/components/GlobalUploadManager';
 
 export default function RootLayout({
@@ -161,6 +162,9 @@ export default function RootLayout({
                 <SiteChrome />
                 <ChatWidget />
                 <GlobalUploadManager />
+                {/* Publishes the chat's footprint so the upload manager can
+                    stack above it instead of on top of it. */}
+                <FloatingDockProbe />
               </NotificationProvider>
             </UploadProvider>
           </ChatProvider>

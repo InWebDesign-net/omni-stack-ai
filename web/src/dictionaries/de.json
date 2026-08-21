@@ -268,7 +268,9 @@
     "emptyFile": "Datei ist leer",
     "supportedFormats": "Unterstützt MP4, MKV, MOV, WebM (Videos & Shorts) sowie JPG, PNG, WebP (Bilder)",
     "dragDropLabel": "Medien hier hineinziehen oder klicken",
-    "leaveWarning": "Uploads laufen noch. Möchtest du die Seite wirklich verlassen?"
+    "leaveWarning": "Uploads laufen noch. Möchtest du die Seite wirklich verlassen?",
+    "completedPrivate": "Fertig — noch privat",
+    "privateHint": "Nur für dich sichtbar. In den Einstellungen freigeben."
   },
   "channel": {
     "subscribed": "Abonniert ✓",

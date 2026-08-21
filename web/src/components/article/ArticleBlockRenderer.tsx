@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Play, Image as ImageIcon, Quote, Heading, Film, Eye, Heart } from 'lucide-react';
 import Image from 'next/image';
+import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 
 interface ArticleBlockRendererProps {
   blocks: any[];
@@ -178,11 +179,18 @@ function QuoteBlock({ block }: { block: any }) {
 function VideoRelationBlock({ block }: { block: any }) {
   const vidObj = block.video;
   const caption = block.caption;
+  const [isPlaying, setIsPlaying] = useState(false);
 
   if (!vidObj) return null;
 
   const videoData = vidObj.attributes || vidObj;
-  const videoUrl = videoData.videoUrl || videoData.url;
+  // `videoUrl` and `url` are not fields of api::video.video — it has `hlsUrl`
+  // and `mp4Url`. Reading the wrong names meant the source was always
+  // undefined, so this always fell through to a poster with a play icon that
+  // was decoration: a plain <div> nobody could click.
+  const hlsUrl: string | undefined = videoData.hlsUrl;
+  const mp4Url: string | undefined = videoData.mp4Url;
+  const hasSource = Boolean(hlsUrl || mp4Url);
   const title = videoData.title || 'Video Block';
   const slug = videoData.slug;
   const thumbnail = videoData.thumbnail || videoData.thumbnailUrl || 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&q=80';
@@ -190,31 +198,42 @@ function VideoRelationBlock({ block }: { block: any }) {
 
   return (
     <figure className="my-6 bg-surface border border-subtle rounded-2xl overflow-hidden shadow-2xl space-y-0">
-      {videoUrl ? (
-        <div className="relative aspect-video bg-black">
-          <video
-            src={videoUrl}
-            controls
-            poster={thumbnail}
-            className="w-full h-full object-contain"
-            playsInline
+      <div className="relative aspect-video bg-black">
+        {isPlaying && hasSource ? (
+          // Mounted on demand. An article can hold several video blocks, and
+          // eagerly attaching hls.js to each one would keep as many players
+          // alive as the page has blocks.
+          <CustomVideoPlayer
+            hlsUrl={hlsUrl}
+            mp4Url={mp4Url}
+            posterUrl={thumbnail}
+            title={title}
+            autoPlay
           />
-        </div>
-      ) : (
-        <div className="relative aspect-video bg-surface-raised overflow-hidden group">
-          <Image
-            src={thumbnail}
-            alt={title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-              <Play className="w-6 h-6 fill-current ml-1" />
-            </div>
-          </div>
-        </div>
-      )}
+        ) : (
+          <button
+            type="button"
+            onClick={() => hasSource && setIsPlaying(true)}
+            disabled={!hasSource}
+            aria-label={
+              hasSource ? `${title} abspielen` : `${title} — Wiedergabe nicht verfügbar`
+            }
+            className="group absolute inset-0 w-full h-full overflow-hidden disabled:cursor-default cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+          >
+            <Image
+              src={thumbnail}
+              alt={title}
+              fill
+              className="object-cover group-enabled:group-hover:scale-105 transition-transform duration-500"
+            />
+            <span className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <span className="w-14 h-14 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-xl group-enabled:group-hover:scale-110 transition-transform">
+                <Play className="w-6 h-6 fill-current ml-1" />
+              </span>
+            </span>
+          </button>
+        )}
+      </div>
 
       <div className="p-4 flex items-center justify-between gap-4 bg-surface-raised">
         <div className="space-y-1 min-w-0">

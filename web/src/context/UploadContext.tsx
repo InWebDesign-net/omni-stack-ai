@@ -86,15 +86,19 @@ export function UploadProvider({ children }: { children: ReactNode }) {
   const pollProcessingStatus = useCallback((taskId: string, slug: string, mediaType: string) => {
     let attempts = 0;
     const isImage = mediaType === 'image';
-    const pollEndpoint = isImage ? '/api/content/image/list' : '/api/strapi-feed';
+    // Both kinds are looked up through `mine`, which takes the creator from the
+    // session and passes the user id on to Strapi. The public list and the feed
+    // cannot be used here: uploads start private, and neither carries a user
+    // identity, so the author's own fresh upload is invisible to both.
+    const kind = isImage ? 'image' : 'video';
+    const pollUrl = `/api/content/${kind}/mine?slug=${encodeURIComponent(slug)}&pageSize=1`;
 
     const interval = setInterval(async () => {
       attempts++;
       try {
-        const res = await fetch(isImage ? `${pollEndpoint}?includeProcessing=true&locale=*&q=${slug}` : pollEndpoint, {
-          method: isImage ? 'GET' : 'POST',
+        const res = await fetch(pollUrl, {
+          method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          ...(isImage ? {} : { body: JSON.stringify({ targetSlug: slug }) }),
         });
 
         if (res.ok) {

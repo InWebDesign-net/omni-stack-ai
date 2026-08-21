@@ -427,7 +427,7 @@ export function VideoControls({
                           label={t?.player?.ambientMode || 'Ambient Glow'}
                           value={
                             ambientEnabled
-                              ? `${Math.round(((ambientIntensity ?? 0.2) / 0.5) * 100)}%`
+                              ? `${Math.round((ambientIntensity ?? 0.45) * 100)}%`
                               : t?.player?.off || 'Aus'
                           }
                           onOpen={() => openPanel('ambient')}
@@ -499,15 +499,15 @@ export function VideoControls({
                               {t?.player?.ambientIntensity || 'Stärke'}
                             </span>
                             <span className="text-[10px] font-mono text-teal-400 font-bold">
-                              {Math.round(((ambientIntensity ?? 0.2) / 0.5) * 100)}%
+                              {Math.round((ambientIntensity ?? 0.45) * 100)}%
                             </span>
                           </div>
                           <input
                             type="range"
-                            min={0.05}
-                            max={0.5}
+                            min={0.1}
+                            max={1}
                             step={0.05}
-                            value={ambientIntensity ?? 0.2}
+                            value={ambientIntensity ?? 0.45}
                             onChange={(e) => onAmbientIntensityChange(parseFloat(e.target.value))}
                             aria-label={t?.player?.ambientIntensity || 'Leuchtstärke'}
                             className="w-full h-1 bg-surface rounded accent-teal-400 cursor-pointer"

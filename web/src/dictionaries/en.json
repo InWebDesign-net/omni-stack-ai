@@ -268,7 +268,9 @@
     "emptyFile": "File is empty",
     "supportedFormats": "Supports MP4, MKV, MOV, WebM (Videos & Shorts) as well as JPG, PNG, WebP (Images)",
     "dragDropLabel": "Drag & drop media here or click",
-    "leaveWarning": "Uploads in progress. Are you sure you want to leave the page?"
+    "leaveWarning": "Uploads in progress. Are you sure you want to leave the page?",
+    "completedPrivate": "Done — still private",
+    "privateHint": "Only visible to you. Publish it in the settings."
   },
   "channel": {
     "subscribed": "Subscribed ✓",

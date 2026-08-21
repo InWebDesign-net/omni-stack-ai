@@ -79,7 +79,7 @@ export default function GlobalUploadManager() {
     return (
       <div
         onClick={openManager}
-        style={{ bottom: `calc(1.25rem + var(--footer-overlap, 0px))` }} className="fixed right-5 z-[9999] bg-surface border border-indigo-500/40 rounded-2xl p-4 shadow-2xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition-all animate-fadeIn"
+        style={{ bottom: `calc(1.25rem + var(--footer-overlap, 0px) + var(--chat-dock-height, 0px))` }} className="fixed right-5 z-[9999] bg-surface border border-indigo-500/40 rounded-2xl p-4 shadow-2xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition-all animate-fadeIn"
       >
         <div className="relative">
           <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center">
@@ -294,7 +294,10 @@ export default function GlobalUploadManager() {
                         {task.status === 'completed' && (
                           <span className="text-teal-400 flex items-center gap-1.5 font-bold">
                             <CheckCircle2 className="h-3.5 w-3.5" />
-                            {t.upload?.completed || 'Abgeschlossen & Veröffentlicht'}
+                            {/* Uploads start private, so "published" would be a
+                                lie — and the author needs to know the item is
+                                not visible to anyone else yet. */}
+                            {t.upload?.completedPrivate || 'Fertig — noch privat'}
                           </span>
                         )}
                         {task.status === 'error' && (

@@ -102,6 +102,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
       headers['x-omni-user-id'] = String(user.id);
 
       const q = (searchParams.get('q') || '').trim();
+      const slug = (searchParams.get('slug') || '').trim();
       const pageSize = searchParams.get('pageSize') || '24';
 
       const params = new URLSearchParams();
@@ -111,6 +112,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
       params.set('locale', searchParams.get('lang') || 'de');
       params.set('populate[creator][fields][0]', 'id');
       if (q) params.set('filters[title][$containsi]', q);
+      // Exact lookup, used by the upload manager to find the entry it just
+      // created. It cannot go through the public list: uploads start private
+      // (#visibility default), and that list carries no user identity, so the
+      // visibility middleware filters the author's own new item straight out.
+      if (slug) params.set('filters[slug][$eq]', slug);
 
       const res = await fetch(`${strapiBase()}/api/${plural}?${params.toString()}`, {
         method: 'GET',
