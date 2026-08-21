@@ -5,7 +5,18 @@ import { Sun, Moon, Laptop, Check, ChevronDown } from 'lucide-react';
 
 export type ThemeChoice = 'system' | 'dark' | 'light';
 
-export default function ThemeToggle() {
+interface ThemeToggleProps {
+  /**
+   * `dropdown` is the compact top-bar control. `inline` renders the three
+   * choices side by side — inside the navigation drawer a dropdown within a
+   * slide-over is one layer of nesting too many, and there is room for the
+   * options themselves.
+   */
+  variant?: 'dropdown' | 'inline';
+  labels?: { system?: string; dark?: string; light?: string; heading?: string };
+}
+
+export default function ThemeToggle({ variant = 'dropdown', labels }: ThemeToggleProps = {}) {
   const [theme, setTheme] = useState<ThemeChoice>('system');
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -63,17 +74,55 @@ export default function ThemeToggle() {
   }, [isOpen]);
 
   if (!mounted) {
-    return <div className="w-8 h-8 rounded-xl bg-surface border border-subtle" />;
+    // The resolved theme is only known on the client, so render a neutral
+    // placeholder of the right size rather than guessing and flashing.
+    return variant === 'inline' ? (
+      <div className="h-9 rounded-xl bg-surface border border-subtle" />
+    ) : (
+      <div className="w-8 h-8 rounded-xl bg-surface border border-subtle" />
+    );
   }
 
   const options: { key: ThemeChoice; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { key: 'system', label: 'System', icon: Laptop },
-    { key: 'dark', label: 'Dunkel', icon: Moon },
-    { key: 'light', label: 'Hell', icon: Sun },
+    { key: 'system', label: labels?.system || 'System', icon: Laptop },
+    { key: 'dark', label: labels?.dark || 'Dunkel', icon: Moon },
+    { key: 'light', label: labels?.light || 'Hell', icon: Sun },
   ];
 
   const currentOption = options.find((o) => o.key === theme) || options[0];
   const CurrentIcon = currentOption.icon;
+
+  if (variant === 'inline') {
+    return (
+      <div
+        role="radiogroup"
+        aria-label={labels?.heading || 'Design'}
+        className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-surface border border-subtle"
+      >
+        {options.map((opt) => {
+          const Icon = opt.icon;
+          const isSelected = theme === opt.key;
+          return (
+            <button
+              key={opt.key}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              onClick={() => applyTheme(opt.key)}
+              className={`flex flex-col items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                isSelected
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-muted hover:text-primary hover:bg-surface-raised'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{opt.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div ref={dropdownRef} className="relative">

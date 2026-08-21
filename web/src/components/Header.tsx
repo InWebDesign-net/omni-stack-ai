@@ -271,9 +271,6 @@ export default function Header({
             <span className="hidden sm:inline">{activeLang === 'de' ? t.header.algorithm : t.header.algorithm}</span>
           </button>
 
-          {/* Theme Switcher */}
-          <ThemeToggle />
-
           {/* Language Switch */}
           <button
             onClick={handleLanguageClick}
@@ -523,6 +520,22 @@ export default function Header({
                   <span className="text-[10px] text-faint truncate ml-auto">{creator.username}</span>
                 </button>
               ))}
+            </div>
+
+            {/* Appearance */}
+            <div className="pt-3 border-t border-subtle flex flex-col gap-2">
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.12em] text-faint">
+                {t.header?.appearance || 'Darstellung'}
+              </p>
+              <ThemeToggle
+                variant="inline"
+                labels={{
+                  heading: t.header?.appearance || 'Darstellung',
+                  system: t.header?.themeSystem || 'System',
+                  dark: t.header?.themeDark || 'Dunkel',
+                  light: t.header?.themeLight || 'Hell',
+                }}
+              />
             </div>
 
             {/* Drawer Footer Link Card */}

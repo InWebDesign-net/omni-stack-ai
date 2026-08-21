@@ -70,7 +70,11 @@
     "exclusiveArticles": "Exklusive Artikel",
     "channelsCreators": "Kanäle & Creator",
     "shortsReels": "Shorts & Reels",
-    "trendingPopular": "Trending & Popular"
+    "trendingPopular": "Trending & Popular",
+    "appearance": "Darstellung",
+    "themeSystem": "System",
+    "themeDark": "Dunkel",
+    "themeLight": "Hell"
   },
   "shorts": {
     "draftModeActive": "⚡ Live-Entwurfsmodus aktiv (Vorschau aus Strapi CMS)",
