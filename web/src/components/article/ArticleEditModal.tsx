@@ -149,9 +149,18 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-surface-raised border border-subtle rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto text-primary">
+      {/*
+        Wider than the other edit modals on purpose: this is the only kind with a
+        dynamic zone, and the block list needs horizontal room the image and
+        video modals would only render as empty space.
+
+        The shell is a flex column — fixed header, scrolling body, pinned footer —
+        rather than one long scroll area, so the save button stays reachable no
+        matter how many blocks an article has.
+      */}
+      <div className="relative w-full max-w-5xl bg-surface-raised border border-subtle rounded-3xl shadow-2xl max-h-[90vh] flex flex-col text-primary overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-subtle">
+        <div className="flex items-center justify-between gap-4 px-6 sm:px-8 py-5 border-b border-subtle shrink-0">
           <div>
             <h2 className="text-xl font-extrabold text-primary flex items-center gap-2">
               <span>{t?.article?.editTitle || 'Artikel bearbeiten'}</span>
@@ -168,6 +177,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
           </button>
         </div>
 
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 sm:px-8 py-5 space-y-6">
         {error && (
           <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
             {error}
@@ -181,6 +191,14 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
           </div>
         ) : (
           <>
+            {/*
+              Metadata is a short, stable set; the block list is long and changes
+              constantly. Side by side they stop competing for the same vertical
+              space. Below lg they stack, because at 360px two columns would leave
+              neither usable.
+            */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] gap-6 lg:gap-8 items-start">
+            <div className="space-y-5 min-w-0">
             {/* Locale Tabs DE / EN */}
             <div className="flex items-center gap-2 p-1 bg-surface border border-subtle rounded-xl">
               <button
@@ -278,8 +296,14 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
               </div>
             </div>
 
+            {/* Global Visibility */}
+            <div className="pt-4 border-t border-subtle space-y-2">
+              <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
+            </div>
+            </div>
+
             {/* Content Blocks */}
-            <div className="pt-4 border-t border-subtle space-y-3">
+            <div className="space-y-3 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-bold text-muted uppercase tracking-wider">
                   {t?.blocks?.sectionTitle || 'Inhaltsblöcke'} ({activeLocale.toUpperCase()})
@@ -316,45 +340,19 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
               />
             </div>
 
-            {/* Global Visibility */}
-            <div className="pt-4 border-t border-subtle space-y-2">
-              <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
             </div>
+            </>
+        )}
+        </div>
 
-            {/* Actions */}
-            <div className="pt-6 border-t border-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold transition-all flex items-center justify-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Artikel löschen</span>
-              </button>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle text-xs font-bold transition-all"
-                >
-                  Abbrechen
-                </button>
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={handleSave}
-                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold disabled:opacity-40 transition-all flex items-center gap-2 shadow-lg shadow-purple-600/30"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  <span>Änderungen speichern</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Delete Modal Section */}
+        {/* Pinned footer: reachable at any scroll position, which matters once an
+            article has more blocks than fit on screen. */}
+        {!loading && (
+          <>
+            {/* Delete confirmation sits above the footer bar and may scroll on its
+                own — it is taller than the bar and must not squeeze it. */}
             {showDeleteConfirm && (
-              <div className="p-4 bg-red-950/40 border border-red-500/40 rounded-2xl space-y-4 animate-fadeIn">
+              <div className="shrink-0 mx-6 sm:mx-8 mb-4 max-h-[40vh] overflow-y-auto p-4 bg-red-950/40 border border-red-500/40 rounded-2xl space-y-4 animate-fadeIn">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                   <div>
@@ -398,6 +396,36 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
                 </div>
               </div>
             )}
+            <div className="shrink-0 px-6 sm:px-8 py-4 border-t border-subtle flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-raised">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Artikel löschen</span>
+              </button>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2.5 rounded-xl bg-surface hover:bg-surface-raised text-muted hover:text-primary border border-subtle text-xs font-bold transition-all"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={handleSave}
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold disabled:opacity-40 transition-all flex items-center gap-2 shadow-lg shadow-purple-600/30"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  <span>Änderungen speichern</span>
+                </button>
+              </div>
+            </div>
+
           </>
         )}
       </div>
