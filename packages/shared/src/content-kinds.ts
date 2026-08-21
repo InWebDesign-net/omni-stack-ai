@@ -6,6 +6,10 @@
  * adding a fourth kind means adding an entry here plus its kind-specific
  * renderer, and nothing else.
  *
+ * `hasBlocks` records which kinds carry the dynamic zone. Only `article` does,
+ * and Strapi runs with `strictParams`, so sending `blocks` to any other kind is
+ * rejected outright rather than ignored.
+ *
  * `feed-item` is deliberately absent: it is a container type with a different
  * shape, not a content kind in this sense.
  */
@@ -17,6 +21,7 @@ export const CONTENT_KINDS = {
     listRoute: 'videos',
     ownerField: 'creator',
     media: 'hls',
+    hasBlocks: false,
   },
   article: {
     uid: 'api::article.article',
@@ -25,6 +30,7 @@ export const CONTENT_KINDS = {
     listRoute: 'articles',
     ownerField: 'creator',
     media: 'none',
+    hasBlocks: true,
   },
   image: {
     uid: 'api::image.image',
@@ -33,6 +39,7 @@ export const CONTENT_KINDS = {
     listRoute: 'images',
     ownerField: 'creator',
     media: 'webp',
+    hasBlocks: false,
   },
 } as const;
 

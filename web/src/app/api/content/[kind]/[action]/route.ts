@@ -303,6 +303,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
     if (Array.isArray(localeUpdates)) {
       for (const { locale, data } of localeUpdates) {
         const updateData = { ...data };
+        // Last line of defence for the same mismatch: `strictParams` makes
+        // Strapi reject an unknown key rather than ignore it, so one stray
+        // field from any caller fails the entire update for that locale.
+        if (!CONTENT_KINDS[kind].hasBlocks) {
+          delete updateData.blocks;
+        }
         if (body.thumbnail !== undefined) {
           if (kind === 'article') updateData.thumbnail = body.thumbnail;
           if (kind === 'video' || kind === 'image') updateData.thumbnailUrl = body.thumbnail;

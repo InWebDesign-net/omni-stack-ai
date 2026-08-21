@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { ContentKind } from '@omni/shared';
+import { CONTENT_KINDS, type ContentKind } from '@omni/shared';
 import { jsonAuthHeaders } from '@/lib/affinity';
 
 /**
@@ -114,18 +114,24 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
         const en = items.find((i) => i.locale === 'en');
 
         if (cancelled) return;
+        // Only the kinds that actually have a dynamic zone carry `blocks`.
+        // Strapi runs with `strictParams`, so an empty `blocks: []` on an image
+        // is not ignored — the whole update is rejected with
+        // `ValidationError: Invalid key blocks`, which the modal could only
+        // report as "Update failed for: de, en".
+        const withBlocks = CONTENT_KINDS[kind].hasBlocks;
         const loaded = {
           de: {
             title: de?.title || fallback?.title || '',
             summary: parseSummary(de?.summary ?? fallback?.summary),
             tags: Array.isArray(de?.tags) ? de.tags : Array.isArray(fallback?.tags) ? fallback!.tags! : [],
-            blocks: Array.isArray(de?.blocks) ? de.blocks : [],
+            ...(withBlocks ? { blocks: Array.isArray(de?.blocks) ? de.blocks : [] } : {}),
           },
           en: {
             title: en?.title || '',
             summary: parseSummary(en?.summary),
             tags: Array.isArray(en?.tags) ? en.tags : [],
-            blocks: Array.isArray(en?.blocks) ? en.blocks : [],
+            ...(withBlocks ? { blocks: Array.isArray(en?.blocks) ? en.blocks : [] } : {}),
           },
         };
         setExistingLocales(
