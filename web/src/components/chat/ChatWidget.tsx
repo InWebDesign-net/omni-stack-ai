@@ -29,11 +29,18 @@ export default function ChatWidget() {
     totalUnreadCount,
     showOnlineStatus,
     showReadReceipts,
+    roomSubscriptions,
+    typingUsersByRoom,
+    isLoadingMoreByRoom,
+    hasMoreMessagesByRoom,
     openChat,
     closeChat,
     toggleExpand,
     setActiveRoomId,
     sendMessage,
+    sendTyping,
+    toggleRoomSubscription,
+    loadMoreMessages,
     createRoom,
     searchEligibleUsers,
     addParticipantToRoom,
@@ -510,6 +517,16 @@ export default function ChatWidget() {
                 isAiEnabled={activeRoom?.isAiEnabled}
                 showOnlineStatus={showOnlineStatus}
                 privacyError={privacyError}
+                isSubscribed={
+                  activeRoom
+                    ? (roomSubscriptions[activeRoom.id] ?? roomSubscriptions[activeRoom.slug] ?? (activeRoom.type === 'direct'))
+                    : false
+                }
+                onToggleSubscription={() => {
+                  if (!activeRoom) return;
+                  const currentSub = roomSubscriptions[activeRoom.id] ?? roomSubscriptions[activeRoom.slug] ?? (activeRoom.type === 'direct');
+                  toggleRoomSubscription(activeRoom.id, !currentSub);
+                }}
                 onBack={() => setActiveRoomId(null)}
                 onRemoveAi={() => activeRoom && removeParticipantFromRoom(activeRoom.id, 'ai')}
                 onInviteAi={() => activeRoom && addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
@@ -522,9 +539,17 @@ export default function ChatWidget() {
                   currentUserId={currentUser?.id ? String(currentUser.id) : null}
                   showReadReceipts={showReadReceipts}
                   messagesEndRef={messagesEndRef}
+                  typingUsers={activeRoom ? (typingUsersByRoom[activeRoom.id] || typingUsersByRoom[activeRoom.slug] || []) : []}
+                  hasMore={activeRoom ? (hasMoreMessagesByRoom[activeRoom.id] ?? true) : false}
+                  isLoadingMore={activeRoom ? (isLoadingMoreByRoom[activeRoom.id] ?? false) : false}
+                  onLoadMore={() => activeRoom && loadMoreMessages(activeRoom.id)}
                 />
               )}
-              <ChatInput onSend={handleSend} t={t} />
+              <ChatInput
+                onSend={handleSend}
+                onTyping={(isTyping) => activeRoom && sendTyping(activeRoom.id, isTyping)}
+                t={t}
+              />
             </div>
           )}
         </div>

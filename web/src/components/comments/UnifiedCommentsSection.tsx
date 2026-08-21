@@ -10,6 +10,7 @@ import {
   createCommentInStrapi,
   updateCommentInStrapi,
   deleteCommentFromStrapi,
+  buildCommentTree,
 } from '@/lib/comments';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
@@ -32,8 +33,13 @@ export function UnifiedCommentsSection({
   const { currentUser, openAuthModal, t: globalT } = useApp();
   const translations = t || globalT;
 
+  const [rawComments, setRawComments] = useState<CommentItemType[]>([]);
   const [commentsTree, setCommentsTree] = useState<CommentItemType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [newCommentText, setNewCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -47,10 +53,15 @@ export function UnifiedCommentsSection({
     if (!slug) return;
     setLoading(true);
     try {
-      const items = await fetchCommentsForSlug(slug, lang as 'de' | 'en');
-      setCommentsTree(items);
+      const res = await fetchCommentsForSlug(slug, lang as 'de' | 'en', 1, 30);
+      setRawComments(res.comments);
+      const tree = buildCommentTree(res.comments);
+      setCommentsTree(tree);
+      setTotalCount(res.total);
+      setHasMore(res.hasMore);
+      setPage(1);
       if (onCommentsCountChange) {
-        onCommentsCountChange(countTotalComments(items));
+        onCommentsCountChange(res.total || countTotalComments(tree));
       }
     } catch (e) {
       console.error('Failed to load comments for slug:', slug, e);
@@ -58,6 +69,36 @@ export function UnifiedCommentsSection({
       setLoading(false);
     }
   }, [slug, lang, onCommentsCountChange]);
+
+  const loadMoreComments = async () => {
+    if (isLoadingMore || !hasMore || !slug) return;
+    setIsLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetchCommentsForSlug(slug, lang as 'de' | 'en', nextPage, 30);
+      if (res.comments.length > 0) {
+        const mergedRaw = [...rawComments];
+        const existingIds = new Set(mergedRaw.map((c) => c.documentId || c.id));
+        for (const item of res.comments) {
+          const key = item.documentId || item.id;
+          if (!existingIds.has(key)) {
+            mergedRaw.push(item);
+            existingIds.add(key);
+          }
+        }
+        setRawComments(mergedRaw);
+        const tree = buildCommentTree(mergedRaw);
+        setCommentsTree(tree);
+        setPage(nextPage);
+      }
+      setHasMore(res.hasMore);
+      setTotalCount(res.total);
+    } catch (e) {
+      console.error('Failed to load more comments:', e);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     loadComments();
@@ -183,7 +224,7 @@ export function UnifiedCommentsSection({
     return count;
   };
 
-  const totalCount = countTotalComments(commentsTree);
+  const displayTotalCount = totalCount || countTotalComments(commentsTree);
 
   return (
     <div className="bg-surface border border-subtle rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6">
@@ -200,7 +241,7 @@ export function UnifiedCommentsSection({
           <MessageSquare className={`w-5 h-5 text-${accentColor}-400`} />
           <span>{translations?.common?.comments || 'Kommentare'}</span>
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-surface-raised text-muted border border-subtle">
-            {totalCount}
+            {displayTotalCount}
           </span>
         </h3>
         <button
@@ -286,6 +327,25 @@ export function UnifiedCommentsSection({
               t={translations}
             />
           ))}
+
+          {hasMore && (
+            <div className="pt-4 flex justify-center">
+              <button
+                onClick={loadMoreComments}
+                disabled={isLoadingMore}
+                className="px-4 py-2 bg-surface hover:bg-surface-raised border border-subtle text-primary rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                    <span>Lade weitere Kommentare...</span>
+                  </>
+                ) : (
+                  <span>Weitere Kommentare laden ({totalCount - rawComments.length} verbleibend)</span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

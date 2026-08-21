@@ -18,6 +18,10 @@ interface MessageListProps {
   currentUserId?: string | null;
   showReadReceipts?: boolean;
   messagesEndRef?: React.RefObject<HTMLDivElement | null>;
+  typingUsers?: string[];
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 // Format date divider label (e.g., "Heute", "Gestern", or "19. August 2026")
@@ -48,7 +52,36 @@ function getDayKey(dateStr: string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function MessageList({ messages, currentUserId, showReadReceipts, messagesEndRef }: MessageListProps) {
+export function MessageList({
+  messages,
+  currentUserId,
+  showReadReceipts,
+  messagesEndRef,
+  typingUsers,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
+}: MessageListProps) {
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const prevScrollHeightRef = React.useRef<number>(0);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollTop <= 15 && hasMore && !isLoadingMore && onLoadMore) {
+      prevScrollHeightRef.current = target.scrollHeight;
+      onLoadMore();
+    }
+  };
+
+  React.useLayoutEffect(() => {
+    if (scrollContainerRef.current && prevScrollHeightRef.current > 0) {
+      const heightDiff = scrollContainerRef.current.scrollHeight - prevScrollHeightRef.current;
+      if (heightDiff > 0) {
+        scrollContainerRef.current.scrollTop += heightDiff;
+      }
+      prevScrollHeightRef.current = 0;
+    }
+  }, [messages.length]);
   // Pre-process messages with WhatsApp-style grouping logic
   const processedMessages = useMemo(() => {
     return messages.map((msg, index) => {
@@ -128,7 +161,16 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
   }, [processedMessages]);
 
   return (
-    <div className="flex-1 overflow-y-auto overscroll-contain p-3 min-h-0">
+    <div
+      ref={scrollContainerRef}
+      onScroll={handleScroll}
+      className="flex-1 overflow-y-auto overscroll-contain p-3 min-h-0"
+    >
+      {isLoadingMore && (
+        <div className="flex items-center justify-center py-2 text-xs text-muted font-mono">
+          <span>Lade ältere Nachrichten...</span>
+        </div>
+      )}
       {dayGroups.map((group) => (
         <section key={group.dayKey} className="relative">
           <div className="flex justify-center my-3 sticky top-2 z-10">
@@ -222,6 +264,25 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
         })}
         </section>
       ))}
+
+      {/* Typing Indicator with 3 animated bouncing dots (#91) */}
+      {typingUsers && typingUsers.length > 0 && (
+        <div className="flex justify-start my-2 animate-fadeIn">
+          <div className="bg-surface border border-subtle text-primary rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-md flex items-center gap-2">
+            <span className="text-xs text-muted font-medium">
+              {typingUsers.length === 1
+                ? `${typingUsers[0]} tippt`
+                : `${typingUsers.join(', ')} tippen`}
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div ref={messagesEndRef} />
     </div>
   );

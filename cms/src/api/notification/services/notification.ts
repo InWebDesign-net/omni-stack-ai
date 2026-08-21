@@ -1,14 +1,19 @@
 import { factories } from '@strapi/strapi';
 
 export default factories.createCoreService('api::notification.notification', ({ strapi }) => ({
-  async getUserNotifications(userId: number) {
-    if (!userId) return { notifications: [], unreadCount: 0 };
+  async getUserNotifications(userId: number, limit = 50, offset = 0) {
+    if (!userId) return { notifications: [], unreadCount: 0, totalCount: 0 };
 
     const notifications = await strapi.db.query('api::notification.notification').findMany({
       where: { recipient: { id: userId } },
       orderBy: { createdAt: 'DESC' },
-      limit: 50,
+      limit: Number(limit) || 50,
+      offset: Number(offset) || 0,
       populate: ['sender'],
+    });
+
+    const totalCount = await strapi.db.query('api::notification.notification').count({
+      where: { recipient: { id: userId } },
     });
 
     const unreadCount = await strapi.db.query('api::notification.notification').count({
@@ -37,6 +42,7 @@ export default factories.createCoreService('api::notification.notification', ({ 
           : null,
       })),
       unreadCount,
+      totalCount,
     };
   },
 

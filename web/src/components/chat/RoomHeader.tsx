@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bot, Sparkles, ArrowLeft, X, Minimize2, AlertCircle, Users } from 'lucide-react';
+import { Bot, Sparkles, ArrowLeft, X, Minimize2, AlertCircle, Users, Bell, BellOff } from 'lucide-react';
 
 interface RoomHeaderProps {
   roomName: string;
@@ -9,6 +9,8 @@ interface RoomHeaderProps {
   isAiEnabled?: boolean;
   showOnlineStatus?: boolean;
   privacyError?: string | null;
+  isSubscribed?: boolean;
+  onToggleSubscription?: () => void;
   onBack?: () => void;
   onToggleExpand?: () => void;
   onClose?: () => void;
@@ -24,6 +26,8 @@ export function RoomHeader({
   isAiEnabled,
   showOnlineStatus,
   privacyError,
+  isSubscribed,
+  onToggleSubscription,
   onBack,
   onToggleExpand,
   onClose,
@@ -104,6 +108,30 @@ export function RoomHeader({
             >
               <Sparkles className="w-3 h-3 text-teal-400" />
               <span>+ KI</span>
+            </button>
+          )}
+
+          {/* Notification Subscription Toggle (#96) - direct and group chats only */}
+          {roomType !== 'ai' && onToggleSubscription && (
+            <button
+              onClick={onToggleSubscription}
+              className={`p-1 rounded-lg transition-all cursor-pointer ${
+                isSubscribed
+                  ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30'
+                  : 'hover:bg-surface text-muted hover:text-primary'
+              }`}
+              title={
+                isSubscribed
+                  ? (t?.chat?.notificationsOn || 'Benachrichtigungen aktiviert (Klicken zum Stummschalten)')
+                  : (t?.chat?.notificationsOff || 'Benachrichtigungen stummgeschaltet (Klicken zum Aktivieren)')
+              }
+              aria-label={
+                isSubscribed
+                  ? (t?.chat?.notificationsOn || 'Benachrichtigungen aktiviert')
+                  : (t?.chat?.notificationsOff || 'Benachrichtigungen stummschalten')
+              }
+            >
+              {isSubscribed ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
             </button>
           )}
 

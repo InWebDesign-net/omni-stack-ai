@@ -11,7 +11,13 @@ export default factories.createCoreController('api::notification.notification', 
       return ctx.unauthorized('Authentication required');
     }
 
-    const data = await strapi.service('api::notification.notification').getUserNotifications(Number(userId));
+    const limit = Number(ctx.query.pageSize || ctx.query.limit) || 50;
+    const page = Number(ctx.query.page) || 1;
+    const offset = Number(ctx.query.offset) || (page - 1) * limit;
+
+    const data = await strapi
+      .service('api::notification.notification')
+      .getUserNotifications(Number(userId), limit, offset);
     return ctx.send(data);
   },
 

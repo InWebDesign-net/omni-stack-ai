@@ -29,8 +29,17 @@ interface NotificationDrawerProps {
 
 export default function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps) {
   const router = useRouter();
-  const { notifications, unreadCount, markAllAsRead, markAsRead, toggleRead, deleteNotification } =
-    useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    hasMore,
+    isLoadingMore,
+    loadMoreNotifications,
+    markAllAsRead,
+    markAsRead,
+    toggleRead,
+    deleteNotification,
+  } = useNotifications();
   const { openChat } = useChat();
   const { t } = useApp();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
@@ -251,6 +260,18 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
               </div>
             </div>
           ))
+        )}
+
+        {hasMore && filtered.length > 0 && (
+          <div className="p-3 text-center border-t border-subtle">
+            <button
+              onClick={loadMoreNotifications}
+              disabled={isLoadingMore}
+              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              {isLoadingMore ? 'Lade mehr...' : 'Weitere Benachrichtigungen laden'}
+            </button>
+          </div>
         )}
       </div>
     </div>

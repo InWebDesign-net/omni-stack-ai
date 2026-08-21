@@ -33,6 +33,10 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::chat-room.chat-room"
+    },
+    "isSubscribed": {
+      "type": "boolean",
+      "default": true
     }
   }
 }

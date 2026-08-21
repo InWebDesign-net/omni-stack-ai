@@ -128,7 +128,7 @@ export async function GET(req: Request) {
 
     // Fetch chat rooms from Strapi REST API with populated participants
     const roomsRes = await fetch(
-      `${STRAPI_URL}/api/chat-rooms?populate[participants][populate]=*&populate[adminUser][populate]=*&populate[messages][populate]=*&sort=updatedAt:desc&pagination[pageSize]=100`,
+      `${STRAPI_URL}/api/chat-rooms?populate[participants][fields][0]=id&populate[participants][fields][1]=username&populate[participants][fields][2]=handle&populate[participants][fields][3]=avatarUrl&populate[adminUser][fields][0]=id&populate[adminUser][fields][1]=username&populate[messages][fields][0]=content&populate[messages][fields][1]=createdAt&populate[messages][fields][2]=senderType&populate[messages][populate][sender][fields][0]=username&populate[messages][populate][sender][fields][1]=handle&sort=updatedAt:desc&pagination[pageSize]=100`,
       {
         headers,
         cache: 'no-store',
@@ -153,6 +153,17 @@ export async function GET(req: Request) {
         // Unauthenticated guests only see global public rooms
         rooms = rawRooms.filter((room: any) => (room.type || room.attributes?.type) === 'global');
       }
+
+      // ⚡ Optimization (#99): Trim messages array for room list so each room only
+      // transports its single latest message for the preview line, reducing payload by 99%.
+      rooms = rooms.map((room: any) => {
+        const msgs = Array.isArray(room.messages) ? room.messages : (room.messages?.data || []);
+        const latestMsg = msgs.length > 0 ? [msgs[msgs.length - 1]] : [];
+        return {
+          ...room,
+          messages: latestMsg,
+        };
+      });
     }
 
     // Fetch messages for active room if requested
@@ -173,10 +184,34 @@ export async function GET(req: Request) {
       }
     }
 
+    // Fetch current user subscriptions if authenticated
+    const subscriptions: Record<string, boolean> = {};
+    if (user?.id) {
+      try {
+        const subRes = await fetch(
+          `${STRAPI_URL}/api/subscriptions?filters[type][$eq]=chat_room&filters[subscriber][id][$eq]=${user.id}&populate[targetChatRoom]=*`,
+          { headers, cache: 'no-store' }
+        );
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          const items = subData.data || [];
+          for (const item of items) {
+            const roomSlug = item.targetChatRoom?.slug || item.targetChatRoom?.documentId || String(item.targetChatRoom?.id);
+            if (roomSlug) {
+              subscriptions[roomSlug] = item.isSubscribed !== false;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load user chat subscriptions:', e);
+      }
+    }
+
     return NextResponse.json({
       currentUser: user,
       rooms,
       messages,
+      subscriptions,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to fetch chat data' }, { status: 500 });
@@ -194,7 +229,7 @@ export async function POST(req: Request) {
     if (process.env.STRAPI_API_TOKEN) headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
 
     const body = await req.json();
-    const { action, roomId, content, recipientId, participantIds, name, type, senderType } = body;
+    const { action, roomId, content, recipientId, participantIds, name, type, senderType, isSubscribed } = body;
 
     // Action 1: Create a new chatroom (Direct message, Group chat, or AI chat)
     if (action === 'create_room') {
@@ -278,33 +313,138 @@ export async function POST(req: Request) {
         savedMsg = data?.data;
       }
 
-      // Trigger notification for other room participants if sender is a user
-      if (user?.id && senderType === 'user' && room) {
+      // Trigger notification for other room participants if sender is a user and room is not AI (#96)
+      if (user?.id && senderType === 'user' && room && room.type !== 'ai') {
         const participants = room.participants || room.attributes?.participants || [];
         const otherParticipants = (Array.isArray(participants) ? participants : [])
-          .map((p: any) => p.id || p.documentId)
-          .filter((pId: any) => String(pId) !== String(user.id));
+          .map((p: any) => ({ id: p.id, documentId: p.documentId }))
+          .filter((p: any) => String(p.id) !== String(user.id) && String(p.documentId) !== String(user.id));
 
-        for (const targetRecipientId of otherParticipants) {
-          try {
-            await fetch(`${STRAPI_URL}/api/notifications`, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify({
-                recipientId: Number(targetRecipientId),
-                type: 'chat_message',
-                title: `Neue Chat-Nachricht von ${user.username || 'Nutzer'}`,
-                message: content.length > 80 ? content.slice(0, 77) + '...' : content,
-                link: `chat:${room.slug || room.id}`,
-              }),
-            });
-          } catch (err) {
-        console.error('[route.ts] unhandled error', err);
-      }
+        const roomDocId = room.documentId || room.id;
+        const roomType = room.type || 'direct';
+
+        let subscribedUserIds = new Set<string>();
+        let unsubscribedUserIds = new Set<string>();
+
+        try {
+          const subRes = await fetch(
+            `${STRAPI_URL}/api/subscriptions?filters[type][$eq]=chat_room&filters[targetChatRoom][documentId][$eq]=${encodeURIComponent(
+              roomDocId
+            )}&populate[subscriber]=*`,
+            { headers, cache: 'no-store' }
+          );
+          if (subRes.ok) {
+            const subData = await subRes.json();
+            const subs = subData.data || [];
+            for (const s of subs) {
+              const subId = s.subscriber?.id || s.subscriber?.documentId;
+              if (subId) {
+                if (s.isSubscribed === false) {
+                  unsubscribedUserIds.add(String(subId));
+                } else {
+                  subscribedUserIds.add(String(subId));
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Failed to query room subscriptions:', e);
+        }
+
+        for (const p of otherParticipants) {
+          const targetRecipientId = p.id;
+          const targetKey = String(p.id);
+
+          // Subscription rule (#96):
+          // - group: opt-in (must be explicitly subscribed)
+          // - direct: opt-out (subscribed by default unless explicitly unsubscribed)
+          const shouldNotify =
+            roomType === 'group'
+              ? subscribedUserIds.has(targetKey)
+              : !unsubscribedUserIds.has(targetKey);
+
+          if (shouldNotify && targetRecipientId) {
+            try {
+              await fetch(`${STRAPI_URL}/api/notifications`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                  recipientId: Number(targetRecipientId),
+                  type: 'chat_message',
+                  title: `Neue Chat-Nachricht von ${user.username || 'Nutzer'}`,
+                  message: content.length > 80 ? content.slice(0, 77) + '...' : content,
+                  link: `chat:${room.slug || room.id}`,
+                }),
+              });
+            } catch (err) {
+              console.error('[route.ts] notification error', err);
+            }
+          }
         }
       }
 
       return NextResponse.json({ message: savedMsg, room, success: true });
+    }
+
+    // Action 3: Toggle chatroom notification subscription (#96)
+    if (action === 'toggle_subscription') {
+      const { roomId: targetRoomId } = body;
+      if (!targetRoomId || !user?.id) {
+        return NextResponse.json({ error: 'roomId and authenticated user required' }, { status: 400 });
+      }
+
+      const findRes = await fetch(
+        `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(targetRoomId)}`,
+        { headers, cache: 'no-store' }
+      );
+      if (!findRes.ok) {
+        return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+      }
+      const findData = await findRes.json();
+      const targetRoom = findData?.data?.[0];
+      if (!targetRoom) {
+        return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+      }
+
+      const roomDocId = targetRoom.documentId || targetRoom.id;
+
+      // Find existing subscription
+      const subRes = await fetch(
+        `${STRAPI_URL}/api/subscriptions?filters[type][$eq]=chat_room&filters[subscriber][id][$eq]=${user.id}&filters[targetChatRoom][documentId][$eq]=${encodeURIComponent(
+          roomDocId
+        )}`,
+        { headers, cache: 'no-store' }
+      );
+
+      const subData = subRes.ok ? await subRes.json() : { data: [] };
+      const existing = subData.data?.[0];
+
+      if (existing?.documentId) {
+        await fetch(`${STRAPI_URL}/api/subscriptions/${existing.documentId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            data: {
+              isSubscribed: Boolean(isSubscribed),
+            },
+          }),
+        });
+      } else {
+        await fetch(`${STRAPI_URL}/api/subscriptions`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            data: {
+              type: 'chat_room',
+              subscriber: user.id,
+              targetChatRoom: roomDocId,
+              isSubscribed: Boolean(isSubscribed),
+            },
+          }),
+        });
+      }
+
+      return NextResponse.json({ success: true, isSubscribed: Boolean(isSubscribed) });
     }
 
     // Action 3: Update chatroom settings (e.g. toggle isAiEnabled)

@@ -57,6 +57,10 @@ interface ChatContextType {
   showOnlineStatus: boolean;
   showReadReceipts: boolean;
   userPrivacySetting: 'everyone' | 'subscribers_only' | 'nobody';
+  roomSubscriptions: Record<string, boolean>;
+  typingUsersByRoom: Record<string, string[]>;
+  isLoadingMoreByRoom: Record<string, boolean>;
+  hasMoreMessagesByRoom: Record<string, boolean>;
   openChat: (roomId?: string) => void;
   closeChat: () => void;
   toggleExpand: () => void;
@@ -69,6 +73,9 @@ interface ChatContextType {
     language?: string;
   }) => Promise<{ roomId: string | null; error?: string }>;
   sendMessage: (roomId: string, content: string) => Promise<void>;
+  sendTyping: (roomId: string, isTyping: boolean) => void;
+  toggleRoomSubscription: (roomId: string, isSubscribed: boolean) => Promise<void>;
+  loadMoreMessages: (roomId: string) => Promise<void>;
   updateUserPrivacySetting: (setting: 'everyone' | 'subscribers_only' | 'nobody') => Promise<void>;
   searchEligibleUsers: (query: string) => Promise<SearchableUser[]>;
   addParticipantToRoom: (roomId: string, userOrAi: { name: string; type: 'user' | 'ai' }) => Promise<void>;
@@ -117,6 +124,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [showReadReceipts, setShowReadReceipts] = useState(true);
 
+  // Room subscriptions map (#96)
+  const [roomSubscriptions, setRoomSubscriptions] = useState<Record<string, boolean>>({});
+
+  // Typing indicators (#91)
+  const [typingUsersByRoom, setTypingUsersByRoom] = useState<Record<string, string[]>>({});
+
+  // Incremental history loading (#98)
+  const [isLoadingMoreByRoom, setIsLoadingMoreByRoom] = useState<Record<string, boolean>>({});
+  const [hasMoreMessagesByRoom, setHasMoreMessagesByRoom] = useState<Record<string, boolean>>({});
+
   // Track in-flight message posting to prevent double-send and duplicate AI replies
   const [postingRoomIds, setPostingRoomIds] = useState<Set<string>>(new Set());
   const [aiPendingRoomIds, setAiPendingRoomIds] = useState<Set<string>>(new Set());
@@ -142,6 +159,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       });
       if (!res.ok) return;
       const data = await res.json();
+
+      if (data.subscriptions && typeof data.subscriptions === 'object') {
+        setRoomSubscriptions(data.subscriptions);
+      }
 
       if (Array.isArray(data.rooms) && data.rooms.length > 0) {
         const loadedRooms: ChatRoom[] = data.rooms.map((r: any) => ({
@@ -254,7 +275,26 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
       };
 
+      const handleTyping = (data: any) => {
+        if (!data || !data.roomId || !data.username) return;
+        const myName = currentUser?.username || 'Du';
+        if (data.username === myName) return;
+
+        setTypingUsersByRoom((prev) => {
+          const list = prev[data.roomId] || [];
+          if (data.isTyping) {
+            if (!list.includes(data.username)) {
+              return { ...prev, [data.roomId]: [...list, data.username] };
+            }
+            return prev;
+          } else {
+            return { ...prev, [data.roomId]: list.filter((u) => u !== data.username) };
+          }
+        });
+      };
+
       socket.on('chat:message_received', handleIncomingMessage);
+      socket.on('chat:typing', handleTyping);
       
       socket.on('chat:group_created', (data: any) => {
         console.log('Group created:', data);
@@ -293,6 +333,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       return () => {
         active = false;
         socket.off('chat:message_received', handleIncomingMessage);
+        socket.off('chat:typing', handleTyping);
         socket.off('chat:group_created');
       };
     }
@@ -632,9 +673,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Trigger AI response if room is AI enabled
+    // Trigger AI response if room is AI enabled (#90: Streamed AI response)
     if (targetRoom && (targetRoom.type === 'ai' || targetRoom.isAiEnabled)) {
-      // Avoid concurrent AI replies for the same room
       let alreadyAiPending = false;
       setAiPendingRoomIds((prev) => {
         if (prev.has(roomId)) {
@@ -645,62 +685,98 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       });
       if (alreadyAiPending) return;
 
-      setTimeout(async () => {
+      const aiMsgId = `msg-ai-${Date.now()}`;
+      const placeholderAiMsg: ChatMessage = {
+        id: aiMsgId,
+        senderType: 'ai',
+        senderName: 'Omni AI',
+        content: '',
+        timestamp: new Date().toISOString(),
+      };
+
+      // Emit typing indicator for AI
+      setTypingUsersByRoom((prev) => {
+        const list = prev[roomId] || [];
+        return list.includes('Omni AI') ? prev : { ...prev, [roomId]: [...list, 'Omni AI'] };
+      });
+
+      (async () => {
+        let accumulatedText = '';
+        let vectorSummary: string | undefined = undefined;
+
         try {
-          // Read the latest messages from state to include the just-sent user message
           const latestRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
           const historySnapshot = latestRoom?.messages ?? targetRoom.messages;
 
-          const res = await fetch('/api/ai-intent', {
+          const res = await fetch('/api/chat/stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: trimmed, history: historySnapshot, locale: targetRoom.language || 'de' }),
+            body: JSON.stringify({ prompt: trimmed, history: historySnapshot, locale: targetRoom.language || 'de', roomId }),
           });
 
-          let replyText = targetRoom.language?.startsWith('en')
-            ? 'Hello! How can I help you today with Omni and InWebDesign.net?'
-            : 'Hallo! Wie kann ich dir heute mit Omni und InWebDesign.net weiterhelfen?';
-          let vectorSummary: string | undefined = undefined;
+          // Remove AI typing indicator as stream starts
+          setTypingUsersByRoom((prev) => {
+            const list = prev[roomId] || [];
+            return { ...prev, [roomId]: list.filter((u) => u !== 'Omni AI') };
+          });
 
-          if (res.ok) {
-            const data = await res.json();
-            const text = data.aiExplanation || data.response || data.explanation || data.reply || data.answer;
-            if (text) {
-              replyText = text.replace(/^🤖\s*Ollama\s*\([^)]*\):\s*/i, '');
-            }
-            if (data.vectorSummary) {
-              vectorSummary = data.vectorSummary;
-            }
-          }
-
-          const aiMsg: ChatMessage = {
-            id: `msg-ai-${Date.now()}`,
-            senderType: 'ai',
-            senderName: 'Omni AI',
-            content: replyText,
-            timestamp: new Date().toISOString(),
-            meta: vectorSummary ? { vectorSummary } : undefined,
-          };
-
-          withRoomUpdate(roomId, (r) => {
-            const exists = r.messages.some(
-              (m) =>
-                m.id === aiMsg.id ||
-                (m.senderType === 'ai' && m.content === aiMsg.content && Math.abs(new Date(m.timestamp).getTime() - new Date(aiMsg.timestamp).getTime()) < 3000)
-            );
-            if (exists) return r;
-            return {
+          if (res.ok && res.body) {
+            // Append initial empty message placeholder
+            withRoomUpdate(roomId, (r) => ({
               ...r,
-              lastMessageAt: aiMsg.timestamp,
-              messages: [...r.messages, aiMsg],
-            };
-          });
+              messages: [...r.messages, placeholderAiMsg],
+            }));
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  try {
+                    const parsed = JSON.parse(line.slice(6));
+                    if (parsed.chunk) {
+                      accumulatedText += parsed.chunk;
+                      withRoomUpdate(roomId, (r) => ({
+                        ...r,
+                        lastMessageAt: placeholderAiMsg.timestamp,
+                        messages: r.messages.map((m) =>
+                          m.id === aiMsgId ? { ...m, content: accumulatedText, meta: parsed.vectorSummary ? { vectorSummary: parsed.vectorSummary } : m.meta } : m
+                        ),
+                      }));
+                    }
+                    if (parsed.vectorSummary) {
+                      vectorSummary = parsed.vectorSummary;
+                    }
+                  } catch {
+                    /* ignore chunk parse error */
+                  }
+                }
+              }
+            }
+          } else {
+            accumulatedText = targetRoom.language?.startsWith('en')
+              ? 'Hello! How can I help you today with Omni and InWebDesign.net?'
+              : 'Hallo! Wie kann ich dir heute mit Omni und InWebDesign.net weiterhelfen?';
+
+            withRoomUpdate(roomId, (r) => ({
+              ...r,
+              messages: [...r.messages, { ...placeholderAiMsg, content: accumulatedText }],
+            }));
+          }
 
           if (soundEnabled) {
             playMessageChime();
           }
 
-          try {
+          if (accumulatedText) {
             await fetch('/api/chat', {
               method: 'POST',
               headers: {
@@ -711,24 +787,99 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 action: 'send_message',
                 roomId,
                 senderType: 'ai',
-                content: replyText,
+                content: accumulatedText,
               }),
             });
-          } catch (e) {
-            console.error('Failed to persist AI message:', e);
           }
         } catch (err) {
-          console.error('Error generating AI response:', err);
+          console.error('Error in streamed AI chat response:', err);
         } finally {
+          setTypingUsersByRoom((prev) => {
+            const list = prev[roomId] || [];
+            return { ...prev, [roomId]: list.filter((u) => u !== 'Omni AI') };
+          });
           setAiPendingRoomIds((prev) => {
             const next = new Set(prev);
             next.delete(roomId);
             return next;
           });
         }
-      }, 800);
+      })();
     }
   };
+
+  const sendTyping = useCallback((roomId: string, isTyping: boolean) => {
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat:typing', {
+        roomId,
+        username: currentUser?.username || 'Du',
+        isTyping,
+      });
+    }
+  }, [currentUser]);
+
+  const toggleRoomSubscription = useCallback(async (roomId: string, isSubscribed: boolean) => {
+    setRoomSubscriptions((prev) => ({ ...prev, [roomId]: isSubscribed }));
+    try {
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          ...jsonAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'toggle_subscription',
+          roomId,
+          isSubscribed,
+        }),
+      });
+    } catch (err) {
+      console.error('Failed to toggle subscription:', err);
+    }
+  }, []);
+
+  const loadMoreMessages = useCallback(async (roomId: string) => {
+    if (isLoadingMoreByRoom[roomId] || hasMoreMessagesByRoom[roomId] === false) return;
+    setIsLoadingMoreByRoom((prev) => ({ ...prev, [roomId]: true }));
+    try {
+      const targetRoom = rooms.find((r) => r.id === roomId || r.slug === roomId);
+      const currentCount = targetRoom?.messages?.length || 0;
+      const res = await fetch(
+        `/api/chat?roomId=${encodeURIComponent(roomId)}&offset=${currentCount}&pageSize=30`,
+        { headers: jsonAuthHeaders() }
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const olderMessages: any[] = data.messages || [];
+      if (olderMessages.length < 30) {
+        setHasMoreMessagesByRoom((prev) => ({ ...prev, [roomId]: false }));
+      }
+      if (olderMessages.length > 0) {
+        const parsedOlder: ChatMessage[] = olderMessages.map((m: any) => ({
+          id: m.documentId || String(m.id),
+          senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
+          senderType: m.senderType || 'user',
+          senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
+          content: m.content || '',
+          timestamp: m.createdAt || new Date().toISOString(),
+          meta: m.meta,
+        }));
+        withRoomUpdate(roomId, (r) => {
+          const existingIds = new Set(r.messages.map((m) => m.id));
+          const toAdd = parsedOlder.filter((m) => !existingIds.has(m.id));
+          return {
+            ...r,
+            messages: [...toAdd, ...r.messages],
+          };
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load older messages:', err);
+    } finally {
+      setIsLoadingMoreByRoom((prev) => ({ ...prev, [roomId]: false }));
+    }
+  }, [rooms, isLoadingMoreByRoom, hasMoreMessagesByRoom]);
 
   const updateUserPrivacySetting = async (setting: 'everyone' | 'subscribers_only' | 'nobody') => {
     setUserPrivacySetting(setting);
@@ -836,12 +987,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         showOnlineStatus,
         showReadReceipts,
         userPrivacySetting,
+        roomSubscriptions,
+        typingUsersByRoom,
+        isLoadingMoreByRoom,
+        hasMoreMessagesByRoom,
         openChat,
         closeChat,
         toggleExpand,
         setActiveRoomId,
         createRoom,
         sendMessage,
+        sendTyping,
+        toggleRoomSubscription,
+        loadMoreMessages,
         updateUserPrivacySetting,
         searchEligibleUsers,
         addParticipantToRoom,
@@ -873,12 +1031,19 @@ export function useChat() {
       showOnlineStatus: true,
       showReadReceipts: true,
       userPrivacySetting: 'everyone' as const,
+      roomSubscriptions: {},
+      typingUsersByRoom: {},
+      isLoadingMoreByRoom: {},
+      hasMoreMessagesByRoom: {},
       openChat: () => {},
       closeChat: () => {},
       toggleExpand: () => {},
       setActiveRoomId: () => {},
       createRoom: async (): Promise<{ roomId: string | null; error?: string }> => ({ roomId: null }),
       sendMessage: async () => {},
+      sendTyping: () => {},
+      toggleRoomSubscription: async () => {},
+      loadMoreMessages: async () => {},
       updateUserPrivacySetting: async () => {},
       searchEligibleUsers: async () => [],
       addParticipantToRoom: async () => {},

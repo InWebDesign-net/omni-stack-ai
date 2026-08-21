@@ -6,11 +6,13 @@ const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get('slug');
+  const page = searchParams.get('page') || '1';
+  const pageSize = searchParams.get('pageSize') || searchParams.get('limit') || '100';
 
   try {
-    let endpoint = `${STRAPI_URL}/api/comments?populate=*&sort=createdAt:asc`;
+    let endpoint = `${STRAPI_URL}/api/comments?populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
     if (slug) {
-      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&populate=*&sort=createdAt:asc`;
+      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
     }
 
     const res = await fetch(endpoint, {
@@ -20,14 +22,18 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ success: false, data: [] }, { status: res.status });
+      return NextResponse.json({ success: false, data: [], meta: { pagination: { total: 0 } } }, { status: res.status });
     }
 
     const json = await res.json();
-    return NextResponse.json({ success: true, data: json.data || [] });
+    return NextResponse.json({
+      success: true,
+      data: json.data || [],
+      meta: json.meta || { pagination: { total: (json.data || []).length, page: Number(page), pageSize: Number(pageSize) } },
+    });
   } catch (error: any) {
     console.error('Error fetching comments from Strapi:', error);
-    return NextResponse.json({ success: false, data: [] }, { status: 500 });
+    return NextResponse.json({ success: false, data: [], meta: { pagination: { total: 0 } } }, { status: 500 });
   }
 }
 

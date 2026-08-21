@@ -15,8 +15,12 @@ import { useApp } from '@/context/AppContext';
 interface NotificationContextType {
   notifications: NotificationItem[];
   unreadCount: number;
+  totalCount: number;
   loading: boolean;
+  hasMore: boolean;
+  isLoadingMore: boolean;
   refreshNotifications: () => Promise<void>;
+  loadMoreNotifications: () => Promise<void>;
   markAllAsRead: () => Promise<void>;
   markAsRead: (id: number | string) => Promise<void>;
   toggleRead: (id: number | string, isRead: boolean) => Promise<void>;
@@ -29,15 +33,45 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const { currentUser } = useApp();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   const refreshNotifications = useCallback(async () => {
     setLoading(true);
-    const data = await fetchNotificationsFromApi();
+    const data = await fetchNotificationsFromApi(1, 30);
     setNotifications(data.notifications || []);
     setUnreadCount(data.unreadCount || 0);
+    setTotalCount(data.totalCount || (data.notifications || []).length);
+    setPage(1);
+    setHasMore((data.notifications || []).length >= 30);
     setLoading(false);
   }, []);
+
+  const loadMoreNotifications = useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const data = await fetchNotificationsFromApi(nextPage, 30);
+    const incoming = data.notifications || [];
+    if (incoming.length < 30) {
+      setHasMore(false);
+    }
+    if (incoming.length > 0) {
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n.id));
+        const filtered = incoming.filter((n) => !existingIds.has(n.id));
+        return [...prev, ...filtered];
+      });
+      setPage(nextPage);
+    }
+    if (typeof data.totalCount === 'number') {
+      setTotalCount(data.totalCount);
+    }
+    setIsLoadingMore(false);
+  }, [page, hasMore, isLoadingMore]);
 
   // Re-fetch notifications whenever user logs in, logs out, or session changes
   useEffect(() => {
@@ -152,8 +186,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       value={{
         notifications,
         unreadCount,
+        totalCount,
         loading,
+        hasMore,
+        isLoadingMore,
         refreshNotifications,
+        loadMoreNotifications,
         markAllAsRead,
         markAsRead,
         toggleRead,

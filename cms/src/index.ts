@@ -266,6 +266,7 @@ export default {
         await enablePermission(authRole.id, 'api::subscription.subscription.find');
         await enablePermission(authRole.id, 'api::subscription.subscription.findOne');
         await enablePermission(authRole.id, 'api::subscription.subscription.create');
+        await enablePermission(authRole.id, 'api::subscription.subscription.update');
         await enablePermission(authRole.id, 'api::subscription.subscription.delete');
         await enablePermission(authRole.id, 'api::favorite.favorite.find');
         await enablePermission(authRole.id, 'api::favorite.favorite.findOne');

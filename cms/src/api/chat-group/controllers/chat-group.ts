@@ -203,28 +203,30 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       const existing = await strapi.documents('api::subscription.subscription').findMany({
         filters: {
           subscriber: { id: { $eq: userId } },
-          targetChatRoom: { id: { $eq: documentId } },
+          targetChatRoom: { documentId: { $eq: documentId } },
           type: { $eq: 'chat_room' },
         },
       });
 
       if (existing && existing.length > 0) {
-        if (isSubscribed === false) {
-          await strapi.documents('api::subscription.subscription').delete({
-            documentId: existing[0].documentId,
-          });
-        }
-      } else if (isSubscribed !== false) {
+        await strapi.documents('api::subscription.subscription').update({
+          documentId: existing[0].documentId,
+          data: {
+            isSubscribed: Boolean(isSubscribed),
+          } as any,
+        });
+      } else {
         await strapi.documents('api::subscription.subscription').create({
           data: {
             type: 'chat_room',
             subscriber: userId,
             targetChatRoom: documentId,
+            isSubscribed: isSubscribed !== false,
           } as any,
         });
       }
 
-      return { success: true };
+      return { success: true, isSubscribed: Boolean(isSubscribed) };
     } catch (error: any) {
       return ctx.badRequest(error.message || 'Failed to toggle subscription');
     }

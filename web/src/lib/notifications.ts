@@ -19,19 +19,20 @@ export interface NotificationItem {
 export interface NotificationsResponse {
   notifications: NotificationItem[];
   unreadCount: number;
+  totalCount?: number;
 }
 
-export async function fetchNotificationsFromApi(): Promise<NotificationsResponse> {
+export async function fetchNotificationsFromApi(page = 1, pageSize = 50): Promise<NotificationsResponse> {
   try {
-    const res = await fetch('/api/notifications', {
+    const res = await fetch(`/api/notifications?page=${page}&pageSize=${pageSize}`, {
       headers: jsonAuthHeaders(),
       cache: 'no-store',
     });
-    if (!res.ok) return { notifications: [], unreadCount: 0 };
+    if (!res.ok) return { notifications: [], unreadCount: 0, totalCount: 0 };
     return await res.json();
   } catch (error) {
     console.error('Failed to fetch notifications:', error);
-    return { notifications: [], unreadCount: 0 };
+    return { notifications: [], unreadCount: 0, totalCount: 0 };
   }
 }
 

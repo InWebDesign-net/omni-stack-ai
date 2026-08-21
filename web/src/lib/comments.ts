@@ -48,17 +48,40 @@ export function buildCommentTree(flatComments: CommentItem[]): CommentItem[] {
   return rootComments;
 }
 
+export type CommentsTreeWithMeta = CommentItem[] & {
+  comments: CommentItem[];
+  total: number;
+  hasMore: boolean;
+};
+
 export async function fetchCommentsForSlug(
   slug: string,
-  lang: 'de' | 'en' = 'de'
-): Promise<CommentItem[]> {
+  lang: 'de' | 'en' = 'de',
+  page = 1,
+  pageSize = 50
+): Promise<CommentsTreeWithMeta> {
   try {
-    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`, {
+    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&page=${page}&pageSize=${pageSize}`, {
       cache: 'no-store',
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      const empty = [] as any;
+      empty.comments = [];
+      empty.total = 0;
+      empty.hasMore = false;
+      return empty;
+    }
     const json = await res.json();
-    if (!json.success || !Array.isArray(json.data)) return [];
+    if (!json.success || !Array.isArray(json.data)) {
+      const empty = [] as any;
+      empty.comments = [];
+      empty.total = 0;
+      empty.hasMore = false;
+      return empty;
+    }
+
+    const total = json.meta?.pagination?.total ?? json.data.length;
+    const hasMore = (json.meta?.pagination?.page ?? page) * pageSize < total;
 
     const rawList: CommentItem[] = json.data.map((item: any) => {
       const parentObj = item.parent;
@@ -81,10 +104,18 @@ export async function fetchCommentsForSlug(
       };
     });
 
-    return buildCommentTree(rawList);
+    const tree = buildCommentTree(rawList) as any;
+    tree.comments = rawList;
+    tree.total = total;
+    tree.hasMore = hasMore;
+    return tree;
   } catch (error) {
     console.error('Error in fetchCommentsForSlug:', error);
-    return [];
+    const empty = [] as any;
+    empty.comments = [];
+    empty.total = 0;
+    empty.hasMore = false;
+    return empty;
   }
 }
 

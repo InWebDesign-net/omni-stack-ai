@@ -26,21 +26,24 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 export async function GET(req: NextRequest) {
   try {
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
-    const res = await fetch(`${strapiUrl}/api/notifications`, {
+    const { searchParams } = new URL(req.url);
+    const queryString = searchParams.toString();
+    const endpoint = queryString ? `${strapiUrl}/api/notifications?${queryString}` : `${strapiUrl}/api/notifications`;
+    const res = await fetch(endpoint, {
       method: 'GET',
       headers: getAuthHeaders(req),
       cache: 'no-store',
     });
 
     if (!res.ok) {
-      return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: 200 });
+      return NextResponse.json({ notifications: [], unreadCount: 0, totalCount: 0 }, { status: 200 });
     }
 
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching notifications:', error);
-    return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: 200 });
+    return NextResponse.json({ notifications: [], unreadCount: 0, totalCount: 0 }, { status: 200 });
   }
 }
 
