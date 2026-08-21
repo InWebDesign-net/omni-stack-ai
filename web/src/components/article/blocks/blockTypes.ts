@@ -120,11 +120,13 @@ export const BLOCK_TYPES: Record<BlockComponent, BlockTypeMeta> = {
   },
 };
 
-/** Types an author can insert here. Media blocks arrive with #61. */
+/** Every component the schema accepts; all of them are insertable. */
 export const INSERTABLE_TYPES: BlockComponent[] = [
   'shared.headline',
   'shared.rich-text',
   'shared.quote',
+  'shared.image',
+  'shared.video',
 ];
 
 /**

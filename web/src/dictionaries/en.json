@@ -526,7 +526,6 @@
     "quoteAuthor": "Attribution (optional)",
     "mediaCaption": "Caption (optional)",
     "mediaEmpty": "No media linked",
-    "mediaReadOnly": "Media blocks cannot be picked here yet. The existing link is preserved on save.",
     "types": {
       "headline": "Headline",
       "richText": "Text",
@@ -535,6 +534,13 @@
       "video": "Video"
     },
     "mismatch": "The language versions have different block counts ({a} vs. {b}). Until that is resolved, changes apply to {locale} only.",
-    "alignLocales": "Align structure"
+    "alignLocales": "Align structure",
+    "mediaSearchImages": "Search your images…",
+    "mediaSearchVideos": "Search your videos…",
+    "mediaLoading": "Loading…",
+    "mediaNoMatch": "Nothing found for “{query}”.",
+    "mediaNoneYet": "You have no content of this kind yet.",
+    "mediaLoadFailed": "Could not load your content.",
+    "mediaClear": "Remove link"
   }
 }

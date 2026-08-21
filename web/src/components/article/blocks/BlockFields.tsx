@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Lock } from 'lucide-react';
 import type { ArticleBlock } from './blockTypes';
 import { HEADLINE_LEVELS, DEFAULT_HEADLINE_LEVEL } from './blockTypes';
+import { MediaBlockPicker, type MediaRelation } from './MediaBlockPicker';
 
 /**
  * The field editor for one expanded block.
@@ -115,29 +115,17 @@ export function BlockFields({ block, onChange, t }: BlockFieldsProps) {
 
     case 'shared.image':
     case 'shared.video': {
-      const relation = (block.__component === 'shared.image' ? block.image : block.video) as
-        | { title?: string; slug?: string }
-        | string
-        | null;
-      const label =
-        relation && typeof relation === 'object'
-          ? relation.title || relation.slug || ''
-          : typeof relation === 'string'
-          ? relation
-          : '';
+      const kind = block.__component === 'shared.image' ? 'image' : 'video';
+      const relationField = kind === 'image' ? 'image' : 'video';
 
       return (
         <div className="space-y-2.5">
-          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-base border border-subtle text-sm">
-            <Lock className="w-3.5 h-3.5 text-faint shrink-0" />
-            <span className="text-muted truncate">
-              {label || b.mediaEmpty || 'Kein Medium verknüpft'}
-            </span>
-          </div>
-          <p className="text-[11px] text-faint leading-relaxed">
-            {b.mediaReadOnly ||
-              'Medien-Blöcke lassen sich hier noch nicht auswählen. Die vorhandene Verknüpfung bleibt beim Speichern erhalten.'}
-          </p>
+          <MediaBlockPicker
+            kind={kind}
+            value={block[relationField] as MediaRelation | string | null}
+            onChange={(relation) => onChange(relationField, relation)}
+            t={t}
+          />
           <input
             type="text"
             value={(block.caption as string) || ''}

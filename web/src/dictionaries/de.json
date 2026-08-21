@@ -526,7 +526,6 @@
     "quoteAuthor": "Urheber (optional)",
     "mediaCaption": "Bildunterschrift (optional)",
     "mediaEmpty": "Kein Medium verknüpft",
-    "mediaReadOnly": "Medien-Blöcke lassen sich hier noch nicht auswählen. Die vorhandene Verknüpfung bleibt beim Speichern erhalten.",
     "types": {
       "headline": "Überschrift",
       "richText": "Text",
@@ -535,6 +534,13 @@
       "video": "Video"
     },
     "mismatch": "Die Sprachversionen haben unterschiedlich viele Blöcke ({a} vs. {b}). Solange das so ist, wirken Änderungen nur in {locale}.",
-    "alignLocales": "Struktur angleichen"
+    "alignLocales": "Struktur angleichen",
+    "mediaSearchImages": "Eigene Bilder durchsuchen…",
+    "mediaSearchVideos": "Eigene Videos durchsuchen…",
+    "mediaLoading": "Lade…",
+    "mediaNoMatch": "Nichts gefunden für „{query}\".",
+    "mediaNoneYet": "Du hast noch keine Inhalte dieser Art.",
+    "mediaLoadFailed": "Inhalte konnten nicht geladen werden.",
+    "mediaClear": "Verknüpfung entfernen"
   }
 }

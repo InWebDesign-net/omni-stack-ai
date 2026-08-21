@@ -82,6 +82,48 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
       return NextResponse.json(data?.data || data);
     }
 
+    // The author's own items, for the media-block picker.
+    //
+    // The creator is taken from the session, never from the query: letting the
+    // client name a creator would turn this into a way to enumerate anyone's
+    // private content. Filtering by the caller's own id is also what makes the
+    // document-service middleware treat it as an owner query and return private
+    // and draft items, which are exactly the ones an author wants to place.
+    if (action === 'mine') {
+      const { user } = await getCurrentUserFromCookies();
+      if (!user?.id) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+
+      const headers = await buildHeaders(req, false);
+      if (!headers) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      headers['x-omni-user-id'] = String(user.id);
+
+      const q = (searchParams.get('q') || '').trim();
+      const pageSize = searchParams.get('pageSize') || '24';
+
+      const params = new URLSearchParams();
+      params.set('filters[creator][id][$eq]', String(user.id));
+      params.set('pagination[pageSize]', pageSize);
+      params.set('sort', 'createdAt:desc');
+      params.set('locale', searchParams.get('lang') || 'de');
+      params.set('populate[creator][fields][0]', 'id');
+      if (q) params.set('filters[title][$containsi]', q);
+
+      const res = await fetch(`${strapiBase()}/api/${plural}?${params.toString()}`, {
+        method: 'GET',
+        headers,
+        cache: 'no-store',
+      });
+      if (!res.ok) {
+        console.error(`[content-api] mine/${kind} failed: ${res.status} ${await res.text()}`);
+        return NextResponse.json({ data: [] }, { status: res.status });
+      }
+      return NextResponse.json(await res.json());
+    }
+
     if (action === 'settings') {
       const documentId = searchParams.get('documentId');
       if (!documentId) {
