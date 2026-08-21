@@ -283,7 +283,10 @@ export default function HomeClient() {
           <div
             ref={channelScrollRef}
             onScroll={updateScrollState}
-            className="flex items-stretch gap-4 overflow-x-auto pb-2 scrollbar-none scroll-smooth"
+            // pt-2 is not decoration: setting overflow-x makes overflow-y stop
+            // being visible, so the cards' hover lift was clipped at the top edge.
+            // The padding gives the transform somewhere to go.
+            className="flex items-stretch gap-4 overflow-x-auto pt-2 pb-2 scrollbar-none scroll-smooth"
           >
             {channels.map((channel: any) => {
               const isChannelOwner = Boolean(
