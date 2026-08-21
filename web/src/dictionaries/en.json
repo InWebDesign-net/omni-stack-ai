@@ -412,7 +412,11 @@
     "ambientIntensity": "Glow Intensity",
     "verticalView": "Vertical View",
     "standardView": "Standard View",
-    "off": "Off"
+    "off": "Off",
+    "back": "Back",
+    "auto": "Auto",
+    "ambientEnabled": "Enabled",
+    "ambientHint": "Only shown in the dark theme."
   },
   "userProfile": {
     "ownerBadge": "Your Profile (Owner)",

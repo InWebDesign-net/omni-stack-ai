@@ -445,3 +445,36 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .nav-item-active .nav-icon {
   filter: drop-shadow(0 0 6px rgba(128, 131, 255, 0.60));
 }
+
+/* Player settings menu: panels slide in from the side they came from,
+   the way a nested settings menu reads — forward from the right, back
+   from the left. */
+@keyframes panelInFromRight {
+  from { opacity: 0; transform: translateX(12%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes panelInFromLeft {
+  from { opacity: 0; transform: translateX(-12%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-panel-forward { animation: panelInFromRight 0.2s cubic-bezier(.22,1,.36,1) both; }
+.animate-panel-back    { animation: panelInFromLeft  0.2s cubic-bezier(.22,1,.36,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-panel-forward,
+  .animate-panel-back { animation: none; }
+}
+
+/* `animate-scaleIn` is used by seven components — menus, modals, the upload
+   manager — but was never defined anywhere, so all of them opened with no
+   entrance animation at all. Tailwind v4 ships no such utility and no
+   animation plugin is installed. */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scaleIn { animation: scaleIn 0.16s cubic-bezier(.22,1,.36,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scaleIn { animation: none; }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   Play,
   Pause,
@@ -13,7 +13,96 @@ import {
   Sparkles,
   Flame,
   Check,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
+
+type SettingsPanel = 'root' | 'quality' | 'ambient';
+
+/** A row that flips a setting in place, without leaving the panel. */
+function ToggleRow({
+  icon,
+  label,
+  checked,
+  onToggle,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+  accent: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      role="menuitemcheckbox"
+      aria-checked={checked}
+      className="flex items-center justify-between w-full px-3 py-2 rounded-xl hover:bg-surface transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+    >
+      <span className="font-semibold text-primary flex items-center gap-2">
+        {icon}
+        <span>{label}</span>
+      </span>
+      <span
+        className={`w-8 h-[18px] rounded-full transition-colors flex items-center p-0.5 shrink-0 ${
+          checked ? `${accent} justify-end` : 'bg-surface border border-subtle justify-start'
+        }`}
+      >
+        <span className="w-3.5 h-3.5 rounded-full bg-white shadow-sm block" />
+      </span>
+    </button>
+  );
+}
+
+/** A row that opens its own panel, showing the current value the way a phone
+ *  settings list does. */
+function SubmenuRow({
+  icon,
+  label,
+  value,
+  onOpen,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      role="menuitem"
+      aria-haspopup="menu"
+      className="flex items-center justify-between w-full px-3 py-2 rounded-xl hover:bg-surface transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+    >
+      <span className="font-semibold text-primary flex items-center gap-2">
+        {icon}
+        <span>{label}</span>
+      </span>
+      <span className="flex items-center gap-1 text-muted shrink-0">
+        <span className="font-mono text-[10px]">{value}</span>
+        <ChevronRight className="w-3.5 h-3.5" />
+      </span>
+    </button>
+  );
+}
+
+/** Back header of a submenu — the whole strip is the target, not just the arrow. */
+function PanelHeader({ label, onBack, backLabel }: { label: string; onBack: () => void; backLabel: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      className="flex items-center gap-1.5 w-full px-2 py-2 mb-1 border-b border-subtle text-primary hover:bg-surface rounded-t-xl transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      aria-label={backLabel}
+    >
+      <ChevronLeft className="w-4 h-4 text-muted" />
+      <span className="font-bold uppercase tracking-wider text-[10px]">{label}</span>
+    </button>
+  );
+}
 
 interface VideoControlsProps {
   isPlaying: boolean;
@@ -106,13 +195,48 @@ export function VideoControls({
     });
   };
 
-  // Keyboard accessibility for settings menu (Escape closes and returns focus)
+  /**
+   * Which panel of the settings menu is showing. The menu works like a phone
+   * settings screen: the root lists the sections, picking one slides its panel
+   * in from the right, and a back header returns.
+   */
+  const [panel, setPanel] = useState<SettingsPanel>('root');
+  const [panelDirection, setPanelDirection] = useState<'forward' | 'back'>('forward');
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelHeight, setPanelHeight] = useState<number | undefined>(undefined);
+
+  const openPanel = (next: SettingsPanel) => {
+    setPanelDirection(next === 'root' ? 'back' : 'forward');
+    setPanel(next);
+  };
+
+  // Always reopen on the root panel rather than wherever the last visit ended.
+  useEffect(() => {
+    if (!isSettingsOpen) {
+      setPanel('root');
+      setPanelDirection('forward');
+      setPanelHeight(undefined);
+    }
+  }, [isSettingsOpen]);
+
+  // The container animates between panel heights, so it needs a measured value
+  // rather than `auto`, which cannot be transitioned.
+  useLayoutEffect(() => {
+    if (!isSettingsOpen || !panelRef.current) return;
+    setPanelHeight(panelRef.current.offsetHeight);
+  }, [isSettingsOpen, panel, levels.length, ambientEnabled, isLooping, isVertical, currentLevel, ambientIntensity]);
+
+  // Keyboard accessibility for settings menu (Escape steps back, then closes)
   useEffect(() => {
     if (!isSettingsOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
+        if (panel !== 'root') {
+          openPanel('root');
+          return;
+        }
         onToggleSettings();
         gearBtnRef.current?.focus();
       }
@@ -135,7 +259,7 @@ export function VideoControls({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isSettingsOpen, onToggleSettings]);
+  }, [isSettingsOpen, onToggleSettings, panel]);
 
   return (
     <div
@@ -264,83 +388,120 @@ export function VideoControls({
               <div
                 ref={menuRef}
                 role="menu"
-                className="absolute bottom-full right-0 mb-2 bg-surface-raised border border-subtle rounded-2xl p-2 min-w-[220px] shadow-2xl z-50 flex flex-col gap-1 text-xs animate-scaleIn font-sans select-none"
+                aria-label={t?.player?.settings || 'Einstellungen'}
+                className="absolute bottom-full right-0 mb-2 bg-surface-raised border border-subtle rounded-2xl shadow-2xl z-50 text-xs animate-scaleIn font-sans select-none overflow-hidden w-[264px] transition-[height] duration-200 ease-out"
+                style={panelHeight != null ? { height: panelHeight } : undefined}
               >
-                {/* Header */}
-                <div className="text-[10px] font-bold text-muted uppercase tracking-wider px-3 py-1 border-b border-subtle">
-                  {t?.player?.settings || 'Einstellungen'}
-                </div>
+                <div ref={panelRef} className={panelDirection === 'forward' ? 'animate-panel-forward' : 'animate-panel-back'}>
+                  {panel === 'root' && (
+                    <div className="p-2 flex flex-col gap-1">
+                      <div className="text-[10px] font-bold text-muted uppercase tracking-wider px-3 py-1 border-b border-subtle">
+                        {t?.player?.settings || 'Einstellungen'}
+                      </div>
 
-                {/* Section: Loop Toggle */}
-                <button
-                  type="button"
-                  onClick={onToggleLoop}
-                  role="menuitemcheckbox"
-                  aria-checked={isLooping}
-                  className="flex items-center justify-between w-full px-3 py-2 rounded-xl hover:bg-surface transition-colors cursor-pointer text-left"
-                >
-                  <span className="font-semibold text-primary flex items-center gap-2">
-                    <RotateCcw className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>{t?.player?.loop || 'Wiederholen (Loop)'}</span>
-                  </span>
-                  <span
-                    className={`w-8 h-4.5 rounded-full transition-colors flex items-center p-0.5 ${
-                      isLooping ? 'bg-indigo-600 justify-end' : 'bg-surface border border-subtle justify-start'
-                    }`}
-                  >
-                    <span className="w-3.5 h-3.5 rounded-full bg-white shadow-sm block" />
-                  </span>
-                </button>
+                      <ToggleRow
+                        icon={<RotateCcw className="w-3.5 h-3.5 text-indigo-400" />}
+                        label={t?.player?.loop || 'Wiederholen (Loop)'}
+                        checked={isLooping}
+                        onToggle={onToggleLoop}
+                        accent="bg-indigo-600"
+                      />
 
-                {/* Section: Vertical View Toggle (if handler provided) */}
-                {onToggleVertical && (
-                  <button
-                    type="button"
-                    onClick={onToggleVertical}
-                    role="menuitemcheckbox"
-                    aria-checked={isVertical}
-                    className="flex items-center justify-between w-full px-3 py-2 rounded-xl hover:bg-surface transition-colors cursor-pointer text-left"
-                  >
-                    <span className="font-semibold text-primary flex items-center gap-2">
-                      <Flame className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{isVertical ? t?.player?.standardView || 'Standard-Ansicht' : t?.player?.verticalView || 'Vertikale Ansicht'}</span>
-                    </span>
-                    <span
-                      className={`w-8 h-4.5 rounded-full transition-colors flex items-center p-0.5 ${
-                        isVertical ? 'bg-amber-600 justify-end' : 'bg-surface border border-subtle justify-start'
-                      }`}
-                    >
-                      <span className="w-3.5 h-3.5 rounded-full bg-white shadow-sm block" />
-                    </span>
-                  </button>
-                )}
+                      {onToggleVertical && (
+                        <ToggleRow
+                          icon={<Flame className="w-3.5 h-3.5 text-amber-400" />}
+                          label={
+                            isVertical
+                              ? t?.player?.standardView || 'Standard-Ansicht'
+                              : t?.player?.verticalView || 'Vertikale Ansicht'
+                          }
+                          checked={Boolean(isVertical)}
+                          onToggle={onToggleVertical}
+                          accent="bg-amber-600"
+                        />
+                      )}
 
-                {/* Section: Ambient Mode (if handler provided) */}
-                {onToggleAmbient && (
-                  <div className="flex flex-col gap-1.5 px-3 py-2 rounded-xl hover:bg-surface transition-colors">
-                    <div
-                      role="menuitemcheckbox"
-                      aria-checked={ambientEnabled}
-                      onClick={onToggleAmbient}
-                      className="flex items-center justify-between cursor-pointer"
-                    >
-                      <span className="font-semibold text-primary flex items-center gap-2">
-                        <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-                        <span>{t?.player?.ambientMode || 'Ambient Glow'}</span>
-                      </span>
-                      <span
-                        className={`w-8 h-4.5 rounded-full transition-colors flex items-center p-0.5 ${
-                          ambientEnabled ? 'bg-teal-600 justify-end' : 'bg-surface border border-subtle justify-start'
+                      {onToggleAmbient && (
+                        <SubmenuRow
+                          icon={<Sparkles className="w-3.5 h-3.5 text-teal-400" />}
+                          label={t?.player?.ambientMode || 'Ambient Glow'}
+                          value={
+                            ambientEnabled
+                              ? `${Math.round(((ambientIntensity ?? 0.2) / 0.5) * 100)}%`
+                              : t?.player?.off || 'Aus'
+                          }
+                          onOpen={() => openPanel('ambient')}
+                        />
+                      )}
+
+                      {levels.length > 0 && (
+                        <SubmenuRow
+                          icon={<Settings className="w-3.5 h-3.5 text-indigo-400" />}
+                          label={t?.player?.quality || 'Qualität'}
+                          value={
+                            currentLevel === -1
+                              ? t?.player?.auto || 'Auto'
+                              : levels.find((l) => l.index === currentLevel)?.label || 'Auto'
+                          }
+                          onOpen={() => openPanel('quality')}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {panel === 'quality' && (
+                    <div className="p-2 flex flex-col gap-0.5">
+                      <PanelHeader label={t?.player?.quality || 'Qualität'} onBack={() => openPanel('root')} backLabel={t?.player?.back || 'Zurück'} />
+                      <button
+                        type="button"
+                        onClick={() => onQualityChange(-1)}
+                        role="menuitemradio"
+                        aria-checked={currentLevel === -1}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between cursor-pointer ${
+                          currentLevel === -1 ? 'bg-indigo-600 text-white font-bold' : 'text-muted hover:text-primary hover:bg-surface'
                         }`}
                       >
-                        <span className="w-3.5 h-3.5 rounded-full bg-white shadow-sm block" />
-                      </span>
+                        <span>{t?.player?.autoRecommended || 'Auto (Empfohlen)'}</span>
+                        {currentLevel === -1 && <Check className="w-3.5 h-3.5" />}
+                      </button>
+                      {levels.map((lvl) => (
+                        <button
+                          key={lvl.index}
+                          type="button"
+                          onClick={() => onQualityChange(lvl.index)}
+                          role="menuitemradio"
+                          aria-checked={currentLevel === lvl.index}
+                          className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between cursor-pointer ${
+                            currentLevel === lvl.index ? 'bg-indigo-600 text-white font-bold' : 'text-muted hover:text-primary hover:bg-surface'
+                          }`}
+                        >
+                          <span>{lvl.label}</span>
+                          {currentLevel === lvl.index && <Check className="w-3.5 h-3.5" />}
+                        </button>
+                      ))}
                     </div>
+                  )}
 
-                    {ambientEnabled && onAmbientIntensityChange && (
-                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-subtle/50">
-                        <span className="text-[10px] text-muted font-mono">{t?.player?.ambientIntensity || 'Stärke'}:</span>
-                        <div className="flex items-center gap-2">
+                  {panel === 'ambient' && onToggleAmbient && (
+                    <div className="p-2 flex flex-col gap-1">
+                      <PanelHeader label={t?.player?.ambientMode || 'Ambient Glow'} onBack={() => openPanel('root')} backLabel={t?.player?.back || 'Zurück'} />
+                      <ToggleRow
+                        icon={<Sparkles className="w-3.5 h-3.5 text-teal-400" />}
+                        label={t?.player?.ambientEnabled || 'Aktiviert'}
+                        checked={Boolean(ambientEnabled)}
+                        onToggle={onToggleAmbient}
+                        accent="bg-teal-600"
+                      />
+                      {ambientEnabled && onAmbientIntensityChange && (
+                        <div className="flex flex-col gap-2 px-3 py-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-muted font-mono uppercase tracking-wider">
+                              {t?.player?.ambientIntensity || 'Stärke'}
+                            </span>
+                            <span className="text-[10px] font-mono text-teal-400 font-bold">
+                              {Math.round(((ambientIntensity ?? 0.2) / 0.5) * 100)}%
+                            </span>
+                          </div>
                           <input
                             type="range"
                             min={0.05}
@@ -349,52 +510,16 @@ export function VideoControls({
                             value={ambientIntensity ?? 0.2}
                             onChange={(e) => onAmbientIntensityChange(parseFloat(e.target.value))}
                             aria-label={t?.player?.ambientIntensity || 'Leuchtstärke'}
-                            className="w-20 h-1 bg-surface-raised rounded accent-teal-400 cursor-pointer"
+                            className="w-full h-1 bg-surface rounded accent-teal-400 cursor-pointer"
                           />
-                          <span className="text-[10px] font-mono text-teal-400 font-bold w-7 text-right">
-                            {Math.round(((ambientIntensity ?? 0.2) / 0.5) * 100)}%
-                          </span>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Section: Quality / Resolution (only when levels exist) */}
-                {levels.length > 0 && (
-                  <div className="pt-2 mt-1 border-t border-subtle flex flex-col gap-0.5">
-                    <div className="text-[10px] font-bold text-muted uppercase tracking-wider px-3 py-1">
-                      {t?.player?.quality || 'Qualität'}
+                      )}
+                      <p className="px-3 pb-1 text-[10px] leading-snug text-muted">
+                        {t?.player?.ambientHint || 'Wird nur im dunklen Design angezeigt.'}
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => onQualityChange(-1)}
-                      role="menuitemradio"
-                      aria-checked={currentLevel === -1}
-                      className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between cursor-pointer ${
-                        currentLevel === -1 ? 'bg-indigo-600 text-white font-bold' : 'text-muted hover:text-primary hover:bg-surface'
-                      }`}
-                    >
-                      <span>{t?.player?.autoRecommended || 'Auto (Empfohlen)'}</span>
-                      {currentLevel === -1 && <Check className="w-3.5 h-3.5" />}
-                    </button>
-                    {levels.map((lvl) => (
-                      <button
-                        key={lvl.index}
-                        type="button"
-                        onClick={() => onQualityChange(lvl.index)}
-                        role="menuitemradio"
-                        aria-checked={currentLevel === lvl.index}
-                        className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between cursor-pointer ${
-                          currentLevel === lvl.index ? 'bg-indigo-600 text-white font-bold' : 'text-muted hover:text-primary hover:bg-surface'
-                        }`}
-                      >
-                        <span>{lvl.label}</span>
-                        {currentLevel === lvl.index && <Check className="w-3.5 h-3.5" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </div>

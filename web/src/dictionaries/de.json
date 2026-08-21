@@ -412,7 +412,11 @@
     "ambientIntensity": "Leuchtstärke",
     "verticalView": "Vertikale Ansicht",
     "standardView": "Standard-Ansicht",
-    "off": "Aus"
+    "off": "Aus",
+    "back": "Zurück",
+    "auto": "Auto",
+    "ambientEnabled": "Aktiviert",
+    "ambientHint": "Wird nur im dunklen Design angezeigt."
   },
   "userProfile": {
     "ownerBadge": "Dein Profil (Eigentümer)",

@@ -408,11 +408,18 @@ export default function CustomVideoPlayer({
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      {/* Ambient Glow layer (Dark mode only) */}
+      {/*
+        Ambient glow. Deliberately NOT on a negative z-index: `<body>` carries an
+        opaque `bg-base`, and in the root stacking context negative-z-index
+        descendants are painted before a block-level descendant's background —
+        so `-z-10` put the glow behind the page background, where it was
+        invisible. It sits at the default level instead and the video box above
+        it carries `z-10`.
+      */}
       {isDarkTheme && ambientSettings.enabled && (
         <div
           aria-hidden="true"
-          className="absolute -inset-4 sm:-inset-8 -z-10 blur-[80px] sm:blur-[120px] transition-all duration-700 pointer-events-none rounded-3xl"
+          className="absolute -inset-4 sm:-inset-8 blur-[80px] sm:blur-[120px] transition-all duration-700 pointer-events-none rounded-3xl"
           style={{
             background: isPlaying
               ? `radial-gradient(circle, ${ambientColor} 0%, ${ambientColor} 30%, transparent 70%)`
@@ -431,7 +438,7 @@ export default function CustomVideoPlayer({
         onMouseMove={handleMouseMove}
         onMouseLeave={() => isPlaying && !isSettingsOpen && setShowControls(false)}
         onContextMenu={handleContextMenu}
-        className={`relative w-full h-full group bg-black rounded-2xl overflow-hidden select-none font-sans border border-subtle ${className}`}
+        className={`relative z-10 w-full h-full group bg-black rounded-2xl overflow-hidden select-none font-sans border border-subtle ${className}`}
       >
         {/* HTML5 Video Element */}
         <video
