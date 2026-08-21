@@ -63,18 +63,32 @@ export default function ShortsFeedPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.items && data.items.length > 0) {
-            const mapped: FeedItem[] = data.items.map((v: any) => ({
+          // The list endpoint answers { data, meta }. This read `data.items`,
+          // which is always undefined — so the feed never populated at all and
+          // the page rendered an empty scroller.
+          const items: any[] = Array.isArray(data?.data) ? data.data : [];
+          if (items.length > 0) {
+            const mapped: FeedItem[] = items.map((v: any) => ({
               id: v.id || v.documentId,
               documentId: v.documentId,
               slug: v.slug,
-              title: v.title,
-              summary: v.summary,
+              title: v.title || '',
+              summary: typeof v.summary === 'string' ? v.summary : '',
+              // Required by FeedItem. Previously the mapped objects did not
+              // satisfy the type at all — `data.items` was `any`, so assigning
+              // the result to FeedItem[] was never actually checked.
+              content: '',
+              relevanceScore: 0,
               mediaType: 'short',
-              videoUrl: v.videoUrl,
+              // `videoUrl`, `hlsPlaylistUrl` and `dashManifestUrl` are not
+              // fields of api::video.video — it has `hlsUrl` and `mp4Url`. The
+              // plain <video> element here cannot play HLS outside Safari, so
+              // the MP4 rendition is the source; HLS is the fallback for the
+              // browsers that do handle it natively.
+              mediaUrl: v.mp4Url || v.hlsUrl,
+              videoUrl: v.mp4Url,
               thumbnailUrl: v.thumbnailUrl,
-              hlsPlaylistUrl: v.hlsPlaylistUrl,
-              dashManifestUrl: v.dashManifestUrl,
+              hlsPlaylistUrl: v.hlsUrl,
               duration: v.duration,
               likesCount: v.likesCount || 0,
               viewsCount: v.viewsCount || 0,
