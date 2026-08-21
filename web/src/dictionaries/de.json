@@ -219,7 +219,8 @@
     "demoPresets": "Demo Schnell-Login Presets",
     "identifier": "E-Mail oder Benutzername",
     "identifierPlaceholder": "max@example.com",
-    "loginStrapi": "Bei Strapi anmelden"
+    "loginStrapi": "Bei Strapi anmelden",
+    "demoUnavailable": "Demo-Login ist in dieser Instanz nicht konfiguriert."
   },
   "settings": {
     "title": "Einstellungen",

@@ -112,12 +112,23 @@ export default {
       const isDemoMode = process.env.DEMO_MODE !== 'false';
       if (isDemoMode) {
         console.log('🎭 Seeding Demo Admin Editors for Preview Environment...');
-        const adminEditors = [
+        // Read rather than written into the source. These are demo credentials
+        // and the README publishes them on purpose, but a boilerplate that
+        // shows a password literal in a seeding routine teaches the pattern to
+        // everyone who copies it.
+        const editorPassword = process.env.DEMO_EDITOR_PASSWORD;
+        if (!editorPassword) {
+          console.warn(
+            '⚠️  DEMO_EDITOR_PASSWORD is not set — skipping demo admin editors. ' +
+              'Set it in cms/.env to seed them, or leave DEMO_MODE=false in production.'
+          );
+        }
+        const adminEditors = editorPassword ? [
           {
             email: 'demo-editor1@inwebdesign.net',
             firstname: 'Demo',
             lastname: 'Editor 1',
-            password: 'DemoEditor2026!',
+            password: editorPassword,
             roles: [2],
             isActive: true,
           },
@@ -125,11 +136,11 @@ export default {
             email: 'demo-editor2@inwebdesign.net',
             firstname: 'Demo',
             lastname: 'Editor 2',
-            password: 'DemoEditor2026!',
+            password: editorPassword,
             roles: [2],
             isActive: true,
           },
-        ];
+        ] : [];
 
         for (const editor of adminEditors) {
           try {

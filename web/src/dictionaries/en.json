@@ -219,7 +219,8 @@
     "demoPresets": "Demo Quick-Login Presets",
     "identifier": "Email or Username",
     "identifierPlaceholder": "max@example.com",
-    "loginStrapi": "Sign in to Strapi"
+    "loginStrapi": "Sign in to Strapi",
+    "demoUnavailable": "Demo login is not configured on this instance."
   },
   "settings": {
     "title": "Settings",

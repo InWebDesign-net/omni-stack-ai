@@ -78,20 +78,34 @@ export const DEMO_CREATORS: DemoCreator[] = [
 
 export const DEFAULT_SUBSCRIBED_HANDLES = ['@demotech', '@astro'];
 
-export const DEMO_USER_PRESETS: DemoUserPreset[] = [
-  {
-    label: '👨‍💻 DemoTechUser',
-    sub: 'Tech & Science Fokus',
-    identifier: 'demotech@inwebdesign.net',
-    password: 'DemoUser2026!',
-  },
-  {
-    label: '🍳 DemoGourmetUser',
-    sub: 'Kochen & Natur Fokus',
-    identifier: 'demogourmet@inwebdesign.net',
-    password: 'DemoUser2026!',
-  },
-];
+/**
+ * Password behind the quick-login buttons.
+ *
+ * This one genuinely does reach the browser — that is what a one-click demo
+ * login is — so moving it to an environment variable buys no secrecy. What it
+ * buys is that the repository holds no credential literal at all, and that a
+ * fork pointing at its own instance configures its own value instead of
+ * inheriting ours. Empty by default: the presets then disappear rather than
+ * offering buttons that cannot work.
+ */
+const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_USER_PASSWORD || '';
+
+export const DEMO_USER_PRESETS: DemoUserPreset[] = DEMO_PASSWORD
+  ? [
+      {
+        label: '👨‍💻 DemoTechUser',
+        sub: 'Tech & Science Fokus',
+        identifier: 'demotech@inwebdesign.net',
+        password: DEMO_PASSWORD,
+      },
+      {
+        label: '🍳 DemoGourmetUser',
+        sub: 'Kochen & Natur Fokus',
+        identifier: 'demogourmet@inwebdesign.net',
+        password: DEMO_PASSWORD,
+      },
+    ]
+  : [];
 
 /** Look up a demo creator by clean handle (without @). */
 export function getDemoCreatorByHandle(handle: string): DemoCreator | undefined {

@@ -42,6 +42,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
     try {
       const [defaultDemo] = DEMO_USER_PRESETS;
+      if (!defaultDemo) {
+        // No presets without NEXT_PUBLIC_DEMO_USER_PASSWORD. Reaching this
+        // means the button rendered anyway; say so rather than dereferencing
+        // undefined.
+        setAuthError(t.auth?.demoUnavailable || 'Demo-Login ist in dieser Instanz nicht konfiguriert.');
+        setIsAuthLoading(false);
+        return;
+      }
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -323,6 +331,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
               </span>
             </div>
 
+            {DEMO_USER_PRESETS.length > 0 && (
             <div className="bg-base border border-indigo-500/20 p-4 rounded-2xl flex flex-col gap-3">
               <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-teal-400" />
@@ -345,6 +354,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
                 ))}
               </div>
             </div>
+            )}
 
             {[
               { key: 'identifier', label: 'E-Mail oder Benutzername', type: 'text', placeholder: 'max@example.com', icon: User },

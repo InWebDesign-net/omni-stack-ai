@@ -239,17 +239,24 @@ DEMO_MODE=false      # ON when unset: wipes demo content and every affinityGraph
 STRAPI_URL=http://127.0.0.1:1337
 STRAPI_API_TOKEN=<full-access token created in the Strapi admin panel>
 NEXT_PUBLIC_SOCKET_URL=http://127.0.0.1:4000
+NEXT_PUBLIC_DEMO_USER_PASSWORD=      # empty hides the demo quick-login buttons
 ```
 
 `STRAPI_API_TOKEN` stays server-side. The browser talks only to the Next.js routes under `web/src/app/api/`, which attach the token and, where ownership matters, the user id resolved from the session cookie. Nothing in the client bundle should ever hold it.
 
 ```env
 # socket/.env
+JWT_SECRET=<same value as cms/.env>
 STRAPI_URL=http://127.0.0.1:1337
-ALLOWED_ORIGINS=https://your-domain.example    # comma-separated; set this before exposing the gateway
+ALLOWED_ORIGINS=https://your-domain.example    # comma-separated
 ```
 
-Set `ALLOWED_ORIGINS` explicitly in any deployment that is reachable from outside your own machine — it is the only thing restricting which origins may open a socket connection.
+Set `ALLOWED_ORIGINS` in any deployment reachable from outside your own machine — it is the only thing restricting which origins may open a socket connection. Left unset, the gateway falls back to local development origins and says so on startup; `ALLOW_ANY_ORIGIN=true` restores the old wide-open behaviour for throwaway environments, and announces itself just as loudly.
+
+Every variable is described in `cms/.env.example`, `web/.env.example` and `socket/.env.example`.
+
+> ⚠️ **Demo credentials come from the environment, not from the code.**
+> `DEMO_USER_PASSWORD` and `DEMO_EDITOR_PASSWORD` (in `cms/.env`) seed the demo accounts, and `NEXT_PUBLIC_DEMO_USER_PASSWORD` fills the quick-login buttons. The credentials this preview uses are published above on purpose — what does not belong in a boilerplate is the *pattern* of a password literal sitting in a seeding routine. Leave them unset in a real deployment: the demo accounts are then never created, rather than created with a password anyone can read in your repository.
 
 ### 3. Build & Run with PM2
 ```bash

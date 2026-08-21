@@ -4,6 +4,17 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
 
   async seedDemoData(force = false) {
+    /**
+     * Demo account password, read from the environment rather than written
+     * here. The README publishes these credentials deliberately — the problem
+     * with a literal in the source is the pattern it teaches, not the secrecy
+     * of this particular string. Falls back to a value nobody can log in with
+     * so a missing variable cannot quietly create accounts with a known
+     * password.
+     */
+    const demoUserPassword =
+      process.env.DEMO_USER_PASSWORD || `disabled-${Math.random().toString(36).slice(2)}`;
+
     try {
       const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });
 
@@ -82,7 +93,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             created = await strapi.service('plugin::users-permissions.user').add({
               username: creator.username,
               email: creator.email,
-              password: 'DemoUser2026!',
+              password: demoUserPassword,
               confirmed: true,
               provider: 'local',
               role: roleId,

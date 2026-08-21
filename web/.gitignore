@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...but the example belongs in the repo. Without this the file is tracked
+# only because it predates the rule above, and `git add` on it does nothing.
+!.env.example
 
 # vercel
 .vercel

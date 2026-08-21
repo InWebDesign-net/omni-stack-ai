@@ -43,9 +43,44 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 const JWT_SECRET = process.env.JWT_SECRET;
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
-  .split(',')
-  .map((o) => o.trim());
+/**
+ * Which origins may open a connection to this gateway.
+ *
+ * The default used to be `'*'`, which combined with guest connections meant any
+ * page on the internet could open a socket here. That is a poor default for a
+ * boilerplate: the deployments most likely to keep it are the ones least likely
+ * to notice.
+ *
+ * Unset now means local development only. A deployment states its origins, and
+ * `'*'` is available but has to be asked for by name.
+ */
+const DEV_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+function resolveAllowedOrigins(): string[] | '*' {
+  const configured = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+  if (configured.length > 0) return configured;
+
+  if (process.env.ALLOW_ANY_ORIGIN === 'true') {
+    console.warn(
+      '⚠️  ALLOW_ANY_ORIGIN=true — accepting socket connections from any origin. ' +
+        'Set ALLOWED_ORIGINS to your own domains before exposing this gateway.'
+    );
+    return '*';
+  }
+
+  console.warn(
+    `⚠️  ALLOWED_ORIGINS is not set — falling back to local development origins ` +
+      `(${DEV_ORIGINS.join(', ')}). Set it to your own domains in any deployment ` +
+      `reachable from outside this machine.`
+  );
+  return DEV_ORIGINS;
+}
+
+const ALLOWED_ORIGINS = resolveAllowedOrigins();
 
 const app = express();
 app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
