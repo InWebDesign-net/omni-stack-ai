@@ -17,6 +17,16 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 
+/**
+ * Ambient intensity is stored as the alpha of the sampled colour. The slider
+ * shows it as a percentage of AMBIENT_MAX, so 100% on screen is whatever
+ * AMBIENT_MAX says — turning the effect down means lowering that ceiling, not
+ * rescaling anyone's stored preference.
+ */
+export const AMBIENT_MIN = 0.025;
+export const AMBIENT_MAX = 0.5;
+export const AMBIENT_DEFAULT = 0.25;
+
 type SettingsPanel = 'root' | 'quality' | 'ambient';
 
 /** A row that flips a setting in place, without leaving the panel. */
@@ -427,7 +437,7 @@ export function VideoControls({
                           label={t?.player?.ambientMode || 'Ambient Glow'}
                           value={
                             ambientEnabled
-                              ? `${Math.round((ambientIntensity ?? 0.45) * 100)}%`
+                              ? `${Math.round(((ambientIntensity ?? AMBIENT_DEFAULT) / AMBIENT_MAX) * 100)}%`
                               : t?.player?.off || 'Aus'
                           }
                           onOpen={() => openPanel('ambient')}
@@ -499,15 +509,15 @@ export function VideoControls({
                               {t?.player?.ambientIntensity || 'Stärke'}
                             </span>
                             <span className="text-[10px] font-mono text-teal-400 font-bold">
-                              {Math.round((ambientIntensity ?? 0.45) * 100)}%
+                              {Math.round(((ambientIntensity ?? AMBIENT_DEFAULT) / AMBIENT_MAX) * 100)}%
                             </span>
                           </div>
                           <input
                             type="range"
-                            min={0.1}
-                            max={1}
-                            step={0.05}
-                            value={ambientIntensity ?? 0.45}
+                            min={AMBIENT_MIN}
+                            max={AMBIENT_MAX}
+                            step={0.025}
+                            value={ambientIntensity ?? AMBIENT_DEFAULT}
                             onChange={(e) => onAmbientIntensityChange(parseFloat(e.target.value))}
                             aria-label={t?.player?.ambientIntensity || 'Leuchtstärke'}
                             className="w-full h-1 bg-surface rounded accent-teal-400 cursor-pointer"

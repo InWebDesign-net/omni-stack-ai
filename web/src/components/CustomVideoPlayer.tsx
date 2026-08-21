@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Link2, Sparkles, Shield } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { VideoControls } from './VideoControls';
+import { VideoControls, AMBIENT_MIN, AMBIENT_MAX, AMBIENT_DEFAULT } from './VideoControls';
 import { EndOverlay } from './EndOverlay';
 import { useHlsSource } from '@/lib/hooks/useHlsSource';
 
@@ -77,12 +77,18 @@ export default function CustomVideoPlayer({
           const parsed = JSON.parse(stored);
           return {
             enabled: parsed.enabled !== false,
-            intensity: typeof parsed.intensity === 'number' ? parsed.intensity : 0.45,
+            // Clamped: the ceiling came down from 1.0 to AMBIENT_MAX, and a
+            // value stored under the old scale would otherwise sit past the
+            // end of the slider — visible, but unreachable by dragging.
+            intensity:
+              typeof parsed.intensity === 'number'
+                ? Math.min(Math.max(parsed.intensity, AMBIENT_MIN), AMBIENT_MAX)
+                : AMBIENT_DEFAULT,
           };
         }
       } catch (e) {}
     }
-    return { enabled: true, intensity: 0.45 };
+    return { enabled: true, intensity: AMBIENT_DEFAULT };
   });
 
   const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
