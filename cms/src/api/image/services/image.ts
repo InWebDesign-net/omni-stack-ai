@@ -81,7 +81,12 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
     const isSpecificLookup = Boolean(
       params.slug || params.q || params.searchTerm || filters.slug
     );
-    if (!filters.visibility && !isSpecificLookup) {
+    // An explicit creator filter hands the decision to the visibility
+    // middleware, which knows the viewer: the creator sees their own private
+    // items, everyone else sees only public ones. Forcing `public` here would
+    // hide an author's own unpublished work on their own profile.
+    const scopedToCreator = Boolean(filters.creator);
+    if (!filters.visibility && !isSpecificLookup && !scopedToCreator) {
       filters.visibility = { $eq: 'public' };
     }
     if (!filters.isProcessing && params.includeProcessing !== 'true') {

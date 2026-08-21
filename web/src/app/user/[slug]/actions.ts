@@ -19,14 +19,74 @@ export interface ProfileStats {
   totalLikes: number;
 }
 
+export interface ProfileCounts {
+  videos: number;
+  images: number;
+  articles: number;
+  favorites: number;
+}
+
 export interface ProfileData {
   profile: UserProfile;
   isOwner: boolean;
-  videos: any[];
-  images: any[];
-  articles: any[];
+  /**
+   * Favourites are still loaded here: they join four content types through
+   * `/api/favorites`, which the filtered services do not cover. Paginating that
+   * tab needs its own endpoint.
+   */
   favorites: any[];
+  /** Tab badges, so a label is right before its list is fetched. */
+  counts: ProfileCounts;
   stats: ProfileStats;
+}
+
+/**
+ * Counts and aggregate stats for one content kind, without loading the list.
+ *
+ * The profile used to fetch up to 200 full documents per kind just to show a
+ * tab badge and sum two numbers. This asks for the two fields the sums need and
+ * pages through, so the totals stay correct past any single page. The lists
+ * themselves are loaded by the tab that is actually open.
+ */
+async function summariseKind(
+  strapiUrl: string,
+  headers: Record<string, string>,
+  plural: string,
+  creatorParam: string,
+  visibilityParam: string
+): Promise<{ total: number; views: number; likes: number }> {
+  const PAGE = 500;
+  const seen = new Set<string>();
+  let views = 0;
+  let likes = 0;
+  let page = 1;
+  let pageCount = 1;
+
+  try {
+    do {
+      const url =
+        `${strapiUrl}/api/${plural}?locale=*&fields[0]=viewsCount&fields[1]=likesCount` +
+        `&pagination[page]=${page}&pagination[pageSize]=${PAGE}${creatorParam}${visibilityParam}`;
+      const res = await fetch(url, { headers, cache: 'no-store' });
+      if (!res.ok) break;
+      const json = await res.json();
+      for (const row of json?.data || []) {
+        // `locale=*` returns one row per localization; the counters live on the
+        // document, so each one must only be added once.
+        const key = String(row.documentId || row.id);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        views += Number(row.viewsCount || 0);
+        likes += Number(row.likesCount || 0);
+      }
+      pageCount = Number(json?.meta?.pagination?.pageCount || 1);
+      page += 1;
+    } while (page <= pageCount);
+  } catch (e) {
+    console.error(`Error summarising ${plural} for profile:`, e);
+  }
+
+  return { total: seen.size, views, likes };
 }
 
 export async function getProfileData(slug: string): Promise<ProfileData | null> {
@@ -79,166 +139,22 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         )
     );
 
-    // 4. Fetch videos created by targetProfile (owner gets public + private, visitor gets public only)
+    // The lists themselves are loaded by whichever tab is open, through
+    // /api/content/{kind}/list — see useProfileTabList. Here we only need what
+    // the header and the tab badges show, which is counts and two sums.
     const creatorParam = targetProfile?.id
       ? `&filters[creator][id][$eq]=${targetProfile.id}`
       : (targetProfile?.documentId ? `&filters[creator][documentId][$eq]=${encodeURIComponent(targetProfile.documentId)}` : '');
     const visibilityParam = isOwner ? '' : '&filters[visibility][$eq]=public';
 
-    const videosRes = await fetch(
-      `${strapiUrl}/api/videos?populate=creator&pagination[pageSize]=200&locale=*${creatorParam}${visibilityParam}`,
-      { headers, cache: 'no-store' }
-    );
+    const [videoSummary, imageSummary, articleSummary] = await Promise.all([
+      summariseKind(strapiUrl, headers, 'videos', creatorParam, visibilityParam),
+      summariseKind(strapiUrl, headers, 'images', creatorParam, visibilityParam),
+      summariseKind(strapiUrl, headers, 'articles', creatorParam, visibilityParam),
+    ]);
 
-    if (!videosRes.ok) {
-      console.error('Failed to fetch videos for profile');
-      return null;
-    }
-
-    const videosData = await videosRes.json();
-    const allVideos = videosData?.data || [];
-
-    // 5. Filter & deduplicate videos for this profile
-    const profileVideoMap = new Map<string, any>();
-    for (const v of allVideos) {
-      const creator = v.creator || v.author;
-      const belongsToProfile = Boolean(
-        creator &&
-          targetProfile &&
-          (
-            (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
-            (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
-            (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
-            (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
-          )
-      );
-
-      if (belongsToProfile) {
-        const key = v.slug || v.documentId || v.id;
-        // If owner: see all videos (public, unlisted, private). If visitor: see only public videos.
-        const canView = isOwner || v.visibility === 'public';
-        if (canView) {
-          if (!profileVideoMap.has(key)) {
-            profileVideoMap.set(key, v);
-          } else if (!profileVideoMap.get(key).creator && v.creator) {
-            profileVideoMap.set(key, v);
-          }
-        }
-      }
-    }
-    const userVideos = Array.from(profileVideoMap.values());
-
-    // Sort videos: if owner, private/unpublished videos FIRST, followed by creation date (newest first)
-    userVideos.sort((a: any, b: any) => {
-      if (isOwner) {
-        const aPrivate = a.visibility === 'private' ? 1 : 0;
-        const bPrivate = b.visibility === 'private' ? 1 : 0;
-        if (aPrivate !== bPrivate) {
-          return bPrivate - aPrivate; // Private videos first
-        }
-      }
-      const aTime = new Date(a.createdAt || 0).getTime();
-      const bTime = new Date(b.createdAt || 0).getTime();
-      return bTime - aTime; // Newest first
-    });
-
-    // 5. Fetch images created by targetProfile
-    let userImages: any[] = [];
-    try {
-      const imagesRes = await fetch(
-        `${strapiUrl}/api/images?populate=creator&pagination[pageSize]=200&locale=*${creatorParam}${visibilityParam}`,
-        { headers, cache: 'no-store' }
-      );
-      if (imagesRes.ok) {
-        const imagesData = await imagesRes.json();
-        const allImages = imagesData?.data || [];
-        const profileImageMap = new Map<string, any>();
-        for (const img of allImages) {
-          const creator = img.creator || img.author;
-          const belongsToProfile = Boolean(
-            creator &&
-              targetProfile &&
-              (
-                (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
-                (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
-                (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
-                (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
-              )
-          );
-
-          if (belongsToProfile) {
-            const key = img.slug || img.documentId || img.id;
-            const canView = isOwner || img.visibility === 'public';
-            if (canView) {
-              if (!profileImageMap.has(key)) {
-                profileImageMap.set(key, img);
-              }
-            }
-          }
-        }
-        userImages = Array.from(profileImageMap.values());
-      }
-    } catch (e) {
-      console.error('Error fetching images for profile:', e);
-    }
-
-    // 6. Fetch articles created by targetProfile
-    let userArticles: any[] = [];
-    try {
-      const articlesRes = await fetch(
-        `${strapiUrl}/api/articles?populate=creator&pagination[pageSize]=200&locale=*${creatorParam}${visibilityParam}`,
-        { headers, cache: 'no-store' }
-      );
-      if (articlesRes.ok) {
-        const articlesData = await articlesRes.json();
-        const allArticles = articlesData?.data || [];
-        const profileArticleMap = new Map<string, any>();
-        for (const art of allArticles) {
-          const creator = art.creator || art.author;
-          const belongsToProfile =
-            Boolean(creatorParam) ||
-            Boolean(
-              creator &&
-                targetProfile &&
-                (
-                  (creator.id != null && targetProfile.id != null && String(creator.id) === String(targetProfile.id)) ||
-                  (creator.documentId && targetProfile.documentId && String(creator.documentId) === String(targetProfile.documentId)) ||
-                  (creator.handle && targetProfile.handle && String(creator.handle).replace(/^@/, '').toLowerCase() === String(targetProfile.handle).replace(/^@/, '').toLowerCase()) ||
-                  (creator.username && targetProfile.username && String(creator.username).toLowerCase() === String(targetProfile.username).toLowerCase())
-                )
-            );
-
-          if (belongsToProfile) {
-            const key = art.slug || art.documentId || art.id;
-            const canView = isOwner || art.visibility === 'public';
-            if (canView) {
-              if (!profileArticleMap.has(key)) {
-                profileArticleMap.set(key, art);
-              }
-            }
-          }
-        }
-        userArticles = Array.from(profileArticleMap.values());
-      }
-    } catch (e) {
-      console.error('Error fetching articles for profile:', e);
-    }
-
-    // 7. Calculate Stats
-    let totalViews = 0;
-    let totalLikes = 0;
-    for (const v of userVideos) {
-      totalViews += Number(v.viewsCount || 0);
-      totalLikes += Number(v.likesCount || 0);
-    }
-    for (const img of userImages) {
-      totalViews += Number(img.viewsCount || 0);
-      totalLikes += Number(img.likesCount || 0);
-    }
-    for (const art of userArticles) {
-      totalViews += Number(art.viewsCount || 0);
-      totalLikes += Number(art.likesCount || 0);
-    }
+    const totalViews = videoSummary.views + imageSummary.views + articleSummary.views;
+    const totalLikes = videoSummary.likes + imageSummary.likes + articleSummary.likes;
 
     // 8. Fetch Favorites for this profile
     let favorites: any[] = [];
@@ -305,12 +221,15 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         createdAt: targetProfile.createdAt,
       },
       isOwner,
-      videos: userVideos,
-      images: userImages,
-      articles: userArticles,
       favorites,
+      counts: {
+        videos: videoSummary.total,
+        images: imageSummary.total,
+        articles: articleSummary.total,
+        favorites: favorites.length,
+      },
       stats: {
-        totalVideos: userVideos.length,
+        totalVideos: videoSummary.total,
         totalViews,
         totalLikes,
       },

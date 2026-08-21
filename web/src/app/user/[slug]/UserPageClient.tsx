@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
+import { ProfileTabToolbar, ProfileTabLoadMore } from '@/components/profile/ProfileTabControls';
+import { useProfileTabList } from '@/lib/hooks/useProfileTabList';
 import { useChat } from '@/context/ChatContext';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
@@ -46,11 +48,22 @@ interface UserPageClientProps {
 
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const router = useRouter();
-    const { profile, isOwner, videos, images, articles, favorites, stats } = profileDataInit;
+    const { profile, isOwner, favorites, counts, stats } = profileDataInit;
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal, openSettingsModal } = useApp();
     const { createRoom, openChat } = useChat();
 
     const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'favorites' | 'about'>('articles');
+
+    // One list per tab, fetched only while that tab is open. Each keeps its own
+    // sort and search: someone who sorted images by title does not expect their
+    // videos to change order too.
+    const articleList = useProfileTabList({ kind: 'article', creatorId: profile.id, active: activeTab === 'articles', lang, initialTotal: counts.articles });
+    const videoList = useProfileTabList({ kind: 'video', creatorId: profile.id, active: activeTab === 'videos', lang, initialTotal: counts.videos });
+    const imageList = useProfileTabList({ kind: 'image', creatorId: profile.id, active: activeTab === 'images', lang, initialTotal: counts.images });
+
+    const articles = articleList.items;
+    const videos = videoList.items;
+    const images = imageList.items;
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscriberCount, setSubscriberCount] = useState(profile.subscribersCount || 0);
     const [editingVideo, setEditingVideo] = useState<any | null>(null);
@@ -242,7 +255,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <FileText className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.articles || 'Articles'} ({articles.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.articles || 'Articles'} ({articleList.total})</span>
                     </button>
 
                     {/* TAB 2: Videos */}
@@ -254,7 +267,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <Video className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.videos || 'Videos'} ({videos.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.videos || 'Videos'} ({videoList.total})</span>
                     </button>
 
                     {/* TAB 3: Images */}
@@ -266,7 +279,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <ImageIcon className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.images || 'Images'} ({images.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.images || 'Images'} ({imageList.total})</span>
                     </button>
 
                     {/* TAB 4: Favorites */}
@@ -278,7 +291,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <Heart className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.favorites || 'Favorites'} ({favorites.length})</span>
+                        <span>{(t as any).userProfile?.tabs?.favorites || 'Favorites'} ({counts.favorites})</span>
                     </button>
 
                     {/* TAB 5: About Channel */}
@@ -296,6 +309,16 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* TAB 1: Articles Grid */}
                 {activeTab === 'articles' && (
+                  <>
+                    <ProfileTabToolbar
+                        sort={articleList.sort}
+                        onSortChange={articleList.setSort}
+                        searchInput={articleList.searchInput}
+                        onSearchInput={articleList.setSearchInput}
+                        onClearSearch={articleList.clearSearch}
+                        total={articleList.total}
+                        lang={lang}
+                    />
                     <UserArticlesTab
                         articles={articles}
                         slug={profile.handle || profile.username}
@@ -303,11 +326,27 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         isOwner={isOwner}
                         onEditArticle={(art) => setEditingArticle(art)}
                     />
+                    <ProfileTabLoadMore
+                        hasMore={articleList.hasMore}
+                        isLoadingMore={articleList.isLoadingMore}
+                        onLoadMore={articleList.loadMore}
+                        lang={lang}
+                    />
+                  </>
                 )}
 
                 {/* TAB 2: Videos Grid */}
                 {activeTab === 'videos' && (
                     <div>
+                        <ProfileTabToolbar
+                            sort={videoList.sort}
+                            onSortChange={videoList.setSort}
+                            searchInput={videoList.searchInput}
+                            onSearchInput={videoList.setSearchInput}
+                            onClearSearch={videoList.clearSearch}
+                            total={videoList.total}
+                            lang={lang}
+                        />
                         {videos.length === 0 ? (
                             <div className="text-center py-16 bg-surface/40 rounded-3xl border border-subtle p-8 space-y-4">
                                 <Film className="w-12 h-12 text-muted mx-auto" />
@@ -414,11 +453,27 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                 })}
                             </div>
                         )}
+                        <ProfileTabLoadMore
+                            hasMore={videoList.hasMore}
+                            isLoadingMore={videoList.isLoadingMore}
+                            onLoadMore={videoList.loadMore}
+                            lang={lang}
+                        />
                     </div>
                 )}
 
                 {/* TAB 3: Images Grid */}
                 {activeTab === 'images' && (
+                  <>
+                    <ProfileTabToolbar
+                        sort={imageList.sort}
+                        onSortChange={imageList.setSort}
+                        searchInput={imageList.searchInput}
+                        onSearchInput={imageList.setSearchInput}
+                        onClearSearch={imageList.clearSearch}
+                        total={imageList.total}
+                        lang={lang}
+                    />
                     <UserImagesTab
                         images={images}
                         slug={profile.handle || profile.username}
@@ -426,6 +481,13 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         isOwner={isOwner}
                         onEditImage={(img) => setEditingImage(img)}
                     />
+                    <ProfileTabLoadMore
+                        hasMore={imageList.hasMore}
+                        isLoadingMore={imageList.isLoadingMore}
+                        onLoadMore={imageList.loadMore}
+                        lang={lang}
+                    />
+                  </>
                 )}
 
                 {/* TAB 4: Favorites Grid */}

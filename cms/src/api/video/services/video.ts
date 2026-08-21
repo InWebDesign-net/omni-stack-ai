@@ -71,7 +71,12 @@ export default factories.createCoreService('api::video.video', ({ strapi }) => (
 
     const allowPrivate = params.allowPrivate === 'true' || params.includePrivate === 'true' || params.allowPrivate === true;
 
-    if (!filters.visibility && !allowPrivate) {
+    // An explicit creator filter hands the decision to the visibility
+    // middleware, which knows the viewer: the creator sees their own private
+    // items, everyone else sees only public ones. Forcing `public` here would
+    // hide an author's own unpublished work on their own profile.
+    const scopedToCreator = Boolean(filters.creator);
+    if (!filters.visibility && !allowPrivate && !scopedToCreator) {
       filters.visibility = { $eq: 'public' };
     }
     if (!filters.isProcessing) {

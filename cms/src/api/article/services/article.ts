@@ -38,7 +38,12 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
       Object.assign(filters, params.filters);
     }
 
-    if (!filters.visibility && params.includeProcessing !== 'true' && !params.q && !params.slug) {
+    // An explicit creator filter hands the decision to the visibility
+    // middleware, which knows the viewer: the creator sees their own private
+    // items, everyone else sees only public ones. Forcing `public` here would
+    // hide an author's own unpublished work on their own profile.
+    const scopedToCreator = Boolean(filters.creator);
+    if (!filters.visibility && params.includeProcessing !== 'true' && !params.q && !params.slug && !scopedToCreator) {
       filters.visibility = { $eq: 'public' };
     }
 
