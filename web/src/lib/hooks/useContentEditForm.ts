@@ -53,6 +53,16 @@ export interface UseContentEditFormOptions {
   onLoaded?: (loaded: { form: { de: LocaleData; en: LocaleData }; visibility: string }) => void;
 }
 
+/** Anything the author may have typed or placed, not just the title. */
+function localeHasContent(data: LocaleData): boolean {
+  return (
+    data.title.trim() !== '' ||
+    data.summary.trim() !== '' ||
+    data.tags.length > 0 ||
+    (Array.isArray(data.blocks) && data.blocks.length > 0)
+  );
+}
+
 export function useContentEditForm(kind: ContentKind, options: UseContentEditFormOptions) {
   const { isOpen, documentId, fallback, serializeLocale, onLoaded } = options;
 
@@ -67,6 +77,15 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
   const [deleting, setDeleting] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [error, setError] = useState<string | null>(null);
+  /**
+   * Which locales the document actually has.
+   *
+   * Sending an update for a locale that does not exist makes Strapi answer
+   * "locale not found", which — since failures became visible — turns the whole
+   * save into an error even though the other locale was written. Articles
+   * created before the second locale was fixed have exactly one.
+   */
+  const [existingLocales, setExistingLocales] = useState<Locale[]>(['de', 'en']);
 
   const endpoint = `/api/content/${kind}/settings`;
 
@@ -104,6 +123,9 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
             blocks: Array.isArray(en?.blocks) ? en.blocks : [],
           },
         };
+        setExistingLocales(
+          (['de', 'en'] as Locale[]).filter((l) => items.some((i) => i.locale === l))
+        );
         const loadedVisibility = de?.visibility || en?.visibility || fallback?.visibility || 'public';
         setForm(loaded);
         setVisibility(loadedVisibility);
@@ -160,11 +182,18 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
 
   const buildLocaleUpdates = useCallback(
     () =>
-      (['de', 'en'] as Locale[]).map((locale) => ({
-        locale,
-        data: serializeLocale ? serializeLocale(locale, form[locale]) : { ...form[locale] },
-      })),
-    [form, serializeLocale]
+      (['de', 'en'] as Locale[])
+        // A locale the document does not have is only sent when the author put
+        // something into it — then creating it is the intent. Sending it blindly
+        // fails the save for a language nobody touched; skipping it when it does
+        // hold content would drop that content silently, so "content" means any
+        // of the fields, not just the title.
+        .filter((locale) => existingLocales.includes(locale) || localeHasContent(form[locale]))
+        .map((locale) => ({
+          locale,
+          data: serializeLocale ? serializeLocale(locale, form[locale]) : { ...form[locale] },
+        })),
+    [form, serializeLocale, existingLocales]
   );
 
   const save = useCallback(async (): Promise<boolean> => {
@@ -191,6 +220,9 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
                 .join(' · ')
             : body?.error;
           if (detail) message = detail;
+          if (Array.isArray(body?.savedLocales) && body.savedLocales.length > 0) {
+            message += ` (gespeichert: ${body.savedLocales.map((l: string) => l.toUpperCase()).join(', ')})`;
+          }
         } catch {
           // Non-JSON error body — the status message stays.
         }

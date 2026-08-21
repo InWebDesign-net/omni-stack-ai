@@ -342,11 +342,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
     }
 
     if (failedLocales.length > 0) {
+      const attempted = Array.isArray(localeUpdates) ? localeUpdates.map((u: any) => u.locale) : [];
+      const savedLocales = attempted.filter(
+        (l: string) => !failedLocales.some((f) => f.locale === l)
+      );
       return NextResponse.json(
         {
           success: false,
           error: `Update failed for: ${failedLocales.map((f) => f.locale).join(', ')}`,
           failedLocales,
+          // Which languages *did* get written. A partial save reported as a flat
+          // failure makes an author assume nothing was stored and redo work that
+          // is already saved.
+          savedLocales,
         },
         { status: 422 }
       );
@@ -381,7 +389,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ kind:
     }
 
     if (hardDelete) {
-      const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}`, {
+      // `locale=*` is required. Without it Strapi deletes only the default
+      // locale — which here is `en` — and answers 204, so the German version
+      // survived every "permanent" delete while the caller was told it worked.
+      const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=*`, {
         method: 'DELETE',
         headers,
       });
@@ -395,14 +406,32 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ kind:
         );
       }
     } else {
+      // Soft delete: hide every locale the document actually has. A locale it
+      // does not have answers "not found", which used to be swallowed here.
+      const failed: string[] = [];
       for (const locale of ['de', 'en']) {
-        await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify({
-            data: { visibility: 'private' },
-          }),
-        });
+        const res = await fetch(
+          `${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`,
+          {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ data: { visibility: 'private' } }),
+          }
+        );
+        if (!res.ok) {
+          const text = await res.text();
+          // A missing locale is expected and not an error; anything else is.
+          if (!text.includes('not found')) {
+            console.error(`[content-api] soft delete ${kind}/${locale} failed:`, text);
+            failed.push(locale);
+          }
+        }
+      }
+      if (failed.length > 0) {
+        return NextResponse.json(
+          { error: `Could not hide: ${failed.join(', ')}` },
+          { status: 422 }
+        );
       }
     }
 
