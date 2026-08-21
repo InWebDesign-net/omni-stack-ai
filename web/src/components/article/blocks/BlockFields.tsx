@@ -3,6 +3,7 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
 import type { ArticleBlock } from './blockTypes';
+import { HEADLINE_LEVELS, DEFAULT_HEADLINE_LEVEL } from './blockTypes';
 
 /**
  * The field editor for one expanded block.
@@ -51,12 +52,18 @@ export function BlockFields({ block, onChange, t }: BlockFieldsProps) {
               className={`${fieldBase} flex-1 min-w-0`}
             />
             <select
-              value={(block.level as string) || 'h2'}
+              // A value outside the schema enum falls back to the default rather
+              // than rendering a blank select the author cannot interpret.
+              value={
+                HEADLINE_LEVELS.includes(block.level as never)
+                  ? (block.level as string)
+                  : DEFAULT_HEADLINE_LEVEL
+              }
               onChange={(e) => onChange('level', e.target.value)}
               aria-label={b.headlineLevel || 'Ebene'}
               className={`${fieldBase} w-24 shrink-0 cursor-pointer`}
             >
-              {['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((lvl) => (
+              {HEADLINE_LEVELS.map((lvl) => (
                 <option key={lvl} value={lvl}>{lvl.toUpperCase()}</option>
               ))}
             </select>

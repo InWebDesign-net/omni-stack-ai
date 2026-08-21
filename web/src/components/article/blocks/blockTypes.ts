@@ -49,6 +49,20 @@ export interface BlockTypeMeta {
 
 const text = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
 
+/**
+ * Allowed values for `shared.headline.level`.
+ *
+ * Mirrors the enum in `cms/src/components/shared/headline.json`. It is *not*
+ * h1-h6: the schema deliberately excludes h1, since an article already has one
+ * as its title, and h5/h6 were never defined. Offering the full range meant
+ * Strapi rejected the whole locale on save with a validation error.
+ *
+ * If the schema enum changes, change it here too — there is no runtime link.
+ */
+export const HEADLINE_LEVELS = ['h2', 'h3', 'h4'] as const;
+export type HeadlineLevel = (typeof HEADLINE_LEVELS)[number];
+export const DEFAULT_HEADLINE_LEVEL: HeadlineLevel = 'h2';
+
 export const BLOCK_TYPES: Record<BlockComponent, BlockTypeMeta> = {
   'shared.headline': {
     component: 'shared.headline',

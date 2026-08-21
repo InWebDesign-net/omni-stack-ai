@@ -177,7 +177,25 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
         headers: jsonAuthHeaders(),
         body: JSON.stringify({ documentId, localeUpdates: buildLocaleUpdates(), visibility }),
       });
-      if (!res.ok) throw new Error(`Speichern fehlgeschlagen (${res.status})`);
+      if (!res.ok) {
+        // The route reports per-locale validation failures in `failedLocales`.
+        // Surfacing only the status turned a precise message like "level must be
+        // one of h2, h3, h4" into "failed (422)", which sends the author to the
+        // browser console to find out what to change.
+        let message = `Speichern fehlgeschlagen (${res.status})`;
+        try {
+          const body = await res.json();
+          const detail = Array.isArray(body?.failedLocales)
+            ? body.failedLocales
+                .map((f: { locale: string; error: string }) => `${f.locale.toUpperCase()}: ${f.error}`)
+                .join(' · ')
+            : body?.error;
+          if (detail) message = detail;
+        } catch {
+          // Non-JSON error body — the status message stays.
+        }
+        throw new Error(message);
+      }
       return true;
     } catch (err: any) {
       setError(err?.message || 'Fehler beim Speichern');
