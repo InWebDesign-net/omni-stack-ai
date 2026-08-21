@@ -23,20 +23,28 @@ async function buildHeaders(req: Request, requireUserAuth = false): Promise<Reco
   };
   const authHeader = req.headers.get('authorization');
   if (authHeader && authHeader !== 'Bearer null' && authHeader !== 'Bearer undefined') {
+    // Strapi resolves the user from the JWT itself, so the visibility
+    // middleware already knows who is asking.
     headers['Authorization'] = authHeader;
     return headers;
   }
 
-  if (requireUserAuth) {
-    const { user } = await getCurrentUserFromCookies();
-    if (!user) {
-      return null;
-    }
+  const { user } = await getCurrentUserFromCookies();
+  if (requireUserAuth && !user) {
+    return null;
   }
 
   const token = process.env.STRAPI_API_TOKEN || process.env.STRAPI_TOKEN;
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    // The API token carries no identity of its own, so the viewer has to be
+    // stated separately. Without this the default-deny visibility middleware
+    // treats every request as anonymous and hides the caller's own private
+    // items from them — the edit modal then loads an empty form and the save
+    // fails on `title`, which is required.
+    if (user?.id) {
+      headers['x-omni-user-id'] = String(user.id);
+    }
     return headers;
   }
 

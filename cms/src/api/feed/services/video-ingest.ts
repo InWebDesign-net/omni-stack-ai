@@ -104,7 +104,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       const videoMatches = await strapi.documents('api::video.video').findMany({
         filters: { slug: { $eq: base } },
         locale: '*',
-      });
+        // Finalising an upload is not a viewer request: uploads start private,
+        // and the visibility middleware would otherwise hide this document from
+        // the routine that has to clear its `isProcessing` flag.
+        omniInternal: true,
+      } as any);
       if (videoMatches && videoMatches.length > 0) {
         const docId = videoMatches[0].documentId;
         const updateData = {
@@ -160,7 +164,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       const imageMatches = await strapi.documents('api::image.image').findMany({
         filters: { slug: { $eq: base } },
         locale: '*',
-      });
+        omniInternal: true,
+      } as any);
       if (imageMatches && imageMatches.length > 0) {
         const docId = imageMatches[0].documentId;
         const imgUpdateData = {
@@ -212,7 +217,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         const matches = await strapi.documents('api::feed-item.feed-item').findMany({
           filters: { slug: { $eq: base } },
           locale: '*',
-        });
+          omniInternal: true,
+        } as any);
 
         for (const doc of matches) {
           await strapi.documents('api::feed-item.feed-item').update({

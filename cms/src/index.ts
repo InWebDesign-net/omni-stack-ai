@@ -38,6 +38,15 @@ export default {
           return next();
         }
 
+        // Trusted server-side work — the ingest finalising an upload, a cron
+        // job — has no viewer and must not be filtered like one. Without this
+        // escape a private upload is invisible to the very routine that has to
+        // clear its `isProcessing` flag, so it stays "processing" forever.
+        if (context.params?.omniInternal === true) {
+          delete context.params.omniInternal;
+          return next();
+        }
+
         const omniViewer = context.params?.omniViewer;
         if (!context.params) context.params = {};
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 import ImagePageClient from './ImagePageClient';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +8,20 @@ export const dynamic = 'force-dynamic';
 async function fetchImageBySlug(slug: string) {
   const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
   try {
-    const res = await fetch(`${strapiUrl}/api/images/filtered?q=${slug}&pageSize=1&includeProcessing=true&locale=*`, {
+    // Without the viewer, the default-deny visibility middleware hides every
+    // private image — including from the person who owns it, who then gets a
+    // 404 on their own upload. The video and article pages already do this.
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (process.env.STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+    }
+    const { user } = await getCurrentUserFromCookies();
+    if (user?.id) {
+      headers['x-omni-user-id'] = String(user.id);
+    }
+
+    const res = await fetch(`${strapiUrl}/api/images/filtered?filters[slug][$eq]=${encodeURIComponent(slug)}&pageSize=1&includeProcessing=true&locale=*`, {
+      headers,
       cache: 'no-store',
     });
     if (!res.ok) return null;

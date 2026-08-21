@@ -65,7 +65,23 @@ export default factories.createCoreService('api::image.image', ({ strapi }) => (
       }
     }
 
-    if (!filters.visibility) {
+    // A specific lookup — by slug or by search term, which is how the detail
+    // page loads a single image — leaves the decision to the default-deny
+    // visibility middleware, which is the one place that knows who is asking.
+    // Forcing `public` here hid an owner's own private image from them and
+    // answered their upload with a 404. Listings keep the narrow default.
+    // (`api::article` already works this way; `api::video` uses an
+    // `allowPrivate` opt-in. Three services, three answers — worth
+    // consolidating, but not in a bugfix.)
+    // `filters.slug` counts too, and it is the form that matters: a search
+    // term becomes an `$or` over title and slug, which the visibility
+    // middleware cannot recognise as a single-item lookup, so it falls back to
+    // its listing rule and hides private items again. An exact slug filter
+    // reaches the middleware intact and gets the owner allowance.
+    const isSpecificLookup = Boolean(
+      params.slug || params.q || params.searchTerm || filters.slug
+    );
+    if (!filters.visibility && !isSpecificLookup) {
       filters.visibility = { $eq: 'public' };
     }
     if (!filters.isProcessing && params.includeProcessing !== 'true') {
