@@ -315,14 +315,6 @@ export default function ImagePageClient({
                   </h1>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    {isOwner && (
-                      <button
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-surface-raised border border-subtle text-muted hover:text-primary hover:border-teal-500/50 transition-all"
-                      >
-                        {t?.images?.editImage || 'Bild bearbeiten'}
-                      </button>
-                    )}
                     <button
                       onClick={handleLike}
                       className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-md ${
@@ -368,7 +360,7 @@ export default function ImagePageClient({
                       className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-surface-raised border border-subtle text-muted hover:text-primary hover:border-teal-500/50 transition-all cursor-pointer"
                     >
                       <Settings className="w-4 h-4 text-teal-400" />
-                      <span>{lang === 'de' ? 'Bild bearbeiten' : 'Edit image'}</span>
+                      <span>{t?.images?.editImage || 'Bild bearbeiten'}</span>
                     </button>
                   ) : (
                     <SubscribeButton targetId={creatorObj.handle || creatorObj.documentId || String(creatorObj.id || '1')} />

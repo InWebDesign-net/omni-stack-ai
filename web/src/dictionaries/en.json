@@ -83,7 +83,7 @@
     "shortLinkCopied": "Short link copied!"
   },
   "images": {
-    "editImage": "Edit Image",
+    "editImage": "Edit image",
     "deleteImage": "Delete Image",
     "deleteConfirm": "Really delete?",
     "deleteWarning": "This action cannot be undone.",
@@ -117,7 +117,8 @@
     "noVideosSub": "No video entries found for your current search and filter criteria.",
     "searchTagsPlaceholder": "Search tags...",
     "noTagsFound": "No tags found for \"{query}\"",
-    "searchPlaceholder": "Search videos..."
+    "searchPlaceholder": "Search videos...",
+    "editVideo": "Edit video"
   },
   "articles": {
     "title": "Articles & Magazine",
@@ -138,7 +139,8 @@
     "excludeLabel": "Excluded Tags",
     "matchAny": "Any Tag",
     "matchAll": "All Tags",
-    "activeTags": "Active Tag Filters"
+    "activeTags": "Active Tag Filters",
+    "editArticle": "Edit article"
   },
   "article": {
     "notFound": "Article not found",

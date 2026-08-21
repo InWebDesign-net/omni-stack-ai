@@ -373,7 +373,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
                       className="px-4 py-2 rounded-xl bg-surface-raised border border-subtle text-muted hover:text-primary text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
                     >
                       <Settings className="w-4 h-4 text-purple-400" />
-                      <span>{effectiveLang === 'de' ? 'Artikel bearbeiten' : 'Edit article'}</span>
+                      <span>{t?.articles?.editArticle || 'Artikel bearbeiten'}</span>
                     </button>
                   ) : (
                     <SubscribeButton targetId={creatorHandle} size="md" />

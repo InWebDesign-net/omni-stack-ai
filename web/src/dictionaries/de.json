@@ -117,7 +117,8 @@
     "noVideosSub": "Für deine aktuellen Such- und Filterkriterien wurden leider keine Video-Einträge gefunden.",
     "searchTagsPlaceholder": "Tags durchsuchen...",
     "noTagsFound": "Keine Tags für \"{query}\" gefunden.",
-    "searchPlaceholder": "Videos durchsuchen..."
+    "searchPlaceholder": "Videos durchsuchen...",
+    "editVideo": "Video bearbeiten"
   },
   "articles": {
     "title": "Artikel & Magazin",
@@ -138,7 +139,8 @@
     "excludeLabel": "Ausgeschlossene Tags",
     "matchAny": "Irgendein Tag",
     "matchAll": "Alle Tags",
-    "activeTags": "Aktive Tag-Filter"
+    "activeTags": "Aktive Tag-Filter",
+    "editArticle": "Artikel bearbeiten"
   },
   "article": {
     "notFound": "Artikel nicht gefunden",
