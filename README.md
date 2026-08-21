@@ -45,10 +45,12 @@ You can log in directly via the Quick-Login presets in the login modal or use th
 
 ## 📄 License & Premium AI Features
 
-The core boilerplate, standard feed assembly, video library catalog, batch tracking, content detail views, shorts feed, real-time messaging, subscriptions, and authentication code in this repository are open-source and released under the **[MIT License](LICENSE)**. You are free to use, modify, and distribute this foundation for your own projects.
+The core boilerplate is open-source under the **[MIT License](LICENSE)**: feed assembly, the video library catalog, batch tracking, content detail views, the shorts feed, real-time messaging and notifications, subscriptions, favorites, authentication, the content-kind registry, the block editor, the upload pipeline and the encrypted HLS delivery path. You are free to use, modify, and distribute this foundation for your own projects.
 
 ### 🌟 Unlock the Premium AI Engine & Managed Hosting
 The advanced local LLM orchestration (Ollama Llama 3.1 & Moondream Vision AI), real-time intent classification, conversational memory, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
+
+The assistant streams: Ollama is called with `stream: true`, Strapi forwards the deltas as Server-Sent Events and the Next.js route pipes them straight through, so text appears as the model produces it rather than after it has finished. Because the algorithm-adjustment payload is structured JSON — and half-finished JSON cannot be shown to a reader — the vector update is a second, non-streamed call issued only when a message plausibly expresses a preference.
 
 If you want to integrate the complete AI orchestration into your project without building it from scratch, we offer fully managed hosting, Proxmox LXC cluster deployments, and custom AI consulting.
 
@@ -83,6 +85,9 @@ Omni features a dedicated, low-latency WebSocket microservice (`socket/`) runnin
 * 💬 **Dual-View Chat System:** Full-screen 2-column view and compact floating support widget. Supports 1:1 direct user DMs, global community channels, and group chat rooms.
 * 🤖 **Dynamic AI Assistant Invitation (`[+ Invite AI]` / `[x Remove AI]`):** Users can dynamically invite the Omni AI Assistant into any chat room. When invited, the bot responds contextually; when removed, it leaves the room cleanly via real-time WebSocket signals.
 * 🔒 **Granular Privacy & Subscriber-Only DMs:** Users can set direct message permissions (*Everyone*, *Subscribers Only*, *Nobody*). When set to *Subscribers Only*, the system verifies active channel subscriptions before allowing DMs.
+* ✍️ **Typing Indicators:** Relayed over `chat:typing` and keyed by user id, with entries expiring locally after five seconds. A client that crashes or loses its connection never sends the closing event, so without an expiry the indicator would stay up forever.
+* 🔕 **Per-Room Notification Rules:** Direct and global rooms notify by default and can be switched off; group rooms stay quiet until a participant subscribes; the AI room never notifies, because the assistant answers while you are looking at it. The fan-out decides by room type rather than by the presence of a subscription record — a missing record can then only cause one notification too many, never a message that is silently never announced.
+* 📜 **Incremental History:** Rooms load the newest page first and fetch older messages as the reader scrolls up, correcting scroll position on prepend so the view does not jump. The room list reads a denormalised preview off each room instead of populating every message ever written to render one line each.
 
 ### 3. 🔔 In-App Notifications & Real-Time Drawer
 Omni features a centralized notification engine (`api::notification.notification`):
@@ -90,9 +95,10 @@ Omni features a centralized notification engine (`api::notification.notification
 * 📬 **Header Notification Drawer:** Real-time unread badges (`NotificationsBadge`) in the top navigation bar with quick mark-as-read and mark-all-read controls.
 * 🚀 **Automated Notification Triggers:** Fires automated notifications for `new_subscriber`, `chat_invite`, and comment replies.
 * 🔗 **Smart Deep-Linking:** Clicking a notification automatically opens the target chat room (`openChat(roomId)`), video player, or user profile without page reloads.
+* 📄 **Paginated, Not Truncated:** the drawer requests an explicit page size and reports the total. Strapi's `defaultLimit` is 25, so a route that omits pagination silently returns the first 25 rows and presents them as the whole set — worth checking in any new list endpoint.
 
 ### 4. 🔔 Subscriptions & Standardized Favorites System
-* 🔔 **Subscriptions Engine (`api::subscription.subscription`):** Supports channel subscriptions (Creators) and chat room subscriptions with live subscriber counting.
+* 🔔 **Subscriptions Engine (`api::subscription.subscription`):** One model covers both channel subscriptions (creators, with live subscriber counting) and chat-room subscriptions. Each record carries an explicit `isSubscribed` flag rather than encoding the answer in whether a row exists, so "subscribed", "explicitly muted" and "never decided" stay distinguishable.
 * ⚡ **Interactive `<SubscribeButton>` Component:** Features optimistic UI updates, state synchronization, and floating Toast notifications (*"Channel subscribed successfully! 🎉"*).
 * ❤️ **Standardized Favorites (`api::favorite.favorite`):** Unified REST API (`/api/favorites`) allowing users to favorite and bookmark videos, articles, and feed items across the platform.
 
@@ -107,13 +113,61 @@ Omni implements an enterprise-grade content security architecture:
 > Anything reachable under `web/public/` is served by Next.js as a static asset *before* App Router route handlers run. A `web/public/media -> /path/to/media` symlink therefore silently bypasses `app/media/[...path]/route.ts` entirely, taking the visibility check, the traversal guard and the Range implementation out of the request path. Point `MEDIA_ROOT` in the route handler at the media directory instead and let every `/media/*` request go through it.
 
 ### 6. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
-* 🎛️ **YouTube-Style Player Controls ([`CustomVideoPlayer.tsx`](file:///root/omni-stack-ai/web/src/components/CustomVideoPlayer.tsx)):** Includes scrub bar hover timestamp tooltips, smooth play/pause animations, volume hover expansion, and full-screen toggle.
-* ⚙️ **HLS Quality Selector:** Seamless manual or automatic quality resolution switching (`Auto`, `1080p`, `720p`, `480p`).
+* 🎛️ **Player Controls (`web/src/components/CustomVideoPlayer.tsx`):** Scrub-bar hover timestamps, smooth play/pause animations, volume hover expansion, full-screen toggle, and a time display that switches between elapsed and remaining on click.
+* ⚙️ **Nested Settings Menu:** The gear opens a panel that drills down the way a phone settings screen does — the root lists sections with their current value, picking one slides its panel in, a back header returns. Quality (`Auto`, `1080p`, `720p`, `480p`), ambient intensity, loop and vertical view all live there.
+* 🌈 **Ambient Mode:** A 32×32 canvas samples the current frame five times a second, averages it, and paints a blurred radial glow behind the player. Dark theme only, adjustable from barely-there to full, and it stops sampling when the video pauses or the tab is hidden.
+* 🔗 **One HLS Attachment Path (`useHlsSource`):** The detail player and the shorts feed share a single hook that attaches hls.js, reports the available levels, falls back to the MP4 rendition on a fatal manifest error, and — in the feed — attaches only to the item currently on screen, so scrolling a long feed never accumulates player instances.
 * 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Breakfast`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
 
-### 7. 🌐 Multilingual i18n Dictionary System
-* 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`/dictionaries/de.json` & `/dictionaries/en.json`):** Complete UI internationalization covering headers, search bars, player controls, user profiles, chat widgets, privacy modals, and AI assistant prompts.
+### 7. 🌐 Multilingual i18n — UI Dictionaries and Localized Content
+* 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`web/src/dictionaries/de.json` & `en.json`):** Complete UI internationalization covering headers, search bars, player controls, user profiles, chat widgets, privacy modals, and AI assistant prompts.
 * 🔄 **Instant Language Switching:** Instant toggle between German (`DE`) and English (`EN`) with persistent local storage and cookie sync.
+* 🗂️ **Localized Content Types:** Articles, images and videos are Strapi i18n documents. The editor exposes both languages side by side, block structure stays in sync across them, and per-locale save failures come back as a `422` naming the language and the upstream message rather than a bare status.
+
+> ⚠️ **Working with Strapi i18n: two rules that are easy to learn the hard way.**
+>
+> **1. "No locale" means the default locale, not "all".** Strapi resolves an unspecified `locale` to the default one (`en` here). Creating, saving and deleting each need it stated explicitly — a `DELETE` without `?locale=*` removes only the default language and reports success.
+>
+> **2. A localized relation target must exist in the referencing locale.** Pointing an article's image block at a document that has no entry in the locale being written fails the whole write:
+>
+> ```
+> 400 ValidationError: Document with id "<id>", locale "en" not found
+> ```
+>
+> Because block structure is mirrored across languages, one media item existing in only one language breaks the save for the entire document — including the language that was perfectly valid. Media is therefore created in *every* configured locale from the start: the file, URLs and dimensions are identical across languages anyway, and only title, summary and tags ever differ.
+
+---
+
+### 8. 🧩 Content-Kind Registry — One Table, Three Kinds
+Video, article and image share almost everything: list pages, edit modals, ownership checks, visibility rules, REST shapes. Rather than writing that three times, a single table in `packages/shared` declares them and the rest derives from it:
+
+```ts
+export const CONTENT_KINDS = {
+  video:   { uid: 'api::video.video',     plural: 'videos',   route: 'video',   listRoute: 'videos',   ownerField: 'creator', media: 'hls'  },
+  article: { uid: 'api::article.article', plural: 'articles', route: 'article', listRoute: 'articles', ownerField: 'creator', media: 'none' },
+  image:   { uid: 'api::image.image',     plural: 'images',   route: 'image',   listRoute: 'images',   ownerField: 'creator', media: 'webp' },
+} as const;
+```
+
+* 🔁 **One Route, Every Kind:** `web/src/app/api/content/[kind]/[action]/route.ts` serves `list`, `mine`, `settings`, create, update and delete for all three. `mine` takes the owner from the session and never from the query string.
+* ➕ **Adding a Fourth Kind:** an entry here plus its kind-specific renderer. Routes, hooks, list pages, edit modals and CMS controllers follow.
+* 🚧 **Where This Deliberately Stops:** `feed-item` is a container with a different shape and is not in the table. Abstraction that has to be argued into place tends to be the wrong abstraction.
+
+### 9. 📝 Content Blocks — A Dynamic-Zone Editor in the Frontend
+Articles are composed from a Strapi dynamic zone (`headline`, `rich-text`, `image`, `video`, `quote`) edited entirely from the web app, without sending authors to the admin panel.
+
+* 🎚️ **Reorder by Drag or Button:** `@dnd-kit` for pointer users, explicit up/down buttons for everyone else.
+* 🖼️ **Media Blocks Pick From Your Own Library:** debounced search over the author's images and videos, or drop a file straight into the block — the upload is tracked by the global manager and the relation is set when it finishes.
+* ▶️ **Video Blocks Play In Place:** the poster's play button mounts the shared player on click rather than eagerly, so an article with several video blocks does not keep one hls.js instance alive per block.
+
+### 10. ⬆️ Upload Pipeline & Global Task Manager
+* 📦 **Chunked Uploads With Handles:** `UploadContext` returns a task id per file so any caller — a modal, a content block — can follow that specific upload rather than guessing from a global list.
+* 🔒 **Private By Default:** a file that has just finished uploading has been reviewed by nobody — no title check, no thumbnail chosen, for video not even a finished transcode. Uploads therefore land as `private` and publishing is one switch in the settings modal. Unpublishing something strangers have already seen is not.
+* 🧲 **Docks That Respect Each Other:** the chat publishes its footprint as `--chat-dock-height` and the upload manager stacks above it, the same way `--footer-overlap` keeps floating elements off the footer.
+
+### 11. 🎨 Design Tokens & Theme Switching
+* 🌗 **Three-State Theme:** system, dark and light, resolved onto `data-theme` plus a `dark` class on the root element, persisted in `localStorage` and reacting to `prefers-color-scheme` changes without a reload.
+* 🎛️ **Tokens, Not Hard-Coded Colours:** surfaces, text and borders come from CSS custom properties (`--bg-base`, `--surface`, `--surface-raised`), so a theme is a token set rather than a sweep through every component.
 
 ---
 
@@ -123,18 +177,25 @@ Omni implements an enterprise-grade content security architecture:
 omni-stack-ai/
 ├── cms/                     # Strapi v5 Headless CMS (PostgreSQL, TypeScript Factories & Schemas)
 │   ├── config/              # PostgreSQL, CORS & Plugin configurations
-│   └── src/api/             # Controllers, Services (subscriptions, favorites, notifications, chat)
+│   └── src/
+│       ├── api/             # Controllers, Services (feed, subscriptions, favorites, notifications, chat)
+│       ├── components/      # Dynamic-zone block schemas (headline, rich-text, image, video, quote)
+│       └── index.ts         # Bootstrap: permissions, cron, default-deny visibility middleware
+├── packages/
+│   └── shared/              # @omni/shared — content-kind registry & affinity types used by web + cms
 ├── socket/                  # Standalone Real-Time WebSocket Server (omni-socket, Port 4000)
-│   └── server.js            # Socket.io / WebSocket Server handling real-time chat & AI events
+│   └── src/index.ts         # Socket.io gateway: chat, typing, notification fan-out (builds to dist/)
 ├── web/                     # Next.js 16 App Router Frontend
 │   ├── src/app/             # Pages, Catalog (/videos), Detail View (/video/[slug]), Shorts (/shorts)
-│   ├── src/app/api/         # REST API Routes (/api/subscriptions, /api/favorites, /api/chat)
-│   ├── src/components/      # SubscribeButton, CustomVideoPlayer, ChatWidget, NotificationDrawer
-│   ├── src/context/         # AppContext (i18n), ChatContext (Rooms, Socket & Messages)
+│   ├── src/app/api/         # BFF routes — the browser never talks to Strapi directly
+│   ├── src/components/      # CustomVideoPlayer, ChatWidget, NotificationDrawer, GlobalUploadManager
+│   │   └── article/blocks/  # Content-block editor (drag & drop, media pickers, inline upload)
+│   ├── src/context/         # AppContext (i18n), ChatContext (rooms, socket), UploadContext (tasks)
+│   ├── src/lib/hooks/       # useHlsSource, useContentEditForm, useUploadManager
 │   └── src/dictionaries/    # Multilingual i18n JSON Dictionaries (de.json, en.json)
 ├── ecosystem.config.js      # PM2 Process Manager setup (omni-cms, omni-web, omni-socket)
 ├── turbo.json               # Turborepo task pipeline (Turbo v2)
-├── package.json             # Monorepo workspaces configuration
+├── package.json             # Monorepo workspaces configuration (cms, web, packages/*)
 └── LICENSE                  # MIT License (InWebDesign)
 ```
 
@@ -145,7 +206,7 @@ omni-stack-ai/
 ## 🚀 Getting Started
 
 ### Prerequisites
-* **Node.js:** `v22.15.1` or higher
+* **Node.js:** `v20` or higher (`cms/package.json` declares `>=20.0.0 <=26.x.x`)
 * **PostgreSQL:** `v15` or higher
 * **FFmpeg:** `v6.0` or higher (with QSV / HLS support)
 * **PM2:** `npm install -g pm2`
@@ -158,7 +219,7 @@ npm install
 ```
 
 ### 2. Database & Environment Setup
-Create PostgreSQL database `omni_stack_db` and configure `cms/.env` & `web/.env.local`:
+Create PostgreSQL database `omni_stack_db`, then configure all three services.
 
 ```env
 # cms/.env
@@ -172,6 +233,23 @@ OLLAMA_URL=http://10.0.0.6:11434/v1/chat/completions
 OLLAMA_MODEL=llama3.1:latest
 DEMO_MODE=false      # ON when unset: wipes demo content and every affinityGraph nightly at 04:00
 ```
+
+```env
+# web/.env.local
+STRAPI_URL=http://127.0.0.1:1337
+STRAPI_API_TOKEN=<full-access token created in the Strapi admin panel>
+NEXT_PUBLIC_SOCKET_URL=http://127.0.0.1:4000
+```
+
+`STRAPI_API_TOKEN` stays server-side. The browser talks only to the Next.js routes under `web/src/app/api/`, which attach the token and, where ownership matters, the user id resolved from the session cookie. Nothing in the client bundle should ever hold it.
+
+```env
+# socket/.env
+STRAPI_URL=http://127.0.0.1:1337
+ALLOWED_ORIGINS=https://your-domain.example    # comma-separated; set this before exposing the gateway
+```
+
+Set `ALLOWED_ORIGINS` explicitly in any deployment that is reachable from outside your own machine — it is the only thing restricting which origins may open a socket connection.
 
 ### 3. Build & Run with PM2
 ```bash
