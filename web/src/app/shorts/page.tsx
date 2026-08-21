@@ -49,8 +49,13 @@ function ShortVideoPlayer({
   isMuted: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const hlsUrl = (short as any).hlsUrl || (short.slug ? `/media/hls/${short.slug}.m3u8` : null);
-  const mp4Url = short.mediaUrl || (short as any).mp4Url;
+  // Both come from the API. There is deliberately no slug-derived fallback:
+  // the previous one guessed `/media/hls/<slug>.m3u8` while the real layout is
+  // `/media/videos/hls/<slug>/master.m3u8`, so every short loaded a manifest
+  // that 404s — and because the guessed string was truthy, the player took the
+  // HLS branch and never fell back to the MP4.
+  const hlsUrl = short.hlsUrl || null;
+  const mp4Url = short.mp4Url || short.mediaUrl || null;
 
   useHlsSource(videoRef, {
     hlsUrl,
@@ -124,13 +129,14 @@ export default function ShortsFeedPage() {
               relevanceScore: 0,
               mediaType: 'short',
               // `videoUrl`, `hlsPlaylistUrl` and `dashManifestUrl` are not
-              // fields of api::video.video — it has `hlsUrl` and `mp4Url`. The
-              // plain <video> element here cannot play HLS outside Safari, so
-              // the MP4 rendition is the source; HLS is the fallback for the
-              // browsers that do handle it natively.
+              // fields of api::video.video — it has `hlsUrl` and `mp4Url`.
+              // Both are carried through under their real names: the player
+              // prefers HLS and keeps the MP4 rendition as the fallback.
               mediaUrl: v.mp4Url || v.hlsUrl,
               videoUrl: v.mp4Url,
               thumbnailUrl: v.thumbnailUrl,
+              hlsUrl: v.hlsUrl,
+              mp4Url: v.mp4Url,
               hlsPlaylistUrl: v.hlsUrl,
               duration: v.duration,
               likesCount: v.likesCount || 0,

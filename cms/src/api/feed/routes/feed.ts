@@ -27,6 +27,11 @@ export default {
     },
     {
       method: 'POST',
+      path: '/feed/ai-stream',
+      handler: 'feed.streamAiResponse',
+    },
+    {
+      method: 'POST',
       path: '/feed/profile',
       handler: 'feed.updateProfile',
     },

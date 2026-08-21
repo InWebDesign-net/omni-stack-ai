@@ -13,6 +13,56 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
+  /**
+   * Streams the assistant's prose as Server-Sent Events.
+   *
+   * Deliberately separate from `processAiIntent`: that one asks the model for a
+   * JSON envelope and can only answer once it is complete. Here the tokens are
+   * forwarded as Ollama produces them, so the reader sees text immediately.
+   * The algorithm adjustment is a second, non-streamed call the caller makes
+   * only when the message plausibly asks for one (#90).
+   */
+  async streamAiResponse(ctx: any) {
+    const { prompt, history, locale } = ctx.request.body || {};
+    if (!prompt) {
+      return ctx.badRequest('Prompt parameter is required');
+    }
+
+    const service = strapi.service('api::feed.feed');
+    const body = await service.openStream(prompt, history, locale);
+
+    ctx.set('Content-Type', 'text/event-stream');
+    ctx.set('Cache-Control', 'no-cache, no-transform');
+    ctx.set('Connection', 'keep-alive');
+    // Without this a reverse proxy happily buffers the whole response and
+    // undoes the streaming entirely.
+    ctx.set('X-Accel-Buffering', 'no');
+    ctx.status = 200;
+
+    const { PassThrough } = require('stream');
+    const stream = new PassThrough();
+    ctx.body = stream;
+
+    (async () => {
+      try {
+        if (!body) {
+          stream.write(`data: ${JSON.stringify({ error: 'upstream_unavailable', isLast: true })}\n\n`);
+          return;
+        }
+        for await (const delta of service.readDeltas(body)) {
+          stream.write(`data: ${JSON.stringify({ chunk: delta })}\n\n`);
+        }
+        stream.write(`data: ${JSON.stringify({ isLast: true })}\n\n`);
+      } catch (err: any) {
+        strapi.log.error(`AI stream failed: ${err?.message || err}`);
+        // The reader keeps whatever arrived; the flag lets the client mark it.
+        stream.write(`data: ${JSON.stringify({ error: 'stream_failed', isLast: true })}\n\n`);
+      } finally {
+        stream.end();
+      }
+    })();
+  },
+
   async processAiIntent(ctx: any) {
     try {
       const { prompt, currentProfile, history, locale } = ctx.request.body;

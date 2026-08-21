@@ -101,6 +101,47 @@ io.use((socket: AuthenticatedSocket, next) => {
 });
 
 // Socket Connections
+/**
+ * Whether a participant should be notified about a message in this room.
+ *
+ * Direct rooms notify unless the user opted out; group rooms stay quiet until
+ * the user opts in. Deciding by room type here rather than relying on a
+ * subscription record being created when someone joins a direct room means a
+ * missing record cannot silently switch a user's direct messages off — the
+ * failure mode is a notification too many, not a message never announced.
+ *
+ * The previous version of this check was inert three times over: it compared a
+ * documentId against the numeric `id`, read `attributes` (a Strapi v4 wrapper
+ * that v5 does not send) and tested for `'unsubscribed'`, which is not a value
+ * of the `type` enum. Everyone was notified about everything.
+ */
+async function wantsNotification(
+  strapiUrl: string,
+  participantId: number,
+  roomDocumentId: string,
+  roomType?: string
+): Promise<boolean> {
+  const optOutRoom = roomType === 'direct' || roomType === 'global';
+  try {
+    const query =
+      `filters[subscriber][id][$eq]=${participantId}` +
+      `&filters[targetChatRoom][documentId][$eq]=${encodeURIComponent(roomDocumentId)}` +
+      `&filters[type][$eq]=chat_room`;
+    const res = await fetch(`${strapiUrl}/api/subscriptions?${query}`);
+    if (!res.ok) return optOutRoom;
+
+    const items = (await res.json()).data || [];
+    if (items.length === 0) return optOutRoom;
+
+    // `isSubscribed` defaults to true in the schema, so an older record
+    // without the field counts as subscribed.
+    return items[0].isSubscribed !== false;
+  } catch {
+    // A subscription lookup that fails must not silence a direct message.
+    return optOutRoom;
+  }
+}
+
 io.on('connection', (socket: AuthenticatedSocket) => {
   const user = socket.user;
   console.log(`🔌 Socket connected: ${socket.id} (User: ${user ? `${user.username} [ID: ${user.id}]` : 'Guest'})`);
@@ -176,7 +217,12 @@ io.on('connection', (socket: AuthenticatedSocket) => {
           if (!roomRes.ok) return;
           const roomData = await roomRes.json();
           const participants = roomData.data?.participants || [];
-          
+          const roomType = roomData.data?.type;
+
+          // The assistant answers while you are looking at it. Nobody gets a
+          // notification for that.
+          if (roomType === 'ai' || roomData.data?.isAiEnabled) return;
+
           const now = Date.now();
           
           for (const participant of participants) {
@@ -184,14 +230,7 @@ io.on('connection', (socket: AuthenticatedSocket) => {
             // Skip sender
             if (participantId === user?.id) continue;
             
-            // Check subscription in unified subscriptions collection
-            const subRes = await fetch(`${strapiUrl}/api/subscriptions?filters[subscriber][id][$eq]=${participantId}&filters[targetChatRoom][id][$eq]=${roomId}&filters[type][$eq]=chat_room`);
-            if (subRes.ok) {
-              const subData = await subRes.json();
-              const items = subData.data || [];
-              // If there are subscription records for chat_rooms, ensure user is subscribed
-              if (items.length > 0 && items[0].attributes?.type === 'unsubscribed') continue;
-            }
+            if (!(await wantsNotification(strapiUrl, participantId, roomId, roomType))) continue;
             
             // Debounce check
             const debounceKey = `${roomId}:${participantId}`;

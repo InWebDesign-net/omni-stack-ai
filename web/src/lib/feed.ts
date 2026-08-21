@@ -17,6 +17,13 @@ export interface FeedItem {
   content: string;
   mediaType: 'video' | 'pdf' | 'article' | 'short';
   mediaUrl: string;
+  /**
+   * The two renditions as `api::video.video` names them. `mediaUrl` above is
+   * the generic "whatever plays" URL; these two let a player choose, which
+   * matters because HLS needs hls.js outside Safari while the MP4 does not.
+   */
+  hlsUrl?: string;
+  mp4Url?: string;
   thumbnailUrl: string;
   authorName?: string;
   authorAvatar?: string;

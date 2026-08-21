@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { getSocket } from '@/lib/socket';
 import { useApp } from '@/context/AppContext';
@@ -114,6 +114,14 @@ function playMessageChime() {
   } catch (e) { /* expected: AudioContext may be suspended or unsupported */ }
 }
 
+/**
+ * A typing entry survives this long without a refresh. The sender re-emits
+ * every ~2s while typing, so this tolerates one missed event without cutting
+ * off someone who is still writing.
+ */
+const TYPING_TTL_MS = 5000;
+const TYPING_SWEEP_MS = 1000;
+
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const { currentUser } = useApp();
   const [isOpen, setIsOpen] = useState(false);
@@ -129,6 +137,68 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Typing indicators (#91)
   const [typingUsersByRoom, setTypingUsersByRoom] = useState<Record<string, string[]>>({});
+
+  /**
+   * Who is typing, per room, keyed by user id with an expiry timestamp.
+   * `typingUsersByRoom` above stays the public shape — room to display names —
+   * so consumers do not need to know about the bookkeeping.
+   */
+  const typingStateRef = useRef<Record<string, Record<string, { username: string; expiresAt: number }>>>({});
+
+  const publishTypingState = useCallback(() => {
+    const now = Date.now();
+    const next: Record<string, string[]> = {};
+    let changed = false;
+
+    for (const [roomId, entries] of Object.entries(typingStateRef.current)) {
+      const live: Record<string, { username: string; expiresAt: number }> = {};
+      for (const [userKey, entry] of Object.entries(entries)) {
+        if (entry.expiresAt > now) live[userKey] = entry;
+        else changed = true;
+      }
+      typingStateRef.current[roomId] = live;
+      const names = Object.values(live).map((e) => e.username);
+      if (names.length > 0) next[roomId] = names;
+    }
+
+    setTypingUsersByRoom((prev) => {
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+      const same =
+        prevKeys.length === nextKeys.length &&
+        nextKeys.every((k) => (prev[k] || []).join('\u0000') === next[k].join('\u0000'));
+      return same && !changed ? prev : next;
+    });
+  }, []);
+
+  /**
+   * Shows a locally-driven indicator — currently "Omni AI" while the assistant
+   * is still producing its first token. It goes through the same store as the
+   * socket-driven ones, because the sweep rebuilds state from that store and
+   * would otherwise wipe an entry written straight into React state.
+   */
+  const setLocalTyping = useCallback(
+    (roomId: string, label: string, on: boolean) => {
+      const room = { ...(typingStateRef.current[roomId] || {}) };
+      const key = `local:${label}`;
+      if (on) {
+        // Refreshed by the caller; the long TTL is a safety net, not the timer.
+        room[key] = { username: label, expiresAt: Date.now() + 60_000 };
+      } else {
+        delete room[key];
+      }
+      typingStateRef.current = { ...typingStateRef.current, [roomId]: room };
+      publishTypingState();
+    },
+    [publishTypingState]
+  );
+
+  // Sweep expired entries. Cheap, and the only thing that clears an indicator
+  // left behind by a client that went away without saying so.
+  useEffect(() => {
+    const interval = setInterval(publishTypingState, TYPING_SWEEP_MS);
+    return () => clearInterval(interval);
+  }, [publishTypingState]);
 
   // Incremental history loading (#98)
   const [isLoadingMoreByRoom, setIsLoadingMoreByRoom] = useState<Record<string, boolean>>({});
@@ -276,25 +346,46 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       };
 
       const handleTyping = (data: any) => {
-        if (!data || !data.roomId || !data.username) return;
-        const myName = currentUser?.username || 'Du';
-        if (data.username === myName) return;
+        if (!data || !data.roomId) return;
 
-        setTypingUsersByRoom((prev) => {
-          const list = prev[data.roomId] || [];
-          if (data.isTyping) {
-            if (!list.includes(data.username)) {
-              return { ...prev, [data.roomId]: [...list, data.username] };
-            }
-            return prev;
-          } else {
-            return { ...prev, [data.roomId]: list.filter((u) => u !== data.username) };
-          }
-        });
+        // Identify by user id, not by display name. Two users sharing a name
+        // used to collide: one of them stopping cleared the indicator for both,
+        // and a user with the same name as you never appeared at all because
+        // the self-check dropped them.
+        const senderId = data.userId != null ? String(data.userId) : null;
+        const myId = currentUser?.id != null ? String(currentUser.id) : null;
+        if (senderId && myId && senderId === myId) return;
+        if (!senderId && data.username && data.username === (currentUser?.username || 'Du')) return;
+
+        const key = senderId || `name:${data.username}`;
+        const room = { ...(typingStateRef.current[data.roomId] || {}) };
+
+        if (data.isTyping) {
+          room[key] = {
+            username: data.username || 'Nutzer',
+            // The sender refreshes every ~2s while typing continues, so an
+            // entry that is not renewed within this window means the client
+            // stopped, crashed or lost the connection. Without an expiry a
+            // dropped client leaves the indicator up forever.
+            expiresAt: Date.now() + TYPING_TTL_MS,
+          };
+        } else {
+          delete room[key];
+        }
+
+        typingStateRef.current = { ...typingStateRef.current, [data.roomId]: room };
+        publishTypingState();
+      };
+
+      // A dropped connection means every indicator we are holding is stale.
+      const handleDisconnect = () => {
+        typingStateRef.current = {};
+        publishTypingState();
       };
 
       socket.on('chat:message_received', handleIncomingMessage);
       socket.on('chat:typing', handleTyping);
+      socket.on('disconnect', handleDisconnect);
       
       socket.on('chat:group_created', (data: any) => {
         console.log('Group created:', data);
@@ -334,6 +425,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         active = false;
         socket.off('chat:message_received', handleIncomingMessage);
         socket.off('chat:typing', handleTyping);
+        socket.off('disconnect', handleDisconnect);
         socket.off('chat:group_created');
       };
     }
@@ -694,11 +786,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         timestamp: new Date().toISOString(),
       };
 
-      // Emit typing indicator for AI
-      setTypingUsersByRoom((prev) => {
-        const list = prev[roomId] || [];
-        return list.includes('Omni AI') ? prev : { ...prev, [roomId]: [...list, 'Omni AI'] };
-      });
+      // Shown until the first token arrives; real streaming makes this brief.
+      setLocalTyping(roomId, 'Omni AI', true);
 
       (async () => {
         let accumulatedText = '';
@@ -715,10 +804,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           });
 
           // Remove AI typing indicator as stream starts
-          setTypingUsersByRoom((prev) => {
-            const list = prev[roomId] || [];
-            return { ...prev, [roomId]: list.filter((u) => u !== 'Omni AI') };
-          });
+          setLocalTyping(roomId, 'Omni AI', false);
 
           if (res.ok && res.body) {
             // Append initial empty message placeholder
@@ -794,10 +880,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         } catch (err) {
           console.error('Error in streamed AI chat response:', err);
         } finally {
-          setTypingUsersByRoom((prev) => {
-            const list = prev[roomId] || [];
-            return { ...prev, [roomId]: list.filter((u) => u !== 'Omni AI') };
-          });
+          setLocalTyping(roomId, 'Omni AI', false);
           setAiPendingRoomIds((prev) => {
             const next = new Set(prev);
             next.delete(roomId);

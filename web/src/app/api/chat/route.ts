@@ -128,7 +128,11 @@ export async function GET(req: Request) {
 
     // Fetch chat rooms from Strapi REST API with populated participants
     const roomsRes = await fetch(
-      `${STRAPI_URL}/api/chat-rooms?populate[participants][fields][0]=id&populate[participants][fields][1]=username&populate[participants][fields][2]=handle&populate[participants][fields][3]=avatarUrl&populate[adminUser][fields][0]=id&populate[adminUser][fields][1]=username&populate[messages][fields][0]=content&populate[messages][fields][1]=createdAt&populate[messages][fields][2]=senderType&populate[messages][populate][sender][fields][0]=username&populate[messages][populate][sender][fields][1]=handle&sort=updatedAt:desc&pagination[pageSize]=100`,
+      // The list shows one line per room, so it reads the denormalised preview
+      // on the room itself. Populating `messages` here meant fetching every
+      // message ever written to render that line, and `strictParams` rejects
+      // `limit` inside `populate`, so there is no way to ask for only the newest.
+      `${STRAPI_URL}/api/chat-rooms?populate[participants][fields][0]=id&populate[participants][fields][1]=username&populate[participants][fields][2]=handle&populate[participants][fields][3]=avatarUrl&populate[adminUser][fields][0]=id&populate[adminUser][fields][1]=username&sort=updatedAt:desc&pagination[pageSize]=100`,
       {
         headers,
         cache: 'no-store',
@@ -154,16 +158,24 @@ export async function GET(req: Request) {
         rooms = rawRooms.filter((room: any) => (room.type || room.attributes?.type) === 'global');
       }
 
-      // ⚡ Optimization (#99): Trim messages array for room list so each room only
-      // transports its single latest message for the preview line, reducing payload by 99%.
-      rooms = rooms.map((room: any) => {
-        const msgs = Array.isArray(room.messages) ? room.messages : (room.messages?.data || []);
-        const latestMsg = msgs.length > 0 ? [msgs[msgs.length - 1]] : [];
-        return {
-          ...room,
-          messages: latestMsg,
-        };
-      });
+      // The client renders the preview line out of `messages[last]`, so the
+      // denormalised fields are shaped back into a single-element array here.
+      // Trimming a fully fetched array — what this did before — still made the
+      // server read every message of every room; the cost is in the query, not
+      // in the response.
+      rooms = rooms.map((room: any) => ({
+        ...room,
+        messages: room.lastMessagePreview
+          ? [
+              {
+                content: room.lastMessagePreview,
+                createdAt: room.lastMessageAt,
+                timestamp: room.lastMessageAt,
+                senderType: room.lastMessageSenderType || 'user',
+              },
+            ]
+          : [],
+      }));
     }
 
     // Fetch messages for active room if requested

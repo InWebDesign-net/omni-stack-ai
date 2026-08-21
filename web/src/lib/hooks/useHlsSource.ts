@@ -55,6 +55,35 @@ export function useHlsSource(
         }
       });
 
+      // Without this a fatal error — an unreachable manifest, a broken
+      // segment — leaves a video element with no source at all and no way to
+      // tell. Network and media errors get hls.js's own recovery first; if
+      // that fails, hand over to the MP4 rendition, which exists for every
+      // video in the catalogue.
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (!data.fatal || !hls) return;
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.details !== Hls.ErrorDetails.MANIFEST_LOAD_ERROR) {
+          hls.startLoad();
+          return;
+        }
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+          return;
+        }
+
+        console.warn('HLS playback failed, falling back to MP4:', data.details);
+        hls.destroy();
+        delete (video as any).hls;
+        setHlsInstance(null);
+        setLevels([]);
+        setCurrentLevel(-1);
+        if (mp4Url) {
+          video.src = mp4Url;
+          video.load();
+        }
+      });
+
       setHlsInstance(hls);
       (video as any).hls = hls;
     } else if (video.canPlayType('application/vnd.apple.mpegurl') && hlsUrl) {

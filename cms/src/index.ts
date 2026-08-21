@@ -171,6 +171,7 @@ export default {
       const publicFeedActions = [
         'api::feed.feed.assembleFeed',
         'api::feed.feed.processAiIntent',
+        'api::feed.feed.streamAiResponse',
         'api::feed.feed.handleInteraction',
         'api::feed.feed.getInteractionStatus',
         'api::feed.feed.getUserFavorites',

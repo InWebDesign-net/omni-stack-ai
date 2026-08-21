@@ -55,6 +55,13 @@
     "lastMessageAt": {
       "type": "datetime"
     },
+    "lastMessagePreview": {
+      "type": "string",
+      "maxLength": 140
+    },
+    "lastMessageSenderType": {
+      "type": "string"
+    },
     "messages": {
       "type": "relation",
       "relation": "oneToMany",
