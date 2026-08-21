@@ -45,12 +45,19 @@ export interface UseContentEditFormOptions {
   isOpen: boolean;
   documentId?: string;
   /** Values already known to the caller, used until the fetch resolves. */
-  fallback?: Partial<{ title: string; summary: unknown; tags: string[]; visibility: string }>;
+  fallback?: Partial<{
+    title: string;
+    summary: unknown;
+    tags: string[];
+    visibility: string;
+    thumbnail: string;
+    thumbnailUrl: string;
+  }>;
   /** Lets a kind reshape its locale payload — articles wrap summary in blocks. */
   serializeLocale?: (locale: Locale, data: LocaleData) => Record<string, unknown>;
   /** Fired once the fetch has populated the form — the video modal snapshots it
    *  here to detect unsaved changes. */
-  onLoaded?: (loaded: { form: { de: LocaleData; en: LocaleData }; visibility: string }) => void;
+  onLoaded?: (loaded: { form: { de: LocaleData; en: LocaleData }; visibility: string; thumbnail?: string }) => void;
 }
 
 /** Anything the author may have typed or placed, not just the title. */
@@ -72,6 +79,9 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
     en: { ...EMPTY_LOCALE },
   });
   const [visibility, setVisibility] = useState<string>(fallback?.visibility || 'public');
+  const [thumbnail, setThumbnail] = useState<string>(
+    (fallback as any)?.thumbnailUrl || (fallback as any)?.thumbnail || ''
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -79,11 +89,6 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
   const [error, setError] = useState<string | null>(null);
   /**
    * Which locales the document actually has.
-   *
-   * Sending an update for a locale that does not exist makes Strapi answer
-   * "locale not found", which — since failures became visible — turns the whole
-   * save into an error even though the other locale was written. Articles
-   * created before the second locale was fixed have exactly one.
    */
   const [existingLocales, setExistingLocales] = useState<Locale[]>(['de', 'en']);
 
@@ -127,8 +132,11 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
           (['de', 'en'] as Locale[]).filter((l) => items.some((i) => i.locale === l))
         );
         const loadedVisibility = de?.visibility || en?.visibility || fallback?.visibility || 'public';
+        const loadedThumbnail =
+          de?.thumbnailUrl || de?.thumbnail || en?.thumbnailUrl || en?.thumbnail || (fallback as any)?.thumbnailUrl || (fallback as any)?.thumbnail || '';
         setForm(loaded);
         setVisibility(loadedVisibility);
+        if (loadedThumbnail) setThumbnail(loadedThumbnail);
         onLoaded?.({ form: loaded, visibility: loadedVisibility });
       } catch (err: any) {
         if (!cancelled) setError(err?.message || 'Ladefehler');
@@ -183,11 +191,6 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
   const buildLocaleUpdates = useCallback(
     () =>
       (['de', 'en'] as Locale[])
-        // A locale the document does not have is only sent when the author put
-        // something into it — then creating it is the intent. Sending it blindly
-        // fails the save for a language nobody touched; skipping it when it does
-        // hold content would drop that content silently, so "content" means any
-        // of the fields, not just the title.
         .filter((locale) => existingLocales.includes(locale) || localeHasContent(form[locale]))
         .map((locale) => ({
           locale,
@@ -204,13 +207,15 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
       const res = await fetch(endpoint, {
         method: 'PUT',
         headers: jsonAuthHeaders(),
-        body: JSON.stringify({ documentId, localeUpdates: buildLocaleUpdates(), visibility }),
+        body: JSON.stringify({
+          documentId,
+          localeUpdates: buildLocaleUpdates(),
+          visibility,
+          thumbnail,
+          thumbnailUrl: thumbnail,
+        }),
       });
       if (!res.ok) {
-        // The route reports per-locale validation failures in `failedLocales`.
-        // Surfacing only the status turned a precise message like "level must be
-        // one of h2, h3, h4" into "failed (422)", which sends the author to the
-        // browser console to find out what to change.
         let message = `Speichern fehlgeschlagen (${res.status})`;
         try {
           const body = await res.json();
@@ -235,7 +240,7 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
     } finally {
       setSaving(false);
     }
-  }, [documentId, endpoint, buildLocaleUpdates, visibility]);
+  }, [documentId, endpoint, buildLocaleUpdates, visibility, thumbnail]);
 
   const remove = useCallback(
     async (hard = false): Promise<boolean> => {
@@ -267,6 +272,8 @@ export function useContentEditForm(kind: ContentKind, options: UseContentEditFor
     current,
     visibility,
     setVisibility,
+    thumbnail,
+    setThumbnail,
     loading,
     saving,
     deleting,

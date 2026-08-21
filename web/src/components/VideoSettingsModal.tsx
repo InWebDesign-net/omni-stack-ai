@@ -1,11 +1,12 @@
 'use client';
 
-import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
-
 import React, { useState, useEffect } from 'react';
-import { X, Save, Loader2, Globe, Trash2, AlertTriangle, Archive, Trash } from 'lucide-react';
+import Image from 'next/image';
+import { X, Save, Loader2, Globe, Trash2, AlertTriangle, Archive, Trash, Check, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
 import { VisibilitySelector } from '@/components/VisibilitySelector';
+import { ImageUploadField } from '@/components/common/ImageUploadField';
 
 
 function flattenBlocks(value: any): string {
@@ -48,16 +49,18 @@ export default function VideoSettingsModal({
 }: VideoSettingsModalProps) {
   const { t } = useApp();
   const [showDiscard, setShowDiscard] = useState(false);
-  const [snapshot, setSnapshot] = useState<{ form: { de: LocaleData; en: LocaleData }; visibility: string } | null>(null);
+  const [snapshot, setSnapshot] = useState<{ form: { de: LocaleData; en: LocaleData }; visibility: string; thumbnail?: string } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     activeLocale, setActiveLocale, form, setForm, current, visibility, setVisibility,
+    thumbnail, setThumbnail,
     loading, saving, deleting, error, setError, newTag, setNewTag,
     updateField, addTag, removeTag, buildLocaleUpdates, save, remove,
   } = useContentEditForm('video', {
     isOpen: true,
     documentId,
+    fallback: { thumbnailUrl: `/media/thumbnails/${slug}-1.png` },
     onLoaded: setSnapshot,
     // Videos store the summary as Strapi blocks, same as articles.
     serializeLocale: (_locale, data) => ({
@@ -93,6 +96,7 @@ export default function VideoSettingsModal({
   const isDirty =
     !!snapshot &&
     (snapshot.visibility !== visibility ||
+      snapshot.thumbnail !== thumbnail ||
       JSON.stringify(snapshot.form) !== JSON.stringify(form));
 
   return (
@@ -250,6 +254,71 @@ export default function VideoSettingsModal({
             {/* General settings (non-localized) */}
             <div className="pt-4 border-t border-subtle space-y-2">
               <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
+            </div>
+
+            {/* Thumbnail Selection & Upload */}
+            <div className="pt-4 border-t border-subtle space-y-3">
+              <label className="block text-xs font-semibold text-primary">
+                {t?.videoSettings?.thumbnailTitle || 'Vorschaubild (Thumbnail)'}
+              </label>
+
+              {/* 6 Generated Video Frames */}
+              <div>
+                <p className="text-[11px] text-muted mb-2">
+                  {t?.videoSettings?.pickFrame || 'Aus generierten Videobildern wählen:'}
+                </p>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {[1, 2, 3, 4, 5, 6].map((idx) => {
+                    const frameUrl = `/media/thumbnails/${slug}-${idx}.png`;
+                    const isSelected = thumbnail === frameUrl;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setThumbnail(frameUrl)}
+                        className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all cursor-pointer group bg-surface ${
+                          isSelected
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/30 scale-105'
+                            : 'border-subtle hover:border-indigo-500/50'
+                        }`}
+                      >
+                        <Image
+                          src={frameUrl}
+                          alt={`Frame ${idx}`}
+                          fill
+                          sizes="120px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center">
+                            <div className="p-1 rounded-full bg-indigo-600 text-white shadow-md">
+                              <Check className="w-3 h-3" />
+                            </div>
+                          </div>
+                        )}
+                        <span className="absolute bottom-0.5 right-1 text-[9px] font-mono text-white/90 bg-black/60 px-1 rounded">
+                          #{idx}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Custom Thumbnail Upload */}
+              <div className="pt-2">
+                <p className="text-[11px] text-muted mb-1.5">
+                  {t?.videoSettings?.customThumb || 'Oder ein eigenes Vorschaubild hochladen:'}
+                </p>
+                <ImageUploadField
+                  value={thumbnail.startsWith('/media/thumbnails/') && !thumbnail.includes('thumbnails-') ? '' : thumbnail}
+                  onChange={(url) => setThumbnail(url)}
+                  aspectRatio="video"
+                  folder="thumbnails"
+                  description="Empfohlen: 16:9 Format (1280x720, JPG/PNG/WEBP)"
+                />
+              </div>
             </div>
 
             {/* Save & Delete Action Buttons */}

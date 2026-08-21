@@ -5,11 +5,12 @@ import { X, Save, Trash2, AlertTriangle, Globe, Loader2, Archive, Trash } from '
 import { useApp } from '@/context/AppContext';
 import { useContentEditForm, type LocaleData } from '@/lib/hooks/useContentEditForm';
 import { VisibilitySelector } from '@/components/VisibilitySelector';
+import { ImageUploadField } from '@/components/common/ImageUploadField';
 
 interface ImageEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave?: (data: { localeUpdates: Array<{ locale: string; data: LocaleData }>; visibility: string }) => Promise<void>;
+  onSave?: (data: { localeUpdates: Array<{ locale: string; data: LocaleData }>; visibility: string; thumbnailUrl?: string }) => Promise<void>;
   onDelete?: (hardDelete: boolean) => Promise<void>;
   image: any;
   t?: any;
@@ -18,12 +19,13 @@ interface ImageEditModalProps {
 export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: ImageEditModalProps) {
   const {
     activeLocale, setActiveLocale, form, setForm, current, visibility, setVisibility,
+    thumbnail, setThumbnail,
     loading, saving, deleting, error, setError, newTag, setNewTag,
     updateField, addTag, removeTag, buildLocaleUpdates, save, remove,
   } = useContentEditForm('image', {
     isOpen,
     documentId: image?.documentId,
-    fallback: { title: image?.title, summary: image?.summary, tags: image?.tags, visibility: image?.visibility },
+    fallback: { title: image?.title, summary: image?.summary, tags: image?.tags, visibility: image?.visibility, thumbnail: image?.thumbnailUrl || image?.thumbnail },
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -34,7 +36,7 @@ export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: 
     if (onSave) {
       setError(null);
       try {
-        await onSave({ localeUpdates: buildLocaleUpdates() as any, visibility });
+        await onSave({ localeUpdates: buildLocaleUpdates() as any, visibility, thumbnailUrl: thumbnail });
         onClose();
       } catch (e: any) {
         setError(e?.message || 'Fehler beim Speichern');
@@ -201,6 +203,20 @@ export function ImageEditModal({ isOpen, onClose, onSave, onDelete, image, t }: 
             {/* Global Settings */}
             <div className="pt-4 border-t border-subtle space-y-2">
               <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
+            </div>
+
+            {/* Thumbnail Upload */}
+            <div className="pt-4 border-t border-subtle space-y-2">
+              <label className="block text-xs font-bold text-primary uppercase tracking-wider">
+                {t?.common?.thumbnail || 'Vorschaubild (Thumbnail)'}
+              </label>
+              <ImageUploadField
+                value={thumbnail}
+                onChange={setThumbnail}
+                aspectRatio="square"
+                folder="thumbnails"
+                description={t?.images?.thumbnailDesc || 'Eigenes Vorschaubild hochladen oder Bildstandard verwenden'}
+              />
             </div>
 
             {/* Save & Delete Action Buttons */}

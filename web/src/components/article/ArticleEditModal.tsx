@@ -8,11 +8,12 @@ import { useBlockStructureSync } from '@/lib/hooks/useBlockStructureSync';
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, AlertTriangle, Globe, Loader2, Archive, Trash } from 'lucide-react';
 import { VisibilitySelector } from '@/components/VisibilitySelector';
+import { ImageUploadField } from '@/components/common/ImageUploadField';
 
 interface ArticleEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave?: (data: { localeUpdates: Array<{ locale: string; data: LocaleData }>; visibility: string }) => Promise<void>;
+  onSave?: (data: { localeUpdates: Array<{ locale: string; data: LocaleData }>; visibility: string; thumbnail?: string }) => Promise<void>;
   onDelete?: (hardDelete: boolean) => Promise<void>;
   article: any;
   t?: any;
@@ -21,12 +22,13 @@ interface ArticleEditModalProps {
 export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t }: ArticleEditModalProps) {
   const {
     activeLocale, setActiveLocale, form, setForm, current: currentData, visibility, setVisibility,
+    thumbnail, setThumbnail,
     loading, saving, deleting, error, setError, newTag, setNewTag,
     updateField, addTag, removeTag, buildLocaleUpdates, save, remove,
   } = useContentEditForm('article', {
     isOpen,
     documentId: article?.documentId,
-    fallback: { title: article?.title, summary: article?.summary, tags: article?.tags, visibility: article?.visibility },
+    fallback: { title: article?.title, summary: article?.summary, tags: article?.tags, visibility: article?.visibility, thumbnail: article?.thumbnail },
     // Articles store the summary as Strapi blocks; the modal edits plain text.
     serializeLocale: (locale, data) => ({
       ...data,
@@ -123,7 +125,7 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
     if (onSave) {
       setError(null);
       try {
-        await onSave({ localeUpdates: buildLocaleUpdates() as any, visibility });
+        await onSave({ localeUpdates: buildLocaleUpdates() as any, visibility, thumbnail });
         onClose();
       } catch (e: any) {
         setError(e?.message || 'Fehler beim Speichern');
@@ -299,6 +301,20 @@ export function ArticleEditModal({ isOpen, onClose, onSave, onDelete, article, t
             {/* Global Visibility */}
             <div className="pt-4 border-t border-subtle space-y-2">
               <VisibilitySelector value={visibility} onChange={setVisibility} t={t} />
+            </div>
+
+            {/* Thumbnail Upload */}
+            <div className="pt-4 border-t border-subtle space-y-2">
+              <label className="block text-xs font-bold text-primary uppercase tracking-wider">
+                {t?.common?.thumbnail || 'Vorschaubild (Thumbnail)'}
+              </label>
+              <ImageUploadField
+                value={thumbnail}
+                onChange={setThumbnail}
+                aspectRatio="video"
+                folder="thumbnails"
+                description="Empfohlen: 16:9 Format (1280x720)"
+              />
             </div>
             </div>
 

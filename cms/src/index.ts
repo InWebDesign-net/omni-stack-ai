@@ -302,6 +302,53 @@ export default {
         console.error('affinityGraph normalization failed:', e);
       }
 
+      // 3c. Locale synchronization for media entities (api::image.image and api::video.video)
+      // Guarantees all media exist in both 'de' and 'en' locales so article blocks referencing them never fail to save.
+      try {
+        const i18nPlugin = strapi.plugin('i18n');
+        const localesList = i18nPlugin ? await i18nPlugin.service('locales').find() : [{ code: 'de' }, { code: 'en' }];
+        const configuredLocales: string[] = localesList.map((l: any) => l.code || l);
+
+        for (const uid of ['api::image.image', 'api::video.video']) {
+          const allDocs = await strapi.documents(uid as any).findMany({ locale: '*' });
+          const grouped = new Map<string, any[]>();
+          for (const doc of allDocs) {
+            const list = grouped.get(doc.documentId) || [];
+            list.push(doc);
+            grouped.set(doc.documentId, list);
+          }
+
+          for (const [docId, entries] of grouped.entries()) {
+            const presentLocales = new Set(entries.map((e) => e.locale || 'en'));
+            const primaryEntry = entries[0];
+            for (const requiredLoc of configuredLocales) {
+              if (!presentLocales.has(requiredLoc)) {
+                try {
+                  await strapi.documents(uid as any).update({
+                    documentId: docId,
+                    locale: requiredLoc,
+                    data: {
+                      title: primaryEntry.title,
+                      slug: primaryEntry.slug,
+                      summary: primaryEntry.summary,
+                      tags: primaryEntry.tags,
+                      visibility: primaryEntry.visibility || 'public',
+                      ...(primaryEntry.creator?.id ? { creator: primaryEntry.creator.id } : {}),
+                    } as any,
+                    status: 'published',
+                  });
+                  console.log(`[i18n-sync] Backfilled missing locale "${requiredLoc}" for ${uid} (${docId})`);
+                } catch (locErr: any) {
+                  console.warn(`[i18n-sync] Failed to backfill locale "${requiredLoc}" for ${uid} (${docId}):`, locErr.message);
+                }
+              }
+            }
+          }
+        }
+      } catch (locSyncErr) {
+        console.error('[i18n-sync] Media locale sync failed:', locSyncErr);
+      }
+
       // 4. Automatic /root/media/out background watcher (ingests finalized LXC video conversions)
       const outDir = '/root/media/out';
       const workerSecret = process.env.INGEST_WORKER_SECRET;

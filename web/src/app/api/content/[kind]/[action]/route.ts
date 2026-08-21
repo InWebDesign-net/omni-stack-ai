@@ -289,6 +289,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
     if (Array.isArray(localeUpdates)) {
       for (const { locale, data } of localeUpdates) {
         const updateData = { ...data };
+        if (body.thumbnail !== undefined) {
+          if (kind === 'article') updateData.thumbnail = body.thumbnail;
+          if (kind === 'video' || kind === 'image') updateData.thumbnailUrl = body.thumbnail;
+        }
+        if (body.thumbnailUrl !== undefined) {
+          if (kind === 'article') updateData.thumbnail = body.thumbnailUrl;
+          if (kind === 'video' || kind === 'image') updateData.thumbnailUrl = body.thumbnailUrl;
+        }
         if (kind === 'article' && !updateData.slug && updateData.title) {
           updateData.slug = updateData.title
             .toLowerCase()
@@ -320,10 +328,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
       }
     } else if (title !== undefined) {
       // Fallback single locale update (used by image historically)
+      const thumb = body.thumbnailUrl || body.thumbnail;
       const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ data: { title, summary, tags, visibility } }),
+        body: JSON.stringify({
+          data: {
+            title,
+            summary,
+            tags,
+            visibility,
+            ...(thumb ? { [kind === 'article' ? 'thumbnail' : 'thumbnailUrl']: thumb } : {}),
+          },
+        }),
       });
       if (!res.ok) {
         const errText = await res.text();
@@ -331,12 +348,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
       }
     }
 
-    if (typeof visibility === 'string') {
+    if (typeof visibility === 'string' || body.thumbnail !== undefined || body.thumbnailUrl !== undefined) {
+      const thumb = body.thumbnailUrl || body.thumbnail;
       for (const locale of ['de', 'en']) {
+        const extraData: any = {};
+        if (typeof visibility === 'string') extraData.visibility = visibility;
+        if (thumb !== undefined) {
+          if (kind === 'article') extraData.thumbnail = thumb;
+          if (kind === 'video' || kind === 'image') extraData.thumbnailUrl = thumb;
+        }
         await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`, {
           method: 'PUT',
           headers,
-          body: JSON.stringify({ data: { visibility } }),
+          body: JSON.stringify({ data: extraData }),
         });
       }
     }

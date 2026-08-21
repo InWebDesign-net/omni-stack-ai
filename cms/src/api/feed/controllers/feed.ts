@@ -226,28 +226,32 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         visibility: visibility || 'public',
       };
 
-      // 1. Create EN (default locale) entry - published
-      const createdEn = await strapi.documents('api::video.video').create({
+      // 1. Create primary locale entry - published
+      const i18nPlugin = strapi.plugin('i18n');
+      const localesList = i18nPlugin ? await i18nPlugin.service('locales').find() : [{ code: 'en' }, { code: 'de' }];
+      const configuredLocales: string[] = localesList.map((l: any) => l.code || l);
+      const primaryLocale = configuredLocales.includes('en') ? 'en' : configuredLocales[0] || 'en';
+      const otherLocales = configuredLocales.filter((l) => l !== primaryLocale);
+
+      const createdPrimary = await strapi.documents('api::video.video').create({
         data: videoData,
-        locale: 'en',
+        locale: primaryLocale,
         status: 'published',
       });
 
-      // 2. Create DE locale entry linked to the same documentId - published
-      try {
+      // 2. Synchronously create all other locales linked to the same documentId
+      for (const loc of otherLocales) {
         await strapi.documents('api::video.video').update({
-          documentId: createdEn.documentId,
-          locale: 'de',
+          documentId: createdPrimary.documentId,
+          locale: loc,
           data: videoData,
           status: 'published',
         });
-      } catch (deErr: any) {
-        console.error('Failed to create DE locale for video:', deErr.message);
       }
 
       return ctx.send({
         success: true,
-        documentId: createdEn.documentId,
+        documentId: createdPrimary.documentId,
         slug,
         isProcessing: true,
       });
@@ -287,26 +291,30 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         visibility: visibility || 'public',
       };
 
-      const createdEn = await strapi.documents('api::image.image').create({
+      const i18nPlugin = strapi.plugin('i18n');
+      const localesList = i18nPlugin ? await i18nPlugin.service('locales').find() : [{ code: 'en' }, { code: 'de' }];
+      const configuredLocales: string[] = localesList.map((l: any) => l.code || l);
+      const primaryLocale = configuredLocales.includes('en') ? 'en' : configuredLocales[0] || 'en';
+      const otherLocales = configuredLocales.filter((l) => l !== primaryLocale);
+
+      const createdPrimary = await strapi.documents('api::image.image').create({
         data: imageData,
-        locale: 'en',
+        locale: primaryLocale,
         status: 'published',
       });
 
-      try {
+      for (const loc of otherLocales) {
         await strapi.documents('api::image.image').update({
-          documentId: createdEn.documentId,
-          locale: 'de',
+          documentId: createdPrimary.documentId,
+          locale: loc,
           data: imageData,
           status: 'published',
         });
-      } catch (deErr: any) {
-        console.error('Failed to create DE locale for image:', deErr.message);
       }
 
       return ctx.send({
         success: true,
-        documentId: createdEn.documentId,
+        documentId: createdPrimary.documentId,
         slug,
         isProcessing: true,
       });

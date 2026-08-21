@@ -177,14 +177,35 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               data: imgUpdateData as any,
               status: 'published',
             });
-          } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
-      }
+          } catch (localeErr) {
+            console.error(`Error updating image locale ${loc}:`, localeErr);
+          }
+        }
+
+        // Ensure both EN and DE exist - if a locale is missing, create it
+        for (const requiredLocale of ['en', 'de']) {
+          if (!imageLocales.has(requiredLocale)) {
+            try {
+              await strapi.documents('api::image.image').update({
+                documentId: docId,
+                locale: requiredLocale,
+                data: {
+                  ...imgUpdateData,
+                  title: (imageMatches[0] as any).title || base,
+                  slug: base,
+                  tags: (imageMatches[0] as any).tags || ['Bild'],
+                } as any,
+                status: 'published',
+              });
+            } catch (e) {
+              console.error(`Error creating missing ${requiredLocale} locale for image:`, e);
+            }
+          }
         }
       }
     } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
-      }
+      strapi.log.error('[video-ingest.ts] unhandled image error', e);
+    }
 
     const updateStrapiItem = async () => {
       try {

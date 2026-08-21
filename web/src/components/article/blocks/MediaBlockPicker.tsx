@@ -164,38 +164,119 @@ export function MediaBlockPicker({ kind, value, onChange, t }: MediaBlockPickerP
     };
   }, [kind, query, hasSelection, pendingTaskId, b.mediaLoadFailed]);
 
+  const [localeWarning, setLocaleWarning] = useState<string | null>(null);
+  const [isFixingLocale, setIsFixingLocale] = useState(false);
+
+  useEffect(() => {
+    if (!selected?.documentId) {
+      setLocaleWarning(null);
+      return;
+    }
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/content/${kind}/settings?documentId=${encodeURIComponent(selected.documentId!)}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const items = json.data || [];
+        const locales = items.map((i: any) => i.locale);
+        const missing = (['de', 'en'] as const).filter((l) => !locales.includes(l));
+        if (isMounted) {
+          if (missing.length > 0) {
+            setLocaleWarning(missing.join(', ').toUpperCase());
+          } else {
+            setLocaleWarning(null);
+          }
+        }
+      } catch (err) {
+        // Silently ignore check errors
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selected?.documentId, kind]);
+
+  const handleFixLocale = async () => {
+    if (!selected?.documentId) return;
+    setIsFixingLocale(true);
+    try {
+      const res = await fetch(`/api/content/${kind}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: selected.documentId,
+          localeUpdates: [
+            { locale: 'de', data: { title: selected.title || selected.slug } },
+            { locale: 'en', data: { title: selected.title || selected.slug } },
+          ],
+        }),
+      });
+      if (res.ok) {
+        setLocaleWarning(null);
+      }
+    } catch (e) {
+      console.error('Failed to auto-create missing locale:', e);
+    } finally {
+      setIsFixingLocale(false);
+    }
+  };
+
   const Icon = kind === 'image' ? ImageIcon : VideoIcon;
 
   if (selected) {
     const thumb = thumbOf(selected);
     return (
-      <div className="flex items-center gap-3 p-2 rounded-xl bg-base border border-subtle">
-        <div className="relative w-20 h-12 shrink-0 rounded-lg overflow-hidden bg-surface">
-          {thumb ? (
-            <Image src={thumb} alt="" fill sizes="80px" className="object-cover" unoptimized />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Icon className="w-4 h-4 text-faint" />
+      <div className="space-y-2">
+        <div className="flex items-center gap-3 p-2 rounded-xl bg-base border border-subtle">
+          <div className="relative w-20 h-12 shrink-0 rounded-lg overflow-hidden bg-surface">
+            {thumb ? (
+              <Image src={thumb} alt="" fill sizes="80px" className="object-cover" unoptimized />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Icon className="w-4 h-4 text-faint" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-primary truncate">
+              {selected.title || selected.slug || selected.documentId}
+            </p>
+            {selected.visibility && selected.visibility !== 'public' && (
+              <p className="text-[10px] font-mono text-faint uppercase">{selected.visibility}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            aria-label={b.mediaClear || 'Verknüpfung entfernen'}
+            title={b.mediaClear || 'Verknüpfung entfernen'}
+            className="p-1.5 rounded-lg text-faint hover:text-rose-400 hover:bg-surface-raised transition-colors cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {localeWarning && (
+          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">
+                Fehlende Sprache ({localeWarning}) — Block kann sonst nicht gespeichert werden.
+              </span>
             </div>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-primary truncate">
-            {selected.title || selected.slug || selected.documentId}
-          </p>
-          {selected.visibility && selected.visibility !== 'public' && (
-            <p className="text-[10px] font-mono text-faint uppercase">{selected.visibility}</p>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          aria-label={b.mediaClear || 'Verknüpfung entfernen'}
-          title={b.mediaClear || 'Verknüpfung entfernen'}
-          className="p-1.5 rounded-lg text-faint hover:text-rose-400 hover:bg-surface-raised transition-colors cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
-        >
-          <X className="w-4 h-4" />
-        </button>
+            <button
+              type="button"
+              onClick={handleFixLocale}
+              disabled={isFixingLocale}
+              className="px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-100 font-semibold text-[10px] shrink-0 transition-colors cursor-pointer"
+            >
+              {isFixingLocale ? 'Erstelle…' : 'Sprache anlegen'}
+            </button>
+          </div>
+        )}
       </div>
     );
   }
