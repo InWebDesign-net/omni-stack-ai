@@ -541,6 +541,15 @@
     "mediaNoMatch": "Nothing found for “{query}”.",
     "mediaNoneYet": "You have no content of this kind yet.",
     "mediaLoadFailed": "Could not load your content.",
-    "mediaClear": "Remove link"
+    "mediaClear": "Remove link",
+    "uploadDropImage": "Or drop an image here",
+    "uploadDropVideo": "Or drop a video here",
+    "uploadChoose": "Choose file",
+    "uploadFailed": "Upload failed.",
+    "uploadNotAnImage": "That is not an image file.",
+    "uploadNotAVideo": "That is not a video file.",
+    "uploadRejected": "File was rejected.",
+    "uploadOnlyFirst": "Only the first file is used ({n} skipped).",
+    "uploadInProgress": "The upload continues in the background. If you close the editor now, the file still lands in your library and can be picked here afterwards."
   }
 }

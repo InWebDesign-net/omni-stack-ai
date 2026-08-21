@@ -541,6 +541,15 @@
     "mediaNoMatch": "Nichts gefunden für „{query}\".",
     "mediaNoneYet": "Du hast noch keine Inhalte dieser Art.",
     "mediaLoadFailed": "Inhalte konnten nicht geladen werden.",
-    "mediaClear": "Verknüpfung entfernen"
+    "mediaClear": "Verknüpfung entfernen",
+    "uploadDropImage": "Oder Bild hierher ziehen",
+    "uploadDropVideo": "Oder Video hierher ziehen",
+    "uploadChoose": "Datei wählen",
+    "uploadFailed": "Upload fehlgeschlagen.",
+    "uploadNotAnImage": "Das ist keine Bilddatei.",
+    "uploadNotAVideo": "Das ist keine Videodatei.",
+    "uploadRejected": "Datei wurde abgelehnt.",
+    "uploadOnlyFirst": "Nur die erste Datei wird verwendet ({n} übersprungen).",
+    "uploadInProgress": "Der Upload läuft im Hintergrund weiter. Schließt du den Editor jetzt, landet die Datei trotzdem in deiner Mediathek und lässt sich hier nachträglich auswählen."
   }
 }
