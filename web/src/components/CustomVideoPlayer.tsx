@@ -2,10 +2,10 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Link2, Sparkles, Shield } from 'lucide-react';
-import Hls from 'hls.js';
 import { useApp } from '@/context/AppContext';
 import { VideoControls } from './VideoControls';
 import { EndOverlay } from './EndOverlay';
+import { useHlsSource } from '@/lib/hooks/useHlsSource';
 
 interface CustomVideoPlayerProps {
   mp4Url?: string;
@@ -13,6 +13,8 @@ interface CustomVideoPlayerProps {
   posterUrl?: string;
   title?: string;
   slug?: string;
+  isVertical?: boolean;
+  onToggleVertical?: () => void;
   recommendations?: any[];
   onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
   className?: string;
@@ -24,6 +26,8 @@ export default function CustomVideoPlayer({
   posterUrl,
   title = 'Video',
   slug,
+  isVertical = false,
+  onToggleVertical,
   recommendations,
   onTimeUpdate,
   className = 'w-full h-full',
@@ -31,6 +35,7 @@ export default function CustomVideoPlayer({
   const { t, currentUser } = useApp();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -54,61 +59,130 @@ export default function CustomVideoPlayer({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [copyToast, setCopyToast] = useState(false);
 
-  // HLS Quality state
-  const [levels, setLevels] = useState<{ index: number; label: string }[]>([]);
-  const [currentLevel, setCurrentLevel] = useState<number>(-1); // -1 = Auto
+  // Ambient Mode state
+  const [ambientColor, setAmbientColor] = useState('rgba(0, 0, 0, 0.2)');
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [ambientSettings, setAmbientSettings] = useState<{ enabled: boolean; intensity: number }>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('omni_ambient_settings');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return {
+            enabled: parsed.enabled !== false,
+            intensity: typeof parsed.intensity === 'number' ? parsed.intensity : 0.2,
+          };
+        }
+      } catch (e) {}
+    }
+    return { enabled: true, intensity: 0.2 };
+  });
 
   const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize HLS.js
+  // Initialize HLS.js through extracted hook
+  const { levels, currentLevel, changeLevel } = useHlsSource(videoRef, {
+    hlsUrl,
+    mp4Url,
+  });
+
+  // Track resolved theme (dark mode check for ambient glow)
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const checkTheme = () => {
+      if (typeof window === 'undefined') return;
+      const htmlTheme = document.documentElement.getAttribute('data-theme');
+      const isDarkClass = document.documentElement.classList.contains('dark');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const resolved = htmlTheme === 'dark' || isDarkClass || (htmlTheme !== 'light' && systemDark);
+      setIsDarkTheme(resolved);
+    };
 
-    let hls: Hls | null = null;
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
 
-    if (hlsUrl && Hls.isSupported()) {
-      hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-      });
-
-      hls.loadSource(hlsUrl);
-      hls.attachMedia(video);
-
-      hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-        const parsedLevels = data.levels.map((lvl, idx) => ({
-          index: idx,
-          label: lvl.height ? `${lvl.height}p` : `Level ${idx + 1}`,
-        }));
-        setLevels(parsedLevels);
-      });
-
-      hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
-        if (hls && hls.currentLevel === -1) {
-          setCurrentLevel(-1);
-        }
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl') && hlsUrl) {
-      video.src = hlsUrl;
-    } else if (mp4Url) {
-      video.src = mp4Url;
-    }
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkTheme);
 
     return () => {
-      if (hls) {
-        hls.destroy();
-      }
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkTheme);
     };
-  }, [hlsUrl, mp4Url]);
+  }, []);
+
+  // Ambient Mode sampling interval (200ms)
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !isPlaying || !ambientSettings.enabled || !isDarkTheme) return;
+
+    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    let isDocumentVisible = typeof document !== 'undefined' ? !document.hidden : true;
+    const handleVisibilityChange = () => {
+      isDocumentVisible = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const interval = setInterval(() => {
+      if (!isDocumentVisible || video.paused || video.ended) return;
+
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      try {
+        canvas.width = 32;
+        canvas.height = 32;
+        ctx.drawImage(video, 0, 0, 32, 32);
+        const frame = ctx.getImageData(0, 0, 32, 32);
+        const data = frame.data;
+        let r = 0, g = 0, b = 0;
+        const length = data.length / 4;
+        for (let i = 0; i < data.length; i += 4) {
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+        }
+        const avgR = Math.floor(r / length);
+        const avgG = Math.floor(g / length);
+        const avgB = Math.floor(b / length);
+        setAmbientColor(`rgba(${avgR}, ${avgG}, ${avgB}, ${ambientSettings.intensity})`);
+      } catch (err) {
+        // Tainted canvas fallback
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isPlaying, ambientSettings.enabled, ambientSettings.intensity, isDarkTheme]);
+
+  const toggleAmbient = useCallback(() => {
+    setAmbientSettings((prev) => {
+      const next = { ...prev, enabled: !prev.enabled };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('omni_ambient_settings', JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const changeAmbientIntensity = useCallback((val: number) => {
+    setAmbientSettings((prev) => {
+      const next = { ...prev, intensity: val };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('omni_ambient_settings', JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
 
   // Handle HLS Quality Change
   const handleQualityChange = (levelIndex: number) => {
-    setCurrentLevel(levelIndex);
+    changeLevel(levelIndex);
     setIsSettingsOpen(false);
-    if (videoRef.current && (videoRef.current as any).hls) {
-      (videoRef.current as any).hls.currentLevel = levelIndex;
-    }
   };
 
   // Time & Progress Handler
@@ -263,10 +337,9 @@ export default function CustomVideoPlayer({
   const handleMouseMove = () => {
     setShowControls(true);
     if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
-    if (isPlaying) {
+    if (isPlaying && !isSettingsOpen) {
       hideControlsTimer.current = setTimeout(() => {
         setShowControls(false);
-        setIsSettingsOpen(false);
       }, 3000);
     }
   };
@@ -334,108 +407,137 @@ export default function CustomVideoPlayer({
   const copyLabel = (t.player?.copyTimestampLink || 'Link an aktueller Stelle kopieren ({time})').replace('{time}', formatTime(currentTime));
 
   return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
-      onContextMenu={handleContextMenu}
-      className={`relative group bg-black rounded-2xl overflow-hidden select-none font-sans border border-subtle ${className}`}
-    >
-      {/* HTML5 Video Element */}
-      <video
-        ref={videoRef}
-        poster={posterUrl}
-        playsInline
-        loop={isLooping}
-        onTimeUpdate={handleTimeUpdateInternal}
-        onPlay={() => {
-          setIsPlaying(true);
-          setHasEnded(false);
-        }}
-        onPause={() => setIsPlaying(false)}
-        onEnded={handleVideoEnded}
-        onClick={togglePlay}
-        className="w-full h-full object-contain cursor-pointer"
-      />
-
-      {/* End-of-Video Recommendation Overlay (YouTube Style) */}
-      {hasEnded && !isLooping && (
-        <EndOverlay
-          recommendations={recommendationsList}
-          currentUser={currentUser}
-          onReplay={handleReplay}
-          onSelectRecommendation={() => {}}
-          formatTime={formatTime}
-          t={t}
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Ambient Glow layer (Dark mode only) */}
+      {isDarkTheme && ambientSettings.enabled && (
+        <div
+          aria-hidden="true"
+          className="absolute -inset-4 sm:-inset-8 -z-10 blur-[80px] sm:blur-[120px] transition-all duration-700 pointer-events-none rounded-3xl"
+          style={{
+            background: isPlaying
+              ? `radial-gradient(circle, ${ambientColor} 0%, ${ambientColor} 30%, transparent 70%)`
+              : 'transparent',
+            opacity: isPlaying ? 1 : 0,
+          }}
         />
       )}
 
-      {/* Center Play/Pause Animated Splash Indicator */}
-      {centerAnimation && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-16 h-16 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-2xl animate-ping">
-            {centerAnimation === 'play' ? <Play className="w-8 h-8 fill-white ml-1" /> : <Pause className="w-8 h-8 fill-white" />}
+      {/* Hidden 32x32 canvas for sampling */}
+      <canvas ref={canvasRef} width={32} height={32} className="hidden" aria-hidden="true" />
+
+      {/* Main Video Box */}
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => isPlaying && !isSettingsOpen && setShowControls(false)}
+        onContextMenu={handleContextMenu}
+        className={`relative w-full h-full group bg-black rounded-2xl overflow-hidden select-none font-sans border border-subtle ${className}`}
+      >
+        {/* HTML5 Video Element */}
+        <video
+          ref={videoRef}
+          poster={posterUrl}
+          playsInline
+          loop={isLooping}
+          onTimeUpdate={handleTimeUpdateInternal}
+          onPlay={() => {
+            setIsPlaying(true);
+            setHasEnded(false);
+          }}
+          onPause={() => setIsPlaying(false)}
+          onEnded={handleVideoEnded}
+          onClick={togglePlay}
+          className="w-full h-full object-contain cursor-pointer"
+        />
+
+        {/* End-of-Video Recommendation Overlay */}
+        {hasEnded && !isLooping && (
+          <EndOverlay
+            recommendations={recommendationsList}
+            currentUser={currentUser}
+            onReplay={handleReplay}
+            onSelectRecommendation={() => {}}
+            formatTime={formatTime}
+            t={t}
+          />
+        )}
+
+        {/* Center Play/Pause Animated Splash Indicator */}
+        {centerAnimation && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+            <div className="w-16 h-16 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-2xl animate-ping">
+              {centerAnimation === 'play' ? <Play className="w-8 h-8 fill-white ml-1" /> : <Pause className="w-8 h-8 fill-white" />}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Controls Bar */}
-      <VideoControls
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        buffered={buffered}
-        volume={volume}
-        isMuted={isMuted}
-        isFullscreen={isFullscreen}
-        isLooping={isLooping}
-        levels={levels}
-        currentLevel={currentLevel}
-        isSettingsOpen={isSettingsOpen}
-        showControls={showControls}
-        hoverTime={hoverTime}
-        hoverPosition={hoverPosition}
-        onTogglePlay={togglePlay}
-        onToggleMute={toggleMute}
-        onVolumeChange={handleVolumeChange}
-        onSeek={handleSeek}
-        onTimelineMouseMove={handleTimelineMouseMove}
-        onToggleFullscreen={toggleFullscreen}
-        onToggleLoop={() => setIsLooping(!isLooping)}
-        onToggleSettings={() => setIsSettingsOpen(!isSettingsOpen)}
-        onQualityChange={handleQualityChange}
-        formatTime={formatTime}
-        t={t}
-      />
+        {/* Controls Bar */}
+        <VideoControls
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration}
+          buffered={buffered}
+          volume={volume}
+          isMuted={isMuted}
+          isFullscreen={isFullscreen}
+          isLooping={isLooping}
+          levels={levels}
+          currentLevel={currentLevel}
+          isSettingsOpen={isSettingsOpen}
+          showControls={showControls}
+          hoverTime={hoverTime}
+          hoverPosition={hoverPosition}
+          ambientEnabled={ambientSettings.enabled}
+          ambientIntensity={ambientSettings.intensity}
+          onToggleAmbient={toggleAmbient}
+          onAmbientIntensityChange={changeAmbientIntensity}
+          isVertical={isVertical}
+          onToggleVertical={onToggleVertical}
+          onTogglePlay={togglePlay}
+          onToggleMute={toggleMute}
+          onVolumeChange={handleVolumeChange}
+          onSeek={handleSeek}
+          onTimelineMouseMove={handleTimelineMouseMove}
+          onToggleFullscreen={toggleFullscreen}
+          onToggleLoop={() => setIsLooping(!isLooping)}
+          onToggleSettings={() => {
+            setShowControls(true);
+            setIsSettingsOpen(!isSettingsOpen);
+          }}
+          onQualityChange={handleQualityChange}
+          formatTime={formatTime}
+          t={t}
+        />
 
-      {/* Custom Context Menu (Right-Click) */}
-      {contextMenu && (
-        <div
-          className="absolute z-30 bg-surface-raised border border-subtle rounded-xl p-2 shadow-xl min-w-[200px]"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-        >
-          <button
-            onClick={copyTimestampLink}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary hover:bg-surface rounded-lg transition-colors"
+        {/* Custom Context Menu (Right-Click) */}
+        {contextMenu && (
+          <div
+            className="absolute z-30 bg-surface-raised border border-subtle rounded-xl p-2 shadow-xl min-w-[200px]"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
           >
-            <Link2 className="w-3.5 h-3.5" />
-            <span>{copyLabel}</span>
-          </button>
-          <div className="border-t border-subtle my-1" />
-          <div className="flex items-center gap-2 px-3 py-2 text-[10px] text-muted">
-            <Shield className="w-3 h-3" />
-            <span>Omni Player v2.0</span>
+            <button
+              onClick={copyTimestampLink}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary hover:bg-surface rounded-lg transition-colors cursor-pointer"
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              <span>{copyLabel}</span>
+            </button>
+            <div className="border-t border-subtle my-1" />
+            <div className="flex items-center gap-2 px-3 py-2 text-[10px] text-muted">
+              <Shield className="w-3 h-3" />
+              <span>Omni Player v2.0</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Copy Toast */}
-      {copyToast && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl shadow-xl animate-fadeIn flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5" />
-          {t.player?.linkCopied || 'Link kopiert!'}
-        </div>
-      )}
+        {/* Copy Toast */}
+        {copyToast && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl shadow-xl animate-fadeIn flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            {t.player?.linkCopied || 'Link kopiert!'}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -10,7 +10,6 @@ import {
   Heart,
   Share2,
   Bookmark,
-  CheckCircle2,
   Sparkles,
   Send,
   User,
@@ -552,10 +551,7 @@ export default function ContentPageClient({
                   >
                     <Image src={authorAvatar} alt={authorName} width={44} height={44} className="h-11 w-11 rounded-full object-cover border border-subtle group-hover/author:border-indigo-500 group-hover/author:scale-105 transition-all" unoptimized />
                     <div>
-                      <div className="flex items-center gap-1">
-                        <p className="text-sm font-bold text-primary group-hover/author:text-teal-400 transition-colors">{authorName}</p>
-                        <CheckCircle2 className="h-4 w-4 text-teal-400" />
-                      </div>
+                      <p className="text-sm font-bold text-primary group-hover/author:text-teal-400 transition-colors">{authorName}</p>
                       <p className="text-xs font-mono text-indigo-400">{authorHandle}</p>
                     </div>
                   </div>

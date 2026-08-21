@@ -8,7 +8,6 @@ import {
   Play,
   Heart,
   Share2,
-  CheckCircle2,
   Sparkles,
   Send,
   User,
@@ -25,11 +24,11 @@ import {
   UserPlus,
   Users,
   Film,
-  Flame,
   Settings,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
+import CreatorBadge from '@/components/CreatorBadge';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import VideoSettingsModal from '@/components/VideoSettingsModal';
@@ -400,9 +399,9 @@ export default function VideoPageClient({
           {/* Main Video Section */}
           <div className="lg:col-span-2 space-y-6">
             {/* 16:9 Video Player Container */}
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-surface border border-subtle shadow-2xl">
+            <div className="relative aspect-video w-full">
               {accessStatus && accessStatus.isAllowed === false && accessStatus.isSubscribersOnly ? (
-                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-surface to-base text-primary space-y-4">
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-surface to-base text-primary space-y-4 rounded-2xl border border-subtle">
                   <div className="p-4 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 shadow-xl animate-pulse">
                     <Users className="w-8 h-8" />
                   </div>
@@ -429,6 +428,8 @@ export default function VideoPageClient({
                   posterUrl={video.thumbnailUrl || '/media/thumbnails/default.png'}
                   title={video.title}
                   slug={slug}
+                  isVertical={false}
+                  onToggleVertical={() => router.push(`/shorts/${slug}`)}
                   recommendations={initialRelated}
                   onTimeUpdate={handleVideoTimeUpdate}
                   className="w-full h-full"
@@ -464,7 +465,7 @@ export default function VideoPageClient({
                   )}
                 </div>
 
-                {/* Like, Share, Bookmark Actions */}
+                {/* Like & Share Actions */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleLikeToggle}
@@ -485,58 +486,17 @@ export default function VideoPageClient({
                     <Share2 className="w-4 h-4" />
                     <span className="hidden sm:inline">{t.common.share}</span>
                   </button>
-
-                  <Link
-                    href={`/shorts/${slug}`}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-primary text-xs font-semibold transition-all"
-                    title="Vertical View / Shorts-Modus"
-                  >
-                    <Flame className="w-4 h-4 text-amber-400" />
-                    <span className="hidden sm:inline">Vertical View</span>
-                  </Link>
                 </div>
               </div>
 
               {/* Creator Channel Badge Bar */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-surface-raised border border-subtle">
-                <div
-                  onClick={() => openChannelModal(creator || fallbackCreator)}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
-                  <Image
-                    src={creatorAvatar}
-                    alt={creatorName}
-                    width={44}
-                    height={44}
-                    className="w-11 h-11 rounded-full object-cover border-2 border-indigo-500/40 group-hover:scale-105 transition-transform"
-                    unoptimized
-                  />
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-primary text-sm group-hover:text-indigo-300 transition-colors">
-                        {creatorName}
-                      </h3>
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                    </div>
-                    <p className="text-xs text-muted font-mono">{creatorHandle}</p>
-                  </div>
-                </div>
-
-                {accessStatus?.isOwner ? (
-                  <button
-                    onClick={() => setShowSettingsModal(true)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
-                  >
-                    <Settings className="w-4 h-4 text-indigo-400" />
-                    <span>{t?.videos?.editVideo || 'Video bearbeiten'}</span>
-                  </button>
-                ) : (
-                  <SubscribeButton
-                    targetId={String(creator?.handle || creator?.username || creator?.id || video?.creator?.handle || video?.creator?.id || video?.author?.id || '')}
-                    size="md"
-                  />
-                )}
-              </div>
+              <CreatorBadge
+                creator={creator || fallbackCreator}
+                isOwner={accessStatus?.isOwner}
+                onEdit={() => setShowSettingsModal(true)}
+                editLabel={t?.videos?.editVideo || 'Video bearbeiten'}
+                onOpenProfile={(c) => openChannelModal(c)}
+              />
 
               {/* Expandable Video Description */}
               {(video.summary || video.description || video.tags) && (() => {

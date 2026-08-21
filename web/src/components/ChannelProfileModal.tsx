@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { X, CheckCircle2, ArrowUpRight, MessageSquare, Sparkles } from 'lucide-react';
+import { X, ArrowUpRight, MessageSquare, Sparkles } from 'lucide-react';
 import { ChannelProfileData, useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
 import SubscribeButton from '@/components/SubscribeButton';
@@ -87,10 +87,7 @@ export default function ChannelProfileModal({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 truncate">
-                <h3 className="text-base font-extrabold text-primary truncate">{selectedChannel.username}</h3>
-                <CheckCircle2 className="h-4 w-4 text-teal-400 shrink-0" />
-              </div>
+              <h3 className="text-base font-extrabold text-primary truncate">{selectedChannel.username}</h3>
               <p className="text-xs font-mono text-muted truncate">{selectedChannel.handle}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[11px] text-teal-400 font-semibold flex items-center gap-1">

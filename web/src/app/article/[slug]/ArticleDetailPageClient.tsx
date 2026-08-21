@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Heart, Share2, Bookmark, Eye, Clock, MessageSquare,
-  BookOpen, User as UserIcon, Settings, Tag, Sparkles, FileText, CheckCircle2,
+  BookOpen, User as UserIcon, Settings, Tag, Sparkles, FileText,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
+import CreatorBadge from '@/components/CreatorBadge';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import { ArticleEditModal } from '@/components/article/ArticleEditModal';
 import { useApp } from '@/context/AppContext';
@@ -290,23 +291,45 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
       )}
 
       <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6">
-        {/* Navigation Top Bar */}
-        <div className="flex items-center justify-between">
+        {/* Top Action Bar */}
+        <div className="flex items-center justify-between gap-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface hover:bg-surface-raised border border-subtle text-muted hover:text-primary transition-all text-xs font-semibold cursor-pointer"
+            className="flex items-center gap-2 text-xs text-muted hover:text-primary transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t.common?.back || (effectiveLang === 'de' ? 'Zurück' : 'Back')}</span>
           </button>
 
-          <Link
-            href="/articles"
-            className="flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>{effectiveLang === 'de' ? 'Alle Artikel durchsuchen' : 'Browse all articles'}</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLikeToggle}
+              className={`p-2 px-3.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
+                isLiked
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/20'
+                  : 'bg-surface-raised border border-subtle text-muted hover:text-primary'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-rose-400' : ''}`} />
+              <span>{likesCount}</span>
+            </button>
+
+            <button
+              onClick={handleShare}
+              className="p-2 px-3 rounded-xl border border-subtle bg-surface-raised text-muted hover:text-primary transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              title="Teilen"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+
+            <Link
+              href="/articles"
+              className="hidden sm:flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors ml-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>{effectiveLang === 'de' ? 'Alle Artikel' : 'All articles'}</span>
+            </Link>
+          </div>
         </div>
 
         {/* 3-Column Grid Layout (2 Cols Main, 1 Col Sidebar) */}
@@ -325,81 +348,24 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               </h1>
 
               {/* Creator Row */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-subtle">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveChannelModal({
-                        username: creatorName,
-                        handle: creatorHandle,
-                        avatarUrl: creatorAvatar,
-                      })
-                    }
-                    className="relative cursor-pointer group"
-                  >
-                    <Image
-                      src={creatorAvatar}
-                      alt={creatorName}
-                      width={44}
-                      height={44}
-                      className="w-11 h-11 rounded-full object-cover border-2 border-purple-500/30 group-hover:border-purple-400 transition-colors"
-                      unoptimized
-                    />
-                  </button>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveChannelModal({
-                          username: creatorName,
-                          handle: creatorHandle,
-                          avatarUrl: creatorAvatar,
-                        })
-                      }
-                      className="text-sm font-bold text-primary hover:text-purple-300 transition-colors text-left flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <span>{creatorName}</span>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
-                    </button>
-                    <div className="text-xs font-mono text-muted">{creatorHandle}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {isEffectiveOwner ? (
-                    <button
-                      onClick={() => setShowSettingsModal(true)}
-                      className="px-4 py-2 rounded-xl bg-surface-raised border border-subtle text-muted hover:text-primary text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
-                    >
-                      <Settings className="w-4 h-4 text-purple-400" />
-                      <span>{t?.articles?.editArticle || 'Artikel bearbeiten'}</span>
-                    </button>
-                  ) : (
-                    <SubscribeButton targetId={creatorHandle} size="md" />
-                  )}
-
-                  <button
-                    onClick={handleLikeToggle}
-                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
-                      isLiked
-                        ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-lg shadow-rose-500/20'
-                        : 'bg-surface-raised border border-subtle text-muted hover:text-primary'
-                    }`}
-                  >
-                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-rose-400' : ''}`} />
-                    <span>{likesCount}</span>
-                  </button>
-
-                  <button
-                    onClick={handleShare}
-                    className="p-2.5 rounded-xl border border-subtle bg-surface-raised text-muted hover:text-primary transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                    title="Teilen"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              <CreatorBadge
+                creator={{
+                  username: creatorName,
+                  handle: creatorHandle,
+                  avatarUrl: creatorAvatar,
+                  id: creator?.id,
+                }}
+                isOwner={isEffectiveOwner}
+                onEdit={() => setShowSettingsModal(true)}
+                editLabel={t?.articles?.editArticle || 'Artikel bearbeiten'}
+                onOpenProfile={(c) =>
+                  setActiveChannelModal({
+                    username: creatorName,
+                    handle: creatorHandle,
+                    avatarUrl: creatorAvatar,
+                  })
+                }
+              />
 
               {/* Article Information Grid (Left Column) */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-subtle text-xs">

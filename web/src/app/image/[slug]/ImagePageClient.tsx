@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
+import CreatorBadge from '@/components/CreatorBadge';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { useApp } from '@/context/AppContext';
@@ -330,42 +331,13 @@ export default function ImagePageClient({
                 </div>
 
                 {/* Creator Header */}
-                <div className="flex items-center justify-between pt-4 border-t border-subtle">
-                  <div className="flex items-center gap-3">
-                    <Image
-                      src={resolveAvatarUrl(creatorObj.avatarUrl)}
-                      alt={creatorObj.username}
-                      width={40}
-                      height={40}
-                      onClick={() => handleOpenChannel(creatorObj)}
-                      className="w-10 h-10 rounded-full object-cover border border-subtle cursor-pointer hover:opacity-80 transition-opacity"
-                      unoptimized
-                    />
-                    <div className="flex flex-col">
-                      <span
-                        onClick={() => handleOpenChannel(creatorObj)}
-                        className="font-extrabold text-sm text-primary hover:text-teal-400 cursor-pointer transition-colors"
-                      >
-                        {creatorObj.username}
-                      </span>
-                      <span className="text-[11px] text-muted font-mono">
-                        {creatorObj.handle || `@${(creatorObj.username || 'creator').toLowerCase()}`}
-                      </span>
-                    </div>
-                  </div>
-
-                  {isOwner ? (
-                    <button
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-surface-raised border border-subtle text-muted hover:text-primary hover:border-teal-500/50 transition-all cursor-pointer"
-                    >
-                      <Settings className="w-4 h-4 text-teal-400" />
-                      <span>{t?.images?.editImage || 'Bild bearbeiten'}</span>
-                    </button>
-                  ) : (
-                    <SubscribeButton targetId={creatorObj.handle || creatorObj.documentId || String(creatorObj.id || '1')} />
-                  )}
-                </div>
+                <CreatorBadge
+                  creator={creatorObj}
+                  isOwner={isOwner}
+                  onEdit={() => setIsEditModalOpen(true)}
+                  editLabel={t?.images?.editImage || 'Bild bearbeiten'}
+                  onOpenProfile={(c) => handleOpenChannel(c)}
+                />
 
                 {/* Description & Tags */}
                 {image?.summary && (

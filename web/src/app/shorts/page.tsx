@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Share2,
   Bookmark,
-  CheckCircle2,
   Music,
   Plus,
   Volume2,
@@ -38,6 +37,50 @@ import {
   deleteCommentFromStrapi,
   CommentItem,
 } from '@/lib/comments';
+import { useHlsSource } from '@/lib/hooks/useHlsSource';
+
+function ShortVideoPlayer({
+  short,
+  isActive,
+  isMuted,
+}: {
+  short: FeedItem;
+  isActive: boolean;
+  isMuted: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const hlsUrl = (short as any).hlsUrl || (short.slug ? `/media/hls/${short.slug}.m3u8` : null);
+  const mp4Url = short.mediaUrl || (short as any).mp4Url;
+
+  useHlsSource(videoRef, {
+    hlsUrl,
+    mp4Url,
+    enabled: isActive,
+  });
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isActive) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isActive]);
+
+  return (
+    <video
+      ref={videoRef}
+      poster={short.thumbnailUrl}
+      loop
+      muted={isMuted}
+      playsInline
+      className="h-full w-full object-cover sm:object-contain max-w-md mx-auto"
+    />
+  );
+}
 
 export default function ShortsFeedPage() {
   const router = useRouter();
@@ -400,14 +443,10 @@ export default function ShortsFeedPage() {
               className="snap-start snap-always h-screen w-full relative flex items-center justify-center bg-black overflow-hidden"
             >
               {/* Video Player */}
-              <video
-                src={short.mediaUrl}
-                poster={short.thumbnailUrl}
-                loop
-                muted={isMuted}
-                autoPlay={isActive}
-                playsInline
-                className="h-full w-full object-cover sm:object-contain max-w-md mx-auto"
+              <ShortVideoPlayer
+                short={short}
+                isActive={isActive}
+                isMuted={isMuted}
               />
 
               {/* Dark Gradient Overlays for readable text */}
@@ -508,7 +547,6 @@ export default function ShortsFeedPage() {
                   <span className="text-xs font-mono font-semibold text-indigo-400 bg-black/50 border border-indigo-500/40 px-2 py-0.5 rounded-md">
                     {authorHandle}
                   </span>
-                  <CheckCircle2 className="h-4 w-4 text-teal-400" />
                 </div>
 
                 <h3 className="text-sm font-semibold text-white leading-snug drop-shadow-md">

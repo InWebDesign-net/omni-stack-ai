@@ -403,7 +403,16 @@
     "discoverMore": "Discover more recommendations",
     "replay": "Replay video",
     "seek": "Seek video position",
-    "volume": "Volume"
+    "volume": "Volume",
+    "settings": "Settings",
+    "toggleTimeRemaining": "Toggle remaining / elapsed time",
+    "showRemainingTime": "Show remaining time",
+    "showElapsedTime": "Show elapsed time",
+    "ambientMode": "Ambient Mode (Glow)",
+    "ambientIntensity": "Glow Intensity",
+    "verticalView": "Vertical View",
+    "standardView": "Standard View",
+    "off": "Off"
   },
   "userProfile": {
     "ownerBadge": "Your Profile (Owner)",

@@ -403,7 +403,16 @@
     "discoverMore": "Weitere Empfehlungen entdecken",
     "replay": "Erneut abspielen",
     "seek": "Video-Position",
-    "volume": "Lautstärke"
+    "volume": "Lautstärke",
+    "settings": "Einstellungen",
+    "toggleTimeRemaining": "Verbleibende / Abgelaufene Zeit umschalten",
+    "showRemainingTime": "Verbleibende Zeit anzeigen",
+    "showElapsedTime": "Abgelaufene Zeit anzeigen",
+    "ambientMode": "Ambient Mode (Glow)",
+    "ambientIntensity": "Leuchtstärke",
+    "verticalView": "Vertikale Ansicht",
+    "standardView": "Standard-Ansicht",
+    "off": "Aus"
   },
   "userProfile": {
     "ownerBadge": "Dein Profil (Eigentümer)",
