@@ -14,8 +14,19 @@ import type { ArticleBlock } from './blockTypes';
  * relation away.
  */
 
-const inputClass =
-  'w-full px-3 py-2 bg-base border border-subtle rounded-xl text-sm text-primary placeholder-faint outline-none focus:outline-none focus:border-purple-500 transition-colors';
+/**
+ * Field styling without a width.
+ *
+ * `w-full` used to live in here, which meant a field that needed a different
+ * width could not get one: appending `w-24` does not override `w-full`, because
+ * Tailwind resolves conflicting utilities by their order in the generated
+ * stylesheet, not by their order in the class string. That is how the headline
+ * block ended up with a sliver of an input beside a full-width level select.
+ */
+const fieldBase =
+  'px-3 py-2 bg-base border border-subtle rounded-xl text-sm text-primary placeholder-faint outline-none focus:outline-none focus:border-purple-500 transition-colors';
+
+const inputClass = `w-full ${fieldBase}`;
 
 interface BlockFieldsProps {
   block: ArticleBlock;
@@ -37,13 +48,13 @@ export function BlockFields({ block, onChange, t }: BlockFieldsProps) {
               onChange={(e) => onChange('title', e.target.value)}
               placeholder={b.headlineTitle || 'Überschrift'}
               aria-label={b.headlineTitle || 'Überschrift'}
-              className={`${inputClass} flex-1`}
+              className={`${fieldBase} flex-1 min-w-0`}
             />
             <select
               value={(block.level as string) || 'h2'}
               onChange={(e) => onChange('level', e.target.value)}
               aria-label={b.headlineLevel || 'Ebene'}
-              className={`${inputClass} w-24 cursor-pointer`}
+              className={`${fieldBase} w-24 shrink-0 cursor-pointer`}
             >
               {['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((lvl) => (
                 <option key={lvl} value={lvl}>{lvl.toUpperCase()}</option>
