@@ -97,26 +97,49 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
         isMe,
         isSystem,
         showDateDivider,
-        dateDividerText: showDateDivider ? formatDateDivider(msg.timestamp) : '',
+        dayKey: currentDayKey,
+        dateDividerText: formatDateDivider(msg.timestamp),
         isFirstInGroup,
         isLastInGroup,
       };
     });
   }, [messages, currentUserId]);
 
+  /**
+   * Messages grouped by day.
+   *
+   * The date labels are `sticky`, and sticky elements sharing a scroll container
+   * all pin to the same offset — so with more than one day in view the older
+   * label slid underneath "Heute" instead of making way for it. Wrapping each
+   * day in its own section fixes that with no JavaScript: a sticky header can
+   * only travel within its own section, so the next day's section pushes the
+   * previous label out as it arrives.
+   */
+  const dayGroups = React.useMemo(() => {
+    const groups: { dayKey: string; label: string; items: typeof processedMessages }[] = [];
+    for (const msg of processedMessages) {
+      const last = groups[groups.length - 1];
+      if (!last || last.dayKey !== (msg as any).dayKey) {
+        groups.push({ dayKey: (msg as any).dayKey, label: msg.dateDividerText, items: [] as any });
+      }
+      groups[groups.length - 1].items.push(msg as any);
+    }
+    return groups;
+  }, [processedMessages]);
+
   return (
     <div className="flex-1 overflow-y-auto overscroll-contain p-3 min-h-0">
-      {processedMessages.map((msg) => {
+      {dayGroups.map((group) => (
+        <section key={group.dayKey} className="relative">
+          <div className="flex justify-center my-3 sticky top-2 z-10">
+            <span className="px-3 py-1 bg-surface-raised/90 border border-subtle text-primary rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
+              {group.label}
+            </span>
+          </div>
+          {group.items.map((msg) => {
         if (msg.isSystem) {
           return (
             <React.Fragment key={msg.id}>
-              {msg.showDateDivider && msg.dateDividerText && (
-                <div className="flex justify-center my-3 sticky top-2 z-10">
-                  <span className="px-3 py-1 bg-surface-raised/90 border border-subtle text-primary rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
-                    {msg.dateDividerText}
-                  </span>
-                </div>
-              )}
               <div className="flex justify-center my-2">
                 <span className="px-3 py-1 bg-surface border border-subtle text-muted rounded-full text-[11px] font-mono">
                   {msg.content}
@@ -154,15 +177,6 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
 
         return (
           <React.Fragment key={msg.id}>
-            {/* Sticky Date Divider (0 Uhr / Neuer Tag) */}
-            {msg.showDateDivider && msg.dateDividerText && (
-              <div className="flex justify-center my-3.5 sticky top-2 z-10">
-                <span className="px-3 py-1 bg-surface-raised/90 border border-subtle text-primary rounded-full text-[11px] font-mono shadow-md backdrop-blur-md">
-                  {msg.dateDividerText}
-                </span>
-              </div>
-            )}
-
             {/* Message Item Container with Dynamic Spacing (Flush when grouped) */}
             <div className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isFirstInGroup ? 'mt-3' : 'mt-0.5'}`}>
               <div
@@ -201,11 +215,13 @@ export function MessageList({ messages, currentUserId, showReadReceipts, message
                     )}
                   </div>
                 )}
+                </div>
               </div>
-            </div>
-          </React.Fragment>
-        );
-      })}
+            </React.Fragment>
+          );
+        })}
+        </section>
+      ))}
       <div ref={messagesEndRef} />
     </div>
   );
