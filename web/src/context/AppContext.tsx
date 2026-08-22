@@ -17,6 +17,7 @@ import {
 } from '@/lib/affinity';
 import { getDictionary, Dictionary } from '@/lib/i18n';
 import { AVATAR_PLACEHOLDER, isLegacyAvatar, resolveAvatarUrl } from '@/lib/avatar';
+import { storeItem, storeCookie } from '@/lib/consent';
 
 export interface UserProfileSession {
   id: number;
@@ -175,7 +176,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               if (sanitized) {
                 setCurrentUser((prev) => ({ ...prev, ...sanitized }));
                 try {
-                  localStorage.setItem('omni_user', JSON.stringify(sanitized));
+                  storeItem('omni_user', JSON.stringify(sanitized));
                 } catch (e) { console.error('[AppContext] failed to persist user session to localStorage:', e); }
               }
             }
@@ -193,8 +194,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setLang = (nextLang: 'de' | 'en') => {
     setLangState(nextLang);
     try {
-      localStorage.setItem('omni_lang', nextLang);
-      document.cookie = `omni_lang=${nextLang}; path=/; max-age=31536000`;
+      storeItem('omni_lang', nextLang);
+      // The cookie is what the server reads when rendering, so it goes through
+      // the same gate: language is a preference, not a necessity.
+      storeCookie('omni_lang', nextLang);
     } catch (e) { console.error('[AppContext] failed to persist language preference:', e); }
   };
 

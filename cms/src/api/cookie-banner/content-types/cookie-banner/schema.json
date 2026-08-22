@@ -1,0 +1,77 @@
+{
+  "kind": "singleType",
+  "collectionName": "cookie_banners",
+  "info": {
+    "singularName": "cookie-banner",
+    "pluralName": "cookie-banners",
+    "displayName": "Cookie Banner",
+    "description": "The consent banner: whether it shows, what it says, and what the site stores"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "i18n": { "localized": false }
+      }
+    },
+    "heading": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "body": {
+      "type": "text",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "notice": {
+      "type": "text",
+      "description": "Free text explaining this is a preview with nightly resets",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "acceptAllLabel": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "rejectAllLabel": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "customiseLabel": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "saveSelectionLabel": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "privacyUrl": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "privacyLabel": {
+      "type": "string",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "categories": {
+      "type": "component",
+      "repeatable": true,
+      "component": "consent.category",
+      "pluginOptions": { "i18n": { "localized": true } }
+    },
+    "cookies": {
+      "type": "component",
+      "repeatable": true,
+      "component": "consent.cookie-entry",
+      "description": "The mapping of what is stored. Maintained by hand for now; see #141.",
+      "pluginOptions": { "i18n": { "localized": false } }
+    }
+  }
+}

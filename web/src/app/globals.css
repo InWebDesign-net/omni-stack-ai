@@ -1,5 +1,63 @@
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
+
+/*
+ * Self-hosted webfonts — no third-party requests.
+ *
+ * This used to be an `@import` from fonts.googleapis.com on the first line of
+ * the first stylesheet, so every visitor's browser reached Google, and handed
+ * over its IP, before anything rendered and long before a consent banner could
+ * ask (#142). Serving the files ourselves removes the question rather than
+ * managing it, and takes the site to zero third-party requests.
+ *
+ * Both families are variable fonts: one file per subset covers the whole weight
+ * range (`font-weight: 400 900`), which is smaller than the six static cuts the
+ * design uses. Weight 300 was dropped — nothing referenced it. Subsets are
+ * limited to latin and latin-ext; the cyrillic, greek and vietnamese cuts
+ * Google also serves are bytes for glyphs this site never renders.
+ *
+ * Both are SIL OFL licensed, so redistribution is fine; the licences sit next
+ * to the files in /public/fonts.
+ */
+
+/* Hanken Grotesk — latin-ext */
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url(/fonts/hanken-grotesk-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+
+/* Hanken Grotesk — latin */
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url(/fonts/hanken-grotesk-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
+/* JetBrains Mono — latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(/fonts/jetbrains-mono-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+
+/* JetBrains Mono — latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(/fonts/jetbrains-mono-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
 
 /* ─── Custom theme tokens (Tailwind v4) ───────────────────────────────────
    Wider layout for modern large monitors (28" / multi-monitor setups):

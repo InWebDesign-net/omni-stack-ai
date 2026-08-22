@@ -3,9 +3,10 @@
 import React, { useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ExternalLink, Film, BookOpen, Image as ImageIcon, Flame } from 'lucide-react';
+import { ExternalLink, Film, BookOpen, Image as ImageIcon, Flame, Cookie } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { OmniLogo } from '@/components/Header';
+import { OPEN_CONSENT_EVENT } from '@/components/ConsentBanner';
 import { FooterOverlapProbe } from '@/components/FooterOverlapProbe';
 
 export default function Footer() {
@@ -78,6 +79,16 @@ export default function Footer() {
             <Flame className="w-3.5 h-3.5 text-amber-400" />
             <span>{footerText.shorts || 'Shorts'}</span>
           </Link>
+          {/* Without a way back in, the first answer would be the last one the
+              visitor ever gets to give. */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event(OPEN_CONSENT_EVENT))}
+            className="flex items-center gap-1.5 hover:text-indigo-400 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
+          >
+            <Cookie className="w-3.5 h-3.5 text-indigo-400" />
+            <span>{footerText.cookieSettings || 'Cookie-Einstellungen'}</span>
+          </button>
         </div>
 
         {/* InWebDesign Backlink & Copyright */}

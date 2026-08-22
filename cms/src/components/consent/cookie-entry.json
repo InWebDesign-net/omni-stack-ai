@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_consent_cookie_entries",
+  "info": {
+    "displayName": "Cookie Entry",
+    "description": "One stored item: cookie or storage key, and what it is for"
+  },
+  "options": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "category": {
+      "type": "enumeration",
+      "enum": ["necessary", "preferences", "statistics", "marketing", "unclassified"],
+      "required": true
+    },
+    "storage": {
+      "type": "enumeration",
+      "enum": ["cookie", "localStorage"],
+      "default": "cookie"
+    },
+    "provider": { "type": "string" },
+    "purpose": { "type": "text" },
+    "retention": { "type": "string" }
+  }
+}

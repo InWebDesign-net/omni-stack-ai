@@ -45,6 +45,7 @@ import {
   deleteCommentFromStrapi,
   CommentItem as CommentItemType,
 } from '@/lib/comments';
+import { storeItem } from '@/lib/consent';
 
 interface ContentPageClientProps {
   initialItem: any;
@@ -256,7 +257,7 @@ export default function ContentPageClient({
         const idx = storedLikes.indexOf(item.slug);
         if (idx > -1) storedLikes.splice(idx, 1);
       }
-      localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes));
+      storeItem('omni_user_likes', JSON.stringify(storedLikes));
     } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 
     try {

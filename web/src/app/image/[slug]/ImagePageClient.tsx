@@ -31,6 +31,7 @@ import { formatRelativeDate } from '@/lib/date';
 import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
+import { storeItem } from '@/lib/consent';
 
 interface ImagePageClientProps {
   initialImage: any;
@@ -203,9 +204,9 @@ export default function ImagePageClient({
     try {
       const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
       if (nextIsLiked && !storedLikes.includes(slug)) {
-        localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, slug]));
+        storeItem('omni_user_likes', JSON.stringify([...storedLikes, slug]));
       } else if (!nextIsLiked) {
-        localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== slug)));
+        storeItem('omni_user_likes', JSON.stringify(storedLikes.filter((s) => s !== slug)));
       }
     } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 

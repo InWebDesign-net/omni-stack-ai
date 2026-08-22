@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Sun, Moon, Laptop, Check, ChevronDown } from 'lucide-react';
+import { storeItem } from '@/lib/consent';
 
 export type ThemeChoice = 'system' | 'dark' | 'light';
 
@@ -30,7 +31,7 @@ export default function ThemeToggle({ variant = 'dropdown', labels }: ThemeToggl
 
   const applyTheme = (choice: ThemeChoice) => {
     setTheme(choice);
-    localStorage.setItem('omni-theme', choice);
+    storeItem('omni-theme', choice);
     let resolved = choice;
     if (choice === 'system') {
       resolved = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';

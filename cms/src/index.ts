@@ -269,6 +269,12 @@ export default {
         await enablePermission(publicRole.id, 'api::chat-message.chat-message.find');
         await enablePermission(publicRole.id, 'api::chat-message.chat-message.findOne');
         await enablePermission(publicRole.id, 'api::chat-message.chat-message.create');
+
+        // The consent banner has to render before the visitor has agreed to
+        // anything, so its text and category list must be readable without a
+        // session. It contains no personal data — only what the site stores.
+        await enablePermission(publicRole.id, 'api::cookie-banner.cookie-banner.find');
+
         for (const action of publicFeedActions) {
           await enablePermission(publicRole.id, action);
         }
