@@ -21,7 +21,7 @@ export default {
     // Centralized Document Service Middleware for default-deny visibility enforcement.
     // See docs/OMNI_VIEWER.md for the full visibility contract.
     strapi.documents.use(async (context: any, next: any) => {
-      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item', 'api::image.image', 'api::article.article'];
+      const targetUIDs = ['api::video.video', 'api::feed-item.feed-item', 'api::image.image', 'api::article.article', 'api::playlist.playlist'];
       const action = context.action;
 
       if (targetUIDs.includes(context.uid) && (action === 'findMany' || action === 'findOne' || action === 'findFirst')) {
@@ -76,8 +76,21 @@ export default {
               : (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : null)));
 
         const filters = context.params.filters || {};
-        const usesCreator = context.uid === 'api::video.video' || context.uid === 'api::image.image' || context.uid === 'api::article.article';
-        const targetRelFilter = usesCreator ? filters.creator : filters.author;
+
+        /*
+         * Which field names the owner, per type. This was two booleans and a
+         * ternary; a third answer ('owner', for playlists) does not fit that
+         * shape, and a wrong guess here silently widens what a caller sees.
+         */
+        const OWNER_FIELD_BY_UID: Record<string, string> = {
+          'api::video.video': 'creator',
+          'api::image.image': 'creator',
+          'api::article.article': 'creator',
+          'api::playlist.playlist': 'owner',
+          'api::feed-item.feed-item': 'author',
+        };
+        const ownerField = OWNER_FIELD_BY_UID[context.uid] || 'author';
+        const targetRelFilter = filters[ownerField];
         const targetRelId = targetRelFilter?.id?.$eq || targetRelFilter?.id || targetRelFilter;
 
         const isOwnerQuery = Boolean(uidNum && targetRelId && String(uidNum) === String(targetRelId));
@@ -98,7 +111,6 @@ export default {
          * tighter than a blanket allowance: being logged in is not enough to
          * read someone else's private item by guessing its slug.
          */
-        const ownerField = usesCreator ? 'creator' : 'author';
         const visibleBranches: any[] = [
           { visibility: { $in: ['public', 'unlisted', 'subscribers'] } },
         ];

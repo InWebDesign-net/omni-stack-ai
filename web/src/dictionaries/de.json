@@ -436,7 +436,8 @@
       "videos": "Videos",
       "images": "Bilder",
       "likes": "Likes",
-      "about": "Über den Kanal"
+      "about": "Über den Kanal",
+      "playlists": "Playlists"
     },
     "stats": {
       "videos": "Videos",
@@ -575,5 +576,28 @@
   },
   "user": {
     "noLikes": "Noch nichts geliked"
+  },
+  "playlists": {
+    "title": "Zu Playlist hinzufügen",
+    "addTo": "Zu Playlist hinzufügen",
+    "save": "Speichern",
+    "video": "Video",
+    "videos": "Videos",
+    "empty": "Du hast noch keine Playlists.",
+    "emptyGuest": "Dieser Nutzer hat noch keine öffentlichen Playlists.",
+    "newPlaceholder": "Neue Playlist…",
+    "create": "Anlegen",
+    "privateHint": "Neue Playlists sind privat, bis du sie im Profil freigibst.",
+    "signInHint": "Playlists gehören zu deinem Konto — melde dich an, um eine anzulegen.",
+    "writeFailed": "Änderung konnte nicht gespeichert werden.",
+    "createFailed": "Playlist konnte nicht angelegt werden.",
+    "hidden": "nicht sichtbar",
+    "visibility": "Sichtbarkeit",
+    "delete": "Playlist löschen",
+    "confirmDelete": "Wirklich löschen?",
+    "removeItem": "Aus Playlist entfernen",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "dragHandle": "Zum Sortieren ziehen"
   }
 }

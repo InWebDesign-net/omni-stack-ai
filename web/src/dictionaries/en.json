@@ -436,7 +436,8 @@
       "videos": "Videos",
       "images": "Images",
       "likes": "Likes",
-      "about": "About Channel"
+      "about": "About Channel",
+      "playlists": "Playlists"
     },
     "stats": {
       "videos": "Videos",
@@ -575,5 +576,28 @@
   },
   "user": {
     "noLikes": "Nothing liked yet"
+  },
+  "playlists": {
+    "title": "Add to playlist",
+    "addTo": "Add to playlist",
+    "save": "Save",
+    "video": "video",
+    "videos": "videos",
+    "empty": "You have no playlists yet.",
+    "emptyGuest": "This user has no public playlists yet.",
+    "newPlaceholder": "New playlist…",
+    "create": "Create",
+    "privateHint": "New playlists are private until you publish them from your profile.",
+    "signInHint": "Playlists belong to your account — sign in to create one.",
+    "writeFailed": "That change could not be saved.",
+    "createFailed": "The playlist could not be created.",
+    "hidden": "not visible",
+    "visibility": "Visibility",
+    "delete": "Delete playlist",
+    "confirmDelete": "Delete for good?",
+    "removeItem": "Remove from playlist",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "dragHandle": "Drag to reorder"
   }
 }

@@ -21,6 +21,7 @@ import {
     Clock,
     Image as ImageIcon,
     FileText,
+    ListVideo,
 } from 'lucide-react';
 import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
@@ -36,6 +37,7 @@ import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { UserImagesTab } from '@/components/user/UserImagesTab';
 import { UserArticlesTab } from '@/components/user/UserArticlesTab';
 import { UserLikesTab } from '@/components/user/UserLikesTab';
+import { UserPlaylistsTab } from '@/components/user/UserPlaylistsTab';
 import { formatAbsoluteDate } from '@/lib/date';
 import { jsonAuthHeaders } from '@/lib/affinity';
 
@@ -53,7 +55,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal, openSettingsModal } = useApp();
     const { createRoom, openChat } = useChat();
 
-    const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'likes' | 'about'>('articles');
+    const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'likes' | 'playlists' | 'about'>('articles');
 
     // One list per tab, fetched only while that tab is open. Each keeps its own
     // sort and search: someone who sorted images by title does not expect their
@@ -298,7 +300,19 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         <span>{(t as any).userProfile?.tabs?.likes || 'Likes'} ({likesList.total})</span>
                     </button>
 
-                    {/* TAB 5: About Channel */}
+                    {/* TAB 5: Playlists */}
+                    <button
+                        onClick={() => setActiveTab('playlists')}
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'playlists'
+                                ? 'border-indigo-500 text-indigo-400'
+                                : 'border-transparent text-muted hover:text-primary'
+                            }`}
+                    >
+                        <ListVideo className="w-4 h-4" />
+                        <span>{(t as any).userProfile?.tabs?.playlists || 'Playlists'}</span>
+                    </button>
+
+                    {/* TAB 6: About Channel */}
                     <button
                         onClick={() => setActiveTab('about')}
                         className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'about'
@@ -507,7 +521,12 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                   </>
                 )}
 
-                {/* TAB 5: About Channel Info */}
+                {/* TAB 5: Playlists */}
+                {activeTab === 'playlists' && (
+                    <UserPlaylistsTab isOwner={isOwner} t={t} />
+                )}
+
+                {/* TAB 6: About Channel Info */}
                 {activeTab === 'about' && (
                     <div className="bg-surface rounded-3xl border border-subtle p-8 space-y-6">
                         <div>
