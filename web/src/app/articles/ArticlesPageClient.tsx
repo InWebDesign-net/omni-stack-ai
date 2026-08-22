@@ -41,7 +41,7 @@ export default function ArticlesPageClient() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const {
-    searchTerm, currentPage, sort, filterFavorites, lang, perPage,
+    searchTerm, currentPage, sort, filterLikes, lang, perPage,
     searchInput, setSearchInput, handleSearchSubmit, clearSearch,
     includedTags, excludedTags, matchMode, tagSearch, isTagCloudExpanded,
     filteredAllTags, hasTagFilters, toggleTag, setMatchMode, setTagSearch,

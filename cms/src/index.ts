@@ -226,7 +226,7 @@ export default {
         'api::feed.feed.streamAiResponse',
         'api::feed.feed.handleInteraction',
         'api::feed.feed.getInteractionStatus',
-        'api::feed.feed.getUserFavorites',
+        'api::feed.feed.getUserLikes',
         'api::tracking.tracking.processBatch',
       ];
 
@@ -327,10 +327,10 @@ export default {
         await enablePermission(authRole.id, 'api::subscription.subscription.create');
         await enablePermission(authRole.id, 'api::subscription.subscription.update');
         await enablePermission(authRole.id, 'api::subscription.subscription.delete');
-        await enablePermission(authRole.id, 'api::favorite.favorite.find');
-        await enablePermission(authRole.id, 'api::favorite.favorite.findOne');
-        await enablePermission(authRole.id, 'api::favorite.favorite.create');
-        await enablePermission(authRole.id, 'api::favorite.favorite.delete');
+        await enablePermission(authRole.id, 'api::like.like.find');
+        await enablePermission(authRole.id, 'api::like.like.findOne');
+        await enablePermission(authRole.id, 'api::like.like.create');
+        await enablePermission(authRole.id, 'api::like.like.delete');
         for (const action of publicFeedActions) {
           await enablePermission(authRole.id, action);
         }

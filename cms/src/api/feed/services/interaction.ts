@@ -94,7 +94,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
       }
 
-      const favs = await strapi.documents('api::favorite.favorite').findMany(favQuery);
+      const favs = await strapi.documents('api::like.like').findMany(favQuery);
       if (favs && favs.length > 0) {
         isLiked = true;
       }
@@ -324,16 +324,16 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         else if (targetFeedItemDocId) favQuery.filters.feedItem = { documentId: { $eq: targetFeedItemDocId } };
 
         try {
-          existingFavs = await strapi.documents('api::favorite.favorite').findMany(favQuery);
+          existingFavs = await strapi.documents('api::like.like').findMany(favQuery);
         } catch (e) {
-          existingFavs = await strapi.db.query('api::favorite.favorite').findMany(favQuery);
+          existingFavs = await strapi.db.query('api::like.like').findMany(favQuery);
         }
       } catch (e) {
         strapi.log.error('[interaction.ts] unhandled error', e);
       }
 
       if (existingFavs.length === 0) {
-        // Create Favorite relation
+        // Create Like relation
         let createdSuccess = false;
 
         // Attempt 1: DB Query (direct integer relation mapping)
@@ -345,12 +345,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           if (targetArticleId) dbData.article = targetArticleId;
           if (targetFeedItemId) dbData.feedItem = targetFeedItemId;
 
-          await strapi.db.query('api::favorite.favorite').create({
+          await strapi.db.query('api::like.like').create({
             data: dbData,
           });
           createdSuccess = true;
         } catch (dbErr: any) {
-          console.warn('DB Query favorite creation warning:', dbErr?.message || dbErr);
+          console.warn('DB Query like creation warning:', dbErr?.message || dbErr);
         }
 
         // Attempt 2: Document Service fallback
@@ -363,12 +363,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             if (targetArticleDocId) favData.article = targetArticleDocId;
             if (targetFeedItemDocId) favData.feedItem = targetFeedItemDocId;
 
-            await strapi.documents('api::favorite.favorite').create({
+            await strapi.documents('api::like.like').create({
               data: favData,
             });
             createdSuccess = true;
           } catch (docErr: any) {
-            console.error('Document Service favorite creation error:', docErr?.message || docErr);
+            console.error('Document Service like creation error:', docErr?.message || docErr);
           }
         }
 
@@ -440,9 +440,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
         let existingFavs: any[] = [];
         try {
-          existingFavs = await strapi.documents('api::favorite.favorite').findMany(favQuery);
+          existingFavs = await strapi.documents('api::like.like').findMany(favQuery);
           for (const fav of existingFavs) {
-            await strapi.documents('api::favorite.favorite').delete({
+            await strapi.documents('api::like.like').delete({
               documentId: fav.documentId,
             });
           }
@@ -506,7 +506,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     return { success: false, error: 'Invalid interaction type' };
   },
 
-  async getUserFavorites(userIdentifier: string, userId?: number | string) {
+  async getUserLikes(userIdentifier: string, userId?: number | string) {
     try {
       const favFilters: any[] = [];
       if (userIdentifier) favFilters.push({ userIdentifier: { $eq: userIdentifier } });
@@ -521,7 +521,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
       let favs: any[] = [];
       try {
-        favs = await strapi.documents('api::favorite.favorite').findMany({
+        favs = await strapi.documents('api::like.like').findMany({
           filters: {
             $or: favFilters,
           },
@@ -538,7 +538,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
       return {
         success: true,
-        favorites: favs,
+        likes: favs,
       };
     } catch (e: any) {
       return { success: false, error: e.message };

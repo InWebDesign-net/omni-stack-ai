@@ -23,7 +23,7 @@ export interface ProfileCounts {
   videos: number;
   images: number;
   articles: number;
-  favorites: number;
+  likes: number;
 }
 
 export interface ProfileData {
@@ -150,20 +150,20 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     const totalViews = videoSummary.views + imageSummary.views + articleSummary.views;
     const totalLikes = videoSummary.likes + imageSummary.likes + articleSummary.likes;
 
-    // The likes tab loads its own pages through /api/profile/favorites, so only
+    // The likes tab loads its own pages through /api/profile/likes, so only
     // the count is needed here — same as the other three tabs.
-    let favoritesTotal = 0;
+    let likesTotal = 0;
     try {
       const countRes = await fetch(
-        `${strapiUrl}/api/favorites?filters[user][id][$eq]=${targetProfile.id}&pagination[pageSize]=1&fields[0]=id`,
+        `${strapiUrl}/api/likes?filters[user][id][$eq]=${targetProfile.id}&pagination[pageSize]=1&fields[0]=id`,
         { headers, cache: 'no-store' }
       );
       if (countRes.ok) {
         const countJson = await countRes.json();
-        favoritesTotal = Number(countJson?.meta?.pagination?.total || 0);
+        likesTotal = Number(countJson?.meta?.pagination?.total || 0);
       }
     } catch (e) {
-      console.error('Error counting favorites for profile:', e);
+      console.error('Error counting likes for profile:', e);
     }
 
     return {
@@ -182,7 +182,7 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         videos: videoSummary.total,
         images: imageSummary.total,
         articles: articleSummary.total,
-        favorites: favoritesTotal,
+        likes: likesTotal,
       },
       stats: {
         totalVideos: videoSummary.total,

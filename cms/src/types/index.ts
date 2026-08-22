@@ -111,7 +111,7 @@ export interface Subscription {
   updatedAt?: string;
 }
 
-export interface Favorite {
+export interface Like {
   id?: number | string;
   documentId?: string;
   userIdentifier?: string;

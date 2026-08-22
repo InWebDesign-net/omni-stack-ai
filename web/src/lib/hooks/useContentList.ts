@@ -13,7 +13,7 @@ export interface UseContentListParams<T = unknown> {
   pageSize?: number | string;
   sort?: string;
   searchTerm?: string;
-  filterFavorites?: string | boolean;
+  filterLikes?: string | boolean;
   includedTags?: string[];
   excludedTags?: string[];
   matchMode?: 'any' | 'all';
@@ -50,7 +50,7 @@ export function useContentList<T>(kind: ContentKind, params: UseContentListParam
     pageSize = 24,
     sort = 'createdatasc',
     searchTerm = '',
-    filterFavorites = '',
+    filterLikes = '',
     includedTags = [],
     excludedTags = [],
     matchMode = 'any',
@@ -89,7 +89,7 @@ export function useContentList<T>(kind: ContentKind, params: UseContentListParam
   if (safeSearch) {
     queryParams.set('q', safeSearch);
   }
-  if (filterFavorites === 'true' || filterFavorites === true) {
+  if (filterLikes === 'true' || filterLikes === true) {
     queryParams.set('favsOnly', 'true');
   }
   const safeIncluded = Array.isArray(includedTags) ? includedTags : [];

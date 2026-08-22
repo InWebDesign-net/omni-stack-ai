@@ -410,14 +410,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
-  async getUserFavorites(ctx: any) {
+  async getUserLikes(ctx: any) {
     try {
       const { userIdentifier } = ctx.query;
       const userId = ctx.state?.user?.id;
-      const result = await strapi.service('api::feed.feed').getUserFavorites(userIdentifier as string, userId);
+      const result = await strapi.service('api::feed.feed').getUserLikes(userIdentifier as string, userId);
       return ctx.send(result);
     } catch (err: any) {
-      return ctx.badRequest('User Favorites Error', { error: err.message });
+      return ctx.badRequest('User Likes Error', { error: err.message });
     }
   },
 });

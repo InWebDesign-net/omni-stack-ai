@@ -35,7 +35,7 @@ import { ArticleEditModal } from '@/components/article/ArticleEditModal';
 import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { UserImagesTab } from '@/components/user/UserImagesTab';
 import { UserArticlesTab } from '@/components/user/UserArticlesTab';
-import { UserFavoritesTab } from '@/components/user/UserFavoritesTab';
+import { UserLikesTab } from '@/components/user/UserLikesTab';
 import { formatAbsoluteDate } from '@/lib/date';
 import { jsonAuthHeaders } from '@/lib/affinity';
 
@@ -53,7 +53,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal, openSettingsModal } = useApp();
     const { createRoom, openChat } = useChat();
 
-    const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'favorites' | 'about'>('articles');
+    const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'images' | 'likes' | 'about'>('articles');
 
     // One list per tab, fetched only while that tab is open. Each keeps its own
     // sort and search: someone who sorted images by title does not expect their
@@ -62,8 +62,8 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const videoList = useProfileTabList({ kind: 'video', creatorId: profile.id, active: activeTab === 'videos', lang, initialTotal: counts.videos });
     const imageList = useProfileTabList({ kind: 'image', creatorId: profile.id, active: activeTab === 'images', lang, initialTotal: counts.images });
     // Likes have their own hook: they join four content types through
-    // /api/favorites, which the filtered services do not cover.
-    const likesList = useProfileLikesTab({ userId: profile.id, active: activeTab === 'favorites', initialTotal: counts.favorites });
+    // /api/likes, which the filtered services do not cover.
+    const likesList = useProfileLikesTab({ userId: profile.id, active: activeTab === 'likes', initialTotal: counts.likes });
 
     const articles = articleList.items;
     const videos = videoList.items;
@@ -286,16 +286,16 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                         <span>{(t as any).userProfile?.tabs?.images || 'Images'} ({imageList.total})</span>
                     </button>
 
-                    {/* TAB 4: Favorites */}
+                    {/* TAB 4: Likes */}
                     <button
-                        onClick={() => setActiveTab('favorites')}
-                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'favorites'
+                        onClick={() => setActiveTab('likes')}
+                        className={`pb-4 text-sm font-bold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === 'likes'
                                 ? 'border-indigo-500 text-indigo-400'
                                 : 'border-transparent text-muted hover:text-primary'
                             }`}
                     >
                         <Heart className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.favorites || 'Likes'} ({likesList.total})</span>
+                        <span>{(t as any).userProfile?.tabs?.likes || 'Likes'} ({likesList.total})</span>
                     </button>
 
                     {/* TAB 5: About Channel */}
@@ -494,10 +494,10 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                   </>
                 )}
 
-                {/* TAB 4: Favorites Grid */}
-                {activeTab === 'favorites' && (
+                {/* TAB 4: Likes Grid */}
+                {activeTab === 'likes' && (
                   <>
-                    <UserFavoritesTab favorites={likesList.items} slug={profile.handle || profile.username} t={t} />
+                    <UserLikesTab likes={likesList.items} slug={profile.handle || profile.username} t={t} />
                     <ProfileTabLoadMore
                         hasMore={likesList.hasMore}
                         isLoadingMore={likesList.isLoadingMore}

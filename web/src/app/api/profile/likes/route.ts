@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * The previous version of this route took a comma-separated list of slugs from
  * the caller, which was how likes worked before they were persisted: they lived
  * in `localStorage` and the server only resolved them. Nothing called it. Since
- * #122 the heart writes an `api::favorite` row, so this reads that collection
+ * #122 the heart writes an `api::like` row, so this reads that collection
  * instead.
  *
  * It cannot go through `/api/content/{kind}/list` like the other profile tabs:
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     params.set('sort', 'createdAt:desc');
     params.set('populate', 'video,image,article,feedItem');
 
-    const res = await fetch(`${STRAPI_URL}/api/favorites?${params.toString()}`, {
+    const res = await fetch(`${STRAPI_URL}/api/likes?${params.toString()}`, {
       headers,
       cache: 'no-store',
     });
@@ -94,13 +94,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       data: cards,
-      // The pagination is the favourites' own. A page can render fewer cards
+      // The pagination is the likes' own. A page can render fewer cards
       // than it holds rows if one still points at deleted content, which is why
       // the tab shows the total rather than counting what it drew.
       meta: json?.meta || { pagination: { total: cards.length, page, pageSize, pageCount: 1 } },
     });
   } catch (error) {
-    console.error('GET /api/profile/favorites error:', error);
+    console.error('GET /api/profile/likes error:', error);
     return NextResponse.json(empty, { status: 500 });
   }
 }

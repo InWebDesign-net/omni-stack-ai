@@ -3,7 +3,7 @@
  *
  * Routes WITHOUT `auth: false` are governed by users-permissions role
  * permissions (granted in src/index.ts bootstrap):
- *   - public + authenticated: assembly, ai-intent, interaction, interaction-status, user-favorites
+ *   - public + authenticated: assembly, ai-intent, interaction, interaction-status, user-likes
  *   - authenticated only:     profile
  * This way a JWT is verified when present (ctx.state.user is populated) while
  * anonymous access keeps working through the public role.
@@ -94,8 +94,8 @@ export default {
     },
     {
       method: 'GET',
-      path: '/feed/user-favorites',
-      handler: 'feed.getUserFavorites',
+      path: '/feed/user-likes',
+      handler: 'feed.getUserLikes',
     },
   ],
 };

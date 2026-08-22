@@ -13,7 +13,7 @@ import CreatorBadge from '@/components/CreatorBadge';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import { ArticleEditModal } from '@/components/article/ArticleEditModal';
 import { useApp } from '@/context/AppContext';
-import { toggleFavorite } from '@/lib/favorites';
+import { toggleLike } from '@/lib/likes';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { ArticleBlockRenderer } from '@/components/article/ArticleBlockRenderer';
@@ -198,11 +198,11 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     const nextIsLiked = !isLiked;
     setIsLiked(nextIsLiked);
 
-    // Persist the favourite the toast has been promising. `desired` rather than
+    // Persist the like the toast has been promising. `desired` rather than
     // a flip, so a disagreement between this button and the stored record
     // cannot invert the outcome.
     if (item?.id != null) {
-      void toggleFavorite({ articleId: item.id, desired: nextIsLiked });
+      void toggleLike({ articleId: item.id, desired: nextIsLiked });
     }
     setLikesCount((prev: number) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
 

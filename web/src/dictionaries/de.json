@@ -4,7 +4,7 @@
     "backToHome": "Zurück zur Startseite",
     "browseAllVideos": "Alle Videos durchsuchen",
     "searchPlaceholder": "Titel durchsuchen...",
-    "favorites": "Favoriten",
+    "likes": "Likes",
     "resetFilters": "Filter zurücksetzen",
     "share": "Teilen",
     "subscribe": "Abonnieren",
@@ -435,7 +435,7 @@
       "articles": "Artikel",
       "videos": "Videos",
       "images": "Bilder",
-      "favorites": "Likes",
+      "likes": "Likes",
       "about": "Über den Kanal"
     },
     "stats": {
@@ -450,10 +450,10 @@
       "guestSub": "Dieser Ersteller hat noch keine öffentlichen Videos veröffentlicht.",
       "uploadBtn": "Jetzt Video hochladen"
     },
-    "emptyFavorites": {
-      "title": "Keine Favoriten vorhanden",
+    "emptyLikes": {
+      "title": "Keine Likes vorhanden",
       "ownerSub": "Videos, die du mit dem Herz-Button likest, erscheinen hier.",
-      "guestSub": "Dieser Nutzer hat noch keine öffentlichen Favoriten geteilt."
+      "guestSub": "Dieser Nutzer hat noch keine öffentlichen Likes geteilt."
     },
     "about": {
       "title": "Über diesen Kanal",
@@ -574,6 +574,6 @@
     "uploadInProgress": "Der Upload läuft im Hintergrund weiter. Schließt du den Editor jetzt, landet die Datei trotzdem in deiner Mediathek und lässt sich hier nachträglich auswählen."
   },
   "user": {
-    "noFavorites": "Noch nichts geliked"
+    "noLikes": "Noch nichts geliked"
   }
 }
