@@ -434,7 +434,7 @@ export default function CustomVideoPlayer({
     <div className="relative w-full h-full flex items-center justify-center">
       {/*
         Ambient glow. Deliberately NOT on a negative z-index: `<body>` carries an
-        opaque `bg-base`, and in the root stacking context negative-z-index
+        opaque `bg-canvas`, and in the root stacking context negative-z-index
         descendants are painted before a block-level descendant's background —
         so `-z-10` put the glow behind the page background, where it was
         invisible. It sits at the default level instead and the video box above

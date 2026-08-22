@@ -161,7 +161,7 @@ export default function CommentItem({
                 aria-label="Kommentar bearbeiten"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="flex-1 px-3 py-1 bg-base border border-indigo-500/80 rounded-lg text-xs text-primary outline-none"
+                className="flex-1 px-3 py-1 bg-canvas border border-indigo-500/80 rounded-lg text-xs text-primary outline-none"
               />
               <button
                 type="button"
@@ -238,7 +238,7 @@ export default function CommentItem({
             }
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            className="flex-1 px-3 py-1.5 bg-base border border-subtle focus:border-indigo-500/80 rounded-xl text-xs text-primary placeholder-faint outline-none transition-all"
+            className="flex-1 px-3 py-1.5 bg-canvas border border-subtle focus:border-indigo-500/80 rounded-xl text-xs text-primary placeholder-faint outline-none transition-all"
             autoFocus
           />
           <button

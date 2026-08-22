@@ -99,7 +99,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
               placeholder="z.B. Max Mustermann"
-              className="bg-base border border-subtle focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary focus:outline-none"
+              className="bg-canvas border border-subtle focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary focus:outline-none"
             />
           </div>
 
@@ -107,7 +107,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
             <label htmlFor="handle" className="text-[11px] font-semibold text-muted uppercase tracking-wider">
               {t.settings.handleLabel}
             </label>
-            <div className="flex items-center bg-base border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary">
+            <div className="flex items-center bg-canvas border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary">
               <span className="text-indigo-400 font-mono font-bold mr-1">@</span>
               <input
                 id="handle"
@@ -138,7 +138,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
               value={form.bio}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               placeholder={t.settings.bioPlaceholder}
-              className="bg-base border border-subtle focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary focus:outline-none resize-none"
+              className="bg-canvas border border-subtle focus:border-indigo-500/50 rounded-xl px-4 py-3 text-sm text-primary focus:outline-none resize-none"
             />
           </div>
 

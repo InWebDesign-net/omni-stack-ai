@@ -133,7 +133,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de" className="dark bg-base" suppressHydrationWarning>
+    <html lang="de" className="dark bg-canvas" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -151,7 +151,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased bg-base text-primary min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white" suppressHydrationWarning>
+      <body className="antialiased bg-canvas text-primary min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white" suppressHydrationWarning>
         <AppProvider>
           <ChatProvider>
             <UploadProvider>

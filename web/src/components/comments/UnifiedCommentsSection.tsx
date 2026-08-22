@@ -277,7 +277,7 @@ export function UnifiedCommentsSection({
                   : (translations?.common?.loginToComment || 'Anmelden zum Kommentieren...')
               }
               rows={2}
-              className="w-full bg-base border border-subtle focus:border-indigo-500 rounded-2xl px-4 py-2.5 text-sm text-primary placeholder-faint outline-none transition-all resize-y"
+              className="w-full bg-canvas border border-subtle focus:border-indigo-500 rounded-2xl px-4 py-2.5 text-sm text-primary placeholder-faint outline-none transition-all resize-y"
             />
           </div>
         </div>

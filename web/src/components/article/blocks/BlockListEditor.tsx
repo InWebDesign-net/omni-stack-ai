@@ -96,7 +96,7 @@ export function BlockListEditor({
   };
 
   const TypePicker = ({ at }: { at: number }) => (
-    <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-base border border-subtle">
+    <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-canvas border border-subtle">
       {INSERTABLE_TYPES.map((component) => {
         const meta = BLOCK_TYPES[component];
         const Icon = meta.icon;

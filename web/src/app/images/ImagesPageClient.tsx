@@ -122,7 +122,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   const displayedTags = filteredTagList;
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif] selection:bg-teal-500 selection:text-white">
+    <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif] selection:bg-teal-500 selection:text-white">
       <Header />
 
       {/* Toast Notification */}

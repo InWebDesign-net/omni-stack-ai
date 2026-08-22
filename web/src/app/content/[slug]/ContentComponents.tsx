@@ -299,7 +299,7 @@ export function ContentComments({
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder={currentUser ? (t?.common?.writeComment || 'Kommentar schreiben...') : (t?.common?.loginToComment || 'Anmelden zum Kommentieren...')}
-          className="flex-1 bg-base border border-subtle rounded-xl px-4 py-2 text-sm text-primary placeholder-faint focus:outline-none focus:border-indigo-500"
+          className="flex-1 bg-canvas border border-subtle rounded-xl px-4 py-2 text-sm text-primary placeholder-faint focus:outline-none focus:border-indigo-500"
         />
         <button
           type="submit"
@@ -355,7 +355,7 @@ export function ContentComments({
                     type="text"
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="flex-1 bg-base border border-subtle rounded-lg px-3 py-1 text-sm text-primary"
+                    className="flex-1 bg-canvas border border-subtle rounded-lg px-3 py-1 text-sm text-primary"
                   />
                   <button
                     onClick={() => handleEdit(comment.id, editText)}
@@ -417,7 +417,7 @@ export function RelatedContent({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-surface via-surface-raised to-base flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-tr from-surface via-surface-raised to-canvas flex items-center justify-center">
                   <BookOpen className="w-6 h-6 text-indigo-400" />
                 </div>
               )}

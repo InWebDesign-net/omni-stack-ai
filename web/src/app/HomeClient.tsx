@@ -167,11 +167,11 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="min-h-screen bg-base text-primary font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-canvas text-primary font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       <Header />
 
       <main className="flex-1 w-full max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        <section className="relative rounded-3xl bg-gradient-to-b from-surface via-base to-base border border-subtle p-8 sm:p-12 shadow-2xl overflow-hidden text-center space-y-6">
+        <section className="relative rounded-3xl bg-gradient-to-b from-surface via-canvas to-canvas border border-subtle p-8 sm:p-12 shadow-2xl overflow-hidden text-center space-y-6">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
@@ -319,7 +319,7 @@ export default function HomeClient() {
                         unoptimized
                       />
                       {channel.hasNewContent && (
-                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-base" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
+                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-teal-400 border-2 border-canvas" title={t.home?.newContentBadge || 'Neue Inhalte veröffentlicht!'} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

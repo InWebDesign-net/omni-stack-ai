@@ -63,7 +63,7 @@ export default function VideosPageClient({
   };
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
+    <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
       {/* Top Header */}
       <Header />
 

@@ -211,7 +211,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-indigo-500/30 to-teal-400/15 blur-lg" />
-            <div className="relative rounded-2xl bg-base border border-subtle p-3">
+            <div className="relative rounded-2xl bg-canvas border border-subtle p-3">
               <OmniLogo size={32} />
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-base p-1 rounded-2xl border border-subtle">
+        <div className="flex items-center gap-1.5 bg-canvas p-1 rounded-2xl border border-subtle">
           {(['register', 'login'] as const).map((mode) => (
             <button
               key={mode}
@@ -283,7 +283,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <label htmlFor={`reg-${key}`} className="text-[11px] font-semibold text-muted uppercase tracking-wider">{label}</label>
-                <div className="flex items-center bg-base border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 text-sm transition-all">
+                <div className="flex items-center bg-canvas border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 text-sm transition-all">
                   <Icon className="h-4 w-4 text-faint mr-3 shrink-0" />
                   <input
                     id={`reg-${key}`}
@@ -332,7 +332,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             </div>
 
             {DEMO_USER_PRESETS.length > 0 && (
-            <div className="bg-base border border-indigo-500/20 p-4 rounded-2xl flex flex-col gap-3">
+            <div className="bg-canvas border border-indigo-500/20 p-4 rounded-2xl flex flex-col gap-3">
               <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-teal-400" />
                 Demo Schnell-Login Presets
@@ -362,7 +362,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
             ].map(({ key, label, type, placeholder, icon: Icon }) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <label htmlFor={`login-${key}`} className="text-[11px] font-semibold text-muted uppercase tracking-wider">{label}</label>
-                <div className="flex items-center bg-base border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 transition-all">
+                <div className="flex items-center bg-canvas border border-subtle focus-within:border-indigo-500/50 rounded-xl px-4 py-3 transition-all">
                   <Icon className="h-4 w-4 text-faint mr-3 shrink-0" />
                   <input
                     id={`login-${key}`}

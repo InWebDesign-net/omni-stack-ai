@@ -109,7 +109,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     };
 
     return (
-        <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
+        <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
             <Header />
 
             <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -222,7 +222,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* Owner Control Callout Banner */}
                 {isOwner && (
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-surface to-base border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-surface to-canvas border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
                                 <Sparkles className="w-5 h-5" />

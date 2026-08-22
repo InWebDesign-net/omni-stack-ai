@@ -230,7 +230,7 @@ export function MediaBlockPicker({ kind, value, onChange, t }: MediaBlockPickerP
     const thumb = thumbOf(selected);
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-3 p-2 rounded-xl bg-base border border-subtle">
+        <div className="flex items-center gap-3 p-2 rounded-xl bg-canvas border border-subtle">
           <div className="relative w-20 h-12 shrink-0 rounded-lg overflow-hidden bg-surface">
             {thumb ? (
               <Image src={thumb} alt="" fill sizes="80px" className="object-cover" unoptimized />
@@ -287,7 +287,7 @@ export function MediaBlockPicker({ kind, value, onChange, t }: MediaBlockPickerP
   if (pendingTask) {
     const pct = Math.round(pendingTask.progress || 0);
     return (
-      <div className="space-y-2 p-3 rounded-xl bg-base border border-purple-500/40">
+      <div className="space-y-2 p-3 rounded-xl bg-canvas border border-purple-500/40">
         <div className="flex items-center gap-2">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400 shrink-0" />
           <span className="text-xs text-primary truncate flex-1 min-w-0">{pendingTask.file.name}</span>
@@ -340,7 +340,7 @@ export function MediaBlockPicker({ kind, value, onChange, t }: MediaBlockPickerP
               ? b.mediaSearchImages || 'Eigene Bilder durchsuchen'
               : b.mediaSearchVideos || 'Eigene Videos durchsuchen'
           }
-          className="w-full pl-9 pr-3 py-2 bg-base border border-subtle rounded-xl text-sm text-primary placeholder-faint outline-none focus:outline-none focus:border-purple-500 transition-colors"
+          className="w-full pl-9 pr-3 py-2 bg-canvas border border-subtle rounded-xl text-sm text-primary placeholder-faint outline-none focus:outline-none focus:border-purple-500 transition-colors"
         />
       </div>
 
@@ -367,7 +367,7 @@ export function MediaBlockPicker({ kind, value, onChange, t }: MediaBlockPickerP
                 type="button"
                 onClick={() => onChange(item)}
                 title={item.title}
-                className="group text-left rounded-lg overflow-hidden border border-subtle hover:border-purple-500/60 bg-base transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+                className="group text-left rounded-lg overflow-hidden border border-subtle hover:border-purple-500/60 bg-canvas transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
               >
                 <div className="relative aspect-video bg-surface">
                   {thumb ? (

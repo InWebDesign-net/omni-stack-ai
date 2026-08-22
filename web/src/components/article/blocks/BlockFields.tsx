@@ -25,7 +25,7 @@ import { MediaBlockPicker, type MediaRelation } from './MediaBlockPicker';
  * block ended up with a sliver of an input beside a full-width level select.
  */
 const fieldBase =
-  'px-3 py-2 bg-base border border-subtle rounded-xl text-sm text-primary placeholder-faint outline-none focus:outline-none focus:border-purple-500 transition-colors';
+  'px-3 py-2 bg-canvas border border-subtle rounded-xl text-sm text-primary placeholder-faint outline-none focus:outline-none focus:border-purple-500 transition-colors';
 
 const inputClass = `w-full ${fieldBase}`;
 

@@ -132,7 +132,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 <select
                   value={block.content.level || 2}
                   onChange={(e) => updateBlock(block.id, { ...block.content, level: parseInt(e.target.value) })}
-                  className="bg-base border border-subtle rounded-lg px-3 py-1.5 text-sm text-primary"
+                  className="bg-canvas border border-subtle rounded-lg px-3 py-1.5 text-sm text-primary"
                 >
                   <option value={1}>H1</option>
                   <option value={2}>H2</option>
@@ -144,7 +144,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                   value={block.content.text || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
                   placeholder="Heading text..."
-                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
+                  className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
               </div>
             )}
@@ -155,7 +155,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
                 placeholder="Paragraph text..."
                 rows={3}
-                className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint resize-none"
+                className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint resize-none"
               />
             )}
 
@@ -165,7 +165,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
                 placeholder="Quote text..."
                 rows={2}
-                className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint resize-none italic"
+                className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint resize-none italic"
               />
             )}
 
@@ -176,14 +176,14 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                   value={block.content.url || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, url: e.target.value })}
                   placeholder="Image URL..."
-                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
+                  className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
                 <input
                   type="text"
                   value={block.content.alt || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, alt: e.target.value })}
                   placeholder="Alt text..."
-                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
+                  className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
               </div>
             )}
@@ -194,7 +194,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                 value={block.content.url || ''}
                 onChange={(e) => updateBlock(block.id, { ...block.content, url: e.target.value })}
                 placeholder="Video URL..."
-                className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
+                className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
               />
             )}
 
@@ -205,14 +205,14 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                   value={block.content.language || 'javascript'}
                   onChange={(e) => updateBlock(block.id, { ...block.content, language: e.target.value })}
                   placeholder="Language..."
-                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
+                  className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint"
                 />
                 <textarea
                   value={block.content.code || ''}
                   onChange={(e) => updateBlock(block.id, { ...block.content, code: e.target.value })}
                   placeholder="Code..."
                   rows={4}
-                  className="w-full bg-base border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint font-mono resize-none"
+                  className="w-full bg-canvas border border-subtle rounded-lg px-3 py-2 text-sm text-primary placeholder-faint font-mono resize-none"
                 />
               </div>
             )}
@@ -239,7 +239,7 @@ export function BlockEditor({ blocks, onChange, t }: BlockEditorProps) {
                       updateBlock(block.id, { ...block.content, items: newItems });
                     }}
                     placeholder={`Item ${i + 1}...`}
-                    className="w-full bg-base border border-subtle rounded-lg px-3 py-1.5 text-sm text-primary placeholder-faint"
+                    className="w-full bg-canvas border border-subtle rounded-lg px-3 py-1.5 text-sm text-primary placeholder-faint"
                   />
                 ))}
                 <button

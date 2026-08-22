@@ -112,7 +112,7 @@ export default function GlobalUploadManager() {
 
       {/* Canvas */}
       <div
-        className="relative w-full max-w-2xl bg-base border border-subtle rounded-3xl p-6 shadow-2xl z-50 flex flex-col gap-5 max-h-[90vh] overflow-hidden animate-scaleIn font-sans"
+        className="relative w-full max-w-2xl bg-canvas border border-subtle rounded-3xl p-6 shadow-2xl z-50 flex flex-col gap-5 max-h-[90vh] overflow-hidden animate-scaleIn font-sans"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-subtle">
@@ -310,7 +310,7 @@ export default function GlobalUploadManager() {
                       <span className="font-mono text-[11px] text-muted font-bold">{task.progress}%</span>
                     </div>
 
-                    <div className="w-full h-2 bg-base rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-canvas rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all duration-300 ${
                           task.status === 'completed'

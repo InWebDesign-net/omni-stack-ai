@@ -18,7 +18,7 @@ export default async function ImagesPage({
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-base flex items-center justify-center">
+        <div className="min-h-screen bg-canvas flex items-center justify-center">
           <div className="w-8 h-8 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" />
         </div>
       }

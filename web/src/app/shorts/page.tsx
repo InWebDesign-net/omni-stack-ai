@@ -655,7 +655,7 @@ export default function ShortsFeedPage() {
                             <textarea
                               value={editCommentText}
                               onChange={(e) => setEditCommentText(e.target.value)}
-                              className="w-full bg-base border border-indigo-500 rounded-lg p-2 text-xs text-primary focus:outline-none resize-y min-h-[50px]"
+                              className="w-full bg-canvas border border-indigo-500 rounded-lg p-2 text-xs text-primary focus:outline-none resize-y min-h-[50px]"
                             />
                             <div className="flex justify-end gap-2">
                               <button

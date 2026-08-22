@@ -220,7 +220,7 @@ export default function Header({
   return (
     <>
       <header
-        className="sticky top-0 z-40 bg-base/90 backdrop-blur-2xl border-b border-subtle px-3 sm:px-5 h-14 flex items-center justify-between gap-4 select-none"
+        className="sticky top-0 z-40 bg-canvas/90 backdrop-blur-2xl border-b border-subtle px-3 sm:px-5 h-14 flex items-center justify-between gap-4 select-none"
         style={{ boxShadow: '0 1px 0 rgba(128,131,255,0.10), 0 4px 16px -4px rgba(8,14,30,0.80)' }}
       >
         {/* Brand & Menu */}
@@ -423,7 +423,7 @@ export default function Header({
           />
 
           {/* Slide-over Drawer Canvas */}
-          <aside className="relative w-80 max-w-[85vw] bg-base border-r border-subtle flex flex-col gap-4 p-5 z-50 overflow-y-auto h-full shadow-2xl animate-slideRight">
+          <aside className="relative w-80 max-w-[85vw] bg-canvas border-r border-subtle flex flex-col gap-4 p-5 z-50 overflow-y-auto h-full shadow-2xl animate-slideRight">
             {/* Drawer Top Header */}
             <div className="flex items-center justify-between pb-4 border-b border-subtle">
               <Link

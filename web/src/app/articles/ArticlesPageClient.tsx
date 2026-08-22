@@ -62,7 +62,7 @@ export default function ArticlesPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
+    <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
       <Header />
 
       <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-8">

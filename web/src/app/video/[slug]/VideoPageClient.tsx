@@ -354,7 +354,7 @@ export default function VideoPageClient({
   };
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
+    <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
       <Header />
 
       {/* Toast Notification */}
@@ -402,7 +402,7 @@ export default function VideoPageClient({
             {/* 16:9 Video Player Container */}
             <div className="relative aspect-video w-full">
               {accessStatus && accessStatus.isAllowed === false && accessStatus.isSubscribersOnly ? (
-                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-surface to-base text-primary space-y-4 rounded-2xl border border-subtle">
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-surface to-canvas text-primary space-y-4 rounded-2xl border border-subtle">
                   <div className="p-4 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 shadow-xl animate-pulse">
                     <Users className="w-8 h-8" />
                   </div>

@@ -260,7 +260,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
 
   if (!item) {
     return (
-      <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
+      <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted">{t.article?.notFound || 'Artikel nicht gefunden'}</p>
@@ -279,7 +279,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     : '';
 
   return (
-    <div className="min-h-screen bg-base text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
+    <div className="min-h-screen bg-canvas text-primary flex flex-col font-['Hanken_Grotesk',sans-serif]">
       <Header />
 
       {/* Toast Notification */}

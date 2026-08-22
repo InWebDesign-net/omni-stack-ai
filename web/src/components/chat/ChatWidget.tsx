@@ -250,7 +250,7 @@ export default function ChatWidget() {
       >
         <MessageCircle className="w-6 h-6" />
         {totalUnreadCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white border-2 border-base">
+          <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white border-2 border-canvas">
             {totalUnreadCount}
           </span>
         )}
@@ -262,7 +262,7 @@ export default function ChatWidget() {
   return (
     <>
       {isExpanded ? (
-        <div className="fixed inset-0 h-full h-[100dvh] max-h-[100dvh] w-full z-50 bg-base text-primary flex flex-col md:flex-row font-sans overflow-hidden">
+        <div className="fixed inset-0 h-full h-[100dvh] max-h-[100dvh] w-full z-50 bg-canvas text-primary flex flex-col md:flex-row font-sans overflow-hidden">
           {/* Left Column - Rooms Sidebar */}
           <div className={`w-full md:w-80 lg:w-96 flex flex-col min-h-0 h-full overflow-hidden border-r border-subtle bg-surface ${activeRoomId ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-4 border-b border-subtle bg-surface-raised flex items-center justify-between shrink-0">
@@ -333,7 +333,7 @@ export default function ChatWidget() {
                           {room.type === 'ai' ? <Bot className="w-5 h-5" /> : room.name.charAt(0)}
                         </div>
                         {showOnlineStatus && (
-                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-base rounded-full" />
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-canvas rounded-full" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -364,7 +364,7 @@ export default function ChatWidget() {
           </div>
 
           {/* Right Column - Active Main Chat Conversation */}
-          <div className={`flex-1 flex flex-col min-h-0 h-full overflow-hidden bg-base ${!activeRoomId ? 'hidden md:flex' : 'flex'}`}>
+          <div className={`flex-1 flex flex-col min-h-0 h-full overflow-hidden bg-canvas ${!activeRoomId ? 'hidden md:flex' : 'flex'}`}>
             {activeRoom ? (
               <>
                 <RoomHeader
@@ -421,7 +421,7 @@ export default function ChatWidget() {
         </div>
       ) : (
         /* Compact Floating Window (Telegram Style) */
-        <div data-omni-dock="chat" style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 flex flex-col w-[360px] sm:w-[420px] h-[580px] sm:h-[620px] max-h-[85vh] bg-base border border-subtle rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
+        <div data-omni-dock="chat" style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 flex flex-col w-[360px] sm:w-[420px] h-[580px] sm:h-[620px] max-h-[85vh] bg-canvas border border-subtle rounded-3xl shadow-2xl overflow-hidden font-sans backdrop-blur-xl animate-fadeIn">
           {/* Header */}
           <div className="p-3 px-4 bg-surface border-b border-subtle flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
@@ -482,7 +482,7 @@ export default function ChatWidget() {
                         {room.type === 'ai' ? <Bot className="w-5 h-5" /> : room.name.charAt(0)}
                       </div>
                       {showOnlineStatus && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-base rounded-full" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-canvas rounded-full" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

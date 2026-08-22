@@ -44,7 +44,7 @@ export default function VideoUploadModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md animate-fadeIn" onClick={onClose} />
 
-      <div className="relative w-full max-w-lg bg-base border border-subtle rounded-3xl p-6 shadow-2xl z-50 flex flex-col gap-5 animate-scaleIn font-sans">
+      <div className="relative w-full max-w-lg bg-canvas border border-subtle rounded-3xl p-6 shadow-2xl z-50 flex flex-col gap-5 animate-scaleIn font-sans">
         <div className="flex items-center justify-between pb-4 border-b border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">

@@ -135,7 +135,7 @@ export default function ChannelProfileModal({
         </div>
 
         {/* Bio */}
-        <div className="bg-base/60 p-3.5 rounded-2xl border border-subtle text-xs text-primary leading-relaxed">
+        <div className="bg-canvas/60 p-3.5 rounded-2xl border border-subtle text-xs text-primary leading-relaxed">
           {selectedChannel.bio || 'Creator & Content Publisher im Omni Network.'}
         </div>
 

@@ -2,7 +2,7 @@
 
 export function VideosSkeleton() {
   return (
-    <section className="min-h-screen bg-base text-primary py-8 px-4 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-canvas text-primary py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-content mx-auto space-y-8">
         {/* Header Skeleton */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-subtle">

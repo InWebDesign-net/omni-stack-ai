@@ -68,7 +68,7 @@ function CardThumbnail({
 
   if (hasError || !item.thumbnailUrl) {
     return (
-      <div className="w-full h-full bg-gradient-to-tr from-surface via-surface-raised to-base flex flex-col items-center justify-center gap-2 p-3 text-center">
+      <div className="w-full h-full bg-gradient-to-tr from-surface via-surface-raised to-canvas flex flex-col items-center justify-center gap-2 p-3 text-center">
         <div className="h-9 w-9 rounded-2xl bg-surface-raised border border-subtle flex items-center justify-center">
           <BookOpen className="h-4 w-4 text-indigo-400" />
         </div>
@@ -432,7 +432,7 @@ export default function ContentPageClient({
   const readTime = Math.max(1, Math.ceil(((item.content || '').length + (item.summary || '').length) / 800));
 
   return (
-    <div className="min-h-screen bg-base text-primary font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-canvas text-primary font-sans selection:bg-indigo-500/30">
       <Header />
       <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
@@ -646,7 +646,7 @@ export default function ContentPageClient({
                     onChange={(e) => setNewCommentText(e.target.value)}
                     placeholder={t.common.commentPlaceholder}
                     rows={2}
-                    className="w-full bg-base border border-subtle focus:border-indigo-500 rounded-xl p-3 text-xs text-primary placeholder-faint focus:outline-none resize-none"
+                    className="w-full bg-canvas border border-subtle focus:border-indigo-500 rounded-xl p-3 text-xs text-primary placeholder-faint focus:outline-none resize-none"
                   />
                   <div className="flex justify-end">
                     <button

@@ -10,7 +10,20 @@
   --breakpoint-3xl: 1920px;
   --container-content: 2560px;
 
-  --color-base: var(--bg-base);
+  /*
+   * Named `canvas`, not `base`.
+   *
+   * A theme colour called `base` makes Tailwind generate `text-base` as a
+   * *colour* utility, which collides with its built-in `text-base` font size —
+   * and the colour wins. Every `text-base` in the app was therefore painting
+   * text in the page background colour instead of setting a size. On the home
+   * page that rendered the hero subtitle at 1.02:1 against its own background,
+   * i.e. invisible.
+   *
+   * Any colour named after a font-size step (`xs`, `sm`, `base`, `lg`, `xl`, …)
+   * has this problem. This is the only one we had.
+   */
+  --color-canvas: var(--bg-canvas);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-subtle: var(--border-subtle);
@@ -20,9 +33,6 @@
 
 @custom-variant dark (&:where(:not([data-theme="light"]), :not([data-theme="light"]) *));
 
-@utility bg-base {
-  background-color: var(--bg-base);
-}
 @utility bg-surface {
   background-color: var(--surface);
 }
@@ -44,8 +54,8 @@
 
 @layer base {
   :root {
-    --bg-base: #040711;
-    --background: var(--bg-base);
+    --bg-canvas: #040711;
+    --background: var(--bg-canvas);
     --surface: rgba(15, 23, 42, 0.60);
     --surface-raised: rgba(15, 23, 42, 0.95);
     --border-subtle: rgba(51, 65, 85, 0.60);
@@ -81,8 +91,8 @@
 
   :root[data-theme="light"],
   html[data-theme="light"] {
-    --bg-base: #f8fafc;
-    --background: var(--bg-base);
+    --bg-canvas: #f8fafc;
+    --background: var(--bg-canvas);
     --surface: rgba(255, 255, 255, 0.88);
     --surface-raised: #ffffff;
     --border-subtle: rgba(203, 213, 225, 0.80);

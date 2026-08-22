@@ -72,7 +72,7 @@ export default function ChatSettingsModal({ isOpen, onClose }: ChatSettingsModal
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
       <div 
-        className="bg-base border border-subtle rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col"
+        className="bg-canvas border border-subtle rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-5 border-b border-subtle bg-surface-raised">

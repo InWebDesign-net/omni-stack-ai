@@ -39,7 +39,7 @@ function FavoriteItemCard({ item }: { item: any }) {
       ? 'from-purple-950 via-indigo-950 to-surface'
       : type === 'image'
       ? 'from-teal-950 via-emerald-950 to-surface'
-      : 'from-indigo-950 via-surface to-base';
+      : 'from-indigo-950 via-surface to-canvas';
 
   const iconColor =
     type === 'article'
