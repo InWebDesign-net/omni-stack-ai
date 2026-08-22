@@ -26,6 +26,7 @@ import {
   Users,
   Film,
   Settings,
+  ListPlus,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
@@ -52,6 +53,7 @@ import {
   CommentItem as CommentItemType,
 } from '@/lib/comments';
 import { storeItem } from '@/lib/consent';
+import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 
 // Flatten a Strapi `blocks` field (array of {type, children}) into plain text.
 // Falls back to the raw value when it is already a string.
@@ -345,6 +347,8 @@ export default function VideoPageClient({
     } catch (e) { console.error('[VideoDetail] like/unlike was not persisted to the server — UI and server state may now differ:', e); }
   };
 
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+
   const handleShare = () => {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
@@ -493,6 +497,15 @@ export default function VideoPageClient({
                   </button>
 
                   <button
+                    onClick={() => setIsPlaylistModalOpen(true)}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-raised border border-subtle text-muted hover:text-primary text-xs font-semibold transition-all cursor-pointer"
+                    title={(t as any).playlists?.addTo || 'Zu Playlist hinzufügen'}
+                  >
+                    <ListPlus className="w-4 h-4" />
+                    <span className="hidden sm:inline">{(t as any).playlists?.save || 'Speichern'}</span>
+                  </button>
+
+                  <button
                     onClick={handleShare}
                     className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-raised border border-subtle text-muted hover:text-primary text-xs font-semibold transition-all"
                   >
@@ -612,6 +625,12 @@ export default function VideoPageClient({
           </div>
         </div>
       </main>
+
+      <AddToPlaylistModal
+        videoDocumentId={video.documentId || initialVideo?.documentId}
+        isOpen={isPlaylistModalOpen}
+        onClose={() => setIsPlaylistModalOpen(false)}
+      />
     </div>
   );
 }

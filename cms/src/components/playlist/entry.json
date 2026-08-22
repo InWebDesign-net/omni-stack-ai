@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_playlist_entries",
+  "info": {
+    "displayName": "Playlist Entry",
+    "description": "One video in a playlist. A component rather than a plain relation because the order is the point, and repeatable components keep theirs."
+  },
+  "options": {},
+  "attributes": {
+    "video": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::video.video"
+    }
+  }
+}

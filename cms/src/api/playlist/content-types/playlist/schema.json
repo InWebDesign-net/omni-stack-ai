@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "playlists",
+  "info": {
+    "singularName": "playlist",
+    "pluralName": "playlists",
+    "displayName": "Playlist",
+    "description": "An ordered, owned collection of videos"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 1000
+    },
+    "thumbnailUrl": {
+      "type": "string"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": ["private", "subscribers", "unlisted", "public"],
+      "default": "private"
+    },
+    "owner": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "entries": {
+      "type": "component",
+      "repeatable": true,
+      "component": "playlist.entry"
+    }
+  }
+}
