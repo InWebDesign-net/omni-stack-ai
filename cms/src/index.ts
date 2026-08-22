@@ -38,6 +38,22 @@ export default {
           return next();
         }
 
+        /*
+         * Trusted server-side workers. The content-fill service reads every
+         * finished upload to write titles, summaries and tags, and since
+         * uploads start private it would otherwise never see the ones that need
+         * it most. It authenticates with the same shared secret the ingest
+         * callback uses, so this is not something a browser can ask for.
+         */
+        const workerSecret =
+          koaCtx?.header?.['x-omni-worker-secret'] || koaCtx?.request?.header?.['x-omni-worker-secret'];
+        if (
+          process.env.INGEST_WORKER_SECRET &&
+          workerSecret === process.env.INGEST_WORKER_SECRET
+        ) {
+          return next();
+        }
+
         // Trusted server-side work — the ingest finalising an upload, a cron
         // job — has no viewer and must not be filtered like one. Without this
         // escape a private upload is invisible to the very routine that has to
@@ -72,40 +88,56 @@ export default {
           return next();
         }
 
-        // If explicitly filtering by visibility, keep existing filter
-        if (filters.visibility) {
-          return next();
+        /*
+         * What the caller is allowed to see, whatever else they asked for.
+         *
+         * Anonymous callers get public, unlisted and subscribers entries. A
+         * known viewer additionally gets their OWN private ones — without that
+         * an author cannot open the item they just uploaded, since uploads
+         * start private. Scoping the private branch to the owner keeps it
+         * tighter than a blanket allowance: being logged in is not enough to
+         * read someone else's private item by guessing its slug.
+         */
+        const ownerField = usesCreator ? 'creator' : 'author';
+        const visibleBranches: any[] = [
+          { visibility: { $in: ['public', 'unlisted', 'subscribers'] } },
+        ];
+        if (uidNum != null) {
+          visibleBranches.push({
+            visibility: { $eq: 'private' },
+            [ownerField]: { id: { $eq: uidNum } },
+          });
         }
 
-        // Single-item lookup by slug/documentId/id.
-        //
-        // Anonymous callers see public, unlisted and subscribers entries. An
-        // authenticated caller additionally sees their OWN private entries —
-        // without that, an author cannot open the article they just created,
-        // since new articles start out private. Scoping the private branch to
-        // the owner keeps it tighter than a blanket bypass would: being logged
-        // in is not enough to read someone else's private item by guessing its
-        // slug.
-        if (isSpecificItemQuery) {
-          const ownerField = usesCreator ? 'creator' : 'author';
-          const visibleBranches: any[] = [
-            { visibility: { $in: ['public', 'unlisted', 'subscribers'] } },
-          ];
-          if (uidNum != null) {
-            visibleBranches.push({
-              visibility: { $eq: 'private' },
-              [ownerField]: { id: { $eq: uidNum } },
-            });
-          }
-          context.params.filters = { ...filters, $or: visibleBranches };
-          return next();
-        }
-
-        // Default-deny for general queries/listings: enforce visibility = public
+        /*
+         * Intersected with whatever the caller sent, never substituted for it.
+         *
+         * `if (filters.visibility) return next();` used to hand the query
+         * straight through on the reasoning that an explicit visibility filter
+         * expressed intent. It did — `filters[visibility][$eq]=private` listed
+         * every private item in the database to anyone who asked, with no
+         * token at all. Narrowing a permission by naming it is not a thing a
+         * caller gets to do.
+         *
+         * `$and` rather than a top-level `$or`, because the filtered services
+         * build their own `$or` for search (title/slug) and assigning one here
+         * would silently replace it.
+         */
+        // Both conditions nested under one `$and` rather than mixing a
+        // top-level field key with an `$and` sibling: the query builder does not
+        // reliably honour both, and the caller's own filter silently won.
         context.params.filters = {
-          ...filters,
-          visibility: { $eq: 'public' },
+          $and: [
+            ...(Object.keys(filters).length > 0 ? [filters] : []),
+            { $or: visibleBranches },
+          ],
         };
+
+        // A single-item lookup needs nothing further: the branches above
+        // already allow the owner their own private entry.
+        if (isSpecificItemQuery) {
+          return next();
+        }
       }
 
       return next();
