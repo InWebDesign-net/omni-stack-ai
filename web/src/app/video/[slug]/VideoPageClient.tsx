@@ -444,7 +444,11 @@ export default function VideoPageClient({
             </div>
 
             {/* Video Details Header */}
-            <div className="bg-surface border border-subtle rounded-2xl p-6 shadow-xl space-y-6">
+            <div className="bg-surface border border-subtle rounded-2xl p-6 shadow-xl space-y-5">
+              {/* Title and its metadata are one block, so they sit closer to
+                  each other than to what follows. With the rules gone, spacing
+                  is what groups them. */}
+              <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tight">
                   {video.title}
@@ -456,8 +460,10 @@ export default function VideoPageClient({
                 )}
               </div>
 
-              {/* Views, Date & Interactive Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-subtle">
+              {/* Views, Date & Interactive Actions — no rule of its own: the only
+                  divider in this card is the one the creator badge carries, so
+                  the title and its metadata read as one block. */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-4 text-xs text-muted">
                   <div className="flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-indigo-400" />
@@ -494,8 +500,9 @@ export default function VideoPageClient({
                   </button>
                 </div>
               </div>
+              </div>
 
-              {/* Creator Channel Badge Bar */}
+              {/* Creator Channel Badge Bar — carries the card's only divider */}
               <CreatorBadge
                 creator={creator || fallbackCreator}
                 isOwner={accessStatus?.isOwner}
@@ -510,7 +517,7 @@ export default function VideoPageClient({
                 const isLongDescription = descriptionText.length > 180 || descriptionText.includes('\n');
 
                 return (
-                  <div className="space-y-3 pt-2 border-t border-subtle">
+                  <div className="space-y-3">
                     {descriptionText && (
                       <div>
                         <p
