@@ -59,6 +59,8 @@ interface ChatContextType {
   userPrivacySetting: 'everyone' | 'subscribers_only' | 'nobody';
   roomSubscriptions: Record<string, boolean>;
   typingUsersByRoom: Record<string, string[]>;
+  /** Rooms in which the assistant is composing an answer but has not started it. */
+  assistantThinkingByRoom: Record<string, boolean>;
   isLoadingMoreByRoom: Record<string, boolean>;
   hasMoreMessagesByRoom: Record<string, boolean>;
   openChat: (roomId?: string) => void;
@@ -120,6 +122,9 @@ function playMessageChime() {
  * off someone who is still writing.
  */
 const TYPING_TTL_MS = 5000;
+/** Whether an indicator belongs to a person or to the assistant. */
+type TypingKind = 'human' | 'assistant';
+
 const TYPING_SWEEP_MS = 1000;
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
@@ -143,23 +148,66 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
    * `typingUsersByRoom` above stays the public shape — room to display names —
    * so consumers do not need to know about the bookkeeping.
    */
-  const typingStateRef = useRef<Record<string, Record<string, { username: string; expiresAt: number }>>>({});
+  /**
+   * Rooms whose creation is still in flight, keyed by the provisional local id.
+   *
+   * A room appears in the UI before the server knows about it, under an id like
+   * `room-1787426690453`. Sending in that window used to post the provisional id
+   * to `/api/chat`, which resolves rooms with `getOrCreateRoomBySlug` — so the
+   * server created a *second* room carrying just that message. It came back from
+   * the next `fetchRooms` as a room of its own, which is how the first message
+   * showed up twice (#134). Anything addressing a room waits on this first.
+   */
+  const roomCreationRef = useRef<Record<string, Promise<string>>>({});
+
+  /**
+   * Resolves a possibly-provisional room id to the one the server knows.
+   * Returns immediately for rooms that already exist.
+   */
+  const resolveRoomId = useCallback(async (roomId: string): Promise<string> => {
+    const pending = roomCreationRef.current[roomId];
+    return pending ? await pending : roomId;
+  }, []);
+
+  const typingStateRef = useRef<
+    Record<string, Record<string, { username: string; expiresAt: number; kind: TypingKind }>>
+  >({});
+
+  /**
+   * Whether the assistant is composing, per room.
+   *
+   * Kept apart from `typingUsersByRoom` rather than distinguished by name: the
+   * assistant is not typing, it is deciding what to say, and the reader is told
+   * so in different words. Matching on the display name would also break the
+   * moment a person is called "Omni AI".
+   */
+  const [assistantThinkingByRoom, setAssistantThinkingByRoom] = useState<Record<string, boolean>>({});
 
   const publishTypingState = useCallback(() => {
     const now = Date.now();
     const next: Record<string, string[]> = {};
+    const nextAssistant: Record<string, boolean> = {};
     let changed = false;
 
     for (const [roomId, entries] of Object.entries(typingStateRef.current)) {
-      const live: Record<string, { username: string; expiresAt: number }> = {};
+      const live: Record<string, { username: string; expiresAt: number; kind: TypingKind }> = {};
       for (const [userKey, entry] of Object.entries(entries)) {
         if (entry.expiresAt > now) live[userKey] = entry;
         else changed = true;
       }
       typingStateRef.current[roomId] = live;
-      const names = Object.values(live).map((e) => e.username);
+      const values = Object.values(live);
+      const names = values.filter((e) => e.kind === 'human').map((e) => e.username);
       if (names.length > 0) next[roomId] = names;
+      if (values.some((e) => e.kind === 'assistant')) nextAssistant[roomId] = true;
     }
+
+    setAssistantThinkingByRoom((prev) => {
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(nextAssistant);
+      const same = prevKeys.length === nextKeys.length && nextKeys.every((k) => prev[k]);
+      return same ? prev : nextAssistant;
+    });
 
     setTypingUsersByRoom((prev) => {
       const prevKeys = Object.keys(prev);
@@ -178,12 +226,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
    * would otherwise wipe an entry written straight into React state.
    */
   const setLocalTyping = useCallback(
-    (roomId: string, label: string, on: boolean) => {
+    (roomId: string, label: string, on: boolean, kind: TypingKind = 'assistant') => {
       const room = { ...(typingStateRef.current[roomId] || {}) };
       const key = `local:${label}`;
       if (on) {
         // Refreshed by the caller; the long TTL is a safety net, not the timer.
-        room[key] = { username: label, expiresAt: Date.now() + 60_000 };
+        room[key] = { username: label, expiresAt: Date.now() + 60_000, kind };
       } else {
         delete room[key];
       }
@@ -368,6 +416,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             // stopped, crashed or lost the connection. Without an expiry a
             // dropped client leaves the indicator up forever.
             expiresAt: Date.now() + TYPING_TTL_MS,
+            kind: 'human',
           };
         } else {
           delete room[key];
@@ -525,6 +574,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setActiveRoomId(localId);
     setIsOpen(true);
 
+    // Published before the request goes out, so a message sent in the meantime
+    // has something to wait on rather than racing it.
+    let settleCreation: (realId: string) => void = () => {};
+    roomCreationRef.current[localId] = new Promise<string>((resolve) => {
+      settleCreation = (realId: string) => {
+        delete roomCreationRef.current[localId];
+        resolve(realId);
+      };
+    });
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -540,6 +599,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
       const data = await res.json();
       if (!res.ok) {
+        // Nothing was created, so waiters fall back to the local id rather than
+        // hanging forever on a promise that will never settle.
+        settleCreation(localId);
         return { roomId: localId, error: data.error };
       }
 
@@ -551,10 +613,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           prev.map((r) => (r.id === localId ? { ...r, id: realSlug, slug: realSlug, documentId: realDocId } : r))
         );
         setActiveRoomId(realSlug);
+        settleCreation(realSlug);
         return { roomId: realSlug };
       }
+      settleCreation(localId);
     } catch (err: any) {
       console.error('Failed to persist room to backend:', err);
+      settleCreation(localId);
     }
 
     return { roomId: localId };
@@ -693,9 +758,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const sendMessage = async (roomId: string, content: string) => {
+  const sendMessage = async (requestedRoomId: string, content: string) => {
     const trimmed = content.trim();
     if (!trimmed) return;
+
+    /**
+     * Wait for the room to exist on the server before addressing it.
+     *
+     * Sending into a brand-new room used to post its provisional local id,
+     * which the API happily turned into a second room holding only this
+     * message (#134). Everything below — the optimistic insert, the socket
+     * emit, the persist call and the assistant's stream — then has one id that
+     * all of them agree on. For a room that already exists this resolves
+     * immediately, so the common case is unaffected.
+     */
+    const roomId = await resolveRoomId(requestedRoomId);
 
     // Prevent double-send while a message is being posted to this room
     let alreadyPosting = false;
@@ -1072,6 +1149,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         userPrivacySetting,
         roomSubscriptions,
         typingUsersByRoom,
+        assistantThinkingByRoom,
         isLoadingMoreByRoom,
         hasMoreMessagesByRoom,
         openChat,
@@ -1116,6 +1194,7 @@ export function useChat() {
       userPrivacySetting: 'everyone' as const,
       roomSubscriptions: {},
       typingUsersByRoom: {},
+      assistantThinkingByRoom: {},
       isLoadingMoreByRoom: {},
       hasMoreMessagesByRoom: {},
       openChat: () => {},

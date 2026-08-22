@@ -387,7 +387,11 @@
     "noUsersFound": "Keine Nutzer gefunden.",
     "startChatBtn": "Chat starten",
     "writeMessagePlaceholder": "Nachricht schreiben...",
-    "welcomeAiMessage": "Hallo! Schön, dass du da bist. Ich bin dein Omni KI-Assistent von InWebDesign.net. Hast du schon eine eigene Website oder Fragen zu unseren Hosting & KI-Lösungen?"
+    "welcomeAiMessage": "Hallo! Schön, dass du da bist. Ich bin dein Omni KI-Assistent von InWebDesign.net. Hast du schon eine eigene Website oder Fragen zu unseren Hosting & KI-Lösungen?",
+    "typing": "{name} tippt",
+    "typingPlural": "{names} tippen",
+    "aiThinking": "{name} überlegt",
+    "send": "Senden"
   },
   "player": {
     "quality": "Qualität / Auflösung",

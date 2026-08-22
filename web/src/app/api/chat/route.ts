@@ -3,6 +3,29 @@ import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 
+/**
+ * Looks a room up by slug without creating one.
+ *
+ * `send_message` used `getOrCreateRoomBySlug`, so any slug a client happened to
+ * send became a room. A client that sent into a room whose creation had not
+ * finished yet — under its provisional local id — silently got a second room
+ * containing that one message (#134). A message for a room that does not exist
+ * is an error, not a reason to invent one.
+ */
+async function findRoomBySlug(slug: string, authHeader: string = '') {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authHeader) headers['Authorization'] = authHeader;
+  if (process.env.STRAPI_API_TOKEN) headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+
+  const findRes = await fetch(
+    `${STRAPI_URL}/api/chat-rooms?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=participants`,
+    { headers, cache: 'no-store' }
+  );
+  if (!findRes.ok) return null;
+  const data = await findRes.json();
+  return Array.isArray(data.data) && data.data.length > 0 ? data.data[0] : null;
+}
+
 async function getOrCreateRoomBySlug(
   slug: string,
   name: string = 'Omni Chat',
@@ -301,9 +324,14 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'roomId and content required' }, { status: 400 });
       }
 
-      const initialParticipants = user?.id ? [user.id] : [];
-      const room = await getOrCreateRoomBySlug(roomId, 'Omni Chat', 'ai', initialParticipants, authHeader);
-      const roomTarget = room?.documentId || room?.id || roomId;
+      const room = await findRoomBySlug(roomId, authHeader);
+      if (!room) {
+        return NextResponse.json(
+          { error: 'Room not found' },
+          { status: 404 }
+        );
+      }
+      const roomTarget = room.documentId || room.id;
 
       // Save message into Strapi
       const createMsgRes = await fetch(`${STRAPI_URL}/api/chat-messages`, {
