@@ -230,7 +230,7 @@
     "handleLabel": "Kanal-Handle / Slug (@-Kürzel für Chat)",
     "handlePlaceholder": "maxtech",
     "avatarLabel": "Profilbild (Avatar URL)",
-    "avatarPlaceholder": "https://images.unsplash.com/photo-...",
+    "avatarPlaceholder": "/avatar-placeholder.svg",
     "bioLabel": "Kanal-Beschreibung (Description / Bio)",
     "bioPlaceholder": "Beschreibe deinen Kanal und deine Inhalte...",
     "save": "Einstellungen speichern"

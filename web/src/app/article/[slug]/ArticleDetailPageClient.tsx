@@ -475,7 +475,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
               {displayRelated.map((rel: any) => {
                 const relCreator =
                   rel.creator?.username || rel.creator?.handle || rel.author?.username || rel.authorName || 'Omni Creator';
-                const relThumbnail = rel.thumbnail || 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=300&q=80';
+                const relThumbnail = rel.thumbnail || '/demo-media/photo-1457369804613-52c61a468e7d.jpg';
 
                 return (
                   <Link

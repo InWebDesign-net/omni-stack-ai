@@ -7,7 +7,7 @@ import { AVATAR_PLACEHOLDER } from '@/lib/avatar';
  */
 
 export const DEFAULT_AVATAR_URL = AVATAR_PLACEHOLDER;
-export const DEFAULT_COVER_URL = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80';
+export const DEFAULT_COVER_URL = '/demo-media/photo-1618005182384-a83a8bd57fbe.jpg';
 
 export interface DemoCreator {
   id: string;
@@ -29,7 +29,7 @@ export const DEMO_CREATORS: DemoCreator[] = [
     id: '10',
     username: 'Astro-Wissen Magazin',
     handle: 'astro',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+    avatarUrl: '/demo-media/photo-1507003211169-0a1dd7228f2d.jpg',
     bio: 'Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.',
   },
   {
@@ -43,21 +43,21 @@ export const DEMO_CREATORS: DemoCreator[] = [
     id: '2',
     username: 'Culinary Masterclass',
     handle: 'demogourmet',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
+    avatarUrl: '/demo-media/photo-1494790108377-be9c29b29330.jpg',
     bio: 'Italienische Küche, feine Rezepte & Kulinarik.',
   },
   {
     id: '3',
     username: 'Green Planet Doku',
     handle: 'greenplanet',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
+    avatarUrl: '/demo-media/photo-1500648767791-00dcc994a43e.jpg',
     bio: 'Naturdokumentationen & Artenschutz.',
   },
   {
     id: '4',
     username: 'FinanzKompass',
     handle: 'finanzkompass',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+    avatarUrl: '/demo-media/photo-1507003211169-0a1dd7228f2d.jpg',
     bio: 'Finanzwissen & Vermögensaufbau.',
   },
   {
@@ -71,7 +71,7 @@ export const DEMO_CREATORS: DemoCreator[] = [
     id: '6',
     username: 'Familie & Tiere',
     handle: 'catmania',
-    avatarUrl: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=150&q=80',
+    avatarUrl: '/demo-media/photo-1543610892-0b1f7e6d8ac1.jpg',
     bio: 'Tiere, Familie & lustige Momente.',
   },
 ];
