@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, Check, Loader2, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { getStoredJwt } from '@/lib/affinity';
 
 interface SubscribeButtonProps {
   targetId: string;
@@ -55,10 +54,9 @@ export default function SubscribeButton({
 
     const fetchStatus = async () => {
       try {
-        const jwt = getStoredJwt();
         const queryParam = type === 'channel' ? `targetUser=${targetId}` : `targetChatRoom=${targetId}`;
         const res = await fetch(`/api/subscriptions?${queryParam}`, {
-          headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+          credentials: 'same-origin',
         });
         if (res.ok && active) {
           const data = await res.json();
@@ -112,13 +110,10 @@ export default function SubscribeButton({
     setIsLoading(true);
 
     try {
-      const jwt = getStoredJwt();
       const res = await fetch('/api/subscriptions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
-        },
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'toggle',
           targetId,

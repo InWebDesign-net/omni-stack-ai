@@ -132,8 +132,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       setCurrentUser(userData);
       try {
-        localStorage.setItem('omni_jwt', data.jwt);
-        localStorage.setItem('omni_user', JSON.stringify(userData));
+        // The token is deliberately not persisted. The login route already set
+        // it as an httpOnly cookie, which every API route reads, so a copy here
+        // would add nothing but a credential at rest that any script on the
+        // page can read. `jwt` is stripped from the cached profile for the same
+        // reason — it used to ride along inside `omni_user`.
+        const { jwt: _sessionToken, ...cacheableUser } = userData;
+        localStorage.setItem('omni_user', JSON.stringify(cacheableUser));
       } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);
@@ -184,8 +189,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       setCurrentUser(userData);
       try {
-        localStorage.setItem('omni_jwt', data.jwt);
-        localStorage.setItem('omni_user', JSON.stringify(userData));
+        // The token is deliberately not persisted. The login route already set
+        // it as an httpOnly cookie, which every API route reads, so a copy here
+        // would add nothing but a credential at rest that any script on the
+        // page can read. `jwt` is stripped from the cached profile for the same
+        // reason — it used to ride along inside `omni_user`.
+        const { jwt: _sessionToken, ...cacheableUser } = userData;
+        localStorage.setItem('omni_user', JSON.stringify(cacheableUser));
       } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);

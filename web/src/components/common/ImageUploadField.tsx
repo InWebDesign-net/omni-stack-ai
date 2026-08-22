@@ -50,15 +50,9 @@ export function ImageUploadField({
       formData.append('file', file);
       formData.append('folder', folder);
 
-      const uploadHeaders: Record<string, string> = {};
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('omni_jwt');
-        if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
-      }
-
       const res = await fetch('/api/upload/direct', {
         method: 'POST',
-        headers: uploadHeaders,
+        credentials: 'same-origin',
         body: formData,
       });
 

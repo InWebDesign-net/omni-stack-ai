@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sliders, X, Sparkles, Plus, Trash2, RotateCcw, Check, Save, Layers, Tag } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { AffinityGraph, defaultAffinityGraph, getStoredJwt } from '@/lib/affinity';
+import { AffinityGraph, defaultAffinityGraph } from '@/lib/affinity';
 
 interface AlgorithmModalProps {
   isOpen: boolean;
@@ -24,34 +24,28 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
   useEffect(() => {
     if (isOpen) {
       setSavedSuccess(false);
-      const jwt = getStoredJwt();
-      if (jwt) {
-        setIsLoadingProfile(true);
-        fetch('/api/profile', {
-          headers: { 'Authorization': `Bearer ${jwt}` },
-        })
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => {
-            if (data?.affinityGraph && Object.keys(data.affinityGraph.topics || {}).length > 0) {
-              setGraph(data.affinityGraph);
+      setIsLoadingProfile(true);
+      // The route authenticates from the session cookie, so a guest simply
+      // gets a response without a graph and the same fallbacks apply that the
+      // logged-out branch used to handle separately.
+      fetch('/api/profile', { credentials: 'same-origin' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.affinityGraph && Object.keys(data.affinityGraph.topics || {}).length > 0) {
+            setGraph(data.affinityGraph);
               updateProfileState(data.affinityGraph);
-            } else if (profile && Object.keys(profile.topics || {}).length > 0) {
-              setGraph(JSON.parse(JSON.stringify(profile)));
-            } else {
-              setGraph(defaultAffinityGraph());
-            }
+          } else if (profile && Object.keys(profile.topics || {}).length > 0) {
+            setGraph(JSON.parse(JSON.stringify(profile)));
+          } else {
+            setGraph(defaultAffinityGraph());
+          }
           })
-          .catch(() => {
-            if (profile) setGraph(JSON.parse(JSON.stringify(profile)));
+        .catch(() => {
+          if (profile) setGraph(JSON.parse(JSON.stringify(profile)));
           })
-          .finally(() => {
+        .finally(() => {
             setIsLoadingProfile(false);
           });
-      } else if (profile && Object.keys(profile.topics || {}).length > 0) {
-        setGraph(JSON.parse(JSON.stringify(profile)));
-      } else {
-        setGraph(defaultAffinityGraph());
-      }
     }
   }, [isOpen]);
 
@@ -107,17 +101,14 @@ export default function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps)
     try {
       updateProfileState(graph);
 
-      const jwt = getStoredJwt();
-      if (jwt) {
-        await fetch('/api/profile', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwt}`,
-          },
-          body: JSON.stringify(graph),
-        });
-      }
+      // Saving is only meaningful for a signed-in visitor; the route answers
+      // 401 for anyone else, which the catch below already handles.
+      await fetch('/api/profile', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(graph),
+      });
 
       setSavedSuccess(true);
       setTimeout(() => {

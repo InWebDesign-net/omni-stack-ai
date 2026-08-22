@@ -143,7 +143,6 @@ export function UploadProvider({ children }: { children: ReactNode }) {
   const startChunkedUpload = useCallback(async (task: UploadTask) => {
     const { id, file, title, tags, mediaType } = task;
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    const jwt = typeof window !== 'undefined' ? localStorage.getItem('omni_jwt') : null;
 
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, status: 'uploading', progress: 0, errorMsg: undefined } : t))
@@ -172,12 +171,10 @@ export function UploadProvider({ children }: { children: ReactNode }) {
       // Transient chunk retry loop
       for (let attempt = 1; attempt <= MAX_CHUNK_RETRIES; attempt++) {
         try {
-          const headers: Record<string, string> = {};
-          if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
-
+          // The chunk route identifies the uploader from the session cookie.
           const res = await fetch('/api/upload/chunk', {
             method: 'POST',
-            headers,
+            credentials: 'same-origin',
             body: formData,
           });
 
