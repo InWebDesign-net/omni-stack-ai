@@ -25,6 +25,7 @@ import { ImageEditModal } from '@/components/image/ImageEditModal';
 import { useApp } from '@/context/AppContext';
 import { useContentList, ImageItem } from '@/lib/hooks/useContentList';
 import { getRotatedRecommendations } from '@/lib/recommendations';
+import { toggleFavorite } from '@/lib/favorites';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { formatRelativeDate } from '@/lib/date';
 import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
@@ -186,6 +187,10 @@ export default function ImagePageClient({
       return;
     }
     const nextIsLiked = !isLiked;
+
+    if (image?.id != null) {
+      void toggleFavorite({ imageId: image.id, desired: nextIsLiked });
+    }
     setIsLiked(nextIsLiked);
     setLikesCount((prev) => (nextIsLiked ? prev + 1 : Math.max(0, prev - 1)));
 

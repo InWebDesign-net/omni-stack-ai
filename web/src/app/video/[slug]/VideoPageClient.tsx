@@ -38,6 +38,7 @@ import { useApp } from '@/context/AppContext';
 import { useContentList, VideoItem } from '@/lib/hooks/useContentList';
 import { getRotatedRecommendations } from '@/lib/recommendations';
 import { getDictionary } from '@/lib/i18n';
+import { toggleFavorite } from '@/lib/favorites';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { tracker } from '@/lib/tracking';
 import { formatRelativeDate } from '@/lib/date';
@@ -300,6 +301,10 @@ export default function VideoPageClient({
     }
     const nextIsLiked = !isLiked;
     setIsLiked(nextIsLiked);
+
+    if (video?.id != null) {
+      void toggleFavorite({ videoId: video.id, desired: nextIsLiked });
+    }
     setLikesCount((prev: number) => Math.max(0, nextIsLiked ? prev + 1 : prev - 1));
 
     const tags = Array.isArray(video.tags) && video.tags.length > 0
