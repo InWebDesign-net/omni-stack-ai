@@ -291,7 +291,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <Heart className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.favorites || 'Favorites'} ({counts.favorites})</span>
+                        <span>{(t as any).userProfile?.tabs?.favorites || 'Likes'} ({counts.favorites})</span>
                     </button>
 
                     {/* TAB 5: About Channel */}

@@ -100,7 +100,7 @@ export function UserFavoritesTab({ favorites, slug, t }: UserFavoritesTabProps) 
     return (
       <div className="text-center py-12 space-y-4">
         <Heart className="w-12 h-12 mx-auto text-muted" />
-        <p className="text-muted">{t?.user?.noFavorites || 'Keine Favoriten vorhanden'}</p>
+        <p className="text-muted">{t?.user?.noFavorites || 'Noch nichts geliked'}</p>
       </div>
     );
   }

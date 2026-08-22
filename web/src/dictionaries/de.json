@@ -16,8 +16,8 @@
     "showMore": "Mehr anzeigen",
     "showLess": "Weniger anzeigen",
     "linkCopied": "Link in Zwischenablage kopiert!",
-    "likeAdded": "Zu deinen Favoriten hinzugefügt",
-    "likeRemoved": "Aus deinen Favoriten entfernt",
+    "likeAdded": "Zu deinen Likes hinzugefügt",
+    "likeRemoved": "Aus deinen Likes entfernt",
     "bookmarkAdded": "In Merkliste gespeichert",
     "bookmarkRemoved": "Bookmark entfernt",
     "close": "Schließen",
@@ -431,7 +431,7 @@
       "articles": "Artikel",
       "videos": "Videos",
       "images": "Bilder",
-      "favorites": "Favoriten",
+      "favorites": "Likes",
       "about": "Über den Kanal"
     },
     "stats": {
@@ -567,5 +567,8 @@
     "uploadRejected": "Datei wurde abgelehnt.",
     "uploadOnlyFirst": "Nur die erste Datei wird verwendet ({n} übersprungen).",
     "uploadInProgress": "Der Upload läuft im Hintergrund weiter. Schließt du den Editor jetzt, landet die Datei trotzdem in deiner Mediathek und lässt sich hier nachträglich auswählen."
+  },
+  "user": {
+    "noFavorites": "Noch nichts geliked"
   }
 }

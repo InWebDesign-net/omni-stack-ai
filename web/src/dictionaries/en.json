@@ -16,8 +16,8 @@
     "showMore": "Show more",
     "showLess": "Show less",
     "linkCopied": "Link copied to clipboard!",
-    "likeAdded": "Added to your favorites",
-    "likeRemoved": "Removed from your favorites",
+    "likeAdded": "Added to your likes",
+    "likeRemoved": "Removed from your likes",
     "bookmarkAdded": "Saved to bookmarks",
     "bookmarkRemoved": "Bookmark removed",
     "close": "Close",
@@ -431,7 +431,7 @@
       "articles": "Articles",
       "videos": "Videos",
       "images": "Images",
-      "favorites": "Favorites",
+      "favorites": "Likes",
       "about": "About Channel"
     },
     "stats": {
@@ -567,5 +567,8 @@
     "uploadRejected": "File was rejected.",
     "uploadOnlyFirst": "Only the first file is used ({n} skipped).",
     "uploadInProgress": "The upload continues in the background. If you close the editor now, the file still lands in your library and can be picked here afterwards."
+  },
+  "user": {
+    "noFavorites": "Nothing liked yet"
   }
 }

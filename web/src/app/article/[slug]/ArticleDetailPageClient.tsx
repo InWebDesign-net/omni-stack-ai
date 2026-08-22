@@ -211,7 +211,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
     tracker.track(nextIsLiked ? 'like' : 'unlike', tags, 'article', creator?.id);
 
     if (nextIsLiked) {
-      showToast(effectiveLang === 'de' ? 'Zu deinen Favoriten hinzugefügt!' : 'Added to your favorites!');
+      showToast(t.common?.likeAdded || (effectiveLang === 'de' ? 'Zu deinen Likes hinzugefügt' : 'Added to your likes'));
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (!storedLikes.includes(item.slug)) {
@@ -219,7 +219,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
         }
       } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     } else {
-      showToast(effectiveLang === 'de' ? 'Aus deinen Favoriten entfernt.' : 'Removed from favorites.');
+      showToast(t.common?.likeRemoved || (effectiveLang === 'de' ? 'Aus deinen Likes entfernt' : 'Removed from your likes'));
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         localStorage.setItem(

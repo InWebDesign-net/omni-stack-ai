@@ -195,9 +195,9 @@ export default function ImagePageClient({
     setLikesCount((prev) => (nextIsLiked ? prev + 1 : Math.max(0, prev - 1)));
 
     if (nextIsLiked) {
-      showToast(t.common?.likeAdded || 'Zu Favoriten hinzugefügt');
+      showToast(t.common?.likeAdded || 'Zu deinen Likes hinzugefügt');
     } else {
-      showToast(t.common?.likeRemoved || 'Aus Favoriten entfernt');
+      showToast(t.common?.likeRemoved || 'Aus deinen Likes entfernt');
     }
 
     try {

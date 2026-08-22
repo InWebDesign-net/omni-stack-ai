@@ -130,8 +130,9 @@ export default function HomeClient() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    // Direct search query to video catalog or open AI assistant
-    router.push(`/videos?q=${encodeURIComponent(searchQuery.trim())}`);
+    // Articles are the catalogue this search lands in; `useContentListPage`
+    // reads `q` there the same way the video list does.
+    router.push(`/articles?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   const handleAiSearchOpen = async () => {

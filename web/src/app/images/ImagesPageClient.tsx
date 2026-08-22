@@ -71,9 +71,9 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     img.likesCount = Math.max(0, (img.likesCount || 0) + (nextIsLiked ? 1 : -1));
 
     if (nextIsLiked) {
-      showToast(t.common?.likeAdded || 'Zu Favoriten hinzugefügt');
+      showToast(t.common?.likeAdded || 'Zu deinen Likes hinzugefügt');
     } else {
-      showToast(t.common?.likeRemoved || 'Aus Favoriten entfernt');
+      showToast(t.common?.likeRemoved || 'Aus deinen Likes entfernt');
     }
 
     try {
