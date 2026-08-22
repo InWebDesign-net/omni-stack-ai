@@ -1,4 +1,3 @@
-import { getStoredJwt } from './affinity';
 
 export interface TrackEvent {
   type: 'view' | 'click' | 'like' | 'unlike' | 'completion' | 'share' | 'comment';
@@ -53,10 +52,6 @@ class TrackingManager {
     }
   }
 
-  private getJwt(): string | null {
-    return getStoredJwt();
-  }
-
   public async flush() {
     if (this.eventQueue.length === 0) return;
 
@@ -64,14 +59,13 @@ class TrackingManager {
     this.eventQueue = [];
 
     try {
-      const jwt = this.getJwt();
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (jwt) headers['Authorization'] = `Bearer ${jwt}`;
-
+      // The route identifies the sender from the session cookie, which the
+      // browser attaches on its own — nothing here needs to know the token.
       await fetch('/api/tracking/batch', {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ events: eventsToSend, jwt }),
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: eventsToSend }),
       });
     } catch (err) {
       console.error('Tracking batch flush failed:', err);
@@ -80,11 +74,9 @@ class TrackingManager {
 
   private flushBeacon() {
     if (this.eventQueue.length === 0) return;
-    const jwt = this.getJwt();
-    const payload = JSON.stringify({
-      jwt,
-      events: this.eventQueue,
-    });
+    // sendBeacon sends cookies for a same-origin request, so this carries the
+    // session just like the fetch above does.
+    const payload = JSON.stringify({ events: this.eventQueue });
     this.eventQueue = [];
 
     if (navigator.sendBeacon) {

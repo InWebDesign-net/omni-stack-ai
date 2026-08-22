@@ -14,7 +14,6 @@ import {
   normalizeAffinityGraph,
   loadStoredAffinityGraph,
   storeAffinityGraph,
-  getStoredJwt,
 } from '@/lib/affinity';
 import { getDictionary, Dictionary } from '@/lib/i18n';
 import { AVATAR_PLACEHOLDER, isLegacyAvatar, resolveAvatarUrl } from '@/lib/avatar';
@@ -134,6 +133,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
 
       try {
+        // Sessions created before the token moved to an httpOnly cookie left a
+        // live credential in localStorage. Nothing reads it any more, so clear
+        // it on the next visit rather than leaving it lying around until the
+        // user happens to log out.
+        localStorage.removeItem('omni_jwt');
+
         const savedUserStr = localStorage.getItem('omni_user');
         if (savedUserStr) {
           const parsedUser = JSON.parse(savedUserStr);
@@ -154,12 +159,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setProfile(storedGraph);
       }
 
-      // Fetch fresh profile & real affinityGraph from Strapi DB if logged in
-      const jwt = getStoredJwt();
-      if (jwt) {
-        fetch('/api/profile', {
-          headers: { 'Authorization': `Bearer ${jwt}` },
-        })
+      // Fetch fresh profile & real affinityGraph from Strapi DB.
+      //
+      // This used to run only when a token was found in localStorage, which
+      // made a client-side value the arbiter of whether we are logged in. The
+      // route reads the session cookie, so ask unconditionally and let it
+      // answer: a guest gets a response without a `user` and nothing below
+      // applies.
+      {
+        fetch('/api/profile', { credentials: 'same-origin' })
           .then((res) => (res.ok ? res.json() : null))
           .then((data) => {
             if (data?.user) {
@@ -200,15 +208,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProfile(newProfile);
     storeAffinityGraph(newProfile);
 
-    const jwt = getStoredJwt();
-    if (jwt) {
+    // Persisting only matters for a signed-in visitor; a guest keeps the graph
+    // in localStorage alone. `currentUser` is set from the cookie-backed
+    // profile fetch above, so it — not a stored token — is the login test.
+    if (currentUser) {
       try {
         await fetch('/api/profile', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwt}`,
-          },
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ affinityGraph: newProfile }),
         });
       } catch (e) {

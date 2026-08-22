@@ -32,14 +32,12 @@ export interface UseContentListResult<T> {
 }
 
 const fetcher = async (url: string) => {
-  const jwt = typeof window !== 'undefined' ? localStorage.getItem('omni_jwt') : null;
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (jwt) {
-    headers['Authorization'] = `Bearer ${jwt}`;
-  }
-  const res = await fetch(url, { headers });
+  // The list route reads the session cookie, which the browser sends on its
+  // own, so the caller's identity travels without this code handling a token.
+  const res = await fetch(url, {
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+  });
   if (!res.ok) {
     throw new Error('Failed to fetch list');
   }

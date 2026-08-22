@@ -48,33 +48,20 @@ export function storeAffinityGraph(graph: AffinityGraph) {
   } catch { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 }
 
-/** JWT of the logged-in user from stored session or localStorage. */
-export function getStoredJwt(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const directJwt = localStorage.getItem('omni_jwt');
-    if (directJwt) return directJwt;
-
-    const savedUser = localStorage.getItem('omni_user');
-    if (savedUser) {
-      const parsed = JSON.parse(savedUser);
-      if (parsed?.jwt) return parsed.jwt;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-/** Standard JSON headers with optional Authorization bearer token for API requests. */
+/**
+ * Standard JSON headers for API requests.
+ *
+ * This used to attach an `Authorization` bearer token read from
+ * `localStorage`, which is why a copy of the session token had to be kept
+ * there — a credential at rest that any script on the page could read, and
+ * that outlived the session in every open tab.
+ *
+ * Our API routes authenticate from the httpOnly `omni_jwt` cookie instead. The
+ * browser attaches it to same-origin requests on its own, so callers get the
+ * signed-in identity without this code ever handling the token. The function
+ * stays because ~60 call sites use it as their header builder and the
+ * `Content-Type` is still needed.
+ */
 export function jsonAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  const jwt = getStoredJwt();
-  if (jwt) {
-    headers['Authorization'] = `Bearer ${jwt}`;
-  }
-  return headers;
+  return { 'Content-Type': 'application/json' };
 }

@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import { getStoredJwt } from './affinity';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://omni-socket.inwebdesign.net';
 
@@ -10,11 +9,25 @@ export function getSocket(): Socket | null {
     return null;
   }
 
-  const jwt = getStoredJwt();
-
   if (!socketInstance) {
     socketInstance = io(SOCKET_URL, {
-      auth: { token: jwt || '' },
+      /**
+       * Socket.IO calls this before every connection attempt, including each
+       * reconnect, so the handshake always carries a token for the session that
+       * is valid *now* — a page that was open across a logout or a login picks
+       * up the change on its next reconnect instead of reusing a stale copy.
+       *
+       * Fetching it per attempt is also why the browser no longer has to store
+       * the token: it lives in this callback for the length of one handshake.
+       * A guest, or any failure to reach the route, connects with an empty
+       * token, which the gateway accepts as an anonymous connection.
+       */
+      auth: (cb: (data: { token: string }) => void) => {
+        fetch('/api/auth/socket-token', { credentials: 'same-origin' })
+          .then((res) => (res.ok ? res.json() : { token: null }))
+          .then((data) => cb({ token: data?.token || '' }))
+          .catch(() => cb({ token: '' }));
+      },
       transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,
@@ -33,14 +46,11 @@ export function getSocket(): Socket | null {
     socketInstance.on('connect_error', (err) => {
       console.warn('⚠️ WebSocket connection error:', err.message);
     });
-  } else {
-    // Refresh auth token if needed
-    if (jwt && (!socketInstance.auth || (socketInstance.auth as any).token !== jwt)) {
-      socketInstance.auth = { token: jwt };
-      if (!socketInstance.connected) {
-        socketInstance.connect();
-      }
-    }
+  } else if (!socketInstance.connected) {
+    // The auth callback above runs again on this attempt, so a socket that was
+    // opened as a guest and is now reconnecting after a login authenticates
+    // itself — nothing here has to carry the token over.
+    socketInstance.connect();
   }
 
   return socketInstance;

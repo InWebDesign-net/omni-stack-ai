@@ -1,9 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+
+/**
+ * The caller's token, from the Authorization header or from the session cookie.
+ *
+ * The token only reaches `localStorage` through the auth modal, while the login
+ * route always sets an httpOnly `omni_jwt` cookie — so a session restored from
+ * that cookie has no header to send. Reading both means this route works for a
+ * signed-in visitor either way.
+ */
+function callerAuth(req: NextRequest): string | null {
+  const header = req.headers.get('authorization');
+  if (header && header !== 'Bearer null' && header !== 'Bearer undefined') {
+    return header.startsWith('Bearer ') ? header : `Bearer ${header}`;
+  }
+  const cookieJwt = req.cookies.get('omni_jwt')?.value || req.cookies.get('omni_user_jwt')?.value;
+  return cookieJwt ? `Bearer ${cookieJwt}` : null;
+}
+
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const payload = {
@@ -18,7 +36,7 @@ export async function POST(req: Request) {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     };
-    const clientAuth = req.headers.get('authorization');
+    const clientAuth = callerAuth(req);
     if (clientAuth) {
       headers['Authorization'] = clientAuth;
     } else if (process.env.STRAPI_API_TOKEN) {
