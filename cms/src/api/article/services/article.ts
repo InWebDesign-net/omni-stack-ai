@@ -146,6 +146,59 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
       });
     }
 
+    /*
+     * One row per document, in the language the reader asked for.
+     *
+     * A search queries every locale on purpose, so a German term still finds an
+     * article whose English title matches. Without collapsing the result the
+     * same article came back twice — `/articles?q=Natur` listed
+     * `nature-s-wonders` as both "Natur in aller Pracht" and "Nature's
+     * Wonders".
+     *
+     * The requested locale wins where it exists, rather than whichever row the
+     * database returned first: a German reader searching in German should get
+     * the German article back even when it was the English title that matched.
+     */
+    const byDocument = new Map<string, any>();
+    for (const item of (items as any[]) || []) {
+      const docId = item.documentId || item.id || item.slug;
+      if (!docId) continue;
+      const existing = byDocument.get(docId);
+      if (!existing) {
+        byDocument.set(docId, item);
+      } else if (item.locale === targetLocale && existing.locale !== targetLocale) {
+        byDocument.set(docId, item);
+      }
+    }
+    items = Array.from(byDocument.values());
+
+    /*
+     * A document can match the search in one language only — "Natur" hits the
+     * German title of an article whose English title says nothing of the sort.
+     * The reader still wants it in their own language, so the requested locale
+     * is fetched for whatever came back in the wrong one.
+     */
+    if (targetLocale !== '*') {
+      const wrongLocale = items.filter((it: any) => it.locale && it.locale !== targetLocale);
+      if (wrongLocale.length > 0) {
+        try {
+          const replacements = await strapi.documents('api::article.article').findMany({
+            filters: { documentId: { $in: wrongLocale.map((it: any) => it.documentId) } },
+            locale: targetLocale,
+            ...(docQueryStatus ? { status: docQueryStatus } : {}),
+            populate: articlePopulate,
+          } as any);
+          const byId = new Map(replacements.map((r: any) => [r.documentId, r]));
+          items = items.map((it: any) =>
+            it.locale !== targetLocale && byId.has(it.documentId) ? byId.get(it.documentId) : it
+          );
+        } catch (e) {
+          // Falling back to the matched language is better than dropping the hit.
+          strapi.log.error('[article] could not resolve requested locale for search hits', e);
+        }
+      }
+    }
+
     // Tag filtering
     if (includeList.length > 0 || excludeList.length > 0) {
       const docIds = (items as any[]).map((it) => it.documentId).filter(Boolean);
