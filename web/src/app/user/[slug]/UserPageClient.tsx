@@ -26,6 +26,7 @@ import { ProfileData } from './actions';
 import { useApp } from '@/context/AppContext';
 import { ProfileTabToolbar, ProfileTabLoadMore } from '@/components/profile/ProfileTabControls';
 import { useProfileTabList } from '@/lib/hooks/useProfileTabList';
+import { useProfileLikesTab } from '@/lib/hooks/useProfileLikesTab';
 import { useChat } from '@/context/ChatContext';
 import Header from '@/components/Header';
 import SubscribeButton from '@/components/SubscribeButton';
@@ -48,7 +49,7 @@ interface UserPageClientProps {
 
 export default function UserPageClient({ profileDataInit }: UserPageClientProps) {
     const router = useRouter();
-    const { profile, isOwner, favorites, counts, stats } = profileDataInit;
+    const { profile, isOwner, counts, stats } = profileDataInit;
     const { t, lang, currentUser, openAuthModal, openVideoUploadModal, openSettingsModal } = useApp();
     const { createRoom, openChat } = useChat();
 
@@ -60,6 +61,9 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const articleList = useProfileTabList({ kind: 'article', creatorId: profile.id, active: activeTab === 'articles', lang, initialTotal: counts.articles });
     const videoList = useProfileTabList({ kind: 'video', creatorId: profile.id, active: activeTab === 'videos', lang, initialTotal: counts.videos });
     const imageList = useProfileTabList({ kind: 'image', creatorId: profile.id, active: activeTab === 'images', lang, initialTotal: counts.images });
+    // Likes have their own hook: they join four content types through
+    // /api/favorites, which the filtered services do not cover.
+    const likesList = useProfileLikesTab({ userId: profile.id, active: activeTab === 'favorites', initialTotal: counts.favorites });
 
     const articles = articleList.items;
     const videos = videoList.items;
@@ -291,7 +295,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                             }`}
                     >
                         <Heart className="w-4 h-4" />
-                        <span>{(t as any).userProfile?.tabs?.favorites || 'Likes'} ({counts.favorites})</span>
+                        <span>{(t as any).userProfile?.tabs?.favorites || 'Likes'} ({likesList.total})</span>
                     </button>
 
                     {/* TAB 5: About Channel */}
@@ -492,7 +496,15 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
 
                 {/* TAB 4: Favorites Grid */}
                 {activeTab === 'favorites' && (
-                    <UserFavoritesTab favorites={favorites} slug={profile.handle || profile.username} t={t} />
+                  <>
+                    <UserFavoritesTab favorites={likesList.items} slug={profile.handle || profile.username} t={t} />
+                    <ProfileTabLoadMore
+                        hasMore={likesList.hasMore}
+                        isLoadingMore={likesList.isLoadingMore}
+                        onLoadMore={likesList.loadMore}
+                        lang={lang}
+                    />
+                  </>
                 )}
 
                 {/* TAB 5: About Channel Info */}

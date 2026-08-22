@@ -29,12 +29,6 @@ export interface ProfileCounts {
 export interface ProfileData {
   profile: UserProfile;
   isOwner: boolean;
-  /**
-   * Favourites are still loaded here: they join four content types through
-   * `/api/favorites`, which the filtered services do not cover. Paginating that
-   * tab needs its own endpoint.
-   */
-  favorites: any[];
   /** Tab badges, so a label is right before its list is fetched. */
   counts: ProfileCounts;
   stats: ProfileStats;
@@ -156,57 +150,20 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
     const totalViews = videoSummary.views + imageSummary.views + articleSummary.views;
     const totalLikes = videoSummary.likes + imageSummary.likes + articleSummary.likes;
 
-    // 8. Fetch Favorites for this profile
-    let favorites: any[] = [];
+    // The likes tab loads its own pages through /api/profile/favorites, so only
+    // the count is needed here — same as the other three tabs.
+    let favoritesTotal = 0;
     try {
-      const handleFilter = encodeURIComponent(targetProfile.handle || targetProfile.username || '');
-      const userFavUrl = `${strapiUrl}/api/favorites?filters[$or][0][user][id][$eq]=${targetProfile.id}&filters[$or][1][userIdentifier][$eq]=${handleFilter}&filters[$or][2][userIdentifier][$eq]=user-${targetProfile.id}&populate=video,image,feedItem,article&pagination[pageSize]=50`;
-      const favRes = await fetch(userFavUrl, { headers, cache: 'no-store' });
-      if (favRes.ok) {
-        const favData = await favRes.json();
-        const rawFavs = favData?.data || [];
-        for (const f of rawFavs) {
-          if (f.video) {
-            favorites.push({ ...f.video, mediaType: 'video' });
-          } else if (f.image) {
-            favorites.push({
-              documentId: f.image.documentId,
-              slug: f.image.slug,
-              title: f.image.title,
-              thumbnailUrl: f.image.thumbnailUrl || f.image.imageUrl,
-              summary: f.image.summary,
-              viewsCount: f.image.viewsCount || 0,
-              likesCount: f.image.likesCount || 0,
-              mediaType: 'image',
-            });
-          } else if (f.article) {
-            favorites.push({
-              documentId: f.article.documentId,
-              slug: f.article.slug,
-              title: f.article.title,
-              thumbnailUrl: f.article.thumbnail || f.article.thumbnailUrl,
-              summary: f.article.summary,
-              viewsCount: f.article.viewsCount || 0,
-              likesCount: f.article.likesCount || 0,
-              mediaType: 'article',
-            });
-          } else if (f.feedItem) {
-            const fi = f.feedItem;
-            favorites.push({
-              documentId: fi.documentId,
-              slug: fi.slug,
-              title: fi.title,
-              thumbnailUrl: fi.thumbnailUrl,
-              summary: fi.summary,
-              viewsCount: fi.viewsCount || 0,
-              likesCount: fi.likesCount || 0,
-              mediaType: 'content',
-            });
-          }
-        }
+      const countRes = await fetch(
+        `${strapiUrl}/api/favorites?filters[user][id][$eq]=${targetProfile.id}&pagination[pageSize]=1&fields[0]=id`,
+        { headers, cache: 'no-store' }
+      );
+      if (countRes.ok) {
+        const countJson = await countRes.json();
+        favoritesTotal = Number(countJson?.meta?.pagination?.total || 0);
       }
     } catch (e) {
-      console.error('Error fetching favorites for profile:', e);
+      console.error('Error counting favorites for profile:', e);
     }
 
     return {
@@ -221,12 +178,11 @@ export async function getProfileData(slug: string): Promise<ProfileData | null> 
         createdAt: targetProfile.createdAt,
       },
       isOwner,
-      favorites,
       counts: {
         videos: videoSummary.total,
         images: imageSummary.total,
         articles: articleSummary.total,
-        favorites: favorites.length,
+        favorites: favoritesTotal,
       },
       stats: {
         totalVideos: videoSummary.total,
