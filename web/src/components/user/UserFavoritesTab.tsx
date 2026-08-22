@@ -88,7 +88,15 @@ function FavoriteItemCard({ item }: { item: any }) {
 }
 
 export function UserFavoritesTab({ favorites, slug, t }: UserFavoritesTabProps) {
-  if (!favorites || favorites.length === 0) {
+  /*
+   * A favourite whose target was deleted arrives with nothing to render. A
+   * lifecycle now removes those rows when the content goes, but data written
+   * before that existed — and any row deleted directly in the database — would
+   * otherwise render an empty card and make the count disagree with the list.
+   */
+  const renderable = (favorites || []).filter((item) => item && (item.slug || item.documentId || item.id));
+
+  if (renderable.length === 0) {
     return (
       <div className="text-center py-12 space-y-4">
         <Heart className="w-12 h-12 mx-auto text-muted" />
@@ -99,7 +107,7 @@ export function UserFavoritesTab({ favorites, slug, t }: UserFavoritesTabProps) 
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {favorites.map((item, idx) => (
+      {renderable.map((item, idx) => (
         <FavoriteItemCard
           key={`${item.mediaType || 'fav'}-${item.documentId || item.id || item.slug || idx}`}
           item={item}
