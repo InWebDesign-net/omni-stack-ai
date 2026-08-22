@@ -300,7 +300,7 @@ export default function ImagePageClient({
             <div className="relative bg-surface border border-subtle rounded-3xl overflow-hidden shadow-2xl group">
               <div className="relative flex items-center justify-center min-h-[400px] max-h-[70vh] bg-surface p-4">
                 <Image
-                  src={image?.imageUrl || image?.thumbnailUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80'}
+                  src={image?.imageUrl || image?.thumbnailUrl || '/demo-media/photo-1618005182384-a83a8bd57fbe.jpg'}
                   alt={image?.title || 'Omni Image'}
                   className="max-h-[65vh] w-auto object-contain rounded-xl shadow-2xl"
                 />
@@ -405,7 +405,7 @@ export default function ImagePageClient({
                 >
                   <div className="w-28 sm:w-32 aspect-[4/3] rounded-xl bg-surface overflow-hidden shrink-0 shadow-sm">
                     <Image
-                      src={rel.thumbnailUrl || rel.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80'}
+                      src={rel.thumbnailUrl || rel.imageUrl || '/demo-media/photo-1618005182384-a83a8bd57fbe.jpg'}
                       alt={rel.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

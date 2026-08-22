@@ -295,7 +295,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                   {/* Aspect ratio image container */}
                   <div className="relative aspect-[4/3] bg-surface rounded-xl overflow-hidden shadow-md">
                     <Image
-                      src={img.thumbnailUrl || img.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}
+                      src={img.thumbnailUrl || img.imageUrl || '/demo-media/photo-1618005182384-a83a8bd57fbe.jpg'}
                       alt={img.title}
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

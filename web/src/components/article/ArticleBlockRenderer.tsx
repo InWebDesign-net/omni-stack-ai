@@ -193,7 +193,7 @@ function VideoRelationBlock({ block }: { block: any }) {
   const hasSource = Boolean(hlsUrl || mp4Url);
   const title = videoData.title || 'Video Block';
   const slug = videoData.slug;
-  const thumbnail = videoData.thumbnail || videoData.thumbnailUrl || 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&q=80';
+  const thumbnail = videoData.thumbnail || videoData.thumbnailUrl || '/demo-media/photo-1618005182384-a83a8bd57fbe.jpg';
   const creatorName = videoData.creator?.username || videoData.authorName || 'Omni Creator';
 
   return (
@@ -271,7 +271,7 @@ function ImageRelationBlock({ block }: { block: any }) {
   if (!imgObj) return null;
 
   const imageData = imgObj.attributes || imgObj;
-  const imageUrl = imageData.imageUrl || imageData.thumbnailUrl || imageData.url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80';
+  const imageUrl = imageData.imageUrl || imageData.thumbnailUrl || imageData.url || '/demo-media/photo-1618005182384-a83a8bd57fbe.jpg';
   const title = imageData.title || 'Image Block';
   const slug = imageData.slug;
   const creatorName = imageData.creator?.username || imageData.authorName || 'Omni Creator';

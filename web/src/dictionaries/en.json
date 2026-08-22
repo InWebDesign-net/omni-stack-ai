@@ -230,7 +230,7 @@
     "handleLabel": "Channel Handle / Slug (@-mention)",
     "handlePlaceholder": "maxtech",
     "avatarLabel": "Avatar Image URL",
-    "avatarPlaceholder": "https://images.unsplash.com/photo-...",
+    "avatarPlaceholder": "/avatar-placeholder.svg",
     "bioLabel": "Channel Description (Bio)",
     "bioPlaceholder": "Describe your channel and content...",
     "save": "Save Settings"
