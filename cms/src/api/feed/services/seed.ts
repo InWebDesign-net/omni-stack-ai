@@ -39,6 +39,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         } catch (e) {
         strapi.log.error('[seed.ts] unhandled error', e);
       }
+        try {
+          await strapi.db.query('api::image.image').deleteMany({});
+        } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
       }
 
       console.log('🌱 Seeding initial bilingual Feed Items with Dynamic Zone Blocks in Strapi...');
@@ -306,6 +311,83 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           }
         } catch (fixtureErr) {
           console.error('Error seeding 110 test videos from fixture:', fixtureErr);
+        }
+      }
+
+      /*
+       * Images, same idea as the videos above.
+       *
+       * The fixture holds what content-fill derived — bilingual title, summary
+       * and tags — so a re-seed restores the catalogue without another hour of
+       * vision analysis. The WebP files themselves live under /root/media and
+       * are not touched by any of this; only the database rows are recreated.
+       */
+      const seedImagesPath = path.join(__dirname, '../../../src/data/seed_images.json');
+      const seedImagesAltPath = path.join(process.cwd(), 'src/data/seed_images.json');
+      const imagesFixturePath = fs.existsSync(seedImagesPath)
+        ? seedImagesPath
+        : (fs.existsSync(seedImagesAltPath) ? seedImagesAltPath : null);
+
+      if (imagesFixturePath) {
+        try {
+          const imageFixture = JSON.parse(fs.readFileSync(imagesFixturePath, 'utf8'));
+          console.log(`🖼️ Seeding ${imageFixture.length} test images from seed_images.json...`);
+          const creatorsMap: Record<string, any> = creators;
+
+          for (const item of imageFixture) {
+            const creatorObj = creatorsMap[item.creatorHandle] || creators.astro;
+            const authorId = creatorObj?.documentId || creatorObj?.id || 1;
+
+            const existingImg = await strapi.documents('api::image.image').findMany({
+              filters: { slug: { $eq: item.slug } },
+              locale: '*',
+              omniInternal: true,
+            } as any);
+            if (existingImg && existingImg.length > 0) continue;
+
+            const imageData: any = {
+              title: item.title_en || item.title_de,
+              slug: item.slug,
+              summary: item.summary_en || item.summary_de,
+              content: item.summary_en || item.summary_de,
+              imageUrl: item.imageUrl || `/media/images/${item.slug}.webp`,
+              thumbnailUrl: item.thumbnailUrl || `/media/images/thumbnails/${item.slug}_thumb.webp`,
+              viewsCount: item.viewsCount || 0,
+              likesCount: item.likesCount || 0,
+              commentsCount: 0,
+              isProcessing: false,
+              creator: authorId,
+              visibility: 'public',
+            };
+
+            try {
+              const createdEn = await strapi.documents('api::image.image').create({
+                data: { ...imageData, tags: item.tags_en || item.tags || ['Bild'] } as any,
+                locale: 'en',
+                status: 'published',
+              });
+
+              if (createdEn?.documentId) {
+                await strapi.documents('api::image.image').update({
+                  documentId: createdEn.documentId,
+                  locale: 'de',
+                  data: {
+                    ...imageData,
+                    title: item.title_de || item.title_en,
+                    summary: item.summary_de || item.summary_en,
+                    content: item.summary_de || item.summary_en,
+                    tags: item.tags_de || item.tags || ['Bild'],
+                  } as any,
+                  status: 'published',
+                });
+              }
+            } catch (e) {
+              strapi.log.error(`[seed.ts] image "${item.slug}" failed`, e);
+            }
+          }
+          console.log('✅ Image seed completed.');
+        } catch (fixtureErr) {
+          console.error('Error seeding images from fixture:', fixtureErr);
         }
       }
 
