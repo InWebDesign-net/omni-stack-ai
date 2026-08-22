@@ -103,7 +103,7 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   };
 
   const {
-    searchTerm, currentPage, sort, filterFavorites, perPage,
+    searchTerm, currentPage, sort, filterLikes, perPage,
     searchInput, setSearchInput, handleSearchSubmit, clearSearch,
     includedTags, excludedTags, matchMode, tagSearch,
     isTagCloudExpanded: showAllTags,

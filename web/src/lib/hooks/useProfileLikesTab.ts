@@ -8,7 +8,7 @@ const PAGE_SIZE = 24;
  * The likes tab's list, paginated.
  *
  * Separate from `useProfileTabList` on purpose: a like joins four content types
- * through `/api/favorites`, which the filtered services behind
+ * through `/api/likes`, which the filtered services behind
  * `/api/content/{kind}/list` do not cover. It has no sort or search for the
  * same reason — those are the filtered services' features, and inventing a
  * second implementation of them here would be worse than not having them.
@@ -38,7 +38,7 @@ export function useProfileLikesTab({
       append ? setIsLoadingMore(true) : setIsLoading(true);
       try {
         const res = await fetch(
-          `/api/profile/favorites?userId=${encodeURIComponent(String(userId))}&page=${targetPage}&pageSize=${PAGE_SIZE}`,
+          `/api/profile/likes?userId=${encodeURIComponent(String(userId))}&page=${targetPage}&pageSize=${PAGE_SIZE}`,
           { cache: 'no-store' }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

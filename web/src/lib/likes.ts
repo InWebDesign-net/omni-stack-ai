@@ -6,7 +6,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
  * Persisting the heart.
  *
  * The detail pages tracked a "like" in `localStorage` and told the reader it
- * had been added to their favourites, while `api::favorite.favorite` was never
+ * had been added to their likes, while `api::like.like` was never
  * written by anything — the collection only ever held seeded rows. This is what
  * makes the claim true.
  *
@@ -14,7 +14,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
  * still supports flipping for anything that does not know its current state,
  * but a caller that does — the detail pages all hydrate from the server — must
  * not rely on it: a heart rendering empty while the record exists would remove
- * the favourite instead of adding one.
+ * the like instead of adding one.
  */
 
 type TargetId =
@@ -25,32 +25,32 @@ type TargetId =
 
 /** `desired` states the outcome, so a disagreement between button and database
  *  cannot invert the result. */
-export type FavoriteTarget = TargetId & { desired?: boolean };
+export type LikeTarget = TargetId & { desired?: boolean };
 
-export interface FavoriteState {
-  favoriteVideoIds: string[];
-  favoriteImageIds: string[];
-  favoriteArticleIds: string[];
-  favoriteFeedItemIds: string[];
+export interface LikeState {
+  likedVideoIds: string[];
+  likedImageIds: string[];
+  likedArticleIds: string[];
+  likedFeedItemIds: string[];
 }
 
-const EMPTY: FavoriteState = {
-  favoriteVideoIds: [],
-  favoriteImageIds: [],
-  favoriteArticleIds: [],
-  favoriteFeedItemIds: [],
+const EMPTY: LikeState = {
+  likedVideoIds: [],
+  likedImageIds: [],
+  likedArticleIds: [],
+  likedFeedItemIds: [],
 };
 
-export async function fetchFavoriteState(): Promise<FavoriteState> {
+export async function fetchLikeState(): Promise<LikeState> {
   try {
-    const res = await fetch('/api/favorites', { headers: jsonAuthHeaders(), cache: 'no-store' });
+    const res = await fetch('/api/likes', { headers: jsonAuthHeaders(), cache: 'no-store' });
     if (!res.ok) return EMPTY;
     const data = await res.json();
     return {
-      favoriteVideoIds: data.favoriteVideoIds || [],
-      favoriteImageIds: data.favoriteImageIds || [],
-      favoriteArticleIds: data.favoriteArticleIds || [],
-      favoriteFeedItemIds: data.favoriteFeedItemIds || [],
+      likedVideoIds: data.likedVideoIds || [],
+      likedImageIds: data.likedImageIds || [],
+      likedArticleIds: data.likedArticleIds || [],
+      likedFeedItemIds: data.likedFeedItemIds || [],
     };
   } catch {
     return EMPTY;
@@ -58,24 +58,24 @@ export async function fetchFavoriteState(): Promise<FavoriteState> {
 }
 
 /** Returns the resulting state, or null when the request did not go through. */
-export async function toggleFavorite(target: FavoriteTarget): Promise<boolean | null> {
+export async function toggleLike(target: LikeTarget): Promise<boolean | null> {
   try {
-    const res = await fetch('/api/favorites', {
+    const res = await fetch('/api/likes', {
       method: 'POST',
       headers: { ...jsonAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(target),
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return Boolean(data.favorited);
+    return Boolean(data.liked);
   } catch {
     return null;
   }
 }
 
-export function isFavorited(state: FavoriteState, kind: 'video' | 'image' | 'article', id: unknown): boolean {
+export function isLiked(state: LikeState, kind: 'video' | 'image' | 'article', id: unknown): boolean {
   if (id == null) return false;
   const list =
-    kind === 'video' ? state.favoriteVideoIds : kind === 'image' ? state.favoriteImageIds : state.favoriteArticleIds;
+    kind === 'video' ? state.likedVideoIds : kind === 'image' ? state.likedImageIds : state.likedArticleIds;
   return list.includes(String(id));
 }

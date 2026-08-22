@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "favorites",
+  "collectionName": "likes",
   "info": {
-    "singularName": "favorite",
-    "pluralName": "favorites",
-    "displayName": "Favorite",
-    "description": "User Likes and Favorite Relations"
+    "singularName": "like",
+    "pluralName": "likes",
+    "displayName": "Like",
+    "description": "User likes on videos, images, articles and feed items"
   },
   "options": {
     "draftAndPublish": false

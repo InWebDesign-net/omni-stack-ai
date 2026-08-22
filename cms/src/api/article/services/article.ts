@@ -65,7 +65,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
       ];
     }
 
-    // Filter by user favorites if favsOnly is requested
+    // Filter by user likes if favsOnly is requested
     // Note: 'fav' is a deprecated alias for favsOnly
     const isFavsOnly = params.favsOnly === 'true' || params.favsOnly === true || params.fav === 'true' || params.fav === true;
     if (isFavsOnly) {
@@ -75,7 +75,7 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
       const userId = koaCtx?.state?.user?.id || (headerUserId ? Number(headerUserId) : (queryUserId ? Number(queryUserId) : (params.userId ? Number(params.userId) : null)));
 
       if (userId) {
-        const userFavs = await strapi.documents('api::favorite.favorite').findMany({
+        const userFavs = await strapi.documents('api::like.like').findMany({
           filters: {
             $or: [
               { user: { id: { $eq: userId } } },

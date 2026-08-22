@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import { Play, Image as ImageIcon, FileText, Heart, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 
-interface UserFavoritesTabProps {
-  favorites: any[];
+interface UserLikesTabProps {
+  likes: any[];
   slug: string;
   t?: any;
 }
 
-function FavoriteItemCard({ item }: { item: any }) {
+function LikeItemCard({ item }: { item: any }) {
   const [imgError, setImgError] = useState(false);
   const type = item.mediaType || 'video';
   const url =
@@ -58,7 +58,7 @@ function FavoriteItemCard({ item }: { item: any }) {
         {hasThumb ? (
           <Image
             src={rawThumb}
-            alt={item.title || 'Favorite'}
+            alt={item.title || 'Like'}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -87,20 +87,20 @@ function FavoriteItemCard({ item }: { item: any }) {
   );
 }
 
-export function UserFavoritesTab({ favorites, slug, t }: UserFavoritesTabProps) {
+export function UserLikesTab({ likes, slug, t }: UserLikesTabProps) {
   /*
-   * A favourite whose target was deleted arrives with nothing to render. A
+   * A like whose target was deleted arrives with nothing to render. A
    * lifecycle now removes those rows when the content goes, but data written
    * before that existed — and any row deleted directly in the database — would
    * otherwise render an empty card and make the count disagree with the list.
    */
-  const renderable = (favorites || []).filter((item) => item && (item.slug || item.documentId || item.id));
+  const renderable = (likes || []).filter((item) => item && (item.slug || item.documentId || item.id));
 
   if (renderable.length === 0) {
     return (
       <div className="text-center py-12 space-y-4">
         <Heart className="w-12 h-12 mx-auto text-muted" />
-        <p className="text-muted">{t?.user?.noFavorites || 'Noch nichts geliked'}</p>
+        <p className="text-muted">{t?.user?.noLikes || 'Noch nichts geliked'}</p>
       </div>
     );
   }
@@ -108,7 +108,7 @@ export function UserFavoritesTab({ favorites, slug, t }: UserFavoritesTabProps) 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {renderable.map((item, idx) => (
-        <FavoriteItemCard
+        <LikeItemCard
           key={`${item.mediaType || 'fav'}-${item.documentId || item.id || item.slug || idx}`}
           item={item}
         />

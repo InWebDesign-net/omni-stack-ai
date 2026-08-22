@@ -4,7 +4,7 @@
     "backToHome": "Back to Home",
     "browseAllVideos": "Browse All Videos",
     "searchPlaceholder": "Search titles...",
-    "favorites": "Favorites",
+    "likes": "Likes",
     "resetFilters": "Reset Filters",
     "share": "Share",
     "subscribe": "Subscribe",
@@ -97,7 +97,7 @@
     "clipsCount": "Clips",
     "sortNewest": "Newest First",
     "sortTrending": "🔥 Trending Content",
-    "sortMostLiked": "❤️ Most Favorited / Liked",
+    "sortMostLiked": "❤️ Most Liked / Liked",
     "sortMostCommented": "💬 Most Active / Discussions",
     "sortMostPopular": "👑 Most Popular",
     "sortAffinity": "🎯 Personal Interest (AI Graph)",
@@ -342,8 +342,8 @@
     "openPdf": "Open PDF"
   },
   "content": {
-    "likeAdded": "Added to your favorites",
-    "likeRemoved": "Removed from your favorites",
+    "likeAdded": "Added to your likes",
+    "likeRemoved": "Removed from your likes",
     "draftModeActive": "⚡ Live Draft Mode Active (Strapi CMS Preview)",
     "exitPreview": "Exit Preview",
     "aiRelevance": "AI Relevance: {score}% Match",
@@ -435,7 +435,7 @@
       "articles": "Articles",
       "videos": "Videos",
       "images": "Images",
-      "favorites": "Likes",
+      "likes": "Likes",
       "about": "About Channel"
     },
     "stats": {
@@ -450,10 +450,10 @@
       "guestSub": "This creator hasn't published any public videos yet.",
       "uploadBtn": "Upload Video Now"
     },
-    "emptyFavorites": {
-      "title": "No favorites saved",
+    "emptyLikes": {
+      "title": "No likes saved",
       "ownerSub": "Videos you like with the heart button will appear here.",
-      "guestSub": "This user hasn't shared any public favorites yet."
+      "guestSub": "This user hasn't shared any public likes yet."
     },
     "about": {
       "title": "About this channel",
@@ -574,6 +574,6 @@
     "uploadInProgress": "The upload continues in the background. If you close the editor now, the file still lands in your library and can be picked here afterwards."
   },
   "user": {
-    "noFavorites": "Nothing liked yet"
+    "noLikes": "Nothing liked yet"
   }
 }

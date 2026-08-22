@@ -8,36 +8,33 @@ function getStrapiUrl(path: string) {
   return `${STRAPI_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-async function getAuthUser(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader) return null;
-  try {
-    const res = await fetch(getStrapiUrl('/api/users/me'), {
-      headers: { Authorization: authHeader },
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    return null;
-  }
-}
-
 export async function GET(req: NextRequest) {
   try {
-    const authUser = await getAuthUser(req);
+    /*
+     * The same source of truth as POST below.
+     *
+     * This used to resolve the user from an `Authorization` header only, while
+     * POST read the session cookie — so the write recorded a like the read
+     * could never see. Once the token stopped being kept in `localStorage`
+     * there was no header left to send, and every list came back empty. With
+     * the heart then showing as un-liked, the next click removed the record
+     * that was already there, exactly the failure the comment below warns
+     * about.
+     */
+    const { user: authUser } = await getCurrentUserFromCookies();
     if (!authUser?.id) {
-      return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteArticleIds: [], favoriteFeedItemIds: [] });
+      return NextResponse.json({ likedVideoIds: [], likedImageIds: [], likedArticleIds: [], likedFeedItemIds: [] });
     }
 
     /*
-     * This answers "which items has this user favourited", so a partial answer
+     * This answers "which items has this user liked", so a partial answer
      * is worse than none: the query carried no pagination, Strapi's
      * `defaultLimit` is 25, and everything past the 25th came back missing.
      *
      * The heart on those items then showed as empty. Clicking it did not add a
-     * favourite either — the toggle looks the record up directly, finds the one
-     * that exists, and removes it — so the user pressed "favourite" and
-     * silently un-favourited something, with nothing on screen changing.
+     * like either — the toggle looks the record up directly, finds the one
+     * that exists, and removes it — so the user pressed "like" and
+     * silently un-liked something, with nothing on screen changing.
      *
      * Paged through with only the ids populated, which is all this endpoint
      * returns.
@@ -50,7 +47,7 @@ export async function GET(req: NextRequest) {
     do {
       const favRes = await fetch(
         getStrapiUrl(
-          `/api/favorites?filters[user][id][$eq]=${authUser.id}` +
+          `/api/likes?filters[user][id][$eq]=${authUser.id}` +
             `&populate[video][fields][0]=id&populate[image][fields][0]=id&populate[article][fields][0]=id&populate[feedItem][fields][0]=id` +
             `&pagination[page]=${page}&pagination[pageSize]=${PAGE_SIZE}`
         ),
@@ -60,9 +57,9 @@ export async function GET(req: NextRequest) {
       );
 
       if (!favRes.ok) {
-        // A partial list would misreport the rest as un-favourited, so an
+        // A partial list would misreport the rest as un-liked, so an
         // interrupted read reports nothing rather than something wrong.
-        return NextResponse.json({ favoriteVideoIds: [], favoriteImageIds: [], favoriteArticleIds: [], favoriteFeedItemIds: [] });
+        return NextResponse.json({ likedVideoIds: [], likedImageIds: [], likedArticleIds: [], likedFeedItemIds: [] });
       }
 
       const favData = await favRes.json();
@@ -71,26 +68,26 @@ export async function GET(req: NextRequest) {
       page += 1;
     } while (page <= pageCount);
 
-    const favoriteVideoIds: string[] = [];
-    const favoriteImageIds: string[] = [];
-    const favoriteArticleIds: string[] = [];
-    const favoriteFeedItemIds: string[] = [];
+    const likedVideoIds: string[] = [];
+    const likedImageIds: string[] = [];
+    const likedArticleIds: string[] = [];
+    const likedFeedItemIds: string[] = [];
 
     items.forEach((item: Record<string, any>) => {
       const vId = item.attributes?.video?.data?.id || item.video?.id;
       const imgId = item.attributes?.image?.data?.id || item.image?.id;
       const artId = item.attributes?.article?.data?.id || item.article?.id;
       const fId = item.attributes?.feedItem?.data?.id || item.feedItem?.id;
-      if (vId) favoriteVideoIds.push(String(vId));
-      if (imgId) favoriteImageIds.push(String(imgId));
-      if (artId) favoriteArticleIds.push(String(artId));
-      if (fId) favoriteFeedItemIds.push(String(fId));
+      if (vId) likedVideoIds.push(String(vId));
+      if (imgId) likedImageIds.push(String(imgId));
+      if (artId) likedArticleIds.push(String(artId));
+      if (fId) likedFeedItemIds.push(String(fId));
     });
 
-    return NextResponse.json({ favoriteVideoIds, favoriteImageIds, favoriteArticleIds, favoriteFeedItemIds });
+    return NextResponse.json({ likedVideoIds, likedImageIds, likedArticleIds, likedFeedItemIds });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
-    console.error('GET /api/favorites error:', error);
+    console.error('GET /api/likes error:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -125,8 +122,8 @@ export async function POST(req: NextRequest) {
       targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[image][id][$eq]=${imageId}`;
       payload.image = imageId;
     } else if (articleId) {
-      // `api::favorite.favorite` has had this relation all along; nothing wrote
-      // or read it, so an article could be favourited only from outside the app
+      // `api::like.like` has had this relation all along; nothing wrote
+      // or read it, so an article could be liked only from outside the app
       // and its heart never showed the state.
       targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[article][id][$eq]=${articleId}`;
       payload.article = articleId;
@@ -135,7 +132,7 @@ export async function POST(req: NextRequest) {
       payload.feedItem = feedItemId;
     }
 
-    const existingRes = await fetch(getStrapiUrl(`/api/favorites?${targetFilter}`), {
+    const existingRes = await fetch(getStrapiUrl(`/api/likes?${targetFilter}`), {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
@@ -149,12 +146,12 @@ export async function POST(req: NextRequest) {
      * `desired` states the outcome the caller wants; without it the request
      * flips whatever is stored. Flipping is fine when the button's state and the
      * database agree, and silently inverts when they do not — the caller sees an
-     * empty heart, presses "favourite", and the record is removed. Callers that
+     * empty heart, presses "like", and the record is removed. Callers that
      * know what they want should say so.
      */
     if (typeof desired === 'boolean') {
       if (desired && existingList.length === 0) {
-        await fetch(getStrapiUrl('/api/favorites'), {
+        await fetch(getStrapiUrl('/api/likes'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -168,31 +165,31 @@ export async function POST(req: NextRequest) {
         // read like a fallback while never reaching the second operand — the
         // heart went empty and the record stayed.
         const recordId = existingList[0].documentId || existingList[0].id;
-        await fetch(getStrapiUrl(`/api/favorites/${recordId}`), {
+        await fetch(getStrapiUrl(`/api/likes/${recordId}`), {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}` },
         });
       }
-      return NextResponse.json({ favorited: desired });
+      return NextResponse.json({ liked: desired });
     }
 
     if (existingList.length > 0) {
-      // Toggle OFF (Delete favorite)
+      // Toggle OFF (Delete like)
       // documentId first. Strapi 5 addresses documents by documentId; handed a
         // numeric id it answers 200 and deletes nothing, so `id || documentId`
         // read like a fallback while never reaching the second operand — the
         // heart went empty and the record stayed.
         const recordId = existingList[0].documentId || existingList[0].id;
-      await fetch(getStrapiUrl(`/api/favorites/${recordId}`), {
+      await fetch(getStrapiUrl(`/api/likes/${recordId}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
         },
       });
-      return NextResponse.json({ favorited: false });
+      return NextResponse.json({ liked: false });
     } else {
-      // Toggle ON (Create favorite)
-      await fetch(getStrapiUrl('/api/favorites'), {
+      // Toggle ON (Create like)
+      await fetch(getStrapiUrl('/api/likes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,11 +197,11 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({ data: payload }),
       });
-      return NextResponse.json({ favorited: true });
+      return NextResponse.json({ liked: true });
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
-    console.error('POST /api/favorites error:', error);
+    console.error('POST /api/likes error:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

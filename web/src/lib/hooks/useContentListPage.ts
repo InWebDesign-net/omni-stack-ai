@@ -38,7 +38,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
   const searchTerm = searchParams.get('q') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const sort = searchParams.get('sort') || DEFAULT_SORT;
-  const filterFavorites = searchParams.get('favsOnly') || searchParams.get('fav') || 'false';
+  const filterLikes = searchParams.get('favsOnly') || searchParams.get('fav') || 'false';
 
   const [searchInput, setSearchInput] = useState(searchTerm);
 
@@ -70,7 +70,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
     pageSize: perPage,
     sort,
     searchTerm,
-    filterFavorites,
+    filterLikes,
     includedTags,
     excludedTags,
     matchMode,
@@ -124,7 +124,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
   const hasActiveFilters = Boolean(
     searchTerm ||
       sort !== DEFAULT_SORT ||
-      filterFavorites === 'true' ||
+      filterLikes === 'true' ||
       includedTags.length > 0 ||
       excludedTags.length > 0
   );
@@ -134,7 +134,7 @@ export function useContentListPage<T>(kind: ContentKind, options: UseContentList
     searchTerm,
     currentPage,
     sort,
-    filterFavorites,
+    filterLikes,
     lang,
     perPage,
     // search box
