@@ -44,6 +44,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         } catch (e) {
         strapi.log.error('[seed.ts] unhandled error', e);
       }
+        try {
+          await strapi.db.query('api::article.article').deleteMany({});
+        } catch (e) {
+        strapi.log.error('[seed.ts] unhandled error', e);
+      }
       }
 
       console.log('🌱 Seeding initial bilingual Feed Items with Dynamic Zone Blocks in Strapi...');
@@ -388,6 +393,116 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           console.log('✅ Image seed completed.');
         } catch (fixtureErr) {
           console.error('Error seeding images from fixture:', fixtureErr);
+        }
+      }
+
+      /*
+       * Articles, after the videos and images they embed.
+       *
+       * Their blocks reference media by *slug*, not by documentId: a re-seed
+       * hands out new documentIds, so an id stored in the fixture would point
+       * at nothing the next morning. The slug is stable, and is resolved to
+       * whatever id the media carries right now.
+       */
+      const seedArticlesPath = path.join(__dirname, '../../../src/data/seed_articles.json');
+      const seedArticlesAltPath = path.join(process.cwd(), 'src/data/seed_articles.json');
+      const articlesFixturePath = fs.existsSync(seedArticlesPath)
+        ? seedArticlesPath
+        : (fs.existsSync(seedArticlesAltPath) ? seedArticlesAltPath : null);
+
+      if (articlesFixturePath) {
+        try {
+          const articleFixture = JSON.parse(fs.readFileSync(articlesFixturePath, 'utf8'));
+          console.log(`📝 Seeding ${articleFixture.length} articles from seed_articles.json...`);
+          const creatorsMap: Record<string, any> = creators;
+
+          const resolveMedia = async (uid: any, slug: string) => {
+            if (!slug) return null;
+            const rows = await strapi.documents(uid).findMany({
+              filters: { slug: { $eq: slug } },
+              locale: 'en',
+              omniInternal: true,
+            } as any);
+            return rows?.[0]?.documentId || null;
+          };
+
+          const buildBlocks = async (blocks: any[]) => {
+            const out: any[] = [];
+            for (const b of blocks || []) {
+              if (b.__component === 'shared.image') {
+                const id = await resolveMedia('api::image.image', b.imageSlug);
+                // A block whose media is gone is dropped rather than written
+                // with a null relation, which renders as an empty gap.
+                if (id) out.push({ __component: 'shared.image', image: id, caption: b.caption });
+              } else if (b.__component === 'shared.video') {
+                const id = await resolveMedia('api::video.video', b.videoSlug);
+                if (id) out.push({ __component: 'shared.video', video: id, caption: b.caption });
+              } else {
+                out.push({ ...b });
+              }
+            }
+            return out;
+          };
+
+          for (const item of articleFixture) {
+            const creatorObj = creatorsMap[item.creatorHandle] || creators.astro;
+            const authorId = creatorObj?.documentId || creatorObj?.id || 1;
+
+            const existing = await strapi.documents('api::article.article').findMany({
+              filters: { slug: { $eq: item.slug } },
+              locale: '*',
+              omniInternal: true,
+            } as any);
+            if (existing && existing.length > 0) continue;
+
+            const asBlocks = (text: string) => [
+              { type: 'paragraph', children: [{ type: 'text', text: String(text || '').trim() }] },
+            ];
+
+            const base: any = {
+              slug: item.slug,
+              thumbnail: item.thumbnail,
+              creator: authorId,
+              visibility: 'public',
+              viewsCount: 0,
+              likesCount: 0,
+              commentsCount: 0,
+            };
+
+            try {
+              const createdEn = await strapi.documents('api::article.article').create({
+                data: {
+                  ...base,
+                  title: item.title_en || item.title_de,
+                  summary: asBlocks(item.summary_en || item.summary_de),
+                  tags: item.tags_en || ['Artikel'],
+                  blocks: await buildBlocks(item.blocks_en || []),
+                } as any,
+                locale: 'en',
+                status: 'published',
+              });
+
+              if (createdEn?.documentId) {
+                await strapi.documents('api::article.article').update({
+                  documentId: createdEn.documentId,
+                  locale: 'de',
+                  data: {
+                    ...base,
+                    title: item.title_de || item.title_en,
+                    summary: asBlocks(item.summary_de || item.summary_en),
+                    tags: item.tags_de || ['Artikel'],
+                    blocks: await buildBlocks(item.blocks_de || []),
+                  } as any,
+                  status: 'published',
+                });
+              }
+            } catch (e) {
+              strapi.log.error(`[seed.ts] article "${item.slug}" failed`, e);
+            }
+          }
+          console.log('✅ Article seed completed.');
+        } catch (fixtureErr) {
+          console.error('Error seeding articles from fixture:', fixtureErr);
         }
       }
 
