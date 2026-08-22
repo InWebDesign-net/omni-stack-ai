@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
+
+/** Lines the input grows to before it starts scrolling instead. */
+const MAX_LINES = 3;
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -12,6 +15,38 @@ interface ChatInputProps {
 export function ChatInput({ onSend, onTyping, t }: ChatInputProps) {
   const [inputMessage, setInputMessage] = useState('');
   const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  /**
+   * Grow the field with the text, up to three lines.
+   *
+   * A textarea does not resize itself, so `rows={1}` used to fix it at one line
+   * however much was typed and the `max-h-24` cap never came into play. The
+   * height has to be measured: collapse to `auto` first, because `scrollHeight`
+   * of an element already tall enough to fit its content only ever reports the
+   * current height and the field could then never shrink again.
+   *
+   * The cap is derived from the computed line height rather than a fixed pixel
+   * value — the field is `text-xs sm:text-sm`, so three lines is a different
+   * number of pixels per breakpoint.
+   */
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    el.style.height = 'auto';
+
+    const styles = window.getComputedStyle(el);
+    const lineHeight = parseFloat(styles.lineHeight) || parseFloat(styles.fontSize) * 1.5;
+    const verticalPadding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+    const maxHeight = lineHeight * MAX_LINES + verticalPadding;
+
+    const next = Math.min(el.scrollHeight, maxHeight);
+    el.style.height = `${next}px`;
+    // Only scroll once the field has stopped growing, so the scrollbar does not
+    // flicker in and out on the first two lines.
+    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  }, [inputMessage]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -49,14 +84,17 @@ export function ChatInput({ onSend, onTyping, t }: ChatInputProps) {
 
   return (
     <form onSubmit={handleSend} className="py-1.5 px-2 bg-surface-raised border-t border-subtle shrink-0">
-      <div className="flex items-center gap-1.5 bg-surface border border-subtle rounded-xl px-2 py-1 focus-within:border-indigo-500 transition-colors">
+      {/* Bottom-aligned: with a field that grows, a centred send button drifts
+          upwards away from the last line the writer is looking at. */}
+      <div className="flex items-end gap-1.5 bg-surface border border-subtle rounded-xl px-2 py-1 focus-within:border-indigo-500 transition-colors">
         <textarea
+          ref={textareaRef}
           value={inputMessage}
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          placeholder={t?.chat?.messagePlaceholder || 'Nachricht eingeben...'}
-          className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-primary placeholder-slate-500 resize-none max-h-24 min-h-[28px] py-1"
+          placeholder={t?.chat?.writeMessagePlaceholder || 'Nachricht schreiben...'}
+          className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-primary placeholder-slate-500 resize-none min-h-[28px] py-1"
           rows={1}
         />
         <button

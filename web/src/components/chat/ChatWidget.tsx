@@ -31,6 +31,7 @@ export default function ChatWidget() {
     showReadReceipts,
     roomSubscriptions,
     typingUsersByRoom,
+    assistantThinkingByRoom,
     isLoadingMoreByRoom,
     hasMoreMessagesByRoom,
     openChat,
@@ -259,6 +260,49 @@ export default function ChatWidget() {
   }
 
   // 2. Main Chat View (Full-Screen or Compact Floating Window) + Portals
+  /**
+   * Props shared by the minimised and the maximised view.
+   *
+   * Both render the same three components, and they used to be given two
+   * hand-maintained prop lists. They drifted: the maximised chat had no typing
+   * indicator, no load-more, no subscribe bell (#135) and never announced that
+   * you were typing — not by decision, just by omission. Building each set once
+   * and spreading it into both is what keeps them in step.
+   */
+  const roomSubscribed = activeRoom
+    ? (roomSubscriptions[activeRoom.id] ?? roomSubscriptions[activeRoom.slug] ?? (activeRoom.type === 'direct'))
+    : false;
+
+  const subscriptionProps = {
+    isSubscribed: roomSubscribed,
+    onToggleSubscription: () => {
+      if (!activeRoom) return;
+      toggleRoomSubscription(activeRoom.id, !roomSubscribed);
+    },
+  };
+
+  const messageListProps = activeRoom
+    ? {
+        messages: activeRoom.messages,
+        currentUserId: currentUser?.id ? String(currentUser.id) : null,
+        showReadReceipts,
+        messagesEndRef,
+        typingUsers: typingUsersByRoom[activeRoom.id] || typingUsersByRoom[activeRoom.slug] || [],
+        assistantThinking:
+          assistantThinkingByRoom[activeRoom.id] || assistantThinkingByRoom[activeRoom.slug] || false,
+        hasMore: hasMoreMessagesByRoom[activeRoom.id] ?? true,
+        isLoadingMore: isLoadingMoreByRoom[activeRoom.id] ?? false,
+        onLoadMore: () => loadMoreMessages(activeRoom.id),
+        t,
+      }
+    : null;
+
+  const chatInputProps = {
+    onSend: handleSend,
+    onTyping: (isTyping: boolean) => activeRoom && sendTyping(activeRoom.id, isTyping),
+    t,
+  };
+
   return (
     <>
       {isExpanded ? (
@@ -373,6 +417,7 @@ export default function ChatWidget() {
                   isAiEnabled={activeRoom.isAiEnabled}
                   showOnlineStatus={showOnlineStatus}
                   privacyError={privacyError}
+                  {...subscriptionProps}
                   onBack={() => setActiveRoomId(null)}
                   onToggleExpand={toggleExpand}
                   onClose={closeChat}
@@ -381,13 +426,8 @@ export default function ChatWidget() {
                   onManageGroup={() => setIsGroupManageOpen(true)}
                   t={t}
                 />
-                <MessageList
-                  messages={activeRoom.messages}
-                  currentUserId={currentUser?.id ? String(currentUser.id) : null}
-                  showReadReceipts={showReadReceipts}
-                  messagesEndRef={messagesEndRef}
-                />
-                <ChatInput onSend={handleSend} t={t} />
+                {messageListProps && <MessageList {...messageListProps} />}
+                <ChatInput {...chatInputProps} />
               </>
             ) : (
               <div className="relative flex-1 flex flex-col items-center justify-center text-muted p-6">
@@ -517,16 +557,7 @@ export default function ChatWidget() {
                 isAiEnabled={activeRoom?.isAiEnabled}
                 showOnlineStatus={showOnlineStatus}
                 privacyError={privacyError}
-                isSubscribed={
-                  activeRoom
-                    ? (roomSubscriptions[activeRoom.id] ?? roomSubscriptions[activeRoom.slug] ?? (activeRoom.type === 'direct'))
-                    : false
-                }
-                onToggleSubscription={() => {
-                  if (!activeRoom) return;
-                  const currentSub = roomSubscriptions[activeRoom.id] ?? roomSubscriptions[activeRoom.slug] ?? (activeRoom.type === 'direct');
-                  toggleRoomSubscription(activeRoom.id, !currentSub);
-                }}
+                {...subscriptionProps}
                 onBack={() => setActiveRoomId(null)}
                 onRemoveAi={() => activeRoom && removeParticipantFromRoom(activeRoom.id, 'ai')}
                 onInviteAi={() => activeRoom && addParticipantToRoom(activeRoom.id, { name: 'Omni KI-Assistent', type: 'ai' })}
@@ -534,22 +565,9 @@ export default function ChatWidget() {
                 t={t}
               />
               {activeRoom && (
-                <MessageList
-                  messages={activeRoom.messages}
-                  currentUserId={currentUser?.id ? String(currentUser.id) : null}
-                  showReadReceipts={showReadReceipts}
-                  messagesEndRef={messagesEndRef}
-                  typingUsers={activeRoom ? (typingUsersByRoom[activeRoom.id] || typingUsersByRoom[activeRoom.slug] || []) : []}
-                  hasMore={activeRoom ? (hasMoreMessagesByRoom[activeRoom.id] ?? true) : false}
-                  isLoadingMore={activeRoom ? (isLoadingMoreByRoom[activeRoom.id] ?? false) : false}
-                  onLoadMore={() => activeRoom && loadMoreMessages(activeRoom.id)}
-                />
+                messageListProps && <MessageList {...messageListProps} />
               )}
-              <ChatInput
-                onSend={handleSend}
-                onTyping={(isTyping) => activeRoom && sendTyping(activeRoom.id, isTyping)}
-                t={t}
-              />
+              <ChatInput {...chatInputProps} />
             </div>
           )}
         </div>

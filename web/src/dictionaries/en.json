@@ -387,7 +387,11 @@
     "noUsersFound": "No users found.",
     "startChatBtn": "Start chat",
     "writeMessagePlaceholder": "Write a message...",
-    "welcomeAiMessage": "Hello! Welcome to Omni by InWebDesign.net! Do you already have a web project or questions about our high-performance hosting & AI solutions?"
+    "welcomeAiMessage": "Hello! Welcome to Omni by InWebDesign.net! Do you already have a web project or questions about our high-performance hosting & AI solutions?",
+    "typing": "{name} is typing",
+    "typingPlural": "{names} are typing",
+    "aiThinking": "{name} is thinking",
+    "send": "Send"
   },
   "player": {
     "quality": "Quality / Resolution",

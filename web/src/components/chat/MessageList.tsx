@@ -13,12 +13,26 @@ interface Message {
   meta?: { vectorSummary?: string };
 }
 
+/**
+ * How close to the bottom still counts as "at the bottom".
+ *
+ * Exact equality is unusable: sub-pixel rounding and a partially visible last
+ * line leave a few pixels that never close, which would silently switch
+ * following off for a reader who is plainly at the end.
+ */
+const BOTTOM_FOLLOW_THRESHOLD_PX = 80;
+
 interface MessageListProps {
   messages: Message[];
   currentUserId?: string | null;
   showReadReceipts?: boolean;
   messagesEndRef?: React.RefObject<HTMLDivElement | null>;
   typingUsers?: string[];
+  /** The assistant is composing but has not sent its first token yet. */
+  assistantThinking?: boolean;
+  /** Display name for the assistant in the thinking indicator. */
+  assistantName?: string;
+  t?: any;
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
@@ -58,6 +72,9 @@ export function MessageList({
   showReadReceipts,
   messagesEndRef,
   typingUsers,
+  assistantThinking,
+  assistantName = 'Omni AI',
+  t,
   hasMore,
   isLoadingMore,
   onLoadMore,
@@ -65,23 +82,74 @@ export function MessageList({
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = React.useRef<number>(0);
 
+  /**
+   * Whether the reader is at the bottom, and therefore wants to be carried
+   * along as the conversation grows. Someone who scrolled up to re-read
+   * something must not be yanked back down mid-sentence, so this gates every
+   * automatic scroll below.
+   */
+  const isAtBottomRef = React.useRef(true);
+
+  const scrollToBottom = React.useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, []);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
+    isAtBottomRef.current =
+      target.scrollHeight - target.scrollTop - target.clientHeight <= BOTTOM_FOLLOW_THRESHOLD_PX;
+
     if (target.scrollTop <= 15 && hasMore && !isLoadingMore && onLoadMore) {
       prevScrollHeightRef.current = target.scrollHeight;
       onLoadMore();
     }
   };
 
+  /**
+   * Two opposite jobs, in one effect so their order is not left to chance.
+   *
+   * Prepending older messages must hold the reader's position — that is the
+   * restore below, and it deliberately returns before the follow can undo it by
+   * scrolling to the bottom of a list that just grew upwards.
+   *
+   * Otherwise, follow the end of the conversation. This re-runs on the last
+   * message's content, not only on the message count, because a streamed answer
+   * grows in place: the array length never changes while the text arrives, so a
+   * dependency on `messages.length` alone would leave the reader stranded in the
+   * middle of it.
+   */
+  const lastMessageContent = messages[messages.length - 1]?.content;
+
   React.useLayoutEffect(() => {
-    if (scrollContainerRef.current && prevScrollHeightRef.current > 0) {
-      const heightDiff = scrollContainerRef.current.scrollHeight - prevScrollHeightRef.current;
-      if (heightDiff > 0) {
-        scrollContainerRef.current.scrollTop += heightDiff;
-      }
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    if (prevScrollHeightRef.current > 0) {
+      const heightDiff = el.scrollHeight - prevScrollHeightRef.current;
+      if (heightDiff > 0) el.scrollTop += heightDiff;
       prevScrollHeightRef.current = 0;
+      return;
     }
-  }, [messages.length]);
+
+    if (isAtBottomRef.current) scrollToBottom();
+  }, [messages.length, lastMessageContent, typingUsers?.length, assistantThinking, scrollToBottom]);
+
+  /**
+   * The input grows with the text (#136), which shrinks this list rather than
+   * changing its content. Without this the last message would slide out of
+   * sight behind a field that got taller, and nothing above would notice.
+   */
+  React.useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      if (isAtBottomRef.current) scrollToBottom();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [scrollToBottom]);
   // Pre-process messages with WhatsApp-style grouping logic
   const processedMessages = useMemo(() => {
     return messages.map((msg, index) => {
@@ -266,13 +334,20 @@ export function MessageList({
       ))}
 
       {/* Typing Indicator with 3 animated bouncing dots (#91) */}
-      {typingUsers && typingUsers.length > 0 && (
+      {(assistantThinking || (typingUsers && typingUsers.length > 0)) && (
         <div className="flex justify-start my-2 animate-fadeIn">
           <div className="bg-surface border border-subtle text-primary rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-md flex items-center gap-2">
             <span className="text-xs text-muted font-medium">
-              {typingUsers.length === 1
-                ? `${typingUsers[0]} tippt`
-                : `${typingUsers.join(', ')} tippen`}
+              {/*
+                The assistant gets its own wording: it is not typing yet, it is
+                working out what to say, and the typing that follows looks
+                different — the text arrives token by token.
+              */}
+              {assistantThinking
+                ? (t?.chat?.aiThinking || '{name} überlegt').replace('{name}', assistantName)
+                : typingUsers!.length === 1
+                  ? (t?.chat?.typing || '{name} tippt').replace('{name}', typingUsers![0])
+                  : (t?.chat?.typingPlural || '{names} tippen').replace('{names}', typingUsers!.join(', '))}
             </span>
             <div className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
