@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUserFromCookies } from '@/lib/auth-server';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
@@ -7,19 +8,33 @@ function getStrapiUrl(path: string) {
   return `${STRAPI_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+/**
+ * The signed-in user, from the Authorization header or from the session cookie.
+ *
+ * Header only was not enough. The login route sets an `omni_jwt` cookie, while
+ * the token is written to `localStorage` by the auth modal alone — so anyone
+ * whose session was restored from the cookie (a later visit, another tab, or
+ * storage cleared) counts as logged in everywhere else and had no token to send
+ * here. Subscribing then answered 401 and the button reported "Fehler beim
+ * Aktualisieren des Abonnements".
+ */
 async function getAuthUser(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  if (!authHeader) return null;
-  try {
-    const formattedAuth = authHeader.startsWith('Bearer ') ? authHeader : `Bearer ${authHeader}`;
-    const res = await fetch(getStrapiUrl('/api/users/me'), {
-      headers: { Authorization: formattedAuth },
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    return null;
+  if (authHeader) {
+    try {
+      const formattedAuth = authHeader.startsWith('Bearer ') ? authHeader : `Bearer ${authHeader}`;
+      const res = await fetch(getStrapiUrl('/api/users/me'), {
+        headers: { Authorization: formattedAuth },
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.error('[subscriptions] token lookup failed', e);
+    }
   }
+
+  // Same source the rest of the app uses for cookie-based sessions.
+  const { user } = await getCurrentUserFromCookies();
+  return user || null;
 }
 
 async function resolveTargetUser(targetIdStr: string) {
