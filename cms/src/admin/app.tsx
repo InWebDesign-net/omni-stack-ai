@@ -5,6 +5,24 @@ export default {
     locales: ['de', 'en'],
     tutorials: false,
     notifications: { releases: false },
+
+    /*
+     * The login screen greets people with the name of the software rather than
+     * the name of the thing they are logging into. These are the only two
+     * strings on that page that say "Strapi" — the other keys it uses
+     * (`Auth.form.email.label`, `Auth.form.button.login`, `global.password`,
+     * `Auth.link.forgot-password`) are generic and left alone.
+     */
+    translations: {
+      en: {
+        'Auth.form.welcome.title': 'Welcome to Omni CMS!',
+        'Auth.form.welcome.subtitle': 'Log in to your Omni CMS account',
+      },
+      de: {
+        'Auth.form.welcome.title': 'Willkommen bei Omni CMS!',
+        'Auth.form.welcome.subtitle': 'Logge dich in deinen Omni CMS Account ein',
+      },
+    },
   },
   bootstrap(app: StrapiApp) {
     if (typeof window !== 'undefined') {
