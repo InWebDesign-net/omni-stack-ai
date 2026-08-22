@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
+import { storeItem } from '@/lib/consent';
 
 /**
  * Ambient intensity is stored as the alpha of the sampled colour. The slider
@@ -199,7 +200,7 @@ export function VideoControls({
     setShowRemaining((prev) => {
       const next = !prev;
       if (typeof window !== 'undefined') {
-        localStorage.setItem('omni_time_display_remaining', String(next));
+        storeItem('omni_time_display_remaining', String(next));
       }
       return next;
     });

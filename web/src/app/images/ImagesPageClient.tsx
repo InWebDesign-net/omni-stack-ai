@@ -32,6 +32,7 @@ import { ActionButton } from '@/components/ActionButton';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
+import { storeItem } from '@/lib/consent';
 
 export default function ImagesPageClient({ initialParams }: { initialParams?: any }) {
   const { currentUser, openAuthModal, lang, t, openChannelModal } = useApp();
@@ -79,9 +80,9 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     try {
       const storedLikes = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
       if (nextIsLiked && !storedLikes.includes(img.slug)) {
-        localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, img.slug]));
+        storeItem('omni_user_likes', JSON.stringify([...storedLikes, img.slug]));
       } else if (!nextIsLiked) {
-        localStorage.setItem('omni_user_likes', JSON.stringify(storedLikes.filter((s: string) => s !== img.slug)));
+        storeItem('omni_user_likes', JSON.stringify(storedLikes.filter((s: string) => s !== img.slug)));
       }
     } catch (err) { /* expected: storage might be blocked or empty */ }
 

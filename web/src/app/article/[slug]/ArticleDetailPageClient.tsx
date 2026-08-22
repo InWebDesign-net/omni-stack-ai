@@ -23,6 +23,7 @@ import { getRotatedRecommendations } from '@/lib/recommendations';
 import { getArticleOwnerStatus } from './actions';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER } from '@/lib/avatar';
+import { storeItem } from '@/lib/consent';
 
 function pickLocalized(source: any, useLang: string) {
   if (!source) return null;
@@ -215,14 +216,14 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (!storedLikes.includes(item.slug)) {
-          localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, item.slug]));
+          storeItem('omni_user_likes', JSON.stringify([...storedLikes, item.slug]));
         }
       } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     } else {
       showToast(t.common?.likeRemoved || (effectiveLang === 'de' ? 'Aus deinen Likes entfernt' : 'Removed from your likes'));
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
-        localStorage.setItem(
+        storeItem(
           'omni_user_likes',
           JSON.stringify(storedLikes.filter((s) => s !== item.slug))
         );

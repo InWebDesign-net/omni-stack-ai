@@ -15,6 +15,7 @@ import {
   topicWeight,
   creatorWeight,
 } from '@omni/shared';
+import { storeItem } from '@/lib/consent';
 
 export type { AffinityGraph, TopicAffinity };
 export {
@@ -44,7 +45,7 @@ export function loadStoredAffinityGraph(): AffinityGraph | null {
 export function storeAffinityGraph(graph: AffinityGraph) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(graph));
+    storeItem(PROFILE_STORAGE_KEY, JSON.stringify(graph));
   } catch { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
 }
 

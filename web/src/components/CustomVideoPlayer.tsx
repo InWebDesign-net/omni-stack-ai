@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { VideoControls, AMBIENT_MIN, AMBIENT_MAX, AMBIENT_DEFAULT } from './VideoControls';
 import { EndOverlay } from './EndOverlay';
 import { useHlsSource } from '@/lib/hooks/useHlsSource';
+import { storeItem } from '@/lib/consent';
 
 interface CustomVideoPlayerProps {
   mp4Url?: string;
@@ -187,7 +188,7 @@ export default function CustomVideoPlayer({
     setAmbientSettings((prev) => {
       const next = { ...prev, enabled: !prev.enabled };
       if (typeof window !== 'undefined') {
-        localStorage.setItem('omni_ambient_settings', JSON.stringify(next));
+        storeItem('omni_ambient_settings', JSON.stringify(next));
       }
       return next;
     });
@@ -197,7 +198,7 @@ export default function CustomVideoPlayer({
     setAmbientSettings((prev) => {
       const next = { ...prev, intensity: val };
       if (typeof window !== 'undefined') {
-        localStorage.setItem('omni_ambient_settings', JSON.stringify(next));
+        storeItem('omni_ambient_settings', JSON.stringify(next));
       }
       return next;
     });

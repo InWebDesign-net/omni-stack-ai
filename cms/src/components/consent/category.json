@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_consent_categories",
+  "info": {
+    "displayName": "Consent Category",
+    "description": "One consent category as shown in the banner's detail view"
+  },
+  "options": {},
+  "attributes": {
+    "key": {
+      "type": "enumeration",
+      "enum": ["necessary", "preferences", "statistics", "marketing", "unclassified"],
+      "required": true
+    },
+    "label": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "onByDefault": {
+      "type": "boolean",
+      "default": false,
+      "description": "Only `necessary` is on by default, and it cannot be switched off."
+    }
+  }
+}

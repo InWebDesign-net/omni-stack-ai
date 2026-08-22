@@ -6,6 +6,7 @@ import { useApp, UserProfileSession } from '@/context/AppContext';
 import { DEMO_USER_PRESETS, DEFAULT_AVATAR_URL } from '@/config/demo';
 import { normalizeAffinityGraph, storeAffinityGraph } from '@/lib/affinity';
 import Image from 'next/image';
+import { storeItem, clearCookie } from '@/lib/consent';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -87,8 +88,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
 
       setCurrentUser(userData);
       try {
-        localStorage.setItem('omni_user', JSON.stringify(userData));
-        document.cookie = `omni_user_jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        storeItem('omni_user', JSON.stringify(userData));
+        clearCookie('omni_user_jwt');
       } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);
@@ -138,7 +139,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         // page can read. `jwt` is stripped from the cached profile for the same
         // reason — it used to ride along inside `omni_user`.
         const { jwt: _sessionToken, ...cacheableUser } = userData;
-        localStorage.setItem('omni_user', JSON.stringify(cacheableUser));
+        storeItem('omni_user', JSON.stringify(cacheableUser));
       } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);
@@ -195,7 +196,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'register' }:
         // page can read. `jwt` is stripped from the cached profile for the same
         // reason — it used to ride along inside `omni_user`.
         const { jwt: _sessionToken, ...cacheableUser } = userData;
-        localStorage.setItem('omni_user', JSON.stringify(cacheableUser));
+        storeItem('omni_user', JSON.stringify(cacheableUser));
       } catch (e) { /* expected: storage might be blocked or empty */ }
 
       setIsAuthLoading(false);

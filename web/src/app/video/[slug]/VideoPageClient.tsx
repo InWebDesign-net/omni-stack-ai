@@ -51,6 +51,7 @@ import {
   deleteCommentFromStrapi,
   CommentItem as CommentItemType,
 } from '@/lib/comments';
+import { storeItem } from '@/lib/consent';
 
 // Flatten a Strapi `blocks` field (array of {type, children}) into plain text.
 // Falls back to the raw value when it is already a string.
@@ -317,14 +318,14 @@ export default function VideoPageClient({
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
         if (!storedLikes.includes(video.slug)) {
-          localStorage.setItem('omni_user_likes', JSON.stringify([...storedLikes, video.slug]));
+          storeItem('omni_user_likes', JSON.stringify([...storedLikes, video.slug]));
         }
       } catch (e) { /* localStorage unavailable (quota or private mode) — preference not persisted */ }
     } else {
       showToast(t.common.likeRemoved);
       try {
         const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
-        localStorage.setItem(
+        storeItem(
           'omni_user_likes',
           JSON.stringify(storedLikes.filter((s) => s !== video.slug))
         );

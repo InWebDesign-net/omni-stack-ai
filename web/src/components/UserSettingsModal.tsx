@@ -5,6 +5,7 @@ import { X, Sliders, CheckCircle2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { ImageUploadField } from '@/components/common/ImageUploadField';
+import { storeItem } from '@/lib/consent';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
 
     setCurrentUser(updatedUser);
     try {
-      localStorage.setItem('omni_user', JSON.stringify(updatedUser));
+      storeItem('omni_user', JSON.stringify(updatedUser));
       await fetch('/api/profile', {
         method: 'POST',
         headers: {

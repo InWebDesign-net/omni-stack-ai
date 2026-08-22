@@ -125,6 +125,7 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import { UploadProvider } from '@/context/UploadContext';
 import ChatWidget from '@/components/chat/ChatWidget';
 import { FloatingDockProbe } from '@/components/FloatingDockProbe';
+import { ConsentBanner } from '@/components/ConsentBanner';
 import GlobalUploadManager from '@/components/GlobalUploadManager';
 
 export default function RootLayout({
@@ -135,11 +136,30 @@ export default function RootLayout({
   return (
     <html lang="de" className="dark bg-canvas" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/*
+          The fonts are served from /public/fonts and declared in globals.css
+          (#142). Nothing here may point at fonts.googleapis.com again: this
+          block loaded a second, differently-weighted copy of both families
+          from Google on every page, which is the request a consent banner
+          could never get ahead of.
+
+          Preloaded so the swap happens as early as it did with the external
+          stylesheet. Both are variable fonts covering the whole weight range,
+          so these two files are the entire latin typography of the site.
+        */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
-          rel="stylesheet"
+          rel="preload"
+          href="/fonts/hanken-grotesk-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/jetbrains-mono-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
         <script
           type="application/ld+json"
@@ -165,6 +185,11 @@ export default function RootLayout({
                 {/* Publishes the chat's footprint so the upload manager can
                     stack above it instead of on top of it. */}
                 <FloatingDockProbe />
+                {/* Renders on every page: the decision has to be reachable
+                    wherever a visitor happens to land, not only on the home
+                    page. It publishes its own height so the floating elements
+                    above clear it. */}
+                <ConsentBanner />
               </NotificationProvider>
             </UploadProvider>
           </ChatProvider>

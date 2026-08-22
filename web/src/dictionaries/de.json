@@ -523,7 +523,8 @@
     "videos": "Videos",
     "articles": "Artikel",
     "images": "Bilder",
-    "shorts": "Shorts"
+    "shorts": "Shorts",
+    "cookieSettings": "Cookie-Einstellungen"
   },
   "blocks": {
     "sectionTitle": "Inhaltsblöcke",

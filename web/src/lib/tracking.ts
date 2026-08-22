@@ -1,3 +1,5 @@
+import { allows } from './consent';
+
 
 export interface TrackEvent {
   type: 'view' | 'click' | 'like' | 'unlike' | 'completion' | 'share' | 'comment';
@@ -55,6 +57,14 @@ class TrackingManager {
   public async flush() {
     if (this.eventQueue.length === 0) return;
 
+    // Statistics consent governs sending, not just storing. Without it the
+    // queue is dropped rather than held back — buffering until permission
+    // arrives would turn a refusal into a delay (#139).
+    if (!allows('statistics')) {
+      this.eventQueue = [];
+      return;
+    }
+
     const eventsToSend = [...this.eventQueue];
     this.eventQueue = [];
 
@@ -74,6 +84,10 @@ class TrackingManager {
 
   private flushBeacon() {
     if (this.eventQueue.length === 0) return;
+    if (!allows('statistics')) {
+      this.eventQueue = [];
+      return;
+    }
     // sendBeacon sends cookies for a same-origin request, so this carries the
     // session just like the fetch above does.
     const payload = JSON.stringify({ events: this.eventQueue });
