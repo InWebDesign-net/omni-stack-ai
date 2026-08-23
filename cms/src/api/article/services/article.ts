@@ -158,19 +158,27 @@ export default factories.createCoreService('api::article.article', ({ strapi }) 
      * The requested locale wins where it exists, rather than whichever row the
      * database returned first: a German reader searching in German should get
      * the German article back even when it was the English title that matched.
+     *
+     * Except when the caller asked for `*`. Then it wants every language, and
+     * collapsing to one row per document silently answers a different question:
+     * the article detail page requests all locales so it can switch language
+     * without a refetch, and got a single row back — always the same one, so
+     * every article was German whatever the reader had chosen.
      */
-    const byDocument = new Map<string, any>();
-    for (const item of (items as any[]) || []) {
-      const docId = item.documentId || item.id || item.slug;
-      if (!docId) continue;
-      const existing = byDocument.get(docId);
-      if (!existing) {
-        byDocument.set(docId, item);
-      } else if (item.locale === targetLocale && existing.locale !== targetLocale) {
-        byDocument.set(docId, item);
+    if (targetLocale !== '*') {
+      const byDocument = new Map<string, any>();
+      for (const item of (items as any[]) || []) {
+        const docId = item.documentId || item.id || item.slug;
+        if (!docId) continue;
+        const existing = byDocument.get(docId);
+        if (!existing) {
+          byDocument.set(docId, item);
+        } else if (item.locale === targetLocale && existing.locale !== targetLocale) {
+          byDocument.set(docId, item);
+        }
       }
+      items = Array.from(byDocument.values());
     }
-    items = Array.from(byDocument.values());
 
     /*
      * A document can match the search in one language only — "Natur" hits the
