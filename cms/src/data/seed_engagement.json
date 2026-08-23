@@ -798,7 +798,7 @@
       "type": "comment_reply",
       "title": "Neue Antwort von Wasserwege",
       "message": "Grau ist auch ein Zustand. Ich hätte trotzdem draufgehalten.",
-      "link": "/video/malersicher-kreuzfahrt-auf-einem-so-34925081",
+      "link": "/video/malersicher-kreuzfahrt-auf-einem-so-34925081#comments",
       "isRead": false
     },
     {
@@ -807,7 +807,7 @@
       "type": "chat_message",
       "title": "Neue Nachricht von Culinary Masterclass",
       "message": "Fisch. Da passiert vor sechs Uhr am meisten.",
-      "link": "/chat",
+      "link": "chat:room-demotech-demogourmet",
       "isRead": false
     },
     {
@@ -825,7 +825,7 @@
       "type": "comment_reply",
       "title": "Neue Antwort von Familie & Tiere",
       "message": "Ich achte auf gar nichts und habe trotzdem Hunger bekommen.",
-      "link": "/video/gruppe-von-maennern-die-pizza-vor-d-6805184",
+      "link": "/video/gruppe-von-maennern-die-pizza-vor-d-6805184#comments",
       "isRead": false
     },
     {
@@ -834,7 +834,7 @@
       "type": "chat_message",
       "title": "Neue Nachricht von Unterwegs",
       "message": "Ich schicke dir Rohmaterial, du suchst aus.",
-      "link": "/chat",
+      "link": "chat:room-demotech-demogourmet",
       "isRead": false
     },
     {

@@ -90,6 +90,17 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
         }
       }
 
+      /*
+       * There is no /chat route — the chat is the docked widget, so a link that
+       * points at a page named after it can only 404. Older notification rows
+       * carry exactly that, from before chat links used the `chat:` form, and
+       * they outlive any fix to whatever wrote them.
+       */
+      if (linkStr === '/chat' || linkStr.startsWith('/chat?') || linkStr.startsWith('/chat/')) {
+        openChat();
+        return;
+      }
+
       if (!linkStr.startsWith('chat:')) {
         router.push(n.link);
       }
