@@ -513,24 +513,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
          went unnoticed. */
       let seededItems = 0;
 
-      /*
-       * Feed items can be maintained in the `demo-reset` single type instead of
-       * here, because they are small and the most likely thing to want changed
-       * without a deploy. The large fixtures stay as files: 155 KB of videos
-       * belongs in a repository, not in a form field.
-       */
-      let configuredFeedItems: any[] | null = null;
-      try {
-        const settings = await strapi.documents('api::demo-reset.demo-reset').findFirst({});
-        if (Array.isArray(settings?.feedItems) && settings.feedItems.length > 0) {
-          configuredFeedItems = settings.feedItems;
-          console.log(`📋 Using ${configuredFeedItems.length} feed items from the Demo Reset single type.`);
-        }
-      } catch (e) {
-        logError('[seed.ts] reading demo-reset settings', e);
-      }
-
-      const defaultSeedItems = [
+      const seedItems = [
         {
           creator: creators.astro,
           de: {
@@ -633,7 +616,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         },
       ];
 
-      const seedItems = configuredFeedItems || defaultSeedItems;
 
       for (const item of seedItems) {
         const authorId = item.creator?.documentId || item.creator?.id;

@@ -2,6 +2,25 @@ import type { Core } from '@strapi/strapi';
 
 export default {
   register({ strapi }: { strapi: Core.Strapi }) {
+    /*
+     * An explanatory panel that can be placed inside a content type.
+     *
+     * Strapi's per-field `description` is a single grey line under a label —
+     * enough to name a setting, not enough to say what a screen is for, where
+     * its data actually lives, or which switch is the dangerous one. Editors
+     * were reading that from a README they had no reason to open.
+     *
+     * It stores a string like any other field and simply never asks for one:
+     * the admin component renders `options.body` and ignores the value. That
+     * keeps it a normal attribute — no migration, no plugin — while looking
+     * like documentation where it belongs.
+     */
+    strapi.customFields.register({
+      name: 'info',
+      plugin: undefined,
+      type: 'string',
+    });
+
     (strapi.server.app as any).use(async (ctx: any, next: any) => {
       if (ctx.path.startsWith('/.strapi/client/')) {
         const relativePath = ctx.path.replace('/.strapi/client/', '');
@@ -157,6 +176,55 @@ export default {
   },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+
+    /*
+     * The edit-view layout for Demo Reset.
+     *
+     * Strapi keeps this in the database, not in the repository, so a fresh
+     * install would put the explanatory panels wherever the default grid drops
+     * them — which is underneath the switches they explain, where nobody reads
+     * them before flipping one. Set on boot so the arrangement travels with the
+     * code that depends on it.
+     *
+     * This overwrites a manual rearrangement of this one single type on every
+     * restart. That is the trade: the panels are documentation, and
+     * documentation below the control it warns about is documentation that
+     * arrives too late.
+     */
+    try {
+      const uid = 'api::demo-reset.demo-reset';
+      const store = strapi.store({ type: 'plugin', name: 'content_manager', key: `configuration_content_types::${uid}` });
+      const current: any = await store.get({});
+      if (current?.layouts) {
+        current.layouts.edit = [
+          [{ name: 'overview', size: 12 }],
+          [{ name: 'enabled', size: 4 }, { name: 'wipeContent', size: 4 }, { name: 'resetAffinityGraphs', size: 4 }],
+          [{ name: 'dangerNotice', size: 12 }],
+          [{ name: 'wipeUserContent', size: 4 }],
+          [{ name: 'lastRunAt', size: 6 }, { name: 'lastRunSummary', size: 6 }],
+        ];
+        await store.set({ value: current });
+      }
+    } catch (e) {
+      strapi.log.warn(`[bootstrap] could not apply the Demo Reset layout: ${(e as any)?.message || e}`);
+    }
+
+    // Same reason for the consent banner: the explanation belongs above the
+    // fields it explains, not after them.
+    try {
+      const uid = 'api::cookie-banner.cookie-banner';
+      const store = strapi.store({ type: 'plugin', name: 'content_manager', key: `configuration_content_types::${uid}` });
+      const current: any = await store.get({});
+      if (current?.layouts?.edit) {
+        const rows = current.layouts.edit.filter(
+          (row: any[]) => !row.some((field: any) => field.name === 'overview')
+        );
+        current.layouts.edit = [[{ name: 'overview', size: 12 }], ...rows];
+        await store.set({ value: current });
+      }
+    } catch (e) {
+      strapi.log.warn(`[bootstrap] could not apply the Cookie Banner layout: ${(e as any)?.message || e}`);
+    }
     try {
       // 1. Seed bilingual Feed Items & Blocks in Strapi (idempotent, only if missing)
       await strapi.service('api::feed.feed').seedDemoData(false);

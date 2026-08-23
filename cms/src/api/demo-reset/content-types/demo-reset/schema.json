@@ -16,6 +16,15 @@
     }
   },
   "attributes": {
+    "overview": {
+      "type": "customField",
+      "customField": "global::info",
+      "options": {
+        "heading": "What this screen controls",
+        "tone": "note",
+        "body": "This preview is meant to stay clean and presentable. Every night at 04:00 a job deletes the demo content and rebuilds it from fixtures, so a day of visitors clicking around leaves nothing behind.\n\nThe switches below decide what that job does. Turning everything off does not break anything — it simply leaves the database as it is.\n\nThe demo content itself is not edited here. It lives in the repository, because it is far too large for a form field:\n\n- cms/src/data/seed_videos.json — 110 videos, 155 KB\n- cms/src/data/seed_images.json — 93 images, 97 KB\n- cms/src/data/seed_articles.json — 12 articles, 42 KB\n- cms/src/data/seed_creators.json — the 7 demo accounts\n\nEditing content here and keeping the bulk in files would mean two places to look and one of them silently out of date, so all of it stays in the repository.\n\nDEMO_MODE=false in cms/.env overrides everything on this page: a deployment that is not a demo should never depend on a database row to avoid having its content deleted."
+      }
+    },
     "enabled": {
       "type": "boolean",
       "default": true,
@@ -26,6 +35,15 @@
       "default": true,
       "description": "Delete and re-seed videos, images, articles and feed items."
     },
+    "dangerNotice": {
+      "type": "customField",
+      "customField": "global::info",
+      "options": {
+        "heading": "Before switching on \"Wipe user content\"",
+        "tone": "warning",
+        "body": "This deletes everything a visitor has created — comments, likes, playlists, subscriptions, notifications and the whole chat. It cannot tell a demo account's row from a real person's, and there is no undo.\n\nIt exists because the reset previously only touched the four content types, so test data accumulated indefinitely while the content underneath it was replaced every night, leaving comments attached to videos that no longer existed.\n\nTry it first without deleting anything:\n\n- POST /api/feed/run-demo-reset with the header x-seed-secret\n- it reports what it would delete and touches nothing\n- pass {\"dryRun\": false} in the body only when you mean it"
+      }
+    },
     "wipeUserContent": {
       "type": "boolean",
       "default": false,
@@ -35,10 +53,6 @@
       "type": "boolean",
       "default": true,
       "description": "Reset every user's affinity graph to the default shape."
-    },
-    "feedItems": {
-      "type": "json",
-      "description": "The dynamic-zone feed items, as data rather than code. Leave empty to use the built-in defaults. The large fixtures (videos, images, articles) stay as files under cms/src/data — they are 100 to 155 KB each and belong in a repository, not in a form field."
     },
     "lastRunAt": {
       "type": "datetime",
