@@ -669,6 +669,37 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       }
       }
 
+      /*
+       * The layer that makes it look used: conversations, likes and lists.
+       *
+       * Seeded last, because every entry references content by slug and that
+       * content has to exist first. The fixture is optional — a deployment
+       * without it gets a working catalogue and empty comment sections, which
+       * is the previous behaviour.
+       */
+      try {
+        // Same two candidates the other fixtures use: the compiled location
+        // and the source tree, because `__dirname` differs between them.
+        const engagementCandidates = [
+          path.join(__dirname, '../../../src/data/seed_engagement.json'),
+          path.join(process.cwd(), 'src/data/seed_engagement.json'),
+        ];
+        const engagementPath = engagementCandidates.find((candidate) => fs.existsSync(candidate));
+        if (engagementPath) {
+          const fixture = JSON.parse(fs.readFileSync(engagementPath, 'utf8'));
+          const usersByHandle: Record<string, any> = {};
+          for (const [handle, user] of Object.entries(creators)) {
+            usersByHandle[handle] = user;
+          }
+          const steps = await strapi
+            .service('api::feed.seed-engagement')
+            .seed(fixture, usersByHandle);
+          console.log(`💬 Engagement seeded: ${steps.join(', ')}`);
+        }
+      } catch (e) {
+        logError('[seed.ts] engagement', e);
+      }
+
       if (seededItems === seedItems.length) {
         console.log(`✅ Seed completed: ${seededItems} of ${seedItems.length} feed items created (both locales).`);
       } else {

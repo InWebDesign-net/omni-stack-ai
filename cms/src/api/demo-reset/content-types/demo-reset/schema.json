@@ -41,13 +41,13 @@
       "options": {
         "heading": "Before switching on \"Wipe user content\"",
         "tone": "warning",
-        "body": "This deletes everything a visitor has created — comments, likes, playlists, subscriptions, notifications and the whole chat. It cannot tell a demo account's row from a real person's, and there is no undo.\n\nIt exists because the reset previously only touched the four content types, so test data accumulated indefinitely while the content underneath it was replaced every night, leaving comments attached to videos that no longer existed.\n\nTry it first without deleting anything:\n\n- POST /api/feed/run-demo-reset with the header x-seed-secret\n- it reports what it would delete and touches nothing\n- pass {\"dryRun\": false} in the body only when you mean it"
+        "body": "This deletes everything a visitor has created — comments, likes, playlists, subscriptions, notifications and the whole chat — and replaces it from the fixtures. There is no undo.\n\nIt is on because the demo layer is now seeded: seed_engagement.json carries the conversations, the likes, the playlists and the chat rooms, so wiping no longer leaves an empty preview behind — it replaces test debris with the demo.\n\nSwitch it off anywhere that is not a throwaway preview. It cannot tell a demo account's row from a real person's.\n\nTry it first without deleting anything:\n\n- POST /api/feed/run-demo-reset with the header x-seed-secret\n- it reports what it would delete and touches nothing\n- pass {\"dryRun\": false} in the body only when you mean it"
       }
     },
     "wipeUserContent": {
       "type": "boolean",
-      "default": false,
-      "description": "Also delete comments, likes, playlists, subscriptions, chat rooms, chat messages and notifications. Off by default because it removes anything a visitor created, and this cannot tell a demo account's row from a real one."
+      "default": true,
+      "description": "Also delete comments, likes, playlists, subscriptions, chat rooms, chat messages and notifications before re-seeding. On by default since the fixtures replace them: seed_engagement.json carries the conversations, likes, playlists and chat. Switch it off anywhere that is not a throwaway preview — it cannot tell a demo account's row from a real one."
     },
     "resetAffinityGraphs": {
       "type": "boolean",
