@@ -106,6 +106,51 @@ function ShortVideoPlayer({
   );
 }
 
+
+/**
+ * One video, as the vertical feed needs it.
+ *
+ * Three sources feed this surface — a playlist, the affinity ranking and the
+ * plain catalogue — and they used to be mapped in three places. `videoUrl`,
+ * `hlsPlaylistUrl` and `dashManifestUrl` are not fields of `api::video.video`;
+ * it has `hlsUrl` and `mp4Url`, and both are carried through under their real
+ * names so the player can prefer HLS and keep the MP4 as its fallback.
+ */
+/**
+ * Below this many items, the ranked feed is topped up from the catalogue.
+ *
+ * A vertical feed that ends after eight videos is a worse experience than a
+ * less precisely ranked one that keeps going.
+ */
+const TOP_UP_BELOW = 20;
+
+function toFeedItem(v: any): FeedItem {
+  return {
+    id: v.id || v.documentId,
+    documentId: v.documentId,
+    slug: v.slug,
+    title: v.title || '',
+    summary: typeof v.summary === 'string' ? v.summary : '',
+    content: '',
+    relevanceScore: v.relevanceScore || 0,
+    mediaType: 'short',
+    mediaUrl: v.mp4Url || v.hlsUrl,
+    videoUrl: v.mp4Url,
+    thumbnailUrl: v.thumbnailUrl,
+    hlsUrl: v.hlsUrl,
+    mp4Url: v.mp4Url,
+    hlsPlaylistUrl: v.hlsUrl,
+    duration: v.duration,
+    likesCount: v.likesCount || 0,
+    viewsCount: v.viewsCount || 0,
+    commentsCount: v.commentsCount || 0,
+    creator: v.creator,
+    author: v.author,
+    tags: Array.isArray(v.tags) ? v.tags : [],
+    createdAt: v.createdAt,
+  } as FeedItem;
+}
+
 export default function ShortsFeedPage() {
   const router = useRouter();
   const params = useParams();
@@ -116,118 +161,137 @@ export default function ShortsFeedPage() {
   const [shortsList, setShortsList] = useState<FeedItem[]>([]);
 
   useEffect(() => {
+    /*
+     * Guards against a superseded run finishing last.
+     *
+     * This effect runs again when the session resolves — `currentUser` is null
+     * on the first render and set a moment later — so two loads are in flight
+     * at once: the anonymous one and the ranked one. Whichever answered last
+     * used to win, and it was usually the anonymous one, which is why the
+     * ranked feed appeared to be ignored even though it had been fetched.
+     */
+    let active = true;
+
     const fetchShorts = async () => {
       const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-      const statusParam = urlParams ? urlParams.get('status') : null;
-      const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
-      const isBypass = statusParam === 'draft' || (hasCookie && statusParam !== 'published');
 
       /*
        * Where the feed comes from, most specific first (#146).
        *
-       * `?list=` names a playlist and the slug in the path names the position
-       * inside it, so arriving here from a playlist continues that list at that
-       * video rather than dropping the reader into an unrelated feed. Without
-       * it the generic catalogue is used, which is the existing behaviour.
+       *   1. `?list=` — a playlist, at the position named by the slug in the
+       *      path. Arriving from a playlist continues that list.
+       *   2. the affinity ranking, for a signed-in visitor — the same ranking
+       *      the rest of the app uses, rather than a second idea of relevance.
+       *   3. the plain catalogue, which always answers.
        *
-       * The position is addressed by item, not by index: a list that changed
-       * since the link was made then still opens on the right video instead of
-       * silently on its neighbour.
+       * Whatever the source, the video named in the path is guaranteed to be in
+       * the feed: it is fetched on its own and put in front when the feed does
+       * not already contain it. That is what closes #145 — the feed used to be
+       * one page of 50, and anything past it left `activeIndex` at 0, so the
+       * reader silently got a different video than the link named.
        */
       const listId = urlParams?.get('list') || null;
 
-      if (listId) {
+      const loadPlaylist = async (): Promise<FeedItem[] | null> => {
         try {
           const res = await fetch(`/api/playlists/${listId}`, { credentials: 'same-origin' });
-          if (res.ok) {
-            const { playlist } = await res.json();
-            const videos = playlist?.videos || [];
-            if (videos.length > 0) {
-              setShortsList(
-                videos.map((v: any) => ({
-                  id: v.id || v.documentId,
-                  documentId: v.documentId,
-                  slug: v.slug,
-                  title: v.title || '',
-                  summary: '',
-                  content: '',
-                  relevanceScore: 0,
-                  mediaType: 'short',
-                  mediaUrl: v.mp4Url || v.hlsUrl,
-                  videoUrl: v.mp4Url,
-                  thumbnailUrl: v.thumbnailUrl,
-                  hlsUrl: v.hlsUrl,
-                  mp4Url: v.mp4Url,
-                  hlsPlaylistUrl: v.hlsUrl,
-                  duration: v.duration,
-                  likesCount: v.likesCount || 0,
-                  viewsCount: v.viewsCount || 0,
-                  commentsCount: v.commentsCount || 0,
-                  creator: v.creator,
-                  tags: Array.isArray(v.tags) ? v.tags : [],
-                } as FeedItem))
-              );
-              return;
-            }
-          }
-          // An unreadable or empty list falls through to the catalogue rather
-          // than leaving the reader on an empty scroller.
+          if (!res.ok) return null;
+          const { playlist } = await res.json();
+          const videos = playlist?.videos || [];
+          return videos.length > 0 ? videos.map(toFeedItem) : null;
         } catch (e) {
           console.error('[shorts] failed to load playlist feed:', e);
+          return null;
         }
-      }
+      };
 
-      try {
-        const res = await fetch('/api/content/video/list?pageSize=50', {
-          headers: {
-            ...jsonAuthHeaders(),
-          },
-        });
-        if (res.ok) {
+      const loadRanked = async (): Promise<FeedItem[] | null> => {
+        try {
+          const res = await fetch('/api/strapi-feed', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lang, limit: 50 }),
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          const videos = (data?.feed || []).filter((item: any) => item?.mediaType === 'video' && item?.slug);
+          return videos.length > 0 ? videos.map(toFeedItem) : null;
+        } catch (e) {
+          console.error('[shorts] failed to load ranked feed:', e);
+          return null;
+        }
+      };
+
+      const loadCatalogue = async (): Promise<FeedItem[]> => {
+        try {
+          const res = await fetch('/api/content/video/list?pageSize=50', {
+            headers: { ...jsonAuthHeaders() },
+          });
+          if (!res.ok) return [];
           const data = await res.json();
           // The list endpoint answers { data, meta }. This read `data.items`,
-          // which is always undefined — so the feed never populated at all and
-          // the page rendered an empty scroller.
+          // which is always undefined — so the feed never populated at all.
           const items: any[] = Array.isArray(data?.data) ? data.data : [];
-          if (items.length > 0) {
-            const mapped: FeedItem[] = items.map((v: any) => ({
-              id: v.id || v.documentId,
-              documentId: v.documentId,
-              slug: v.slug,
-              title: v.title || '',
-              summary: typeof v.summary === 'string' ? v.summary : '',
-              // Required by FeedItem. Previously the mapped objects did not
-              // satisfy the type at all — `data.items` was `any`, so assigning
-              // the result to FeedItem[] was never actually checked.
-              content: '',
-              relevanceScore: 0,
-              mediaType: 'short',
-              // `videoUrl`, `hlsPlaylistUrl` and `dashManifestUrl` are not
-              // fields of api::video.video — it has `hlsUrl` and `mp4Url`.
-              // Both are carried through under their real names: the player
-              // prefers HLS and keeps the MP4 rendition as the fallback.
-              mediaUrl: v.mp4Url || v.hlsUrl,
-              videoUrl: v.mp4Url,
-              thumbnailUrl: v.thumbnailUrl,
-              hlsUrl: v.hlsUrl,
-              mp4Url: v.mp4Url,
-              hlsPlaylistUrl: v.hlsUrl,
-              duration: v.duration,
-              likesCount: v.likesCount || 0,
-              viewsCount: v.viewsCount || 0,
-              commentsCount: v.commentsCount || 0,
-              creator: v.creator,
-              author: v.author,
-              tags: v.tags,
-              createdAt: v.createdAt,
-            }));
-            setShortsList(mapped);
-          }
+          return items.map(toFeedItem);
+        } catch (e) {
+          console.error('[shorts] failed to load shorts feed:', e);
+          return [];
         }
-      } catch (e) { console.error('[shorts] failed to load shorts feed:', e); }
+      };
+
+      /** The video named in the path, fetched on its own so it always exists. */
+      const loadEntryVideo = async (): Promise<FeedItem | null> => {
+        if (!initialSlug) return null;
+        try {
+          // `list` ignores a slug parameter and answers with its first page,
+          // which would prepend the wrong video and make #145 worse rather
+          // than better. `by-slug` filters upstream and re-checks the answer.
+          const res = await fetch(`/api/content/video/by-slug?slug=${encodeURIComponent(initialSlug)}&lang=${lang}`, {
+            headers: { ...jsonAuthHeaders() },
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          const item = (Array.isArray(data?.data) ? data.data : [])[0];
+          return item ? toFeedItem(item) : null;
+        } catch {
+          return null;
+        }
+      };
+
+      let feed: FeedItem[] | null = null;
+      if (listId) feed = await loadPlaylist();
+      if (!feed && currentUser) feed = await loadRanked();
+
+      /*
+       * The ranking answers with what it considers relevant, which is a dozen
+       * items at most — fine for a page of cards, far too few for a surface you
+       * scroll through. The catalogue tops it up behind the ranked items, so
+       * the order still reflects the profile while the feed does not simply
+       * end.
+       */
+      if (!feed) {
+        feed = await loadCatalogue();
+      } else if (!listId && feed.length < TOP_UP_BELOW) {
+        const seen = new Set(feed.map((item) => item.slug));
+        const catalogue = (await loadCatalogue()).filter((item) => !seen.has(item.slug));
+        feed = [...feed, ...catalogue];
+      }
+
+      const entry = await loadEntryVideo();
+      if (entry && !feed.some((item) => item.slug === entry.slug)) {
+        feed = [entry, ...feed];
+      }
+
+      if (!active) return;
+      if (feed.length > 0) setShortsList(feed);
     };
     fetchShorts();
-  }, [initialSlug]);
+
+    return () => {
+      active = false;
+    };
+  }, [initialSlug, currentUser, lang]);
 
   /**
    * The playlist this feed is playing, if any.

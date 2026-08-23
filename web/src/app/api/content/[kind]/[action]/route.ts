@@ -138,6 +138,38 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
       return NextResponse.json(await res.json());
     }
 
+    /**
+     * One item by slug.
+     *
+     * `list` forwards its query to the custom `filtered` service, which ignores
+     * parameters it does not know — passing `slug=` or `filters[slug][$eq]=`
+     * there returns the unfiltered first page and looks like a match. So this
+     * asks the plain collection endpoint, where the filter is honoured.
+     *
+     * The vertical feed uses it to guarantee that the video named in the URL is
+     * present whatever the feed around it contains (#145).
+     */
+    if (action === 'by-slug') {
+      const slug = (searchParams.get('slug') || '').trim();
+      if (!slug) {
+        return NextResponse.json({ error: 'slug required' }, { status: 400 });
+      }
+
+      const headers = await buildHeaders(req, false) || { 'Content-Type': 'application/json' };
+      const targetUrl =
+        `${strapiBase()}/api/${plural}?filters[slug][$eq]=${encodeURIComponent(slug)}` +
+        `&populate=creator&locale=${encodeURIComponent(searchParams.get('lang') || 'de')}&pagination[pageSize]=1`;
+
+      const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
+      if (!res.ok) return NextResponse.json({ data: [] }, { status: res.status });
+
+      const json = await res.json();
+      // Guarded: the filter is honoured here, but returning something that does
+      // not match the slug asked for is exactly the failure this replaces.
+      const data = (json?.data || []).filter((item: any) => item?.slug === slug);
+      return NextResponse.json({ data });
+    }
+
     if (action === 'settings') {
       const documentId = searchParams.get('documentId');
       if (!documentId) {
