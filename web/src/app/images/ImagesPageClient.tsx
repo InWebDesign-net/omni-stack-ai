@@ -39,15 +39,57 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
   const { currentUser, openAuthModal, lang, t, openChannelModal } = useApp();
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  /*
+   * Two sources, deliberately kept apart.
+   *
+   * `likedSlugs` is what this page knows locally — the stored list plus
+   * anything clicked since it loaded. `serverLikedIds` is what the account
+   * actually has. Merging them into one piece of state meant the local value
+   * kept overwriting the fetched one on every re-render, because the effect
+   * depended on the item list and that changes identity constantly.
+   *
+   * Reading only the stored list was the original bug: it is per-browser, and
+   * since the consent gate it is a statistics key that is not written at all
+   * without permission — so hearts showed empty on things that were liked.
+   */
   const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
+  const [serverLikedDocumentIds, setServerLikedDocumentIds] = useState<string[]>([]);
+
+  /*
+   * Matched on `documentId`, not the numeric id: images are bilingual, so one
+   * image is several rows with different numeric ids and the page renders
+   * whichever its language picked.
+   */
+  const isImageLiked = (img: any) =>
+    likedSlugs.includes(img.slug) || serverLikedDocumentIds.includes(String(img.documentId));
   const { message: toastMessage, showToast } = useToast();
 
+  /* The stored list, once. */
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
-      setLikedSlugs(stored);
+      setLikedSlugs(JSON.parse(localStorage.getItem('omni_user_likes') || '[]'));
     } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
   }, []);
+
+  /* What the account actually has, once per session. */
+  useEffect(() => {
+    if (!currentUser) {
+      setServerLikedDocumentIds([]);
+      return;
+    }
+    let active = true;
+    fetch('/api/likes', { credentials: 'same-origin' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data) setServerLikedDocumentIds((data.likedImageDocumentIds || []).map(String));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.id]);
+
+
 
   const handleCardLikeToggle = async (e: React.MouseEvent, img: any) => {
     e.preventDefault();
@@ -58,11 +100,18 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
       return;
     }
 
-    const isLiked = likedSlugs.includes(img.slug);
+    const isLiked = isImageLiked(img);
     const nextIsLiked = !isLiked;
 
     setLikedSlugs((prev) =>
       nextIsLiked ? [...prev, img.slug] : prev.filter((s) => s !== img.slug)
+    );
+    // Both sources have to agree, or un-liking leaves the heart filled from the
+    // server list while the local one has already dropped it.
+    setServerLikedDocumentIds((prev) =>
+      nextIsLiked
+        ? Array.from(new Set([...prev, String(img.documentId)]))
+        : prev.filter((docId) => docId !== String(img.documentId))
     );
 
     img.likesCount = Math.max(0, (img.likesCount || 0) + (nextIsLiked ? 1 : -1));
@@ -115,6 +164,8 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
     totalPages, updateURL, handleSortChange, handlePageChange, hardReset,
     hasActiveFilters,
   } = useContentListPage<ImageItem>('image');
+
+
 
   const displayedTags = filteredTagList;
 
@@ -297,14 +348,14 @@ export default function ImagesPageClient({ initialParams }: { initialParams?: an
                     <button
                       type="button"
                       onClick={(e) => handleCardLikeToggle(e, img)}
-                      title={likedSlugs.includes(img.slug) ? 'Gefällt mir nicht mehr' : 'Gefällt mir'}
+                      title={isImageLiked(img) ? 'Gefällt mir nicht mehr' : 'Gefällt mir'}
                       className={`absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-mono border transition-all cursor-pointer ${
-                        likedSlugs.includes(img.slug)
+                        isImageLiked(img)
                           ? 'bg-rose-500/30 text-rose-200 border-rose-500/50 shadow-md shadow-rose-500/20'
                           : 'bg-black/60 text-white border-white/10 hover:border-rose-400/50 hover:text-rose-300'
                       }`}
                     >
-                      <Heart className={`w-3 h-3 ${likedSlugs.includes(img.slug) ? 'text-rose-400 fill-rose-400' : 'text-rose-400'}`} />
+                      <Heart className={`w-3 h-3 ${isImageLiked(img) ? 'text-rose-400 fill-rose-400' : 'text-rose-400'}`} />
                       <span>{img.likesCount || 0}</span>
                     </button>
 
