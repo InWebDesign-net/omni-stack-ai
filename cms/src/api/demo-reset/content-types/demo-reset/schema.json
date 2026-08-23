@@ -1,0 +1,52 @@
+{
+  "kind": "singleType",
+  "collectionName": "demo_resets",
+  "info": {
+    "singularName": "demo-reset",
+    "pluralName": "demo-resets",
+    "displayName": "Demo Reset",
+    "description": "What the nightly reset does, and what it leaves alone. This preview is meant to stay clean and presentable; the reset is how that happens."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Master switch. Off means the nightly job does nothing at all."
+    },
+    "wipeContent": {
+      "type": "boolean",
+      "default": true,
+      "description": "Delete and re-seed videos, images, articles and feed items."
+    },
+    "wipeUserContent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Also delete comments, likes, playlists, subscriptions, chat rooms, chat messages and notifications. Off by default because it removes anything a visitor created, and this cannot tell a demo account's row from a real one."
+    },
+    "resetAffinityGraphs": {
+      "type": "boolean",
+      "default": true,
+      "description": "Reset every user's affinity graph to the default shape."
+    },
+    "feedItems": {
+      "type": "json",
+      "description": "The dynamic-zone feed items, as data rather than code. Leave empty to use the built-in defaults. The large fixtures (videos, images, articles) stay as files under cms/src/data — they are 100 to 155 KB each and belong in a repository, not in a form field."
+    },
+    "lastRunAt": {
+      "type": "datetime",
+      "description": "Set by the job itself."
+    },
+    "lastRunSummary": {
+      "type": "text",
+      "description": "What the last run actually did, so a failure is visible here rather than only in the logs."
+    }
+  }
+}
