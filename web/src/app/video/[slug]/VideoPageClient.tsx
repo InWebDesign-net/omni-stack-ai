@@ -54,6 +54,7 @@ import {
 } from '@/lib/comments';
 import { storeItem } from '@/lib/consent';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
+import { PlaylistPanel } from '@/components/playlist/PlaylistPanel';
 
 // Flatten a Strapi `blocks` field (array of {type, children}) into plain text.
 // Falls back to the raw value when it is already a string.
@@ -349,6 +350,18 @@ export default function VideoPageClient({
 
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
 
+  /**
+   * The playlist this video is being watched inside, from `?list=`.
+   *
+   * Read once on mount rather than through `useSearchParams`, which would opt
+   * the whole page into a Suspense boundary it does not otherwise need.
+   */
+  const [listId, setListId] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setListId(new URLSearchParams(window.location.search).get('list'));
+  }, []);
+
   const handleShare = () => {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
@@ -440,7 +453,11 @@ export default function VideoPageClient({
                   title={video.title}
                   slug={slug}
                   isVertical={false}
-                  onToggleVertical={() => router.push(`/shorts/${slug}`)}
+                  /* Carries the list, so the vertical view continues the same
+                     one at the same video instead of an unrelated feed. */
+                  onToggleVertical={() =>
+                    router.push(listId ? `/shorts/${slug}?list=${encodeURIComponent(listId)}` : `/shorts/${slug}`)
+                  }
                   recommendations={initialRelated}
                   onTimeUpdate={handleVideoTimeUpdate}
                   className="w-full h-full"
@@ -580,8 +597,10 @@ export default function VideoPageClient({
             />
           </div>
 
-          {/* Related Videos Sidebar */}
+          {/* Playlist first when watching inside one, then the recommendations */}
           <div className="space-y-4">
+            {listId && <PlaylistPanel listId={listId} currentSlug={slug} t={t} />}
+
             <h3 className="font-bold text-primary text-base flex items-center gap-2">
               <Film className="w-4 h-4 text-indigo-400" />
               <span>{t.videoDetail.relatedRecommendations}</span>

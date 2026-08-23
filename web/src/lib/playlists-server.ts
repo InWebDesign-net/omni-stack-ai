@@ -41,12 +41,22 @@ export function strapiUrl(path: string): string {
   return `${STRAPI_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+/**
+ * The fields a playlist's videos are read with.
+ *
+ * More than the panel beside the player needs, because the vertical feed reads
+ * the same payload and has to be able to *play* them — without `hlsUrl` and
+ * `mp4Url` it renders a list of items with no source. Kept in one place so the
+ * two consumers cannot drift apart.
+ */
+const VIDEO_FIELDS = [
+  'title', 'slug', 'thumbnailUrl', 'duration', 'visibility',
+  'hlsUrl', 'mp4Url', 'summary', 'tags', 'likesCount', 'viewsCount', 'commentsCount',
+];
+
 const ENTRY_POPULATE =
-  'populate[entries][populate][video][fields][0]=title' +
-  '&populate[entries][populate][video][fields][1]=slug' +
-  '&populate[entries][populate][video][fields][2]=thumbnailUrl' +
-  '&populate[entries][populate][video][fields][3]=duration' +
-  '&populate[entries][populate][video][fields][4]=visibility' +
+  VIDEO_FIELDS.map((f, i) => `populate[entries][populate][video][fields][${i}]=${f}`).join('&') +
+  '&populate[entries][populate][video][populate][creator][fields][0]=username' +
   '&populate[owner][fields][0]=username';
 
 /**
@@ -76,9 +86,7 @@ async function visibleVideosInOrder(
   const params = new URLSearchParams();
   documentIds.forEach((id, i) => params.set(`filters[documentId][$in][${i}]`, id));
   params.set('pagination[pageSize]', String(Math.max(documentIds.length, 1)));
-  ['title', 'slug', 'thumbnailUrl', 'duration', 'visibility'].forEach((f, i) =>
-    params.set(`fields[${i}]`, f)
-  );
+  VIDEO_FIELDS.forEach((f, i) => params.set(`fields[${i}]`, f));
   params.set('populate[creator][fields][0]', 'username');
 
   const res = await fetch(strapiUrl(`/api/videos?${params.toString()}`), {
