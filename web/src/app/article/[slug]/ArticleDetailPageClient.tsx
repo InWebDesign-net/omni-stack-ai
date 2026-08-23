@@ -24,6 +24,7 @@ import { getArticleOwnerStatus } from './actions';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER } from '@/lib/avatar';
 import { storeItem } from '@/lib/consent';
+import { Toast, useToast } from '@/components/common/Toast';
 
 function pickLocalized(source: any, useLang: string) {
   if (!source) return null;
@@ -45,7 +46,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   const [likesCount, setLikesCount] = useState(item?.likesCount || 0);
   const [viewsCount, setViewsCount] = useState(item?.viewsCount || 0);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { message: toastMessage, showToast } = useToast();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const hasOpenedEditFromUrl = useRef(false);
@@ -85,11 +86,6 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
       setIsOwner(res.isOwner);
     });
   }, [slug, currentUser]);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
 
   const fallbackCreator = useMemo(() => {
     return {
@@ -292,12 +288,7 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
       <Header />
 
       {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{ bottom: `calc(6rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 bg-surface-raised border border-purple-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400" />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
 
       <main className="flex-1 max-w-content w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6">
         {/* Top Action Bar */}

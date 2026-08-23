@@ -41,6 +41,9 @@ import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { usePlaylists } from '@/lib/hooks/usePlaylists';
 import { toggleLike as persistLike } from '@/lib/likes';
 import { shareContent } from '@/lib/share';
+import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSection';
+import { Toast, useToast } from '@/components/common/Toast';
+import SubscribeButton from '@/components/SubscribeButton';
 
 function ShortVideoPlayer({
   short,
@@ -405,29 +408,12 @@ export default function ShortsFeedPage() {
    * Only fetched for a signed-in reader; a guest has no lists to be in.
    */
   const { listsContaining } = usePlaylists(Boolean(currentUser));
-  const [subscribedMap, setSubscribedMap] = useState<Record<string, boolean>>({});
   
   // Comments state connected to Strapi
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [commentsMap, setCommentsMap] = useState<Record<string, CommentItem[]>>({});
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [editingCommentId, setEditingCommentId] = useState<string | number | null>(null);
-  const [editCommentText, setEditCommentText] = useState('');
-  const [userData, setUserData] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
 
-  /**
-   * Same shape as the other surfaces use. Sharing used to call `alert()`, which
-   * is a modal the reader has to dismiss — on a feed you scroll with your thumb,
-   * that is a wall, not a confirmation.
-   */
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const { message: toastMessage, showToast } = useToast();
 
   /** The video the add-to-playlist overlay is open for, if any. */
   const [playlistForVideo, setPlaylistForVideo] = useState<string | null>(null);
@@ -514,42 +500,11 @@ export default function ShortsFeedPage() {
 
   }, []);
 
-  /*
-   * Who is commenting comes from the session, not from `localStorage`.
-   *
-   * It used to read the cached `omni_user` and fall back to "Du (Benutzer)"
-   * with no avatar — so a session restored from the cookie commented
-   * anonymously, and a stale cache commented as whoever last signed in on this
-   * browser. `currentUser` is resolved from the cookie by the app itself.
-   */
-  useEffect(() => {
-    if (!currentUser) {
-      setUserData(null);
-      return;
-    }
-    setUserData({
-      username: currentUser.username || 'Du',
-      handle: (currentUser as any).handle || `@${(currentUser.username || 'du').toLowerCase()}`,
-      avatarUrl: (currentUser as any).avatarUrl || '',
-    });
-  }, [currentUser]);
 
-  // Fetch comments from Strapi for active short
-  useEffect(() => {
-    if (!activeShort) return;
-    const slug = activeShort.slug;
-    
-    const loadComments = async () => {
-      setLoadingComments(true);
-      const fetched = await fetchCommentsForSlug(slug, lang);
-      setCommentsMap((prev) => ({ ...prev, [slug]: fetched }));
-      setLoadingComments(false);
-    };
 
-    loadComments();
-  }, [activeShort?.slug, commentsOpen]);
-
-  const activeComments = (activeShort && commentsMap[activeShort.slug]) || [];
+  /* Reported by the comments component, so the badge and the panel cannot
+     disagree about how many there are. */
+  const [commentCount, setCommentCount] = useState(0);
 
   /*
    * The same write the standard player makes.
@@ -600,114 +555,10 @@ export default function ShortsFeedPage() {
     };
   }, [currentUser]);
 
-  /*
-   * The same write the subscribe button makes everywhere else.
-   *
-   * This flipped a local map keyed on the handle and never told the server,
-   * so the tick appeared and the subscription did not exist. Keyed on the
-   * creator's id now, because that is what the API takes and two creators can
-   * share a display handle.
-   */
-  const toggleSubscribe = async (creatorId: string | number | undefined, key: string) => {
-    if (!currentUser) {
-      openAuthModal();
-      return;
-    }
-    if (!creatorId) return;
 
-    const next = !subscribedMap[key];
-    setSubscribedMap((prev) => ({ ...prev, [key]: next }));
 
-    try {
-      const res = await fetch('/api/subscriptions', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'toggle', targetId: creatorId, type: 'channel' }),
-      });
-      if (!res.ok) throw new Error('subscribe failed');
-      const data = await res.json();
-      setSubscribedMap((prev) => ({ ...prev, [key]: Boolean(data.isSubscribed) }));
-    } catch {
-      // Put the tick back where it was rather than leaving it claiming
-      // something that did not happen.
-      setSubscribedMap((prev) => ({ ...prev, [key]: !next }));
-      showToast(t?.common?.error || 'Aktion fehlgeschlagen');
-    }
-  };
 
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentText.trim() || isSubmittingComment || !activeShort) return;
 
-    setIsSubmittingComment(true);
-    const slug = activeShort.slug;
-    const authorName = userData?.username || 'Du (Benutzer)';
-    const authorHandle = userData?.handle || '@du';
-    const authorAvatar = resolveAvatarUrl(userData?.avatarUrl);
-
-    const created = await createCommentInStrapi({
-      feedSlug: slug,
-      text: commentText.trim(),
-      authorName,
-      authorHandle,
-      authorAvatar,
-    });
-
-    const newCommentItem: CommentItem = created || {
-      id: Date.now(),
-      documentId: String(Date.now()),
-      text: commentText.trim(),
-      authorName,
-      authorHandle,
-      authorAvatar,
-      isEdited: false,
-      feedSlug: slug,
-      createdAt: 'Gerade eben',
-      isCurrentUser: true,
-    };
-
-    setCommentsMap((prev) => ({
-      ...prev,
-      [slug]: [newCommentItem, ...(prev[slug] || [])],
-    }));
-
-    setCommentText('');
-    setIsSubmittingComment(false);
-  };
-
-  const handleStartEdit = (comment: CommentItem) => {
-    setEditingCommentId(comment.documentId || comment.id);
-    setEditCommentText(comment.text);
-  };
-
-  const handleSaveEdit = async (commentId: string | number) => {
-    if (!editCommentText.trim() || !activeShort) return;
-    const slug = activeShort.slug;
-
-    await updateCommentInStrapi(commentId, editCommentText.trim());
-    setCommentsMap((prev) => ({
-      ...prev,
-      [slug]: (prev[slug] || []).map((c) =>
-        c.documentId === commentId || c.id === commentId
-          ? { ...c, text: editCommentText.trim(), isEdited: true }
-          : c
-      ),
-    }));
-    setEditingCommentId(null);
-    setEditCommentText('');
-  };
-
-  const handleDeleteComment = async (commentId: string | number) => {
-    if (!activeShort) return;
-    const slug = activeShort.slug;
-
-    await deleteCommentFromStrapi(commentId);
-    setCommentsMap((prev) => ({
-      ...prev,
-      [slug]: (prev[slug] || []).filter((c) => c.documentId !== commentId && c.id !== commentId),
-    }));
-  };
 
   return (
     /*
@@ -781,7 +632,7 @@ export default function ShortsFeedPage() {
           const likesCount = likesMap[short.id] ?? short.likesCount;
           const isInPlaylist = Boolean(short.documentId) && listsContaining(short.documentId as string).length > 0;
           const authorHandle = getAuthorHandle(short);
-          const isSubscribed = !!subscribedMap[authorHandle];
+          const creatorId = (short as any).creator?.id || (short as any).author?.id;
 
           return (
             <section
@@ -837,17 +688,25 @@ export default function ShortsFeedPage() {
                       className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-xl"
                     />
                   </button>
-                  <button
-                    onClick={() => toggleSubscribe(((short as any).creator?.id || (short as any).author?.id), authorHandle)}
-                    className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-md ${
-                      isSubscribed
-                        ? 'bg-teal-400 text-black'
-                        : 'bg-indigo-600 text-white hover:scale-110'
-                    }`}
-                    title={isSubscribed ? t.videoDetail.subscribedBtn : t.videoDetail.subscribeBtn}
-                  >
-                    {isSubscribed ? '✓' : '+'}
-                  </button>
+                  {/*
+                    The subscribe control the rest of the app uses, in its
+                    icon-only size. What sat here was a second implementation of
+                    it — and before that a third, which only moved a local map
+                    and never told the server at all. The component already
+                    knows the current state, the self-check and the failure
+                    handling; the only thing this surface needs to decide is
+                    where it sits.
+                  */}
+                  {creatorId && (
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                      <SubscribeButton
+                        targetId={String(creatorId)}
+                        iconOnly
+                        size="sm"
+                        className="!p-1 !rounded-full shadow-md scale-90"
+                      />
+                    </span>
+                  )}
                 </div>
 
                 {/* Like Button */}
@@ -876,7 +735,7 @@ export default function ShortsFeedPage() {
                     <MessageSquare className="h-6 w-6" />
                   </div>
                   <span className="text-[11px] font-mono font-bold text-white shadow-sm">
-                    {activeComments.length}
+                    {commentCount}
                   </span>
                 </button>
 
@@ -942,157 +801,51 @@ export default function ShortsFeedPage() {
       </div>
 
       {/* ── Slide-over Comments Drawer ───────────────────────────────────────── */}
-      {commentsOpen && (
+      {commentsOpen && activeShort && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-fadeIn">
           {/*
-            Padded by whatever the chat occupies in that corner. The drawer runs
-            the full height, so its input sat underneath the chat bubble — the
-            one control the reader needs when the panel is open. The chat
-            publishes its footprint as `--chat-dock-height`; reading it here
-            keeps the two apart without a hardcoded guess that breaks the moment
-            either changes size.
+            The same comments as every other surface, not a second
+            implementation of them. The one that used to live here was a flat
+            list: no threads, no replies, no editing, no paging — so a
+            conversation looked different depending on which view you opened it
+            in.
+
+            The drawer is deliberately a bare container: `UnifiedCommentsSection`
+            brings its own heading, count and card, and wrapping that in a
+            second heading and a second card is what a straight swap produced.
+            Padded at the bottom by whatever the chat occupies in that corner,
+            because the drawer runs the full height and its input sat
+            underneath the chat bubble.
           */}
           <div
-            style={{ paddingBottom: `calc(1.25rem + var(--chat-dock-height, 0px))` }}
-            className="w-full max-w-md bg-surface-raised border-l border-subtle h-full flex flex-col p-5 shadow-2xl animate-slideDown"
+            style={{ paddingBottom: `calc(1rem + var(--chat-dock-height, 0px))` }}
+            className="w-full max-w-md h-full flex flex-col bg-canvas border-l border-subtle shadow-2xl animate-slideDown overflow-y-auto"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-subtle">
-              <h3 className="text-sm font-bold text-primary flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-indigo-400" />
-                <span>{lang === 'de' ? `${t.shorts.commentsLabel} (${activeComments.length})` : `${t.shorts.commentsLabel} (${activeComments.length})`}</span>
-              </h3>
+            <div className="flex justify-end p-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setCommentsOpen(false)}
-                className="p-1 text-muted hover:text-primary rounded-lg transition-colors"
+                className="p-2 text-muted hover:text-primary rounded-lg hover:bg-surface transition-colors cursor-pointer"
+                aria-label={t?.common?.close || 'Schließen'}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-3">
-              {loadingComments ? (
-                <div className="py-6 text-center text-xs text-muted font-mono animate-pulse">
-                  {t.common.loadingComments}
-                </div>
-              ) : activeComments.length === 0 ? (
-                <div className="py-6 text-center text-xs text-faint font-mono">
-                  {t.common.noCommentsYet}
-                </div>
-              ) : (
-                activeComments.map((c) => {
-                  const commentKey = c.documentId || String(c.id);
-                  const isEditing = editingCommentId === commentKey;
-                  const isOwner = c.isCurrentUser || c.authorHandle === '@du' || (userData && c.authorHandle === userData.handle);
-
-                  return (
-                    <div key={commentKey} className="bg-surface p-3 rounded-xl border border-subtle flex gap-3 group transition-all">
-                      <Image src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 rounded-full object-cover border border-subtle shrink-0" />
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-bold text-primary">{c.authorName}</span>
-                            <span className="font-mono text-indigo-400 text-[10px]">{c.authorHandle}</span>
-                            {c.isEdited && (
-                              <span className="text-[9px] text-muted italic font-mono">{t.common.edited}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] text-faint">{c.createdAt}</span>
-                            {isOwner && !isEditing && (
-                              <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  type="button"
-                                  onClick={() => handleStartEdit(c)}
-                                  title={t.common.commentEdit}
-                                  className="p-1 text-muted hover:text-indigo-400 rounded hover:bg-surface-raised transition-all"
-                                >
-                                  <Pencil className="h-3 w-3" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteComment(commentKey)}
-                                  title={t.common.commentDelete}
-                                  className="p-1 text-muted hover:text-rose-400 rounded hover:bg-surface-raised transition-all"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {isEditing ? (
-                          <div className="flex flex-col gap-2 mt-1">
-                            <textarea
-                              value={editCommentText}
-                              onChange={(e) => setEditCommentText(e.target.value)}
-                              className="w-full bg-canvas border border-indigo-500 rounded-lg p-2 text-xs text-primary focus:outline-none resize-y min-h-[50px]"
-                            />
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setEditingCommentId(null)}
-                                className="px-2.5 py-1 rounded bg-surface hover:bg-surface-raised text-[10px] text-muted font-medium transition-all"
-                              >
-                                {t.common.cancel}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleSaveEdit(commentKey)}
-                                className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-[10px] text-white font-medium flex items-center gap-1 transition-all"
-                              >
-                                <Check className="h-3 w-3" />
-                                <span>{t.common.save}</span>
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs text-primary leading-relaxed break-words">{c.text}</p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <form onSubmit={handleAddComment} className="pt-3 border-t border-subtle flex gap-2">
-              <input
-                id="shorts-comment-input"
-                type="text"
-                aria-label={lang === 'de' ? 'Kommentar schreiben' : 'Write comment'}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={
-                  userData
-                    ? (lang === 'de' ? `Als ${userData.username} kommentieren...` : `Comment as ${userData.username}...`)
-                    : (t.common.commentPlaceholder)
-                }
-                className="flex-1 bg-surface border border-subtle rounded-xl px-3 py-2 text-xs text-primary placeholder-faint focus:outline-none"
-                disabled={isSubmittingComment}
+            <div className="flex-1 min-h-0 px-3 pb-3">
+              <UnifiedCommentsSection
+                slug={activeShort.slug}
+                lang={lang}
+                t={t}
+                onCommentsCountChange={setCommentCount}
               />
-              <button
-                type="submit"
-                disabled={isSubmittingComment || !commentText.trim()}
-                aria-label={lang === 'de' ? 'Kommentar absenden' : 'Submit comment'}
-                title={lang === 'de' ? 'Kommentar absenden' : 'Submit comment'}
-                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 shrink-0 transition-all"
-              >
-                <Send className="h-3.5 w-3.5" />
-              </button>
-            </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Sharing confirms without blocking the feed. */}
-      {toastMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-black/85 border border-white/15 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} variant="overlay" />
 
       <AddToPlaylistModal
         videoDocumentId={playlistForVideo || ''}

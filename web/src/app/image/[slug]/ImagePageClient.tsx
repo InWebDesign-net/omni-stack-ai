@@ -32,6 +32,7 @@ import { UnifiedCommentsSection } from '@/components/comments/UnifiedCommentsSec
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
 import { storeItem } from '@/lib/consent';
+import { Toast, useToast } from '@/components/common/Toast';
 
 interface ImagePageClientProps {
   initialImage: any;
@@ -174,13 +175,7 @@ export default function ImagePageClient({
       });
     } catch (e) { console.error('[ImageDetail] view tracking request failed:', e); }
   };
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const { message: toastMessage, showToast } = useToast();
 
   const handleLike = async () => {
     if (!currentUser) {
@@ -266,12 +261,7 @@ export default function ImagePageClient({
       <Header />
 
       {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{ bottom: `calc(6rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
 
       <main className="flex-1 max-w-content w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Navigation bar */}
