@@ -129,7 +129,12 @@ export default ({ strapi }: { strapi: any }) => ({
         logError(`[seed-engagement] comment on "${entry.slug}"`, e);
       }
     }
-    steps.push(`${commentCount} comments`);
+    /*
+     * Counted as documents, not rows. Each comment is written in German and
+     * gets an empty English counterpart, so the delete step of a reset reports
+     * twice this number — said here so that does not read as a loss.
+     */
+    steps.push(`${commentCount} comments (plus an empty translation each)`);
 
     // ---- Likes
     let likeCount = 0;

@@ -677,6 +677,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
        * without it gets a working catalogue and empty comment sections, which
        * is the previous behaviour.
        */
+      /*
+       * Reported back to the caller, not only logged. The demo reset writes its
+       * summary into the admin panel, and an operator who reads "4 feed items"
+       * has no way to tell that the comments, playlists and chat rooms were
+       * written too — the run looks half-done when it is not.
+       */
+      let engagementSteps: string[] = [];
       try {
         // Same two candidates the other fixtures use: the compiled location
         // and the source tree, because `__dirname` differs between them.
@@ -691,10 +698,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           for (const [handle, user] of Object.entries(creators)) {
             usersByHandle[handle] = user;
           }
-          const steps = await strapi
+          engagementSteps = await strapi
             .service('api::feed.seed-engagement')
             .seed(fixture, usersByHandle);
-          console.log(`💬 Engagement seeded: ${steps.join(', ')}`);
+          console.log(`💬 Engagement seeded: ${engagementSteps.join(', ')}`);
         }
       } catch (e) {
         logError('[seed.ts] engagement', e);
@@ -707,7 +714,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           `⚠️ Seed completed with failures: ${seededItems} of ${seedItems.length} feed items created. See the errors above.`
         );
       }
-      return { success: true, count: seedItems.length * 2 };
+      return { success: true, count: seedItems.length * 2, engagement: engagementSteps };
     } catch (err: any) {
       console.error('Error in seedDemoData:', err);
       return { success: false, error: err.message };
