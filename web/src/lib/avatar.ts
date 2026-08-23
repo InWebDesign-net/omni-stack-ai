@@ -38,10 +38,3 @@ export function resolveAvatarUrl(url?: string | null): string {
   return trimmed;
 }
 
-/** For `onError` on an <img>: swap to the placeholder once, without looping. */
-export function onAvatarError(event: React.SyntheticEvent<HTMLImageElement>) {
-  const img = event.currentTarget;
-  if (img.dataset.fallbackApplied === 'true') return;
-  img.dataset.fallbackApplied = 'true';
-  img.src = AVATAR_PLACEHOLDER;
-}
