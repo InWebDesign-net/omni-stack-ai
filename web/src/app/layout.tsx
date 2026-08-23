@@ -48,13 +48,18 @@ export const metadata: Metadata = {
       { rel: 'android-chrome-512x512', url: '/android-chrome-512x512.png' },
     ],
   },
-  alternates: {
-    canonical: 'https://omni-web.inwebdesign.net',
-    languages: {
-      'de-DE': 'https://omni-web.inwebdesign.net?lang=de',
-      'en-US': 'https://omni-web.inwebdesign.net?lang=en',
-    },
-  },
+  /*
+   * No `alternates` here on purpose.
+   *
+   * Metadata declared in the root layout is inherited by every page that does
+   * not declare its own, so a canonical pointing at the home page told search
+   * engines that /articles and /images *were* the home page — neither could be
+   * indexed under its own address. A canonical belongs to one page, never to a
+   * layout wrapping all of them.
+   *
+   * The `?lang=` alternates that stood here also no longer exist as addresses;
+   * the language is a path prefix now.
+   */
   openGraph: {
     title: 'Omni - Hyper-Personalized AI Media Network | BY INWEBDESIGN',
     description:

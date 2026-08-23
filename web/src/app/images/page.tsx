@@ -1,12 +1,22 @@
 import React, { Suspense } from 'react';
+import { resolveLang } from '@/lib/locale-server';
+import { localizePath, languageAlternates } from '@/lib/locale';
 import ImagesPageClient from './ImagesPageClient';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Omni Galerie & Bilder | Next-Gen WebP Artwork & Photography',
-  description: 'Entdecke hochauflösende digitale Fotografie, 3D-Renderings & Kunstwerke im Omni Media Network.',
-};
+export async function generateMetadata() {
+  const lang = await resolveLang();
+  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://omni-web.inwebdesign.net';
+  return {
+    title: 'Omni Galerie & Bilder | Next-Gen WebP Artwork & Photography',
+    description: 'Entdecke hochauflösende digitale Fotografie, 3D-Renderings & Kunstwerke im Omni Media Network.',
+    alternates: {
+      canonical: `${baseUrl}${localizePath('/images', lang)}`,
+      languages: languageAlternates(baseUrl, '/images'),
+    },
+  };
+}
 
 export default async function ImagesPage({
   searchParams,

@@ -68,11 +68,11 @@ export function alternateUrls(baseUrl: string, path: string) {
   };
 }
 
-export function languageAlternates(baseUrl: string, path: string) {
+export function languageAlternates(baseUrl: string, path: string, search = '') {
   const urls = alternateUrls(baseUrl, path);
   return {
-    de: urls.de,
-    en: urls.en,
-    'x-default': urls.de,
+    de: `${urls.de}${search}`,
+    en: `${urls.en}${search}`,
+    'x-default': `${urls.de}${search}`,
   };
 }
