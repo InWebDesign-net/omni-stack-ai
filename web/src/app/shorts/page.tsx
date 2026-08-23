@@ -38,6 +38,8 @@ import {
   CommentItem,
 } from '@/lib/comments';
 import { useHlsSource } from '@/lib/hooks/useHlsSource';
+import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
+import { usePlaylists } from '@/lib/hooks/usePlaylists';
 
 function ShortVideoPlayer({
   short,
@@ -317,7 +319,12 @@ export default function ShortsFeedPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [likedMap, setLikedMap] = useState<Record<number, boolean>>({});
   const [likesMap, setLikesMap] = useState<Record<number, number>>({});
-  const [bookmarkedMap, setBookmarkedMap] = useState<Record<number, boolean>>({});
+  /*
+   * Whether this video is in any of the reader's playlists — the real state
+   * behind the save button, replacing a local map that was never persisted.
+   * Only fetched for a signed-in reader; a guest has no lists to be in.
+   */
+  const { listsContaining } = usePlaylists(Boolean(currentUser));
   const [subscribedMap, setSubscribedMap] = useState<Record<string, boolean>>({});
   
   // Comments state connected to Strapi
@@ -330,6 +337,20 @@ export default function ShortsFeedPage() {
   const [editCommentText, setEditCommentText] = useState('');
   const [userData, setUserData] = useState<{ username: string; handle: string; avatarUrl: string } | null>(null);
   const [isPreviewActive, setIsPreviewActive] = useState(false);
+
+  /**
+   * Same shape as the other surfaces use. Sharing used to call `alert()`, which
+   * is a modal the reader has to dismiss — on a feed you scroll with your thumb,
+   * that is a wall, not a confirmation.
+   */
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  /** The video the add-to-playlist overlay is open for, if any. */
+  const [playlistForVideo, setPlaylistForVideo] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -411,13 +432,27 @@ export default function ShortsFeedPage() {
       setIsPreviewActive(statusParam === 'draft' || (hasCookie && statusParam !== 'published'));
     }
 
-    try {
-      const storedUser = localStorage.getItem('omni_user');
-      if (storedUser) {
-        setUserData(JSON.parse(storedUser));
-      }
-    } catch (e) { console.error('[shorts] failed to read stored user from localStorage:', e); }
   }, []);
+
+  /*
+   * Who is commenting comes from the session, not from `localStorage`.
+   *
+   * It used to read the cached `omni_user` and fall back to "Du (Benutzer)"
+   * with no avatar — so a session restored from the cookie commented
+   * anonymously, and a stale cache commented as whoever last signed in on this
+   * browser. `currentUser` is resolved from the cookie by the app itself.
+   */
+  useEffect(() => {
+    if (!currentUser) {
+      setUserData(null);
+      return;
+    }
+    setUserData({
+      username: currentUser.username || 'Du',
+      handle: (currentUser as any).handle || `@${(currentUser.username || 'du').toLowerCase()}`,
+      avatarUrl: (currentUser as any).avatarUrl || '',
+    });
+  }, [currentUser]);
 
   // Fetch comments from Strapi for active short
   useEffect(() => {
@@ -538,7 +573,9 @@ export default function ShortsFeedPage() {
       {isPreviewActive && (
         <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
           <div className="flex items-center gap-2 font-bold tracking-wide">
-            <Sparkles className="h-4 w-4 animate-spin-slow text-yellow-300 shrink-0" />
+            {/* Not spinning: nothing is loading, and a permanent spinner reads
+                as a page that never finishes. */}
+            <Sparkles className="h-4 w-4 text-yellow-300 shrink-0" />
             <span>{t.shorts.draftModeActive}</span>
           </div>
           <a
@@ -597,7 +634,7 @@ export default function ShortsFeedPage() {
           const isActive = idx === activeIndex;
           const isLiked = !!likedMap[short.id];
           const likesCount = likesMap[short.id] ?? short.likesCount;
-          const isBookmarked = !!bookmarkedMap[short.id];
+          const isBookmarked = Boolean(short.documentId) && listsContaining(short.documentId as string).length > 0;
           const authorHandle = getAuthorHandle(short);
           const isSubscribed = !!subscribedMap[authorHandle];
 
@@ -669,9 +706,16 @@ export default function ShortsFeedPage() {
                 </button>
 
                 {/* Bookmark Button */}
+                {/*
+                  Saving something now means putting it somewhere (#152). This
+                  used to flip a local boolean that was never persisted and was
+                  gone on the next reload — the button looked like it worked and
+                  did nothing.
+                */}
                 <button
-                  onClick={() => setBookmarkedMap((prev) => ({ ...prev, [short.id]: !prev[short.id] }))}
+                  onClick={() => setPlaylistForVideo(short.documentId || null)}
                   className="flex flex-col items-center gap-1 group"
+                  title={(t as any).playlists?.addTo || 'Zu Playlist hinzufügen'}
                 >
                   <div className={`p-3 rounded-full backdrop-blur-md border transition-all ${
                     isBookmarked
@@ -687,7 +731,7 @@ export default function ShortsFeedPage() {
                   onClick={() => {
                     if (navigator.clipboard) {
                       navigator.clipboard.writeText(window.location.origin + `/shorts/${short.slug}`);
-                      alert(t.shorts.shortLinkCopied);
+                      showToast(t.shorts.shortLinkCopied);
                     }
                   }}
                   className="p-3 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transition-all"
@@ -697,7 +741,7 @@ export default function ShortsFeedPage() {
                 </button>
 
                 {/* Spinning Music Disc Icon */}
-                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 p-0.5 animate-spin-slow shadow-lg">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 p-0.5 shadow-lg">
                   <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
                     <Music className="h-4 w-4 text-white" />
                   </div>
@@ -874,6 +918,20 @@ export default function ShortsFeedPage() {
           </div>
         </div>
       )}
+
+      {/* Sharing confirms without blocking the feed. */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-black/85 border border-white/15 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-indigo-400" />
+          <span className="text-sm font-medium">{toastMessage}</span>
+        </div>
+      )}
+
+      <AddToPlaylistModal
+        videoDocumentId={playlistForVideo || ''}
+        isOpen={Boolean(playlistForVideo)}
+        onClose={() => setPlaylistForVideo(null)}
+      />
     </div>
   );
 }

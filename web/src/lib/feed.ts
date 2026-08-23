@@ -414,13 +414,21 @@ Durch diesen Slot-Interleaving-Mechanismus erhält jeder Nutzer ein maßgeschnei
   },
 ];
 
+/*
+ * These read `creator` as well as `author`, because the two shapes reach them
+ * from different places: a feed item carries `author`, while a video carries
+ * `creator` — and the vertical feed is built from videos. Reading only `author`
+ * meant every short fell through to the generic name, handle and placeholder
+ * avatar, so the creator badge there never showed a real creator.
+ */
 export function getAuthorName(item: FeedItem): string {
-  return item.author?.username || item.authorName || 'Omni Creator';
+  return item.author?.username || (item as any).creator?.username || item.authorName || 'Omni Creator';
 }
 
 export function getAuthorHandle(item: FeedItem): string {
-  if (item.author?.handle) {
-    const h = item.author.handle.trim();
+  const handle = item.author?.handle || (item as any).creator?.handle;
+  if (handle) {
+    const h = String(handle).trim();
     return h.startsWith('@') ? h : `@${h}`;
   }
   const fallback = (getAuthorName(item)).toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -428,13 +436,15 @@ export function getAuthorHandle(item: FeedItem): string {
 }
 
 export function getAuthorAvatar(item: FeedItem): string {
-  return item.author?.avatarUrl || resolveAvatarUrl(item.authorAvatar);
+  return resolveAvatarUrl(
+    item.author?.avatarUrl || (item as any).creator?.avatarUrl || item.authorAvatar
+  );
 }
 
 export function getAuthorBio(item: FeedItem): string {
-  return item.author?.bio || 'Creator & Content Publisher im Omni Network.';
+  return item.author?.bio || (item as any).creator?.bio || 'Creator & Content Publisher im Omni Network.';
 }
 
 export function getAuthorSubscribers(item: FeedItem): number {
-  return item.author?.subscribersCount || 0;
+  return item.author?.subscribersCount || (item as any).creator?.subscribersCount || 0;
 }
