@@ -51,8 +51,7 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
 
     const pathStr = pathList.join('/');
     const url = new URL(req.url);
-    const searchParams = url.search;
-    const targetUrl = `${STRAPI_URL}/api/feed/${pathStr}${searchParams}`;
+    const forwardedParams = new URLSearchParams(url.search);
 
     // Authentication & method validation
     const authHeader = req.headers.get('authorization');
@@ -89,6 +88,28 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
         console.error('[feed-proxy] error reading request body', e);
       }
     }
+
+    /*
+     * `interaction-status` is a GET, so its identity travels in the query
+     * string and the body-based enrichment below never reached it.
+     *
+     * The service falls back to matching the raw `userIdentifier`, and pages
+     * send a username there — while a like row written by `/api/likes` carries
+     * `user-<id>`. So the lookup found nothing, the heart showed empty on
+     * something already liked, and clicking it sent a like that already
+     * existed: the server rightly left the count alone and that answer
+     * overwrote the optimistic +1. The number appeared not to move.
+     */
+    if (pathStr === 'interaction-status' && user?.id) {
+      forwardedParams.set('userId', String(user.id));
+      const identifier = forwardedParams.get('userIdentifier');
+      if (!identifier || identifier === 'anonymous') {
+        forwardedParams.set('userIdentifier', user.handle || user.username || `user-${user.id}`);
+      }
+    }
+
+    const query = forwardedParams.toString();
+    const targetUrl = `${STRAPI_URL}/api/feed/${pathStr}${query ? `?${query}` : ''}`;
 
     // If interaction payload lacks userId / userIdentifier, enrich from user session
     if (pathStr === 'interaction' && bodyText && user?.id) {

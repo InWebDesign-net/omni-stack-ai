@@ -155,15 +155,64 @@ export default function ImagePageClient({
     6
   );
 
+  /*
+   * Ask the server whether this is already liked, the way the video and article
+   * pages do.
+   *
+   * Reading `omni_user_likes` alone was not enough, and got weaker over time:
+   * it is per-browser, so a like made anywhere else was invisible, and since
+   * the consent gate it is a statistics key that is not written at all unless
+   * the visitor allowed statistics.
+   *
+   * The heart therefore showed empty on something already liked — and the count
+   * then "did not update" on click: the button sent `desired: true` for a like
+   * that already existed, the server rightly kept the count where it was, and
+   * that answer overwrote the optimistic +1. Nothing moved, and nothing was
+   * wrong except what the page believed when it loaded.
+   */
   useEffect(() => {
-    try {
-      const storedLikes = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
-      if (storedLikes.includes(slug)) {
-        setIsLiked(true);
+    let active = true;
+
+    const loadInteractionState = async () => {
+      let localLiked = false;
+      try {
+        const storedLikes: string[] = JSON.parse(localStorage.getItem('omni_user_likes') || '[]');
+        if (storedLikes.includes(slug)) localLiked = true;
+      } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
+
+      if (!currentUser) {
+        if (active && localLiked) setIsLiked(true);
+        return;
       }
-    } catch (e) { /* corrupt or absent localStorage entry — falling back to defaults */ }
+
+      const userIdent = currentUser.username || currentUser.handle || `user-${currentUser.id}`;
+      try {
+        const res = await fetch(
+          `/api/feed/interaction-status?slug=${encodeURIComponent(slug)}&userIdentifier=${encodeURIComponent(userIdent)}`,
+          { headers: jsonAuthHeaders() }
+        );
+        if (!active) return;
+
+        if (res.ok) {
+          const data = await res.json();
+          setIsLiked(localLiked || Boolean(data.isLiked));
+          if (typeof data.likesCount === 'number') setLikesCount(data.likesCount);
+          if (typeof data.viewsCount === 'number') setViewsCount(data.viewsCount);
+        } else if (localLiked) {
+          setIsLiked(true);
+        }
+      } catch (e) {
+        if (active && localLiked) setIsLiked(true);
+      }
+    };
+
+    loadInteractionState();
     trackView();
-  }, [slug]);
+
+    return () => {
+      active = false;
+    };
+  }, [slug, currentUser?.id]);
 
   const trackView = async () => {
     try {

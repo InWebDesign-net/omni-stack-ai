@@ -48,6 +48,8 @@ export async function GET(req: NextRequest) {
       const favRes = await fetch(
         getStrapiUrl(
           `/api/likes?filters[user][id][$eq]=${authUser.id}` +
+            // `documentId` comes back whether or not it is listed in `fields`,
+            // but naming it keeps the intent visible next to the ids.
             `&populate[video][fields][0]=id&populate[image][fields][0]=id&populate[article][fields][0]=id&populate[feedItem][fields][0]=id` +
             `&pagination[page]=${page}&pagination[pageSize]=${PAGE_SIZE}`
         ),
@@ -73,18 +75,48 @@ export async function GET(req: NextRequest) {
     const likedArticleIds: string[] = [];
     const likedFeedItemIds: string[] = [];
 
+    /*
+     * Also reported by `documentId`, and that is the identifier to match on.
+     *
+     * Content here is bilingual, so one image is several rows with different
+     * numeric ids — the German row and the English row. A page renders whichever
+     * its language picked and compares that id against this list, so a like made
+     * in one language did not register in the other, and could match a different
+     * row of the same document by coincidence. `documentId` is the same for all
+     * of them. The numeric lists stay for callers that still use them.
+     */
+    const likedVideoDocumentIds: string[] = [];
+    const likedImageDocumentIds: string[] = [];
+    const likedArticleDocumentIds: string[] = [];
+    const likedFeedItemDocumentIds: string[] = [];
+
     items.forEach((item: Record<string, any>) => {
-      const vId = item.attributes?.video?.data?.id || item.video?.id;
-      const imgId = item.attributes?.image?.data?.id || item.image?.id;
-      const artId = item.attributes?.article?.data?.id || item.article?.id;
-      const fId = item.attributes?.feedItem?.data?.id || item.feedItem?.id;
-      if (vId) likedVideoIds.push(String(vId));
-      if (imgId) likedImageIds.push(String(imgId));
-      if (artId) likedArticleIds.push(String(artId));
-      if (fId) likedFeedItemIds.push(String(fId));
+      const video = item.attributes?.video?.data || item.video;
+      const image = item.attributes?.image?.data || item.image;
+      const article = item.attributes?.article?.data || item.article;
+      const feedItem = item.attributes?.feedItem?.data || item.feedItem;
+
+      if (video?.id) likedVideoIds.push(String(video.id));
+      if (image?.id) likedImageIds.push(String(image.id));
+      if (article?.id) likedArticleIds.push(String(article.id));
+      if (feedItem?.id) likedFeedItemIds.push(String(feedItem.id));
+
+      if (video?.documentId) likedVideoDocumentIds.push(String(video.documentId));
+      if (image?.documentId) likedImageDocumentIds.push(String(image.documentId));
+      if (article?.documentId) likedArticleDocumentIds.push(String(article.documentId));
+      if (feedItem?.documentId) likedFeedItemDocumentIds.push(String(feedItem.documentId));
     });
 
-    return NextResponse.json({ likedVideoIds, likedImageIds, likedArticleIds, likedFeedItemIds });
+    return NextResponse.json({
+      likedVideoIds,
+      likedImageIds,
+      likedArticleIds,
+      likedFeedItemIds,
+      likedVideoDocumentIds,
+      likedImageDocumentIds,
+      likedArticleDocumentIds,
+      likedFeedItemDocumentIds,
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('GET /api/likes error:', error);
@@ -109,26 +141,59 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    /**
+     * The document a numeric id belongs to.
+     *
+     * Content is bilingual: one image is several rows with different numeric
+     * ids, one per language. Matching an existing like on the numeric id
+     * therefore only ever found the like made in *that* language — so liking
+     * the same picture in German and in English produced two rows, the count
+     * was per language, and a heart could show empty on something the reader
+     * had already liked. Existing likes are looked up by `documentId`, which is
+     * the same for every language of one item.
+     */
+    const documentIdFor = async (plural: string, numericId: number | string): Promise<string | null> => {
+      try {
+        const res = await fetch(
+          getStrapiUrl(`/api/${plural}?filters[id][$eq]=${numericId}&fields[0]=id&locale=*&pagination[pageSize]=1`),
+          { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` }, cache: 'no-store' }
+        );
+        if (!res.ok) return null;
+        const json = await res.json();
+        return (json?.data || [])[0]?.documentId || null;
+      } catch {
+        return null;
+      }
+    };
+
     let targetFilter = '';
     const payload: Record<string, unknown> = {
       user: authUser.id,
       userIdentifier: `user-${authUser.id}`,
     };
 
+    /** Falls back to the numeric id when the document cannot be resolved. */
+    const filterFor = async (relation: string, plural: string, numericId: number | string) => {
+      const documentId = await documentIdFor(plural, numericId);
+      return documentId
+        ? `filters[user][id][$eq]=${authUser.id}&filters[${relation}][documentId][$eq]=${documentId}`
+        : `filters[user][id][$eq]=${authUser.id}&filters[${relation}][id][$eq]=${numericId}`;
+    };
+
     if (videoId) {
-      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[video][id][$eq]=${videoId}`;
+      targetFilter = await filterFor('video', 'videos', videoId);
       payload.video = videoId;
     } else if (imageId) {
-      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[image][id][$eq]=${imageId}`;
+      targetFilter = await filterFor('image', 'images', imageId);
       payload.image = imageId;
     } else if (articleId) {
       // `api::like.like` has had this relation all along; nothing wrote
       // or read it, so an article could be liked only from outside the app
       // and its heart never showed the state.
-      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[article][id][$eq]=${articleId}`;
+      targetFilter = await filterFor('article', 'articles', articleId);
       payload.article = articleId;
     } else if (feedItemId) {
-      targetFilter = `filters[user][id][$eq]=${authUser.id}&filters[feedItem][id][$eq]=${feedItemId}`;
+      targetFilter = await filterFor('feedItem', 'feed-items', feedItemId);
       payload.feedItem = feedItemId;
     }
 
