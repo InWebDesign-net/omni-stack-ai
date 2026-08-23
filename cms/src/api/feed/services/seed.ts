@@ -506,6 +506,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         }
       }
 
+      /* Counted, not calculated. The line below used to print
+         `seedItems.length * 2` whatever happened, so a night where half the
+         items failed still reported full success — which is how a seed error
+         went unnoticed. */
+      let seededItems = 0;
+
       const seedItems = [
         {
           creator: creators.astro,
@@ -629,6 +635,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           });
 
           if (createdEn?.documentId) {
+            seededItems += 1;
             try {
               await strapi.documents('api::feed-item.feed-item').update({
                 documentId: createdEn.documentId,
@@ -649,12 +656,32 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         strapi.log.error('[seed.ts] unhandled error', deErr);
       }
           }
-        } catch (itemErr) {
-        strapi.log.error('[seed.ts] unhandled error', itemErr);
+        } catch (itemErr: any) {
+        /*
+         * Unwrap aggregates before logging.
+         *
+         * Strapi's validation throws an `AggregateError`, whose `message` is
+         * just "N errors occurred" — which is what the nightly log showed, with
+         * the actual causes inside `.errors` and nowhere in the output. A
+         * failure nobody can read is barely better than a silent one.
+         */
+        const causes = Array.isArray(itemErr?.errors) ? itemErr.errors : [itemErr];
+        for (const cause of causes) {
+          strapi.log.error(
+            `[seed.ts] feed item "${item?.en?.slug || 'unknown'}" failed: ${cause?.message || cause}` +
+              (cause?.details ? ` — ${JSON.stringify(cause.details)}` : '')
+          );
+        }
       }
       }
 
-      console.log(`✅ Seed completed: ${seedItems.length * 2} bilingual items linked with Dynamic Zone components created!`);
+      if (seededItems === seedItems.length) {
+        console.log(`✅ Seed completed: ${seededItems} of ${seedItems.length} feed items created (both locales).`);
+      } else {
+        console.warn(
+          `⚠️ Seed completed with failures: ${seededItems} of ${seedItems.length} feed items created. See the errors above.`
+        );
+      }
       return { success: true, count: seedItems.length * 2 };
     } catch (err: any) {
       console.error('Error in seedDemoData:', err);

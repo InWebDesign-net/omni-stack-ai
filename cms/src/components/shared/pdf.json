@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_shared_pdfs",
+  "info": {
+    "displayName": "PDF",
+    "description": "A document offered alongside the text. The rest of the system already treats `pdf` as a media type; this is the block that produces one."
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "pdfUrl": {
+      "type": "string",
+      "required": true
+    },
+    "downloadable": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Heading1, AlignLeft, Quote, ImageIcon, Video } from 'lucide-react';
+import { Heading1, AlignLeft, Quote, ImageIcon, Video, FileText } from 'lucide-react';
 
 /**
  * The article dynamic zone, described once.
@@ -15,7 +15,8 @@ export type BlockComponent =
   | 'shared.rich-text'
   | 'shared.quote'
   | 'shared.image'
-  | 'shared.video';
+  | 'shared.video'
+  | 'shared.pdf';
 
 export interface ArticleBlock {
   /** Present on blocks that already exist in Strapi; absent on newly added ones. */
@@ -118,6 +119,14 @@ export const BLOCK_TYPES: Record<BlockComponent, BlockTypeMeta> = {
       return text(b.caption);
     },
   },
+  'shared.pdf': {
+    component: 'shared.pdf',
+    icon: FileText,
+    labelKey: 'pdf',
+    fallbackLabel: 'PDF-Dokument',
+    create: () => ({ __component: 'shared.pdf', _uid: nextUid(), title: '', pdfUrl: '', downloadable: true }),
+    summary: (b) => text(b.title) || text(b.pdfUrl),
+  },
 };
 
 /** Every component the schema accepts; all of them are insertable. */
@@ -127,6 +136,7 @@ export const INSERTABLE_TYPES: BlockComponent[] = [
   'shared.quote',
   'shared.image',
   'shared.video',
+  'shared.pdf',
 ];
 
 /**
