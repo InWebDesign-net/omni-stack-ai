@@ -14,6 +14,12 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   meta?: any;
+  /**
+   * The room list's preview line, shaped like a message so the same markup can
+   * render it. It is not one: no id, no sender. Replaced by the real history
+   * the moment the room is opened.
+   */
+  isPreview?: boolean;
 }
 
 export interface ChatRoom {
@@ -314,6 +320,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 content: m.content || '',
                 timestamp: m.createdAt || new Date().toISOString(),
                 meta: m.meta,
+                isPreview: Boolean(m.isPreview),
               }))
             : [],
         }));
@@ -998,6 +1005,68 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to toggle subscription:', err);
     }
   }, []);
+
+  /*
+   * Load a room's history the moment it is opened.
+   *
+   * Without this the only way to reach it was `loadMoreMessages`, which fires
+   * when the message list is scrolled to the top — and a list holding a single
+   * preview line is not tall enough to scroll. So a conversation with six
+   * messages showed exactly one, attributed to "Nutzer", and looked as though
+   * nobody had ever written anything. Rooms filled during the session were
+   * fine, because the socket had appended the messages as they arrived; the
+   * gap only showed after a reload, which is every visitor's first impression.
+   *
+   * The fetched history replaces the preview rather than merging with it: the
+   * preview carries no id, so it cannot be deduplicated against the real
+   * message it is a copy of.
+   */
+  const historyLoadedRooms = useRef<Set<string>>(new Set());
+
+  const loadRoomHistory = useCallback(async (roomId: string) => {
+    if (!roomId || historyLoadedRooms.current.has(roomId)) return;
+    historyLoadedRooms.current.add(roomId);
+    try {
+      const res = await fetch(`/api/chat?roomId=${encodeURIComponent(roomId)}`, {
+        headers: jsonAuthHeaders(),
+      });
+      if (!res.ok) {
+        historyLoadedRooms.current.delete(roomId);
+        return;
+      }
+      const data = await res.json();
+      const history: ChatMessage[] = (data.messages || []).map((m: any) => ({
+        id: m.documentId || String(m.id),
+        senderId: m.sender?.id ? String(m.sender.id) : (m.senderId ? String(m.senderId) : undefined),
+        senderType: m.senderType || 'user',
+        senderName: m.senderType === 'ai' ? 'Omni AI' : (m.sender?.username || 'Nutzer'),
+        content: m.content || '',
+        timestamp: m.createdAt || new Date().toISOString(),
+        meta: m.meta,
+      }));
+      if (history.length === 0) return;
+
+      // Everything the endpoint returns in one go, so there is nothing left
+      // above to fetch — unless it hit its own ceiling.
+      if (history.length < 200) {
+        setHasMoreMessagesByRoom((prev) => ({ ...prev, [roomId]: false }));
+      }
+
+      withRoomUpdate(roomId, (r) => {
+        const known = new Set(history.map((m) => m.id));
+        // Anything sent optimistically while this request was in flight.
+        const pending = (r.messages || []).filter((m) => !m.isPreview && m.id && !known.has(m.id));
+        return { ...r, messages: [...history, ...pending] };
+      });
+    } catch (err) {
+      historyLoadedRooms.current.delete(roomId);
+      console.error('Failed to load room history:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeRoomId) loadRoomHistory(activeRoomId);
+  }, [activeRoomId, loadRoomHistory]);
 
   const loadMoreMessages = useCallback(async (roomId: string) => {
     if (isLoadingMoreByRoom[roomId] || hasMoreMessagesByRoom[roomId] === false) return;
