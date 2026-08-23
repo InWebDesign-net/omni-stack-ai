@@ -195,6 +195,80 @@
           "text": "Das ist ungefähr das schönste Feedback, das ein Architekturtext bekommen kann."
         }
       ]
+    },
+    {
+      "slug": "malersicher-kreuzfahrt-auf-einem-so-34925081",
+      "author": "demotech",
+      "text": "Aufgenommen vom Oberdeck, kurz nach dem Ablegen. Der Rest der Fahrt war leider grau.",
+      "replies": [
+        {
+          "author": "astro",
+          "text": "Grau ist auch ein Zustand. Ich hätte trotzdem draufgehalten."
+        },
+        {
+          "author": "demotech",
+          "text": "Habe ich. Kommt nächste Woche, wenn ich mit dem Schnitt durch bin."
+        }
+      ]
+    },
+    {
+      "slug": "luftaufnahme-eines-schneebedeckten-35488333",
+      "author": "demotech",
+      "text": "Zwei Anläufe, beim ersten war der Akku nach vier Minuten leer. Kälte frisst mehr, als man denkt.",
+      "replies": [
+        {
+          "author": "greenplanet",
+          "text": "Bei Minusgraden rechne ich inzwischen mit der Hälfte. Ersatzakku am Körper tragen hilft."
+        }
+      ]
+    },
+    {
+      "slug": "the-thrill-of-sport-a-visual-journey",
+      "author": "demotech",
+      "text": "Der Text ist aus drei Jahren Notizen entstanden. Ich habe lange gebraucht, bis der Anfang saß.",
+      "replies": [
+        {
+          "author": "finanzkompass",
+          "text": "Merkt man nicht — er liest sich, als wäre er in einem Rutsch entstanden."
+        }
+      ]
+    },
+    {
+      "slug": "gruppe-von-maennern-die-pizza-vor-d-6805184",
+      "author": "demogourmet",
+      "text": "Der Teig lag zwölf Stunden. Man sieht es am Rand, wenn man weiß, worauf man achten muss.",
+      "replies": [
+        {
+          "author": "catmania",
+          "text": "Ich achte auf gar nichts und habe trotzdem Hunger bekommen."
+        },
+        {
+          "author": "demogourmet",
+          "text": "Dann hat es funktioniert."
+        }
+      ]
+    },
+    {
+      "slug": "the-art-of-food-a-world-of-flavors-and-tex",
+      "author": "demogourmet",
+      "text": "Der Abschnitt über Textur war der schwierigste. Geschmack lässt sich beschreiben, Textur kaum.",
+      "replies": [
+        {
+          "author": "omniarchitect",
+          "text": "Bei Material ist es dasselbe. Man kann es zeigen oder anfassen lassen, beschreiben fast nicht."
+        }
+      ]
+    },
+    {
+      "slug": "mann-und-frau-reden-bei-einer-tasse-5712772",
+      "author": "demogourmet",
+      "text": "Diese Aufnahme ist mir am liebsten von allen. Kein Rezept, keine Anleitung, nur zwei Leute.",
+      "replies": [
+        {
+          "author": "greenplanet",
+          "text": "Vielleicht genau deshalb."
+        }
+      ]
     }
   ],
   "likes": [
@@ -417,6 +491,26 @@
         {
           "from": "finanzkompass",
           "text": "Schreib ihn. Ich liefere die Musik dazu."
+        },
+        {
+          "from": "demogourmet",
+          "text": "Kurze Rückmeldung von gestern: Der Teig mit zwölf Stunden Gare war deutlich besser als der mit vier."
+        },
+        {
+          "from": "demotech",
+          "text": "Zwölf Stunden — plant man das vor, oder vergisst man den Teig einfach?"
+        },
+        {
+          "from": "demogourmet",
+          "text": "Das erste Mal war es Vergessen. Danach habe ich so getan, als wäre es Absicht."
+        },
+        {
+          "from": "catmania",
+          "text": "Die ehrlichste Beschreibung von Handwerk, die ich diese Woche gelesen habe."
+        },
+        {
+          "from": "demogourmet",
+          "text": "Ich nehme das als Kompliment und schreibe es mir über den Ofen."
         }
       ]
     },
@@ -455,6 +549,26 @@
         {
           "from": "omniarchitect",
           "text": "Genau dafür ist die Gruppe da. Nächste Woche mache ich einen Vergleich zu Objektiven."
+        },
+        {
+          "from": "demotech",
+          "text": "Noch etwas: Ich fliege inzwischen mit zwei Akkus und wechsle nach vier Minuten, statt zu warten, bis er leer ist."
+        },
+        {
+          "from": "omniarchitect",
+          "text": "Wechseln statt leerfliegen — das klingt banal und ist es nicht. Ich verliere so regelmäßig die letzte Einstellung."
+        },
+        {
+          "from": "demotech",
+          "text": "Genau die, die man haben wollte. Deshalb der frühe Wechsel."
+        },
+        {
+          "from": "finanzkompass",
+          "text": "Ich nehme das für Konzerte mit. Da ist es dieselbe Rechnung, nur mit Karten statt Akkus."
+        },
+        {
+          "from": "astro",
+          "text": "Und mit Wasser drumherum, was die Sache nicht einfacher macht."
         }
       ]
     },
@@ -541,6 +655,82 @@
           "text": "Gute Idee. Wenn du magst, kann ich dir für die vorhandenen drei schon Titel vorschlagen, die die Reihenfolge erkennbar machen."
         }
       ]
+    },
+    {
+      "slug": "room-demotech-demogourmet",
+      "name": "Unterwegs · Culinary Masterclass",
+      "type": "direct",
+      "participants": [
+        "demotech",
+        "demogourmet"
+      ],
+      "admin": "demotech",
+      "messages": [
+        {
+          "from": "demotech",
+          "text": "Ich bin nächsten Monat zwei Wochen an der Küste. Brauchst du Aufnahmen von Märkten?"
+        },
+        {
+          "from": "demogourmet",
+          "text": "Sehr gern. Am liebsten früh, bevor aufgebaut ist — das sieht kaum jemand."
+        },
+        {
+          "from": "demotech",
+          "text": "Dann stehe ich um fünf da. Womit soll ich anfangen, Fisch oder Gemüse?"
+        },
+        {
+          "from": "demogourmet",
+          "text": "Fisch. Da passiert vor sechs Uhr am meisten."
+        },
+        {
+          "from": "demotech",
+          "text": "Notiert. Ich schicke dir Rohmaterial, du suchst aus."
+        },
+        {
+          "from": "demogourmet",
+          "text": "Abgemacht. Und ich koche, wenn du zurück bist."
+        }
+      ]
+    },
+    {
+      "slug": "room-ai-demotech",
+      "name": "Omni KI-Assistent",
+      "type": "ai",
+      "participants": [
+        "demotech"
+      ],
+      "admin": "demotech",
+      "isAiEnabled": true,
+      "messages": [
+        {
+          "from": "ai",
+          "text": "Hallo! Schön, dass du da bist. Ich bin dein Omni KI-Assistent. Woran arbeitest du gerade?"
+        },
+        {
+          "from": "demotech",
+          "text": "Ich habe zwölf Luftaufnahmen und weiß nicht, welche davon in eine Playlist gehören."
+        },
+        {
+          "from": "ai",
+          "text": "Womit soll die Playlist etwas erzählen — mit der Höhe, mit der Tageszeit, oder mit dem Weg? Bei zwölf Aufnahmen trägt meistens genau eine Achse und die anderen stören."
+        },
+        {
+          "from": "demotech",
+          "text": "Mit dem Weg. Es ist eine Reise von der Küste ins Gebirge."
+        },
+        {
+          "from": "ai",
+          "text": "Dann würde ich streng geografisch sortieren und alles weglassen, was nicht auf der Strecke liegt — auch wenn es die schönere Aufnahme ist. Eine Reise, die springt, liest sich wie eine Sammlung."
+        },
+        {
+          "from": "demotech",
+          "text": "Das heißt, zwei der besten fliegen raus."
+        },
+        {
+          "from": "ai",
+          "text": "Vermutlich ja. Die kannst du als eigene Liste führen, dann verlierst du sie nicht."
+        }
+      ]
     }
   ],
   "subscriptions": [
@@ -599,6 +789,62 @@
     {
       "subscriber": "demogourmet",
       "channel": "catmania"
+    }
+  ],
+  "notifications": [
+    {
+      "recipient": "demotech",
+      "sender": "astro",
+      "type": "comment_reply",
+      "title": "Neue Antwort von Wasserwege",
+      "message": "Grau ist auch ein Zustand. Ich hätte trotzdem draufgehalten.",
+      "link": "/video/malersicher-kreuzfahrt-auf-einem-so-34925081",
+      "isRead": false
+    },
+    {
+      "recipient": "demotech",
+      "sender": "demogourmet",
+      "type": "chat_message",
+      "title": "Neue Nachricht von Culinary Masterclass",
+      "message": "Fisch. Da passiert vor sechs Uhr am meisten.",
+      "link": "/chat",
+      "isRead": false
+    },
+    {
+      "recipient": "demotech",
+      "sender": "omniarchitect",
+      "type": "new_subscriber",
+      "title": "Stadt & Architektur folgt dir jetzt",
+      "message": "Dein Kanal hat einen neuen Abonnenten.",
+      "link": "/user/demotech",
+      "isRead": true
+    },
+    {
+      "recipient": "demogourmet",
+      "sender": "catmania",
+      "type": "comment_reply",
+      "title": "Neue Antwort von Familie & Tiere",
+      "message": "Ich achte auf gar nichts und habe trotzdem Hunger bekommen.",
+      "link": "/video/gruppe-von-maennern-die-pizza-vor-d-6805184",
+      "isRead": false
+    },
+    {
+      "recipient": "demogourmet",
+      "sender": "demotech",
+      "type": "chat_message",
+      "title": "Neue Nachricht von Unterwegs",
+      "message": "Ich schicke dir Rohmaterial, du suchst aus.",
+      "link": "/chat",
+      "isRead": false
+    },
+    {
+      "recipient": "demogourmet",
+      "sender": "finanzkompass",
+      "type": "new_video",
+      "title": "Klangfarben hat etwas Neues veröffentlicht",
+      "message": "Live Musik mit Charme",
+      "link": "/video/a-man-playing-drums-in-a-dark-room-9481096",
+      "isRead": true
     }
   ]
 }

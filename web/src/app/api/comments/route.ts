@@ -8,11 +8,25 @@ export async function GET(request: Request) {
   const slug = searchParams.get('slug');
   const page = searchParams.get('page') || '1';
   const pageSize = searchParams.get('pageSize') || searchParams.get('limit') || '100';
+  const locale = searchParams.get('lang') === 'en' ? 'en' : 'de';
 
   try {
-    let endpoint = `${STRAPI_URL}/api/comments?populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+    /*
+     * Asked for one language, and only where that language has words.
+     *
+     * A comment exists in both languages from the moment it is written, but the
+     * one it was not written in starts empty — that is what "not translated
+     * yet" looks like in the model (see discussion #93). Rendering an empty
+     * version would be an empty bubble; rendering the other language's text
+     * would put German on an English page. Filtering here does neither.
+     *
+     * Without an explicit locale Strapi answers from the default one, which is
+     * how every i18n bug in this repo has started.
+     */
+    const notEmpty = '&filters[text][$notNull]=true&filters[text][$ne]=';
+    let endpoint = `${STRAPI_URL}/api/comments?locale=${locale}${notEmpty}&populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
     if (slug) {
-      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&locale=${locale}${notEmpty}&populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
     }
 
     const res = await fetch(endpoint, {
@@ -41,6 +55,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { feedSlug, text, authorName, authorHandle, authorAvatar, parentId } = body;
+    /* The language the comment was actually written in. */
+    const locale = body.lang === 'en' ? 'en' : 'de';
+    const otherLocale = locale === 'de' ? 'en' : 'de';
 
     if (!feedSlug || !text) {
       return NextResponse.json({ success: false, error: 'feedSlug and text required' }, { status: 400 });
@@ -99,7 +116,7 @@ export async function POST(request: Request) {
       payload.data.parent = parentDocId;
     }
 
-    const res = await fetch(`${STRAPI_URL}/api/comments`, {
+    const res = await fetch(`${STRAPI_URL}/api/comments?locale=${locale}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -111,6 +128,30 @@ export async function POST(request: Request) {
     }
 
     const commentId = json.data?.documentId || json.data?.id;
+
+    /*
+     * The other language, deliberately without text.
+     *
+     * It exists so a translation has somewhere to land, and it renders nowhere
+     * until it has words — the reader on the English page sees no comment
+     * rather than a German one (discussion #93). Everything except the text is
+     * shared between the two versions, so this carries no duplicate of the
+     * author or the thread position.
+     *
+     * A failure here costs the future translation, not the comment that was
+     * just written, so it does not fail the request.
+     */
+    if (commentId) {
+      try {
+        await fetch(`${STRAPI_URL}/api/comments/${commentId}?locale=${otherLocale}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: { text: '' } }),
+        });
+      } catch (e) {
+        console.error('[comments] could not create the untranslated counterpart:', e);
+      }
+    }
 
     // Sync commentsCount and send Notifications for Creator & Parent Comment Author
     if (feedSlug) {

@@ -12,55 +12,111 @@
   },
   "pluginOptions": {
     "i18n": {
-      "localized": false
+      "localized": true
     }
   },
   "attributes": {
     "text": {
       "type": "text",
-      "required": true
+      "required": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Empty means \"not translated yet\", not \"empty comment\". A version without text is never rendered, which is how a comment can exist in German and not yet in English without ever showing German text on an English page."
     },
     "authorName": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "authorHandle": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "authorAvatar": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "isEdited": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "feedSlug": {
       "type": "string",
-      "required": true
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "parent": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::comment.comment",
-      "inversedBy": "replies"
+      "inversedBy": "replies",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "replies": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::comment.comment",
-      "mappedBy": "parent"
+      "mappedBy": "parent",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "depth": {
       "type": "integer",
-      "default": 0
+      "default": 0,
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     },
     "repliesCount": {
       "type": "integer",
-      "default": 0
+      "default": 0,
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     }
   }
 }

@@ -133,6 +133,7 @@ export function UnifiedCommentsSection({
     setIsSubmitting(true);
     try {
       const created = await createCommentInStrapi({
+        lang: lang as "de" | "en",
         feedSlug: slug,
         text: newCommentText.trim(),
         authorName: currentUser.username || 'Gast',
@@ -162,6 +163,7 @@ export function UnifiedCommentsSection({
     }
     try {
       const created = await createCommentInStrapi({
+        lang: lang as "de" | "en",
         feedSlug: slug,
         text,
         authorName: currentUser.username || 'Gast',
