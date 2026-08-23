@@ -16,62 +16,122 @@
     }
   },
   "attributes": {
+    "overview": {
+      "type": "customField",
+      "customField": "global::info",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "options": {
+        "heading": "What this screen controls",
+        "tone": "note",
+        "body": "The consent banner visitors see before anything non-essential is stored. Everything on this page takes effect without a deploy, including switching the banner off entirely.\n\nTwo fields are deliberately not translated and exist only once, on the German entry — switching language will show them empty here, which is expected:\n\n- enabled — the banner is on or off for every language at once\n- cookies — the mapping of what the site stores; the same list whatever language it is read in\n\nThe mapping is maintained by hand. It is not discovered automatically: a script can only read cookies that already exist, and the whole point is not to set them before someone agrees. Adding storage to the app means adding it here and to the registry in web/src/lib/consent.ts, which is what actually refuses to write an unclassified key.\n\n\"Unclassified\" should always stay empty. An entry there means something is stored that nobody has categorised."
+      }
+    },
     "enabled": {
       "type": "boolean",
       "default": true,
       "pluginOptions": {
-        "i18n": { "localized": false }
+        "i18n": {
+          "localized": false
+        }
       }
     },
     "heading": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "body": {
       "type": "text",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "notice": {
       "type": "text",
       "description": "Free text explaining this is a preview with nightly resets",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "acceptAllLabel": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "rejectAllLabel": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "customiseLabel": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "saveSelectionLabel": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "privacyUrl": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "privacyLabel": {
       "type": "string",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "categories": {
       "type": "component",
       "repeatable": true,
       "component": "consent.category",
-      "pluginOptions": { "i18n": { "localized": true } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "cookies": {
       "type": "component",
       "repeatable": true,
       "component": "consent.cookie-entry",
       "description": "The mapping of what is stored. Maintained by hand for now; see #141.",
-      "pluginOptions": { "i18n": { "localized": false } }
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     }
   }
 }

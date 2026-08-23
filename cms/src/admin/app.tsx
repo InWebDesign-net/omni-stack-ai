@@ -24,6 +24,30 @@ export default {
       },
     },
   },
+  register(app: StrapiApp) {
+    /*
+     * The admin half of the `info` custom field registered in src/index.ts.
+     *
+     * It takes no input and writes nothing — the component renders the
+     * `options.body` from the schema entry. That puts the explanation of a
+     * screen next to the controls it explains, instead of in a README that
+     * nobody opens while looking at a switch.
+     */
+    (app as any).customFields.register({
+      name: 'info',
+      pluginId: undefined,
+      type: 'string',
+      intlLabel: { id: 'omni.info.label', defaultMessage: 'Info' },
+      intlDescription: { id: 'omni.info.description', defaultMessage: 'Explanatory panel, stores nothing' },
+      components: {
+        Input: async () => import('./components/InfoPanel'),
+      },
+      options: {
+        base: [],
+        advanced: [],
+      },
+    });
+  },
   bootstrap(app: StrapiApp) {
     if (typeof window !== 'undefined') {
       const injectCleanStyles = () => {
