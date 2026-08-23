@@ -45,6 +45,14 @@ export default {
     },
     {
       method: 'POST',
+      path: '/feed/run-demo-reset',
+      handler: 'feed.runDemoReset',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
       path: '/feed/seed-demo',
       handler: 'feed.seedDemoData',
       config: {

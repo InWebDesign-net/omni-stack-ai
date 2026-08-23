@@ -181,6 +181,30 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
+  /**
+   * Runs the nightly reset now, with the same secret the seed endpoint uses.
+   *
+   * A job that can only be observed by waiting until 04:00 is a job nobody
+   * checks — which is how a seed that had been failing every night went
+   * unnoticed for weeks.
+   */
+  async runDemoReset(ctx: any) {
+    const expectedSecret = process.env.SEED_SECRET;
+    if (!expectedSecret) return ctx.forbidden('SEED_SECRET configuration missing');
+
+    const payload = ctx.request.body || ctx.query || {};
+    const provided = payload.seedSecret || ctx.request.headers['x-seed-secret'];
+    if (!provided || provided !== expectedSecret) {
+      return ctx.forbidden('Invalid seed secret');
+    }
+
+    // `dryRun` defaults to on: this deletes everything visitors created, and
+    // asking for it explicitly is a cheap guard against a mistyped curl.
+    const dryRun = payload.dryRun !== false && payload.dryRun !== 'false';
+    const result = await strapi.service('api::feed.demo-reset').run(dryRun);
+    return ctx.send(result);
+  },
+
   async seedDemoData(ctx: any) {
     const expectedSecret = process.env.SEED_SECRET;
     if (!expectedSecret) return ctx.forbidden('SEED_SECRET configuration missing');
