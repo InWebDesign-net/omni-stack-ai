@@ -18,7 +18,8 @@ interface EngagementFixture {
     slug: string;
     author: string;
     text: string;
-    replies?: Array<{ author: string; text: string }>;
+    /** Nested to any depth; the seeder walks the whole tree. */
+    replies?: Array<{ author: string; text: string; replies?: any[] }>;
   }>;
   likes?: Array<{ handle: string; videos?: string[]; images?: string[]; articles?: string[] }>;
   subscriptions?: Array<{ subscriber: string; channel: string }>;
@@ -86,45 +87,54 @@ export default ({ strapi }: { strapi: any }) => ({
 
     // ---- Comments, parents before replies so a reply has something to attach to
     let commentCount = 0;
-    for (const entry of fixture.comments || []) {
-      const author = usersByHandle[entry.author];
-      if (!author) continue;
-      try {
-        const parent = await strapi.documents('api::comment.comment').create({
-          data: {
-            text: entry.text,
-            feedSlug: entry.slug,
-            authorName: author.username,
-            authorHandle: author.handle,
-            authorAvatar: author.avatarUrl,
-            user: author.id,
-            depth: 0,
-            repliesCount: (entry.replies || []).length,
-          },
-          locale: 'de',
-        } as any);
-        commentCount += 1;
-        await createUntranslated(parent.documentId);
 
-        for (const reply of entry.replies || []) {
-          const replyAuthor = usersByHandle[reply.author];
-          if (!replyAuthor) continue;
-          const created = await strapi.documents('api::comment.comment').create({
-            data: {
-              text: reply.text,
-              feedSlug: entry.slug,
-              authorName: replyAuthor.username,
-              authorHandle: replyAuthor.handle,
-              authorAvatar: replyAuthor.avatarUrl,
-              user: replyAuthor.id,
-              parent: parent.id,
-              depth: 1,
-            },
-            locale: 'de',
-          } as any);
-          commentCount += 1;
-          await createUntranslated(created.documentId);
-        }
+    /*
+     * Written depth-first, because a reply needs its parent's id.
+     *
+     * Recursive rather than two nested loops: a thread where someone answers an
+     * answer is what a real comment section looks like, and the previous
+     * version could only express one level — a nested `replies` array was read
+     * as far as the first level and the rest silently dropped, which is the
+     * worst way for a fixture to be wrong.
+     *
+     * `repliesCount` counts direct children only. The frontend renders it next
+     * to the reply toggle of that one comment, so counting grandchildren there
+     * would promise more than the toggle reveals.
+     */
+    const writeComment = async (
+      node: { author: string; text: string; replies?: any[] },
+      slug: string,
+      depth: number,
+      parentId: number | null
+    ): Promise<void> => {
+      const author = usersByHandle[node.author];
+      if (!author) return;
+
+      const created = await strapi.documents('api::comment.comment').create({
+        data: {
+          text: node.text,
+          feedSlug: slug,
+          authorName: author.username,
+          authorHandle: author.handle,
+          authorAvatar: author.avatarUrl,
+          user: author.id,
+          depth,
+          repliesCount: (node.replies || []).length,
+          ...(parentId ? { parent: parentId } : {}),
+        },
+        locale: 'de',
+      } as any);
+      commentCount += 1;
+      await createUntranslated(created.documentId);
+
+      for (const reply of node.replies || []) {
+        await writeComment(reply, slug, depth + 1, created.id);
+      }
+    };
+
+    for (const entry of fixture.comments || []) {
+      try {
+        await writeComment(entry, entry.slug, 0, null);
       } catch (e) {
         logError(`[seed-engagement] comment on "${entry.slug}"`, e);
       }
