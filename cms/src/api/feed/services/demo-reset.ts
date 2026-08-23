@@ -93,6 +93,9 @@ export default ({ strapi }: { strapi: any }) => ({
         } else {
           const result = await strapi.service('api::feed.feed').seedDemoData(true);
           steps.push(`content re-seeded (${result?.count ?? 0} feed items)`);
+          for (const step of result?.engagement || []) {
+            steps.push(`engagement: ${step}`);
+          }
         }
       }
 
