@@ -255,7 +255,13 @@ export async function POST(request: Request) {
         }
 
         const basePath = mediaKind === 'article' ? `/article/${feedSlug}` : mediaKind === 'image' ? `/image/${feedSlug}` : `/video/${feedSlug}`;
-        const anchorLink = commentId ? `${basePath}#comment-${commentId}` : basePath;
+        /*
+         * `#comments`, not `#comment-<id>`. The per-comment anchor was never
+         * rendered by anything — no element carried that id — so every comment
+         * notification landed at the top of the page and left the reader to
+         * find the thread. The section anchor exists and is close enough.
+         */
+        const anchorLink = `${basePath}#comments`;
         const senderTag = authorName || (authorHandle ? `@${authorHandle.replace(/^@/, '')}` : 'Jemand');
 
         // A. Notify Parent Comment Author (Reply notification)

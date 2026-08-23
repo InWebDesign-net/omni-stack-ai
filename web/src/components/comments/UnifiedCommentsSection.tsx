@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MessageSquare, Send, Loader2, RefreshCw } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import CommentItem from '@/components/CommentItem';
@@ -34,6 +34,7 @@ export function UnifiedCommentsSection({
   const { currentUser, openAuthModal, t: globalT } = useApp();
   const translations = t || globalT;
 
+  const sectionRef = useRef<HTMLDivElement>(null);
   const [rawComments, setRawComments] = useState<CommentItemType[]>([]);
   const [commentsTree, setCommentsTree] = useState<CommentItemType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -210,6 +211,43 @@ export function UnifiedCommentsSection({
     return false;
   };
 
+  /*
+   * Arriving from a notification.
+   *
+   * A comment notification links to the page plus `#comments`, and the browser
+   * cannot act on that itself: the section is rendered before its contents are
+   * fetched, so at hash-resolution time it is a header above an empty box and
+   * scrolling there lands in the wrong place. Waiting for the first load to
+   * finish puts the section where it will actually stay.
+   *
+   * Deliberately the section and not the individual comment — a per-comment
+   * anchor would have to survive paging and the reply tree collapsing, which
+   * is a lot of machinery for landing a few hundred pixels further down.
+   */
+  const scrolledToHash = useRef(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const scrollIfRequested = () => {
+      if (window.location.hash !== '#comments') return;
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Arriving with the hash already set: only once, and only once loaded.
+    if (!loading && !scrolledToHash.current) {
+      scrolledToHash.current = true;
+      scrollIfRequested();
+    }
+
+    /*
+     * Already on the page when the notification is clicked. The hash changes
+     * but nothing remounts, so without this the click does nothing at all —
+     * which is the case a reader is most likely to hit twice.
+     */
+    window.addEventListener('hashchange', scrollIfRequested);
+    return () => window.removeEventListener('hashchange', scrollIfRequested);
+  }, [loading]);
+
   // Count total comments including nested replies
   const countTotalComments = (items: CommentItemType[]): number => {
     let count = 0;
@@ -225,7 +263,11 @@ export function UnifiedCommentsSection({
   const displayTotalCount = totalCount || countTotalComments(commentsTree);
 
   return (
-    <div className="bg-surface border border-subtle rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6">
+    <div
+      id="comments"
+      ref={sectionRef}
+      className="bg-surface border border-subtle rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6"
+    >
       <Toast message={toastMsg} />
 
       {/* Header */}
