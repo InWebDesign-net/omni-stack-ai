@@ -24,8 +24,8 @@ const VISIBILITY: { key: Playlist['visibility']; icon: React.ComponentType<{ cla
   { key: 'public', icon: Globe, label: 'Öffentlich' },
 ];
 
-function SortableRow({ video, index, count, onMove, onRemove, t }: {
-  video: PlaylistVideo; index: number; count: number;
+function SortableRow({ video, index, count, listId, onMove, onRemove, t }: {
+  video: PlaylistVideo; index: number; count: number; listId: string;
   onMove: (index: number, direction: -1 | 1) => void;
   onRemove: (videoDocumentId: string) => void;
   t?: any;
@@ -54,7 +54,12 @@ function SortableRow({ video, index, count, onMove, onRemove, t }: {
         <div className="w-16 h-9 rounded-md bg-surface-raised shrink-0" />
       )}
 
-      <Link href={`/video/${video.slug}`} className="flex-1 min-w-0 text-sm text-primary hover:text-indigo-400 transition-colors truncate">
+      {/* Opens the video inside this list, so the panel and the vertical view
+          both know which one they are in. */}
+      <Link
+        href={`/video/${video.slug}?list=${encodeURIComponent(listId)}`}
+        className="flex-1 min-w-0 text-sm text-primary hover:text-indigo-400 transition-colors truncate"
+      >
         {video.title}
       </Link>
 
@@ -198,6 +203,7 @@ function PlaylistCard({ playlist, isOwner, actions, t }: PlaylistCardProps) {
                   video={video}
                   index={index}
                   count={videos.length}
+                  listId={playlist.documentId}
                   onMove={move}
                   onRemove={(videoDocumentId) => {
                     setVideos((prev) => prev.filter((v) => v.documentId !== videoDocumentId));

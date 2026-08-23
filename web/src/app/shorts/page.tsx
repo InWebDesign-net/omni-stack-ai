@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import {
@@ -122,6 +122,61 @@ export default function ShortsFeedPage() {
       const hasCookie = typeof document !== 'undefined' && document.cookie.includes('__prerender_bypass');
       const isBypass = statusParam === 'draft' || (hasCookie && statusParam !== 'published');
 
+      /*
+       * Where the feed comes from, most specific first (#146).
+       *
+       * `?list=` names a playlist and the slug in the path names the position
+       * inside it, so arriving here from a playlist continues that list at that
+       * video rather than dropping the reader into an unrelated feed. Without
+       * it the generic catalogue is used, which is the existing behaviour.
+       *
+       * The position is addressed by item, not by index: a list that changed
+       * since the link was made then still opens on the right video instead of
+       * silently on its neighbour.
+       */
+      const listId = urlParams?.get('list') || null;
+
+      if (listId) {
+        try {
+          const res = await fetch(`/api/playlists/${listId}`, { credentials: 'same-origin' });
+          if (res.ok) {
+            const { playlist } = await res.json();
+            const videos = playlist?.videos || [];
+            if (videos.length > 0) {
+              setShortsList(
+                videos.map((v: any) => ({
+                  id: v.id || v.documentId,
+                  documentId: v.documentId,
+                  slug: v.slug,
+                  title: v.title || '',
+                  summary: '',
+                  content: '',
+                  relevanceScore: 0,
+                  mediaType: 'short',
+                  mediaUrl: v.mp4Url || v.hlsUrl,
+                  videoUrl: v.mp4Url,
+                  thumbnailUrl: v.thumbnailUrl,
+                  hlsUrl: v.hlsUrl,
+                  mp4Url: v.mp4Url,
+                  hlsPlaylistUrl: v.hlsUrl,
+                  duration: v.duration,
+                  likesCount: v.likesCount || 0,
+                  viewsCount: v.viewsCount || 0,
+                  commentsCount: v.commentsCount || 0,
+                  creator: v.creator,
+                  tags: Array.isArray(v.tags) ? v.tags : [],
+                } as FeedItem))
+              );
+              return;
+            }
+          }
+          // An unreadable or empty list falls through to the catalogue rather
+          // than leaving the reader on an empty scroller.
+        } catch (e) {
+          console.error('[shorts] failed to load playlist feed:', e);
+        }
+      }
+
       try {
         const res = await fetch('/api/content/video/list?pageSize=50', {
           headers: {
@@ -174,6 +229,26 @@ export default function ShortsFeedPage() {
     fetchShorts();
   }, [initialSlug]);
 
+  /**
+   * The playlist this feed is playing, if any.
+   *
+   * Kept in state rather than re-read from the URL each time, because the URL
+   * is rewritten on every scroll and the parameter has to survive that — it is
+   * what makes the way back to the standard view return to the same list.
+   */
+  const [listId, setListId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setListId(new URLSearchParams(window.location.search).get('list'));
+  }, []);
+
+  /** A path in this feed, carrying the list so scrolling does not lose it. */
+  const feedPath = useCallback(
+    (slug: string) => (listId ? `/shorts/${slug}?list=${encodeURIComponent(listId)}` : `/shorts/${slug}`),
+    [listId]
+  );
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [likedMap, setLikedMap] = useState<Record<number, boolean>>({});
@@ -222,7 +297,7 @@ export default function ShortsFeedPage() {
       setActiveIndex(newIndex);
       const currentShort = shortsList[newIndex];
       if (currentShort && typeof window !== 'undefined') {
-        window.history.replaceState(null, '', `/shorts/${currentShort.slug}`);
+        window.history.replaceState(null, '', feedPath(currentShort.slug));
       }
     }
   };
@@ -429,7 +504,7 @@ export default function ShortsFeedPage() {
 
           {activeShort && (
             <Link
-              href={`/video/${activeShort.slug}`}
+              href={listId ? `/video/${activeShort.slug}?list=${encodeURIComponent(listId)}` : `/video/${activeShort.slug}`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-xs font-semibold text-white backdrop-blur-md transition-all"
               title="Standard View / Detailansicht"
             >
@@ -584,7 +659,10 @@ export default function ShortsFeedPage() {
 
                 {/* Hashtags & AI Bucket */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {short.tags.map((t) => (
+                  {/* Guarded: a video without tags used to throw here and take
+                      the whole feed down with it, which is how the empty
+                      scroller under `?list=` was found. */}
+                  {(short.tags || []).map((t) => (
                     <span key={t} className="text-[10px] font-mono font-bold text-teal-400 bg-black/60 px-2 py-0.5 rounded-md border border-teal-500/30">
                       #{t}
                     </span>
