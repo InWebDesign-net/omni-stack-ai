@@ -7,6 +7,7 @@ import {
   TOPIC_SCORE_MAX,
 } from '../../../lib/affinity';
 import { FeedItem, Video, ContentItem, User } from '../../../types';
+import { logError } from '../../../lib/log-error';
 
 /** Creator affinity (0–100) above which an author counts as "network" for the feed. */
 const NETWORK_CREATOR_THRESHOLD = 60;
@@ -94,7 +95,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         const uniqueVideos = mappedVideos.filter((v) => !existingSlugs.has(v.slug));
         dbItems = [...dbItems, ...uniqueVideos];
       } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
       items = dbItems;
@@ -120,7 +121,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             } as any);
             if (matches && matches.length > 0) return matches[0] as ContentItem;
           } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
           // 2. Direct slug match in standalone video
@@ -145,7 +146,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               } as ContentItem;
             }
           } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
           // 3. Direct documentId match in requested locale in feed-item
@@ -159,7 +160,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             } as any);
             if (doc) return doc as ContentItem;
           } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
           // 4. Direct documentId match in standalone video
@@ -184,7 +185,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               } as ContentItem;
             }
           } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
           // 5. Reverse lookup: find item by slug in ANY locale to resolve documentId, then fetch target locale
@@ -207,7 +208,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               if (localizedDoc) return localizedDoc as ContentItem;
             }
           } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
           // 6. Reverse lookup in standalone video
@@ -241,7 +242,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               }
             }
           } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
 
           return null;
@@ -274,7 +275,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           items = [resolvedTargetMatch, ...items];
         }
       } catch (e) {
-        strapi.log.error('[feed-assembly.ts] unhandled error', e);
+        logError('[feed-assembly.ts]', e);
       }
     }
 

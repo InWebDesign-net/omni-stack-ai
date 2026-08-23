@@ -1,4 +1,5 @@
 import { Core } from '@strapi/strapi';
+import { logError } from '../../../lib/log-error';
 
 const dailyViewsSet = new Set<string>();
 
@@ -67,7 +68,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         }
       }
     } catch (e) {
-      strapi.log.error('[interaction.ts] unhandled error', e);
+      logError('[interaction.ts]', e);
     }
 
     // Query Fav collection relation in database
@@ -99,7 +100,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         isLiked = true;
       }
     } catch (e) {
-      strapi.log.error('[interaction.ts] unhandled error', e);
+      logError('[interaction.ts]', e);
     }
 
     return {
@@ -141,7 +142,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           userIdentifier = foundUser.handle || foundUser.username;
         }
       } catch (e) {
-        strapi.log.error('[interaction.ts] unhandled error', e);
+        logError('[interaction.ts]', e);
       }
     } else if (userIdentifier && userIdentifier !== 'anonymous') {
       try {
@@ -159,7 +160,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           userId = foundUser.id;
         }
       } catch (e) {
-        strapi.log.error('[interaction.ts] unhandled error', e);
+        logError('[interaction.ts]', e);
       }
     }
 
@@ -291,7 +292,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             { type: 'view', tags, mediaType },
           ]);
         } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
+          logError('[interaction.ts]', e);
         }
       }
 
@@ -329,7 +330,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           existingFavs = await strapi.db.query('api::like.like').findMany(favQuery);
         }
       } catch (e) {
-        strapi.log.error('[interaction.ts] unhandled error', e);
+        logError('[interaction.ts]', e);
       }
 
       if (existingFavs.length === 0) {
@@ -406,7 +407,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               { type: 'like', tags, mediaType: currentItem?.mediaType || (articleMatches.length > 0 ? 'article' : 'image') },
             ]);
           } catch (e) {
-            strapi.log.error('[interaction.ts] unhandled error', e);
+            logError('[interaction.ts]', e);
           }
         }
       }
@@ -455,7 +456,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           }
         }
       } catch (e) {
-        strapi.log.error('[interaction.ts] unhandled error', e);
+        logError('[interaction.ts]', e);
       }
 
       currentLikesCount = Math.max(0, currentLikesCount - 1);
@@ -491,7 +492,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             { type: 'unlike', tags, mediaType: currentItem?.mediaType || (articleMatches.length > 0 ? 'article' : 'image') },
           ]);
         } catch (e) {
-          strapi.log.error('[interaction.ts] unhandled error', e);
+          logError('[interaction.ts]', e);
         }
       }
 

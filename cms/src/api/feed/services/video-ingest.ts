@@ -1,4 +1,5 @@
 import { Core } from '@strapi/strapi';
+import { logError } from '../../../lib/log-error';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
@@ -171,7 +172,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         }
       }
     } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
 
     try {
@@ -246,7 +247,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           });
         }
       } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
     };
 
@@ -268,7 +269,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           populate: ['creator', 'author'],
         });
       } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
 
       if (!doc) {
@@ -278,7 +279,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             populate: ['author', 'creator'],
           });
         } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
       }
 
@@ -298,7 +299,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       });
       if (vCheck) isVideoModel = true;
     } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
 
     if (isVideoModel) {
@@ -317,7 +318,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             data: { visibility: targetVisibility } as any,
           });
         } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
         return { success: true, documentId, published: publish, visibility: targetVisibility, data: vUpdated };
       } catch (vErr: any) {
@@ -339,7 +340,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
             data: { visibility: targetVisibility } as any,
           });
         } catch (e) {
-        strapi.log.error('[video-ingest.ts] unhandled error', e);
+        logError('[video-ingest.ts]', e);
       }
         return { success: true, documentId, published: publish, visibility: targetVisibility, data: updatedDe };
       } catch (e: any) {
