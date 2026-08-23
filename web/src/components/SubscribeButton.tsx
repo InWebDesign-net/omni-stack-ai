@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, Check, Loader2, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { Toast, useToast } from '@/components/common/Toast';
 
 interface SubscribeButtonProps {
   targetId: string;
@@ -32,7 +33,7 @@ export default function SubscribeButton({
   const [count, setCount] = useState<number>(initialCount ?? 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { message: toastMessage, showToast } = useToast();
 
   // Sync state if props change from parent
   useEffect(() => {
@@ -79,11 +80,6 @@ export default function SubscribeButton({
       active = false;
     };
   }, [targetId, type, currentUser?.id]);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -246,14 +242,7 @@ export default function SubscribeButton({
       </button>
 
       {/* Floating Toast Message */}
-      {toastMessage && (
-        <div style={{ bottom: `calc(6rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 px-4 py-3 rounded-2xl bg-surface-raised/95 border border-indigo-500/40 text-primary font-medium text-sm shadow-2xl shadow-indigo-600/30 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-4 duration-300 backdrop-blur-md">
-          <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-300">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
     </>
   );
 }

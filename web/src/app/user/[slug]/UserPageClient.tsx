@@ -44,6 +44,7 @@ import { jsonAuthHeaders } from '@/lib/affinity';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
+import { Toast, useToast } from '@/components/common/Toast';
 
 interface UserPageClientProps {
     profileDataInit: ProfileData;
@@ -75,12 +76,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
     const [editingVideo, setEditingVideo] = useState<any | null>(null);
     const [editingArticle, setEditingArticle] = useState<any | null>(null);
     const [editingImage, setEditingImage] = useState<any | null>(null);
-    const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-    const showToast = (msg: string) => {
-        setToastMessage(msg);
-        setTimeout(() => setToastMessage(null), 3000);
-    };
+  const { message: toastMessage, showToast } = useToast();
 
     const dmSetting = profile.allowDirectMessages || 'everyone';
     const canSendDM = !isOwner && (
@@ -659,11 +655,7 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
             )}
 
             {/* Toast Notification */}
-            {toastMessage && (
-                <div style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-[100] px-4 py-3 bg-surface-raised/95 text-primary font-medium text-xs rounded-xl shadow-2xl border border-subtle backdrop-blur-md animate-fadeIn">
-                    {toastMessage}
-                </div>
-            )}
+            <Toast message={toastMessage} />
         </main>
         </div>
     );

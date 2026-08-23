@@ -55,6 +55,7 @@ import {
 import { storeItem } from '@/lib/consent';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { PlaylistPanel } from '@/components/playlist/PlaylistPanel';
+import { Toast, useToast } from '@/components/common/Toast';
 
 // Flatten a Strapi `blocks` field (array of {type, children}) into plain text.
 // Falls back to the raw value when it is already a string.
@@ -136,6 +137,7 @@ export default function VideoPageClient({
   initialLang = 'de',
 }: VideoPageClientProps) {
   const router = useRouter();
+  const { message: toastMessage, showToast } = useToast();
   const { lang, currentUser, openAuthModal, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 
   // initialVideo is the full array of localizations (locale=*). Select the one
@@ -186,7 +188,7 @@ export default function VideoPageClient({
   const [descExpanded, setDescExpanded] = useState(false);
   const hasTrackedView = useRef(false);
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const fallbackCreator = useMemo(() => {
@@ -222,10 +224,6 @@ export default function VideoPageClient({
     return currentUser?.id ? `user-${currentUser.id}` : 'anon-session';
   }, [currentUser?.id]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
 
   // Check stored likes / interaction status
   useEffect(() => {
@@ -381,12 +379,7 @@ export default function VideoPageClient({
       <Header />
 
       {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{ bottom: `calc(6rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl animate-fadeIn flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
 
       {/* Video Settings Modal */}
       {showSettingsModal && (

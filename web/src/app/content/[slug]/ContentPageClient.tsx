@@ -46,6 +46,7 @@ import {
   CommentItem as CommentItemType,
 } from '@/lib/comments';
 import { storeItem } from '@/lib/consent';
+import { Toast, useToast } from '@/components/common/Toast';
 
 interface ContentPageClientProps {
   initialItem: any;
@@ -219,13 +220,7 @@ export default function ContentPageClient({
 
     return () => clearTimeout(timer);
   }, [item?.slug, userIdent]);
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const { message: toastMessage, showToast } = useToast();
 
   const handleLikeToggle = async () => {
     if (!item?.slug) return;
@@ -730,11 +725,7 @@ export default function ContentPageClient({
       </main>
 
       {/* Toast Notification Banner */}
-      {toastMessage && (
-        <div style={{ bottom: `calc(1.5rem + var(--footer-overlap, 0px))` }} className="fixed left-1/2 -translate-x-1/2 z-50 bg-surface-raised/95 border border-indigo-500/40 text-primary px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-semibold animate-bounceIn flex items-center gap-2">
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
     </div>
   );
 }

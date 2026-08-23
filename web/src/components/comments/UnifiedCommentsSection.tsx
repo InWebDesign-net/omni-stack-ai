@@ -14,6 +14,7 @@ import {
 } from '@/lib/comments';
 import Image from 'next/image';
 import { AVATAR_PLACEHOLDER, resolveAvatarUrl } from '@/lib/avatar';
+import { Toast, useToast } from '@/components/common/Toast';
 
 interface UnifiedCommentsSectionProps {
   slug: string;
@@ -42,12 +43,7 @@ export function UnifiedCommentsSection({
   const [totalCount, setTotalCount] = useState(0);
   const [newCommentText, setNewCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3000);
-  };
+  const { message: toastMsg, showToast } = useToast();
 
   const loadComments = useCallback(async () => {
     if (!slug) return;
@@ -228,12 +224,7 @@ export function UnifiedCommentsSection({
 
   return (
     <div className="bg-surface border border-subtle rounded-3xl p-4 sm:p-6 shadow-2xl space-y-6">
-      {/* Toast alert */}
-      {toastMsg && (
-        <div style={{ bottom: `calc(6rem + var(--footer-overlap, 0px))` }} className="fixed right-6 z-50 bg-surface-raised border border-indigo-500/40 text-primary px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-xl text-xs font-semibold animate-fadeIn">
-          {toastMsg}
-        </div>
-      )}
+      <Toast message={toastMsg} />
 
       {/* Header */}
       <div className="flex items-center justify-between border-b border-subtle pb-4">
