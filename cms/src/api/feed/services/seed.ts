@@ -1,4 +1,5 @@
 import { Core } from '@strapi/strapi';
+import { logError } from '../../../lib/log-error';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
@@ -32,22 +33,22 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         try {
           await strapi.db.query('api::feed-item.feed-item').deleteMany({});
         } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
         try {
           await strapi.db.query('api::video.video').deleteMany({});
         } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
         try {
           await strapi.db.query('api::image.image').deleteMany({});
         } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
         try {
           await strapi.db.query('api::article.article').deleteMany({});
         } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
       }
 
@@ -93,7 +94,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 },
               });
             } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
             return existingUser;
           }
@@ -119,7 +120,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 });
               }
             } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
           }
 
@@ -135,7 +136,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 },
               });
             } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
           }
           return created;
@@ -219,7 +220,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 } as any,
               });
             } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
           }
           return createdEn;
@@ -309,7 +310,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                     status: 'published',
                   });
                 } catch (e) {
-        strapi.log.error('[seed.ts] unhandled error', e);
+        logError('[seed.ts]', e);
       }
               }
             }
@@ -653,25 +654,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
                 status: 'published',
               });
             } catch (deErr) {
-        strapi.log.error('[seed.ts] unhandled error', deErr);
+        logError('[seed.ts]', deErr);
       }
           }
         } catch (itemErr: any) {
-        /*
-         * Unwrap aggregates before logging.
-         *
-         * Strapi's validation throws an `AggregateError`, whose `message` is
-         * just "N errors occurred" — which is what the nightly log showed, with
-         * the actual causes inside `.errors` and nowhere in the output. A
-         * failure nobody can read is barely better than a silent one.
-         */
-        const causes = Array.isArray(itemErr?.errors) ? itemErr.errors : [itemErr];
-        for (const cause of causes) {
-          strapi.log.error(
-            `[seed.ts] feed item "${item?.en?.slug || 'unknown'}" failed: ${cause?.message || cause}` +
-              (cause?.details ? ` — ${JSON.stringify(cause.details)}` : '')
-          );
-        }
+        logError(`[seed.ts] feed item "${item?.en?.slug || 'unknown'}"`, itemErr);
       }
       }
 
