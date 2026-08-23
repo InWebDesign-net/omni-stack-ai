@@ -87,6 +87,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               await strapi.db.query('plugin::users-permissions.user').update({
                 where: { id: existingUser.id },
                 data: {
+                  // The display name too: without it a channel could be
+                  // re-themed in the fixtures and keep its old name forever,
+                  // which is how "Astro-Wissen Magazin" ended up presiding over
+                  // lake footage. The login identifier is the email, which this
+                  // never touches.
+                  username: creator.username,
                   handle: creator.handle,
                   avatarUrl: creator.avatarUrl,
                   bio: creator.bio,

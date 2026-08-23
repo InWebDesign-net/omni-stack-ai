@@ -1,19 +1,21 @@
 [
   {
     "handle": "astro",
-    "username": "Astro-Wissen Magazin",
+    "username": "Wasserwege",
     "email": "astro@inwebdesign.net",
     "avatarUrl": "/demo-media/photo-1507003211169-0a1dd7228f2d.jpg",
-    "bio": "Faszination Astronomie, Astrophysik & Weltraum-Dokumentationen.",
-    "subscribersCount": 14800
+    "bio": "Seen, Küsten und Flüsse — ruhige Aufnahmen vom Wasser und dem, was an ihm liegt.",
+    "subscribersCount": 14800,
+    "bio_en": "Lakes, coasts and rivers — quiet footage of water and what lies beside it."
   },
   {
     "handle": "demotech",
-    "username": "Database Guru",
+    "username": "Unterwegs",
     "email": "demotech@inwebdesign.net",
     "avatarUrl": "/demo-media/photo-1534528741775-53994a69daeb.jpg",
-    "bio": "High-Performance Databases, PostgreSQL Indizes, Vector Search & Code Architecture.",
-    "subscribersCount": 28900
+    "bio": "Reisen, Wege und Bewegung: von Flughäfen und Zügen bis zu Sport und Abenteuer.",
+    "subscribersCount": 28900,
+    "bio_en": "Travel, routes and motion: from airports and trains to sport and adventure."
   },
   {
     "handle": "demogourmet",
@@ -33,11 +35,12 @@
   },
   {
     "handle": "omniarchitect",
-    "username": "Omni Architect",
+    "username": "Stadt & Architektur",
     "email": "omniarchitect@inwebdesign.net",
     "avatarUrl": "/demo-media/photo-1534528741775-53994a69daeb.jpg",
-    "bio": "NextJS 15, Strapi v5, Monorepo Turborepo Architecture & Microservices.",
-    "subscribersCount": 42000
+    "bio": "Gebäude, Straßen und Skylines — wie Städte aussehen, wenn man genau hinschaut.",
+    "subscribersCount": 42000,
+    "bio_en": "Buildings, streets and skylines — how cities look when you pay attention."
   },
   {
     "handle": "catmania",
@@ -49,10 +52,11 @@
   },
   {
     "handle": "finanzkompass",
-    "username": "FinanzKompass",
+    "username": "Klangfarben",
     "email": "finanzkompass@inwebdesign.net",
     "avatarUrl": "/demo-media/photo-1507003211169-0a1dd7228f2d.jpg",
-    "bio": "Finanzwissen, ETF-Sparpläne, Vermögensaufbau & Zinseszins für Einsteiger.",
-    "subscribersCount": 27500
+    "bio": "Musik, Kunst und Handwerk — Instrumente, Bühnen und die Menschen dahinter.",
+    "subscribersCount": 27500,
+    "bio_en": "Music, art and craft — instruments, stages and the people behind them."
   }
 ]
