@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { usePathname } from 'next/navigation';
 import { ExternalLink, Film, BookOpen, Image as ImageIcon, Flame, Cookie } from 'lucide-react';
 import { useApp } from '@/context/AppContext';

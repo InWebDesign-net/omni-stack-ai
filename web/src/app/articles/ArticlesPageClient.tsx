@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
 import { TagCount } from '@/lib/videoFilters';

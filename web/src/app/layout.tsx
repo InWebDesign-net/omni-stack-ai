@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 import { safeJsonLd } from '@/lib/jsonLd';
+import { resolveLang } from '@/lib/locale-server';
 
 import { SiteChrome } from '@/components/SiteChrome';
 
@@ -128,13 +129,20 @@ import { FloatingDockProbe } from '@/components/FloatingDockProbe';
 import { ConsentBanner } from '@/components/ConsentBanner';
 import GlobalUploadManager from '@/components/GlobalUploadManager';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  /*
+   * The language a screen reader announces and a crawler believes, taken from
+   * the URL rather than hardcoded. `lang="de"` on an English page is a claim
+   * the page itself contradicts.
+   */
+  const lang = await resolveLang();
+
   return (
-    <html lang="de" className="dark bg-canvas" suppressHydrationWarning>
+    <html lang={lang} className="dark bg-canvas" suppressHydrationWarning>
       <head>
         {/*
           The fonts are served from /public/fonts and declared in globals.css
@@ -172,7 +180,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-canvas text-primary min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white" suppressHydrationWarning>
-        <AppProvider>
+        <AppProvider initialLang={lang}>
           <ChatProvider>
             <UploadProvider>
               <NotificationProvider>

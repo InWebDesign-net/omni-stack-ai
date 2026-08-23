@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatCount } from '@/lib/format';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import { Sparkles, Search, ArrowRight, Play, Eye, Heart, Film, Image as ImageIcon, Users, ChevronLeft, ChevronRight, MessageSquare, Clock, BookOpen } from 'lucide-react';
 import Header from '@/components/Header';
 import { useApp } from '@/context/AppContext';
@@ -23,7 +24,7 @@ interface ChannelItem {
 }
 
 export default function HomeClient() {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const { t, lang, openChannelModal, currentUser } = useApp();
   const { createRoom, openChat } = useChat();
 

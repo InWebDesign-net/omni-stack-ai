@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
-import { cookies, headers as nextHeaders } from 'next/headers';
+import { resolveLang } from '@/lib/locale-server';
+import { localizePath, languageAlternates } from '@/lib/locale';
 import ArticleDetailPageClient from './ArticleDetailPageClient';
 import { safeJsonLd } from '@/lib/jsonLd';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
@@ -78,8 +79,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-  const cookieStore = await cookies();
-  const lang = cookieStore.get('omni_lang')?.value === 'en' ? 'en' : 'de';
+  const lang = await resolveLang();
   const data = await getArticleData(slug, lang);
 
   if (!data || !data.item) {
@@ -118,14 +118,22 @@ export async function generateMetadata(
       description,
       images: [ogImageUrl],
     },
-    alternates: { canonical: url },
+    /*
+     * Canonical points at this language's own address, and hreflang names the
+     * other one. Without the pair a crawler has no way to learn that the two
+     * pages are the same article, and treats the smaller of them as thin
+     * duplicate content.
+     */
+    alternates: {
+      canonical: `${baseUrl}${localizePath(`/article/${slug}`, lang)}`,
+      languages: languageAlternates(baseUrl, `/article/${slug}`),
+    },
   };
 }
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
-  const cookieStore = await cookies();
-  const lang = cookieStore.get('omni_lang')?.value === 'en' ? 'en' : 'de';
+  const lang = await resolveLang();
   const data = await getArticleData(slug, lang);
 
   if (!data || !data.item) {
@@ -152,7 +160,7 @@ export default async function ArticleDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
-      <ArticleDetailPageClient initialItem={data.itemList} slug={slug} />
+      <ArticleDetailPageClient initialItem={data.itemList} slug={slug} initialLang={lang} />
     </>
   );
 }

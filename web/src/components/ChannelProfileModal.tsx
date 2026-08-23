@@ -3,6 +3,7 @@
 import React from 'react';
 import { formatCount } from '@/lib/format';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import { X, ArrowUpRight, MessageSquare, Sparkles } from 'lucide-react';
 import { ChannelProfileData, useApp } from '@/context/AppContext';
 import { useChat } from '@/context/ChatContext';
@@ -22,7 +23,7 @@ export default function ChannelProfileModal({
 }: ChannelProfileModalProps) {
   const { t, currentUser, openAuthModal } = useApp();
   const { createRoom, openChat } = useChat();
-  const router = useRouter();
+  const router = useLocaleRouter();
 
   if (!selectedChannel) return null;
 

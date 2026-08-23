@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { resolveLang } from '@/lib/locale-server';
+import { localizePath, languageAlternates } from '@/lib/locale';
 import VideoPageClient from '@/app/video/[slug]/VideoPageClient';
 import { safeJsonLd } from '@/lib/jsonLd';
 import { getCurrentUserFromCookies } from '@/lib/auth-server';
@@ -95,7 +96,7 @@ export async function generateMetadata(
   const searchParamsObj = searchParams ? await searchParams : {};
   const statusParam = typeof searchParamsObj.status === 'string' ? searchParamsObj.status : undefined;
   const { user, jwt } = await getCurrentUserFromCookies();
-  const lang = (await cookies()).get('omni_lang')?.value === 'en' ? 'en' : 'de';
+  const lang = await resolveLang();
   const data = await getData(slug, jwt, lang, statusParam);
 
   if (!data || !data.video) {
@@ -162,7 +163,10 @@ export async function generateMetadata(
       description,
       images: [ogImageUrl],
     },
-    alternates: { canonical: url },
+    alternates: {
+      canonical: `${baseUrl}${localizePath(`/video/${slug}`, lang)}`,
+      languages: languageAlternates(baseUrl, `/video/${slug}`),
+    },
   };
 }
 
@@ -171,7 +175,7 @@ export default async function Page({ params, searchParams }: Props) {
   const searchParamsObj = searchParams ? await searchParams : {};
   const statusParam = typeof searchParamsObj.status === 'string' ? searchParamsObj.status : undefined;
   const { user, jwt } = await getCurrentUserFromCookies();
-  const lang = (await cookies()).get('omni_lang')?.value === 'en' ? 'en' : 'de';
+  const lang = await resolveLang();
   const data = await getData(slug, jwt, lang, statusParam);
 
   if (!data || !data.video) {

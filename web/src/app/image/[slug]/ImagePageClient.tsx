@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import {
   ArrowLeft,
   Heart,
@@ -45,7 +46,7 @@ export default function ImagePageClient({
   initialRelated = [],
   slug,
 }: ImagePageClientProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const { currentUser, openAuthModal, lang, t } = useApp();
   const [image, setImage] = useState<any>(initialImage);
 

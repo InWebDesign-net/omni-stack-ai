@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft,

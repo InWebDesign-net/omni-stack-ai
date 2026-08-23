@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import {
   Bell,
   CheckCheck,
@@ -28,7 +29,7 @@ interface NotificationDrawerProps {
 }
 
 export default function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const {
     notifications,
     unreadCount,

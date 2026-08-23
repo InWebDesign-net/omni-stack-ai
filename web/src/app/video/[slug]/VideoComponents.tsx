@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import {
   Heart, Share2, Send, MessageSquare, Eye, Clock,
   Pencil, Trash2, Check, X, ChevronDown, ChevronUp, Play,
