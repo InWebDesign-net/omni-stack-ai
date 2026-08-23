@@ -45,7 +45,7 @@ You can log in directly via the Quick-Login presets in the login modal or use th
 
 ## 📄 License & Premium AI Features
 
-The core boilerplate is open-source under the **[MIT License](LICENSE)**: feed assembly, the video library catalog, batch tracking, content detail views, the shorts feed, real-time messaging and notifications, subscriptions, favorites, authentication, the content-kind registry, the block editor, the upload pipeline and the encrypted HLS delivery path. You are free to use, modify, and distribute this foundation for your own projects.
+The core boilerplate is open-source under the **[MIT License](LICENSE)**: feed assembly, the video library catalog, batch tracking, content detail views, the shorts feed, real-time messaging and notifications, subscriptions, likes, playlists, authentication, the content-kind registry, the block editor, the upload pipeline and the encrypted HLS delivery path. You are free to use, modify, and distribute this foundation for your own projects.
 
 ### 🌟 Unlock the Premium AI Engine & Managed Hosting
 The advanced local LLM orchestration (Ollama Llama 3.1 & Moondream Vision AI), real-time intent classification, conversational memory, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
@@ -97,10 +97,13 @@ Omni features a centralized notification engine (`api::notification.notification
 * 🔗 **Smart Deep-Linking:** Clicking a notification automatically opens the target chat room (`openChat(roomId)`), video player, or user profile without page reloads.
 * 📄 **Paginated, Not Truncated:** the drawer requests an explicit page size and reports the total. Strapi's `defaultLimit` is 25, so a route that omits pagination silently returns the first 25 rows and presents them as the whole set — worth checking in any new list endpoint.
 
-### 4. 🔔 Subscriptions & Standardized Favorites System
+### 4. 🔔 Subscriptions, Likes & Playlists
 * 🔔 **Subscriptions Engine (`api::subscription.subscription`):** One model covers both channel subscriptions (creators, with live subscriber counting) and chat-room subscriptions. Each record carries an explicit `isSubscribed` flag rather than encoding the answer in whether a row exists, so "subscribed", "explicitly muted" and "never decided" stay distinguishable.
 * ⚡ **Interactive `<SubscribeButton>` Component:** Features optimistic UI updates, state synchronization, and floating Toast notifications (*"Channel subscribed successfully! 🎉"*).
-* ❤️ **Standardized Favorites (`api::favorite.favorite`):** Unified REST API (`/api/favorites`) allowing users to favorite and bookmark videos, articles, and feed items across the platform.
+* ❤️ **Likes (`api::like.like`):** One REST surface (`/api/likes`) for videos, images, articles and feed items. Named *like* everywhere — the code, the routes, the content type and the tables — because it is a single yes, and a collection you build is a playlist.
+* 🎵 **Playlists (`api::playlist.playlist`):** Ordered, owned collections of videos. Private by default and publishable by their owner, reusing the same visibility rules as content rather than a second model. They appear beside the player when you watch inside one (`?list=<documentId>`), and clicking through to the vertical view continues *that* list at *that* video — the position travels as a parameter and is addressed by item, so a list that changed since the link was made still opens on the right video.
+  * A public playlist never publishes what it contains: the visibility middleware does not filter relations populated from another type, so the entries are looked up again through the guarded path and what the viewer may not see is dropped and reported as `hiddenCount`.
+  * Reordering uses `@dnd-kit` with a keyboard sensor, so it works without a mouse.
 
 ### 5. 🔒 Level 4 AES-128 Encrypted HLS Video Pipeline
 Omni implements an enterprise-grade content security architecture:
@@ -154,11 +157,12 @@ export const CONTENT_KINDS = {
 * 🚧 **Where This Deliberately Stops:** `feed-item` is a container with a different shape and is not in the table. Abstraction that has to be argued into place tends to be the wrong abstraction.
 
 ### 9. 📝 Content Blocks — A Dynamic-Zone Editor in the Frontend
-Articles are composed from a Strapi dynamic zone (`headline`, `rich-text`, `image`, `video`, `quote`) edited entirely from the web app, without sending authors to the admin panel.
+Articles are composed from a Strapi dynamic zone (`headline`, `rich-text`, `image`, `video`, `quote`, `pdf`) edited entirely from the web app, without sending authors to the admin panel.
 
 * 🎚️ **Reorder by Drag or Button:** `@dnd-kit` for pointer users, explicit up/down buttons for everyone else.
 * 🖼️ **Media Blocks Pick From Your Own Library:** debounced search over the author's images and videos, or drop a file straight into the block — the upload is tracked by the global manager and the relation is set when it finishes.
 * ▶️ **Video Blocks Play In Place:** the poster's play button mounts the shared player on click rather than eagerly, so an article with several video blocks does not keep one hls.js instance alive per block.
+* 📄 **PDF Blocks Are a Link, Not a Viewer:** the file is served from our own media root and browsers render PDFs well; an iframe here would inherit an article's width for something laid out for a page.
 
 ### 10. ⬆️ Upload Pipeline & Global Task Manager
 * 📦 **Chunked Uploads With Handles:** `UploadContext` returns a task id per file so any caller — a modal, a content block — can follow that specific upload rather than guessing from a global list.
@@ -169,6 +173,27 @@ Articles are composed from a Strapi dynamic zone (`headline`, `rich-text`, `imag
 * 🌗 **Three-State Theme:** system, dark and light, resolved onto `data-theme` plus a `dark` class on the root element, persisted in `localStorage` and reacting to `prefers-color-scheme` changes without a reload.
 * 🎛️ **Tokens, Not Hard-Coded Colours:** surfaces, text and borders come from CSS custom properties (`--bg-base`, `--surface`, `--surface-raised`), so a theme is a token set rather than a sweep through every component.
 
+### 12. 🍪 Consent, and Nothing Stored Without It
+* 🚪 **One Gate (`web/src/lib/consent.ts`):** every write to `localStorage` or `document.cookie` goes through helpers that look the key's category up in one registry. An unregistered key is *refused* rather than allowed — forgetting to classify something should mean it does not persist, not that it persists unclassified.
+* 🗑️ **Withdrawal Deletes:** revoking statistics removes the interest profile and the stored likes rather than merely stopping collection, and the tracker drops its queue instead of buffering it, so refusing is a refusal and not a delay.
+* 📋 **Maintained in Strapi:** the banner's text, categories and the mapping of what is stored live in a `cookie-banner` single type — bilingual, with `enabled` and the mapping declared `localized: false` so they exist once. Turning it off needs no deploy.
+* 🙅 **Rejecting Is One Click,** the same visual weight as accepting, and the banner does not trap focus: someone who wants to read the page before deciding can.
+
+### 13. 🔐 Sessions in a Cookie, Not in the Page
+* 🍪 **httpOnly Only:** the login route sets `omni_jwt` as an httpOnly cookie and every API route reads it. No copy is kept in `localStorage`, so there is no credential at rest for a script on the page to find.
+* 🔌 **The One Exception, Handled:** the WebSocket gateway runs on its own origin and authenticates from the handshake, so it can never see the cookie. It asks `/api/auth/socket-token` before *each* connection attempt — the token lives in that callback for one handshake, and a reconnect after a login or logout picks up the current session instead of a carried-over copy.
+
+### 14. 📴 Zero Third-Party Requests
+* ✍️ **Self-Hosted Fonts:** both families are served from `/public/fonts` as variable fonts — one file per subset covering the whole weight range, 95 KB for latin and latin-ext together. Loading them from Google meant every visitor's browser reached a third party, and handed over an IP, before anything rendered and long before a banner could ask.
+* 🖼️ **Self-Hosted Demo Media:** the creator avatars and stock thumbnails live in `/public/demo-media`, named after their source so provenance stays findable. `images.unsplash.com` is gone from `remotePatterns`, which also closes the image optimizer as a proxy for that host.
+* 📏 **Measured, Not Assumed:** 234 requests across the home, video and article pages, zero of them external.
+
+### 15. 📱 The Vertical View Is the Same App
+* 🔁 **Same Writes, Different Presentation:** likes, subscriptions, comments and sharing go through the same calls and the same components as the standard player. The vertical view is an arrangement of those parts, not a second set — three controls there once moved local state and told the server nothing.
+* ✂️ **Cropped, Not Letterboxed:** the converter fits every video into 16:9 and pads anything else with a blurred pillarbox, so the feed crops to 9:16 instead of revealing it. That is not a compromise — a 9:16 source occupies a centred strip exactly `height × 9/16` wide, measured at 39 dB PSNR against the original.
+* 🧭 **A Feed With Intent:** a playlist named by `?list=`, otherwise the affinity ranking for a signed-in visitor, otherwise the catalogue — and whatever the source, the video named in the URL is fetched on its own so a link always opens what it says.
+* 🧾 **`orientation` on the Video:** how it was *shot*, recorded at ingest. It cannot be derived afterwards, since the output is 16:9 either way, so a list can ask for what was actually filmed vertically.
+
 ---
 
 ## 🛠️ Monorepo Structure
@@ -178,7 +203,7 @@ omni-stack-ai/
 ├── cms/                     # Strapi v5 Headless CMS (PostgreSQL, TypeScript Factories & Schemas)
 │   ├── config/              # PostgreSQL, CORS & Plugin configurations
 │   └── src/
-│       ├── api/             # Controllers, Services (feed, subscriptions, favorites, notifications, chat)
+│       ├── api/             # Controllers, Services (feed, subscriptions, likes, playlists, notifications, chat)
 │       ├── components/      # Dynamic-zone block schemas (headline, rich-text, image, video, quote)
 │       └── index.ts         # Bootstrap: permissions, cron, default-deny visibility middleware
 ├── packages/

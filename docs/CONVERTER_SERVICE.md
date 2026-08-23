@@ -48,6 +48,37 @@ In development and demo environments, the converter operates as an isolated back
 - **`watch-and-process.js`**: Utilizes [Chokidar](https://github.com/paulmillr/chokidar) with `awaitWriteFinish` (stability threshold 3s) to prevent processing incomplete uploads.
 - **`process-videos.js`**: Executes the core FFmpeg transcode pipeline, generates HLS streams, extracts WebP frames, and produces JSON metadata payloads.
 
+### Watermark sizing
+
+The watermark's height is a fraction of the frame it is drawn on
+(`WATERMARK_HEIGHT_RATIO`, default `0.045`, overridable by environment), not a
+fixed pixel value.
+
+It has to be, because the HLS master is not always the same size: for 16:9 input
+the converter keeps the source resolution. A fixed 48px mark therefore covered
+4.4% of a 1080p frame and 20% of a 240p one — a low-resolution upload came out
+branded across a fifth of the picture. The default reproduces the previous
+appearance on a 1080p master, so a correctly-sized source is unchanged.
+
+`processImage` is deliberately separate: it scales the mark to 15% of the image
+width, which was set on purpose for that surface.
+
+### The `.meta` sidecar
+
+Written next to the output as `key=value` lines and read by the ingest:
+
+```
+duration=3.35
+sourceWidth=426
+sourceHeight=240
+orientation=landscape
+```
+
+`orientation` is there because the conversion is lossy about it by design —
+portrait footage comes out as a 16:9 frame with a blurred pillarbox, so nothing
+downstream can tell a video shot vertically from one shot wide. It cannot be
+recovered later, so it is recorded here.
+
 ---
 
 ## ⚙️ Transcoding Specifications
