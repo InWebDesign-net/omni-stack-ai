@@ -1013,5 +1013,1380 @@
         "author": "Astro-Wissen Magazin"
       }
     ]
+  },
+  {
+    "slug": "reading-the-swell",
+    "title_en": "Reading the Swell",
+    "summary_en": "Waves never arrive one by one. Notes from a long morning on the shore, spent counting, waiting, and catching a few seconds of movement.",
+    "tags_en": [
+      "Water",
+      "Sports",
+      "Adventure",
+      "Nature"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Seen from above, the sea loses its direction. What looks like a run-up and a retreat from the shore turns into a pattern of bright lines that overtake one another, cross and dissolve again. All we did that morning was look: an hour from the rocks, an hour with the camera out over the water, an hour with our feet in the foam.\n\nWaves do not arrive one by one. They arrive in groups, and the calm in between lasts longer than you would expect. Anyone who works on the water knows those pauses and arranges everything around them: casting off, coming in, going overboard."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "a-dynamic-top-view-of-ocean-waves-mt3w80tl-e9yuu",
+        "caption": "The open sea from above — the same movement, only without a shoreline for scale"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Reading the sets is not a skill so much as patience. You keep count of how many waves just came through and you count the seconds in between. After a while you can even hear the difference: a small wave breaks short and dry, a big one starts further out and rolls longer before it tips. It photographs badly and films rather well. That is why so much of our footage is water with nothing happening in it — those are the minutes that decide whether the next shot is worth anything."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "The Moment Before the Drop",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Surfers make that waiting visible. They sit far out, facing the horizon, and let everything that does not fit go past them. From the beach it looks like hesitation. It is really selection: only one wave in many runs in a way that will carry you. When it does come, the whole thing takes a few seconds, and afterwards the surface is empty again.\n\nWhat follows is the least spectacular part of the day and the part we like best: paddle back out, sit down again, start over. Ninety per cent of a morning on the shore is that return trip."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "surfing-the-massive-waves-of-nazar-portugal-mt3w7orf-nfx5c",
+        "caption": "A big wave, moments after it has started to break"
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "serene-bali-beach-sunset-timelapse-36456603",
+        "caption": "In the evening the wind drops, the surf shortens — and the beach belongs to the people who only watch"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "You are not waiting for the wave. You are waiting until you can recognise it.",
+        "author": "Wasserwege"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/surfing-the-massive-waves-of-nazar-portugal-mt3w7orf-nfx5c_thumb.webp",
+    "creatorHandle": "astro",
+    "title_de": "Die Brandung lesen",
+    "summary_de": "Wellen kommen nie einzeln. Notizen von einem langen Vormittag am Ufer, zwischen Zählen, Warten und ein paar Sekunden Bewegung.",
+    "tags_de": [
+      "Wasser",
+      "Sport",
+      "Abenteuer",
+      "Natur"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Von oben verliert die See ihre Richtung. Was vom Ufer aus wie ein Anlaufen und Zurückweichen aussieht, ist aus der Luft ein Muster aus hellen Linien, die sich überholen, kreuzen und wieder auflösen. Wir haben an diesem Vormittag nichts anderes getan, als zu schauen: eine Stunde vom Felsen aus, eine Stunde mit der Kamera über dem Wasser, eine Stunde mit den Füßen im Schaum.\n\nWellen kommen nicht einzeln. Sie kommen in Gruppen, und dazwischen liegt eine Ruhe, die länger dauert, als man erwartet. Wer am Wasser arbeitet, kennt diese Pausen und richtet alles danach aus: das Ablegen, das Anlanden, den Sprung ins Wasser."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "a-dynamic-top-view-of-ocean-waves-mt3w80tl-e9yuu",
+        "caption": "Blick von oben auf die offene See — dieselbe Bewegung, nur ohne Ufer als Maßstab"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Die Serien vorherzusagen ist keine Kunst, sondern Geduld. Man merkt sich, wie viele Wellen zuletzt kamen, und zählt die Sekunden dazwischen. Nach einer Weile hört man den Unterschied sogar: Eine kleine Welle bricht kurz und trocken, eine große beginnt weiter draußen und rollt länger, bevor sie kippt. Fotografieren lässt sich das schlecht, filmen schon eher. Deshalb liegt in unserem Material so viel Wasser ohne Ereignis herum — es sind die Minuten, in denen sich entscheidet, ob die nächste Aufnahme etwas wird."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Der Moment vor dem Absprung",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Wellenreiter machen dieses Warten sichtbar. Sie sitzen weit draußen, den Blick zum Horizont, und lassen vorbeiziehen, was nicht passt. Von Land aus sieht das nach Zögern aus. In Wirklichkeit ist es Auswahl: Nur eine von vielen Wellen läuft so, dass sie trägt. Kommt sie dann, dauert alles zusammen ein paar Sekunden, und danach ist die Oberfläche wieder leer.\n\nWas danach kommt, ist der unspektakulärste Teil des Tages und der, den wir am liebsten mögen: zurückpaddeln, sich wieder hinsetzen, von vorn anfangen. Ein Vormittag am Ufer besteht zu neunzig Prozent aus dieser Rückfahrt."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "surfing-the-massive-waves-of-nazar-portugal-mt3w7orf-nfx5c",
+        "caption": "Eine große Welle, kurz nachdem sie zu brechen begonnen hat"
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "serene-bali-beach-sunset-timelapse-36456603",
+        "caption": "Abends legt sich der Wind, die Brandung wird kürzer — und der Strand gehört denen, die nur zusehen"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Man wartet nicht auf die Welle. Man wartet, bis man sie erkennt.",
+        "author": "Wasserwege"
+      }
+    ]
+  },
+  {
+    "slug": "mornings-on-still-water",
+    "title_en": "Still Water",
+    "summary_en": "One bank in autumn, the same bank in winter: on the half hour each day when a lake hands the opposite slope back.",
+    "tags_en": [
+      "Lake",
+      "Landscape",
+      "Peace",
+      "Recreation"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.headline",
+        "title": "When the Lake Hands the Trees Back",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Every shoreline has half an hour in which the water does nothing at all. No wind, no boats, no ducks — just a surface showing the opposite slope a second time, reversed and a shade darker. We like to film that half hour in one piece, without cuts, because it cannot be summarised.\n\nAutumn is the most reliable season for it. The air cools faster than the water, the haze hangs low, and for a short while the reflection is almost as sharp as the original. If you start recording then, the main thing is to leave the camera alone."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "a-lake-with-trees-and-water-in-the-15463452",
+        "caption": "An autumn lake and the trees along its bank — the colours appear twice in the frame"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "A few weeks later the same place is hard to recognise. Snow visually pushes the shoreline forward, the trees lose their volume, and the water reads as black simply because nothing around it has any colour left to give. Sound carries further in winter. You hear your own tripod before you hear the lake.\n\nFor the recording that is a relief: there is less to keep an eye on. No leaves sailing through the frame, no insects in front of the lens, no walkers changing direction in the background. Just a bank, a slope, and an edge between them that sits dead straight in the viewfinder."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "serene-ocean-waves-under-a-clear-sky-mt3w7py8-buti0",
+        "caption": "Open water has its quiet hours too"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Stillness is never entirely still. Even on the smoothest lake there are flat waves you only notice once a leaf is lying on one and travelling with it. That is what this channel is about: not the events on the water, but the long stretches in between, where watching slows you down. That is also why we barely cut this material. Passing by, you take it for a freeze frame — and only after a while do you notice that the whole picture is drifting, very slowly."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "tranquil-winter-lake-with-snowy-for-29570504",
+        "caption": "The same bank in winter, snow right down to the waterline"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/serene-ocean-waves-under-a-clear-sky-mt3w7py8-buti0_thumb.webp",
+    "creatorHandle": "astro",
+    "title_de": "Stilles Wasser",
+    "summary_de": "Ein Ufer im Herbst, dasselbe Ufer im Winter: über die halbe Stunde am Tag, in der ein See den Hang gegenüber zurückgibt.",
+    "tags_de": [
+      "See",
+      "Landschaft",
+      "Frieden",
+      "Erholung"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.headline",
+        "title": "Wenn der See die Bäume zurückgibt",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Es gibt an jedem Ufer eine halbe Stunde, in der das Wasser nichts tut. Kein Wind, keine Boote, keine Enten — nur eine Fläche, die den Hang gegenüber noch einmal zeigt, seitenverkehrt und eine Spur dunkler. Wir filmen diese halbe Stunde gerne am Stück, ohne Schnitt, weil sie sich nicht zusammenfassen lässt.\n\nIm Herbst ist sie am zuverlässigsten. Die Luft kühlt schneller ab als das Wasser, der Dunst bleibt tief hängen, und die Spiegelung wird für kurze Zeit fast so scharf wie das Original. Wer dann eine Aufnahme startet, muss vor allem eines: die Kamera in Ruhe lassen."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "a-lake-with-trees-and-water-in-the-15463452",
+        "caption": "Herbstlicher See mit Ufergehölz — die Farben liegen doppelt im Bild"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Ein paar Wochen später ist derselbe Ort kaum wiederzuerkennen. Der Schnee schiebt die Uferlinie optisch nach vorn, die Bäume verlieren ihr Volumen, und das Wasser wirkt schwarz, weil ihm rundherum jede Farbe fehlt, die es spiegeln könnte. Geräusche tragen im Winter weiter. Man hört das eigene Stativ, bevor man den See hört.\n\nFür die Aufnahme ist das eine Erleichterung: Es gibt weniger, worauf man achten muss. Kein Laub, das durchs Bild segelt, keine Insekten vor der Linse, keine Spaziergänger, die im Hintergrund die Richtung wechseln. Nur ein Ufer, ein Hang und eine Kante dazwischen, die im Sucher schnurgerade liegt."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "serene-ocean-waves-under-a-clear-sky-mt3w7py8-buti0",
+        "caption": "Auch offenes Wasser hat seine ruhigen Stunden"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Stillstand ist dabei nie ganz still. Selbst auf dem glattesten See laufen flache Wellen, die man erst bemerkt, wenn ein Blatt darauf liegt und mitwandert. Genau darum geht es diesem Kanal: nicht um Ereignisse am Wasser, sondern um die langen Strecken dazwischen, in denen man beim Zuschauen langsamer wird. Deshalb schneiden wir diese Aufnahmen kaum. Wer sie im Vorbeigehen sieht, hält sie für ein Standbild — und merkt erst nach einer Weile, dass sich der ganze Bildausschnitt sehr langsam bewegt."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "tranquil-winter-lake-with-snowy-for-29570504",
+        "caption": "Dasselbe Ufer im Winter, mit Schnee bis an die Wasserkante"
+      }
+    ]
+  },
+  {
+    "slug": "below-the-waterline",
+    "title_en": "Below the Waterline",
+    "summary_en": "A reef is not a still life, it is an inhabited neighbourhood. Why we move the camera more slowly down there than anywhere else.",
+    "tags_en": [
+      "Water",
+      "Nature",
+      "Colors",
+      "Animals"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "The trip out is part of it. There is a good half hour between the jetty and the anchorage in which nothing happens except wind, and that half hour is exactly when the camera gets set up, the housing gets checked twice and nobody talks about anything. People who go straight into the water film in a hurry afterwards. So we let the crossing run, even though a few seconds of it are all that usually survive."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "ruhige-flusskreuzfahrt-an-einem-son-35565428",
+        "caption": "Sails over open water, shortly before the anchorage"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Below the surface the light is the first thing to change. It no longer comes from above but from everywhere, and anything more than a few metres away loses its outline. At first glance a reef looks like a still life. Two minutes later that is no longer true: something flickers, a shoal turns away as one body, and what was a stone a moment ago pulls itself back in.\n\nDistances are wrong down here as well. Whatever you reach for is an arm's length further away than it looks, and the first shot of every dive of ours is reliably too close."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "a-vivid-close-up-of-colorful-coral-mt3w7cs2-0f8ts",
+        "caption": "Close up: colours you only notice from a few centimetres away"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "That is why we move the camera more slowly here than anywhere else. A fast pan smears the colours, a careless fin stirs up sand that costs you the next few minutes. What usually remains is a single long shot in which very little seems to happen — and in which, on the second viewing, you notice how crowded the frame actually is.\n\nThe way back is short. Surface, mask up, and above the water there is nothing but a plane again, one you now know the underside of."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "colorful-coral-reef-teeming-with-marine-life-mt3w886g-0zq8b",
+        "caption": "An inhabited reef, filmed without any added light"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Above water everything is surface. You have to go down to notice that somebody lives there.",
+        "author": "Jonas, Kamera an Bord"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/colorful-coral-reef-teeming-with-marine-life-mt3w886g-0zq8b_thumb.webp",
+    "creatorHandle": "astro",
+    "title_de": "Unter der Wasserlinie",
+    "summary_de": "Ein Riff ist kein Stillleben, sondern eine bewohnte Gegend. Warum wir dort die Kamera langsamer bewegen als überall sonst.",
+    "tags_de": [
+      "Wasser",
+      "Natur",
+      "Farben",
+      "Tiere"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Die Anfahrt gehört dazu. Zwischen Steg und Ankerplatz liegt eine gute halbe Stunde, in der nichts passiert außer Wind, und genau in dieser halben Stunde wird die Kamera eingestellt, das Gehäuse zweimal geprüft und über nichts geredet. Wer sofort ins Wasser springt, filmt hinterher hektisch. Wir lassen die Fahrt deshalb mitlaufen, auch wenn davon selten mehr als ein paar Sekunden übrig bleiben. Zum Ritual gehört, dass vorher niemand ins Wasser schaut: Wer schon von Deck aus sucht, ist unter der Oberfläche nur noch enttäuscht."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "ruhige-flusskreuzfahrt-an-einem-son-35565428",
+        "caption": "Segel über offenem Wasser, kurz vor dem Ankerplatz"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Unter der Oberfläche ändert sich zuerst das Licht. Es kommt nicht mehr von oben, sondern von überall, und alles, was weiter als ein paar Meter entfernt ist, verliert seine Kontur. Ein Riff sieht auf den ersten Blick aus wie ein Stillleben. Nach zwei Minuten stimmt das nicht mehr: Irgendwo zuckt etwas, ein Schwarm dreht geschlossen ab, und was eben noch Stein war, zieht sich zurück.\n\nAuch die Entfernungen stimmen nicht. Was man greifen möchte, ist einen Armlängen weiter weg, als es aussieht, und die erste Aufnahme jedes Tauchgangs ist bei uns verlässlich zu nah dran."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "a-vivid-close-up-of-colorful-coral-mt3w7cs2-0f8ts",
+        "caption": "Nahaufnahme: Farben, die erst aus wenigen Zentimetern Abstand auffallen"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Deshalb bewegen wir die Kamera hier langsamer als überall sonst. Jede schnelle Schwenkbewegung verwischt die Farben, jede unbedachte Flosse wirbelt Sand auf, der die nächsten Minuten kostet. Am Ende steht meist eine einzige lange Einstellung, in der scheinbar wenig passiert — und in der man beim zweiten Ansehen entdeckt, wie voll das Bild eigentlich ist.\n\nDer Rückweg ist dann kurz. Auftauchen, Maske hoch, und über dem Wasser ist wieder nur Fläche, unter der man jetzt weiß, was liegt."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "colorful-coral-reef-teeming-with-marine-life-mt3w886g-0zq8b",
+        "caption": "Ein bewohntes Riff, aufgenommen ohne zusätzliches Licht"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Über Wasser ist alles Oberfläche. Man muss schon hinunter, um zu merken, dass da jemand wohnt.",
+        "author": "Jonas, Kamera an Bord"
+      }
+    ]
+  },
+  {
+    "slug": "cats-on-walls-and-fences",
+    "title_en": "Always One Level Up: Why Cats Sit on Walls",
+    "summary_en": "The door is barely open before she is up on the wall, looking down at you. A small tribute to every cat's favourite spot – and how to build one at home.",
+    "tags_en": [
+      "Cat",
+      "Garden",
+      "Outdoor"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Anyone who lives with a cat knows the routine. The patio door is open a crack and she is gone. Two minutes later she is sitting on the garden wall, the fence post or the carport roof, looking down at you as if that lookout had always been hers.\n\nFootage like this piles up on its own. Nobody sets up a tripod and waits for it. You step outside, you look up, and there she is. Always one level higher than wherever you happen to be standing."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "two-cats-perched-on-a-wall-one-mt3w6l43-2qmyo",
+        "caption": "Two neighbourhood cats on the wall: one seat taken, the other still under negotiation."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "The Best Seat Is the One With a View",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "That cats like high places is hardly a discovery. It is something every owner works out in the first week. From up there you can see more, you are out of reach of dogs and small children, and the sun hits a wall long before it reaches the grass below.\n\nThe real spectacle is the climb anyway. Some cats go up in one clean movement, no warning at all. Others need three attempts, then sit down, act as though that was the plan from the start, and give one shoulder a very thorough wash. Few animals talk their way out of a botched movement with quite so much composure."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "cat-sitting-on-a-wood-5350535-5350535",
+        "caption": "A balancing act along the wooden wall – the tail does the rest of the work."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "If you have cats in the garden, this taste for height is easy to indulge: a solid plank laid across the wall, a shelf by the window, a tree stump you simply leave standing. All that matters is that nothing wobbles and that the cat can climb back down again instead of having to jump. The rest takes care of itself.\n\nThen you sit underneath with a coffee and get observed. Not looked at – observed. Anyone who has felt that knows exactly who is keeping whom in this household – and which of the two has the better seat."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "My cat has three favourite spots, and all three of them are higher than I am.",
+        "author": "Lena, from our community"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/two-cats-perched-on-a-wall-one-mt3w6l43-2qmyo_thumb.webp",
+    "creatorHandle": "catmania",
+    "title_de": "Immer eine Etage höher: Warum Katzen auf Mauern sitzen",
+    "summary_de": "Kaum ist die Tür offen, sitzt sie oben auf der Mauer und schaut herunter. Eine kleine Feier des Lieblingsplatzes aller Katzen – und wie man ihn zu Hause nachbaut.",
+    "tags_de": [
+      "Katze",
+      "Garten",
+      "Outdoor"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Wer mit einer Katze zusammenlebt, kennt das Ritual. Kaum steht die Terrassentür einen Spalt offen, ist sie weg. Zwei Minuten später sitzt sie auf der Gartenmauer, dem Zaunpfosten oder dem Dach vom Carport und schaut herunter, als hätte sie diesen Posten schon immer innegehabt.\n\nBei uns sammeln sich solche Aufnahmen ganz von allein. Niemand baut dafür ein Stativ auf und wartet. Man geht raus, schaut nach oben, und da sitzt sie. Immer eine Etage höher, als man selbst gerade steht."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "two-cats-perched-on-a-wall-one-mt3w6l43-2qmyo",
+        "caption": "Zwei Nachbarskatzen auf der Mauer: Der eine Platz ist besetzt, der andere wird gerade verhandelt."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Der beste Platz ist der mit Aussicht",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Dass Katzen erhöhte Plätze mögen, ist keine große Entdeckung, sondern etwas, das jeder Halter nach der ersten Woche weiß. Von oben lässt sich mehr überblicken, man ist Hunden und Kinderfüßen aus dem Weg, und auf einer Mauer kommt die Sonne früher an als unten im Gras.\n\nDas eigentliche Schauspiel ist ohnehin der Aufstieg. Manche Katzen springen in einem einzigen Zug hoch, ohne jede Ankündigung. Andere brauchen drei Anläufe, setzen sich anschließend hin, tun so, als wäre genau das der Plan gewesen, und putzen sich erst einmal ausgiebig die Schulter. Es gibt kaum ein Tier, das sich so souverän aus einer misslungenen Bewegung herausredet."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "cat-sitting-on-a-wood-5350535-5350535",
+        "caption": "Balanceakt auf der Holzmauer – den Rest der Arbeit erledigt der Schwanz."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Wer Katzen im Garten hat, kann diesen Hang zur Höhe leicht bedienen: ein stabiles Brett quer über die Mauer, ein Regalbrett am Fenster, ein Baumstumpf, der einfach stehen bleiben darf. Entscheidend ist nur, dass nichts wackelt und dass die Katze auch wieder heruntersteigen kann, ohne springen zu müssen. Der Rest ergibt sich.\n\nUnd dann setzt man sich mit einem Kaffee darunter und wird beobachtet. Nicht angeschaut – beobachtet. Wer das einmal erlebt hat, weiß, wer in diesem Haushalt eigentlich wen hält – und wer von beiden den besseren Platz hat."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Meine Katze hat drei Lieblingsplätze, und alle drei sind höher als ich.",
+        "author": "Lena, aus unserer Community"
+      }
+    ]
+  },
+  {
+    "slug": "dogs-out-in-the-rain",
+    "title_en": "Rain? The Dogs Are Already Outside",
+    "summary_en": "Two dogs in raincoats, a wet pavement and not a trace of a bad mood. On coats, mud, and what actually matters once the walk is over.",
+    "tags_en": [
+      "Dog",
+      "Outdoor",
+      "Friendship"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "There are two kinds of dogs when it rains. Some stop in the doorway, look outside, look back at their human and wait, quite plainly, for somebody to switch the weather off. The others are already halfway to the nearest puddle.\n\nThis clip belongs firmly to the second kind: two dogs in raincoats, a pavement shining with water, and no sign anywhere of a bad mood."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "dogs-wearing-raincoat-while-raining-8499644",
+        "caption": "Two of them in rain jackets, out in a downpour. It does nothing to slow the pace."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Raincoats for dogs are a subject walkers get surprisingly heated about. In practice it is a calm question. Some dogs have thick, water-repellent coats and simply need nothing at all. Others are short-haired and lightly built and start to feel the chill faster in wet wind. The dog tells you which one it is, and you need no rule or chart for that: if it shivers, it is cold, and if it ploughs happily through the puddles, it is clearly managing fine.\n\nHonestly, the coat is mostly a convenience for the human. Less wet fur in the car, less mud in the hallway, less negotiation at the front door. And what comes afterwards matters more than the jacket anyway: a good rub down, a warm spot, fresh water, and some quiet."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "A dog never asks about the forecast. A dog asks whether the lead is already in your hand.",
+        "author": "Family & Animals"
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "three-dogs-walk-through-a-sunlit-forest-mt3w6jwk-cqrpt",
+        "caption": "Two days later in the same woods: the ground still soft, the light already back."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "That is really the charm of these weeks. The rainy day is followed by the day after, when the forest steams, the ground gives underfoot and every step smells like something new. To a dog that is not bad weather. It is a far more interesting walk than anything a dry August has to offer.\n\nIn the end he barely cares whether it is pouring or whether the sun is coming through the trees. He is going out. And we are going with him, in shoes that still will not be dry tomorrow."
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/three-dogs-walk-through-a-sunlit-forest-mt3w6jwk-cqrpt_thumb.webp",
+    "creatorHandle": "catmania",
+    "title_de": "Regen? Die Hunde sind längst draußen",
+    "summary_de": "Zwei Hunde in Regenjacken, ein nasser Gehweg und kein bisschen schlechte Laune. Über Mäntel, Matsch und das, was nach dem Spaziergang wirklich zählt.",
+    "tags_de": [
+      "Hund",
+      "Outdoor",
+      "Freundschaft"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Es gibt zwei Sorten von Hunden bei Regen. Die einen bleiben in der Haustür stehen, schauen nach draußen, schauen zurück zu ihrem Menschen und warten offensichtlich darauf, dass jemand das Wetter abstellt. Die anderen sind schon auf halbem Weg zur nächsten Pfütze.\n\nDieser kleine Film gehört eindeutig zur zweiten Sorte: zwei Hunde in Regenmänteln, ein glänzend nasser Gehweg, und nirgendwo ein Anzeichen von schlechter Laune."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "dogs-wearing-raincoat-while-raining-8499644",
+        "caption": "Zwei in Regenjacken, unterwegs bei strömendem Regen. Am Tempo ändert das nichts."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Regenmäntel für Hunde sind ein Thema, an dem sich Spaziergänger erstaunlich gern erhitzen. Dabei ist die Sache eigentlich unaufgeregt. Manche Hunde haben dichtes, wasserabweisendes Fell und brauchen schlicht nichts. Andere sind kurzhaarig und dünn gebaut und kommen bei nassem Wind schneller ins Frösteln. Man sieht es dem Hund an, dafür braucht es keine Regel und keine Tabelle: Wer zittert, friert, und wer fröhlich durch die Pfützen pflügt, kommt offensichtlich gut zurecht.\n\nEhrlich gesagt ist so ein Mantel vor allem für den Menschen praktisch. Weniger nasses Fell im Auto, weniger Matsch im Flur, weniger Diskussion beim Betreten der Wohnung. Wichtiger als die Jacke ist ohnehin das, was danach kommt: trockenrubbeln, ein warmer Platz, frisches Wasser, Ruhe."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Der Hund fragt nicht nach der Wettervorhersage. Der Hund fragt, ob die Leine schon in der Hand ist.",
+        "author": "Familie & Tiere"
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "three-dogs-walk-through-a-sunlit-forest-mt3w6jwk-cqrpt",
+        "caption": "Zwei Tage später im selben Wald: Boden noch weich, Licht schon wieder da."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Und genau darin liegt der eigentliche Reiz an diesen Wochen. Auf den Regentag folgt der Tag danach, an dem der Wald dampft, der Boden nachgibt und jeder Schritt riecht, als wäre er neu. Für einen Hund ist das kein schlechtes Wetter, sondern ein deutlich interessanterer Spaziergang als der im trockenen August.\n\nAm Ende ist es ihm ziemlich gleich, ob es schüttet oder ob die Sonne durch die Bäume fällt. Er geht raus. Und wir gehen mit, in unseren Schuhen, die morgen immer noch nicht trocken sein werden."
+      }
+    ]
+  },
+  {
+    "slug": "handmade-ravioli-ricotta-and-sage-butter",
+    "title_en": "Ricotta Ravioli: Two Ingredients, One Hour, No Tricks",
+    "summary_en": "Pasta dough from flour and egg, a filling you have to taste as you go, and sage butter made in the very pan where the ravioli finish cooking.",
+    "tags_en": [
+      "Food",
+      "Craft",
+      "Art"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Ravioli have a reputation as a patient-Sunday project, when really they come down to two ingredients. For four servings: 300 g of flour, three eggs, a pinch of salt. Pile it all onto the board, knead for ten minutes until the dough is smooth and springs back slowly under your finger. Then wrap it and let it sit for half an hour.\n\nThat pause is not the cook being comfortable. Freshly kneaded dough is elastic and fights the rolling pin; after thirty minutes it stretches thin without snapping back. Skip it and you will spend the rest of the evening working against your own material."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "gourmet-ravioli-served-in-a-vibrant-creamy-mt3w68x0-nc8rx",
+        "caption": "Finished ravioli, glossy with butter, seconds before they go to the table."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "The Filling: Fewer Ingredients, Seasoned Properly",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Ricotta carries water, and water is the enemy of every sealed edge. So it goes into a sieve for an hour first, weighted down with a plate. After that, stir it together with grated parmesan, a little lemon zest, freshly grated nutmeg, salt and pepper. Taste it now, not later: wrapped in dough, a filling always reads milder than it did on the spoon.\n\nRoll the sheet thin enough that the grain of the board shows through. Place mounds of filling four centimetres apart, moisten the gaps with a wet finger, lay the second sheet over the top. Press outward from each mound and push the air out before you cut. A trapped bubble expands in boiling water and tears the ravioli open."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "food-served-on-a-restaurant-table-5-5101338",
+        "caption": "It goes to the middle of the table: pasta waits for nobody."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Cook them in plenty of salted water at a gentle simmer rather than a hard boil, because fresh ravioli are too delicate for rough movement. Three to four minutes is enough; they float up on their own.\n\nMeanwhile melt butter in a wide pan until it foams and smells nutty, drop in sage leaves and add a ladle of the cooking water. The starch in that water binds fat and liquid into a sauce that clings to the pasta instead of pooling on the plate. Lift the ravioli in, swirl once, serve immediately. Nobody needs cream here."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Good pasta dough forgives almost everything except being rushed.",
+        "author": "Culinary Masterclass"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/gourmet-ravioli-served-in-a-vibrant-creamy-mt3w68x0-nc8rx_thumb.webp",
+    "creatorHandle": "demogourmet",
+    "title_de": "Ravioli mit Ricotta: zwei Zutaten, eine Stunde, kein Trick",
+    "summary_de": "Nudelteig aus Mehl und Ei, eine Füllung, die man abschmecken muss, und Salbeibutter, die in derselben Pfanne entsteht, in der die Ravioli fertig werden.",
+    "tags_de": [
+      "Essen",
+      "Handwerk",
+      "Kunst"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Ravioli gelten als Projekt für geduldige Sonntage, dabei sind sie vor allem eine Frage von zwei Zutaten. Für vier Portionen: 300 g Mehl, drei Eier, eine Prise Salz. Alles auf dem Brett zusammenschieben, zehn Minuten kneten, bis der Teig glatt ist und auf Fingerdruck langsam zurückkommt. Dann einwickeln und eine halbe Stunde liegen lassen.\n\nDiese Pause ist keine Bequemlichkeit für den Koch. Frisch geknetet ist der Teig sprungfedernd und wehrt sich gegen jede Rolle; nach dreißig Minuten lässt er sich dünn ausziehen, ohne zurückzuschnellen. Wer sie überspringt, arbeitet den Rest des Abends gegen sein eigenes Material."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "gourmet-ravioli-served-in-a-vibrant-creamy-mt3w68x0-nc8rx",
+        "caption": "Fertige Ravioli, glänzend von Butter und kurz vor dem Auftragen."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Die Füllung: weniger Zutaten, dafür richtig abgeschmeckt",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Ricotta bringt Wasser mit, und Wasser ist der Feind jeder Naht. Deshalb kommt er zuerst für eine Stunde in ein Sieb, mit einem Teller beschwert. Danach mit geriebenem Parmesan, etwas Zitronenabrieb, frisch geriebener Muskatnuss, Salz und Pfeffer verrühren. Jetzt probieren, nicht später: Im Teig verpackt schmeckt die Füllung immer milder als auf dem Löffel.\n\nDie Teigbahn wird so dünn ausgerollt, dass die Maserung des Bretts durchscheint. Füllung in Häufchen im Abstand von vier Zentimetern setzen, die Zwischenräume mit einem feuchten Finger anfeuchten, zweite Bahn darüberlegen. Dann von innen nach außen streichen und die Luft herausdrücken, bevor man ausradelt. Eine eingeschlossene Luftblase dehnt sich im kochenden Wasser aus und reißt die Ravioli auf."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "food-served-on-a-restaurant-table-5-5101338",
+        "caption": "Aufgetragen wird in der Mitte des Tisches: Pasta wartet auf niemanden."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Gekocht wird in reichlich Salzwasser, das siedet, aber nicht wild sprudelt: Frische Ravioli sind zu zart für starke Bewegung. Drei bis vier Minuten reichen, sie steigen von selbst auf.\n\nWährenddessen Butter in einer weiten Pfanne schmelzen lassen, bis sie schäumt und nussig riecht, Salbeiblätter hineingeben und einen Schöpflöffel Kochwasser dazu. Die Stärke im Wasser bindet Fett und Flüssigkeit zu einer Sauce, die sich an den Teig legt, statt auf dem Teller zu stehen. Ravioli hineinheben, einmal schwenken, sofort servieren. Sahne braucht hier niemand."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Guter Nudelteig verzeiht fast alles außer Eile.",
+        "author": "Culinary Masterclass"
+      }
+    ]
+  },
+  {
+    "slug": "overnight-focaccia-from-a-home-oven",
+    "title_en": "Overnight Focaccia: Why the Dough Starts the Night Before",
+    "summary_en": "A tray of focaccia needs four ingredients and one long, cold rest. How to fold a wet dough instead of kneading it, and what those dimples are actually for.",
+    "tags_en": [
+      "Food",
+      "Craft",
+      "Community"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.headline",
+        "title": "Four Ingredients, One Tray, One Night of Waiting",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Focaccia asks for nothing that isn't already in the kitchen: flour, water, yeast, salt and decent olive oil. What it does ask for is time, at a moment when nobody is hungry yet.\n\nFor one baking tray: 500 g of flour, 400 ml of lukewarm water, 5 g of dried yeast, 10 g of salt. At that hydration the dough is too slack to knead, and that is the point. Instead of working it, you fold it: reach under the edge with a wet hand, lift, fold it into the middle, turn the bowl, four times around. Repeat the whole thing three times at twenty-minute intervals. Then cover the bowl and put it in the fridge overnight."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "freshly-baked-artisan-bread-inside-a-hot-mt3w5cgq-wmxsh",
+        "caption": "Near the end of the bake: the crust is colouring and the oven door stays shut."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "In the morning the dough looks nothing like it did the night before: bubbled, slack, visibly bigger. It goes straight from the fridge onto a generously oiled tray and rests there for an hour until it reaches room temperature. Cold dough cannot be coaxed into the corners; it pulls straight back.\n\nOnly then do you press down through the dough with spread fingertips, all the way to the metal. The dimples this leaves are not decoration. They hold the olive oil in place while everything around them rises, which is what gives focaccia its split personality of crisp top and soft crumb. Scatter coarse salt and rosemary over it, then bake at 220 degrees for twenty to twenty-five minutes.\n\nThat cold night in the fridge is not a detour, it is the actual work. At low temperature the yeast keeps going slowly, the dough builds structure without turning sour, and the finished tray tastes of more than just yeast and salt. If you have two spare hours in the morning you can prove it at room temperature instead; the result is fluffier, but flatter in flavour."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "brunch-table-close-up-5386859-5386859",
+        "caption": "Set out on a laid breakfast table, a whole tray disappears faster than expected."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "The oven only does the last half hour. The night before does the rest.",
+        "author": "Culinary Masterclass"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/freshly-baked-artisan-bread-inside-a-hot-mt3w5cgq-wmxsh_thumb.webp",
+    "creatorHandle": "demogourmet",
+    "title_de": "Focaccia über Nacht: warum der Teig am Vorabend entsteht",
+    "summary_de": "Ein Blech Focaccia braucht vier Zutaten und eine lange, kalte Ruhe. Wie der weiche Teig gefaltet statt geknetet wird und wozu die Grübchen wirklich da sind.",
+    "tags_de": [
+      "Essen",
+      "Handwerk",
+      "Gemeinschaft"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.headline",
+        "title": "Vier Zutaten, ein Blech, eine Nacht Wartezeit",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Focaccia verlangt nichts, was nicht ohnehin in der Küche steht: Mehl, Wasser, Hefe, Salz, dazu gutes Olivenöl. Was sie verlangt, ist Zeit zu einem Zeitpunkt, an dem noch niemand Hunger hat.\n\nFür ein Backblech: 500 g Mehl, 400 ml lauwarmes Wasser, 5 g Trockenhefe, 10 g Salz. Der Teig ist mit diesem Wasseranteil zu weich zum Kneten, und das ist Absicht. Statt ihn zu bearbeiten, faltet man ihn: mit nasser Hand unter den Rand greifen, hochziehen, zur Mitte klappen, Schüssel drehen, viermal im Kreis. Das Ganze dreimal im Abstand von zwanzig Minuten. Danach kommt die Schüssel abgedeckt über Nacht in den Kühlschrank."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "freshly-baked-artisan-bread-inside-a-hot-mt3w5cgq-wmxsh",
+        "caption": "Kurz vor dem Ende der Backzeit: Die Kruste färbt sich, der Ofen bleibt zu."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Am nächsten Morgen sieht der Teig anders aus als am Abend: blasig, weich, deutlich gewachsen. Er kommt aus dem Kühlschrank auf ein großzügig geöltes Blech und darf dort eine Stunde stehen, bis er Zimmertemperatur hat. Kalter Teig lässt sich nicht in die Ecken ziehen, er zieht sich zurück.\n\nErst dann drückt man mit gespreizten Fingerspitzen senkrecht durch den Teig bis auf das Blech. Die Grübchen, die dabei entstehen, sind kein Dekor. Sie halten das Olivenöl an Ort und Stelle, während der Rest aufgeht, und sorgen für die typische Mischung aus knuspriger Oberfläche und weicher Krume. Darüber grobes Salz und Rosmarin, dann bei 220 Grad zwanzig bis fünfundzwanzig Minuten backen.\n\nDie kalte Nacht im Kühlschrank ist dabei kein Umweg, sondern der eigentliche Arbeitsschritt. Bei niedriger Temperatur arbeitet die Hefe langsam weiter, der Teig entwickelt Struktur, ohne übersäuert zu werden, und am Ende schmeckt das Blech nach mehr als nach Hefe und Salz. Wer morgens zwei Stunden Zeit hat, kann den Teig auch bei Zimmertemperatur gehen lassen; er wird dann fluffiger, aber flacher im Geschmack."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "brunch-table-close-up-5386859-5386859",
+        "caption": "Am gedeckten Frühstückstisch verschwindet ein Blech schneller als gedacht."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Der Ofen macht nur die letzte halbe Stunde. Den Rest macht die Nacht davor.",
+        "author": "Culinary Masterclass"
+      }
+    ]
+  },
+  {
+    "slug": "the-hour-before-departure",
+    "title_en": "The Hour Before Departure",
+    "summary_en": "An afternoon in the terminal, and why the stretch between security and boarding is the calmest part of any travel day.",
+    "tags_en": [
+      "Travel",
+      "Aviation",
+      "Transport",
+      "Atmosphere"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "The hour before departure belongs to no city at all. The suitcase is checked in, the passport is back in your jacket pocket, and whatever happens next is no longer your responsibility. You cannot speed anything up and you cannot miss anything, as long as you stay within earshot of the gate.\n\nWe walked through a terminal on a weekday afternoon with no destination, just a camera, and noticed that this hour keeps its own time. It is neither waiting nor travelling, but a third thing in between. Sit with it instead of scrolling past it, and you get the quietest part of the day for free."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "menschen-sitzen-in-stuehlen-in-eine-18757432",
+        "caption": "Row after row: waiting in the terminal on a late afternoon"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "At the gate, everything organises itself around power sockets. Whoever brought a cable sits against the wall; whoever did not sits by the window and looks out. Two rows further along, someone is asleep with a backpack for a pillow and one foot hooked through the strap so nothing wanders off.\n\nThere is little talking and a lot of looking. The coffee goes cold, because it was only ever something to do with your hands. Then the pitch of the hall changes before the announcement even starts: people stand up a few seconds too early, because someone at the desk has switched on a microphone. Every traveller understands that sound, in any language."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "a-dimly-lit-corridor-featuring-vibrant-red-mt3w62uy-izqr4",
+        "caption": "The corridor down to the gates, minutes before boarding"
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Outside, It Gets Serious",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Behind the glass, the opposite of the calm inside is going on. Vehicles cut tight corners, someone waves two orange paddles, and an aircraft rolls to the edge of the runway and pauses, as if taking a breath.\n\nThe take-off itself lasts barely longer than that breath. What dragged on for an hour becomes a matter of seconds: the nose lifts, the gear folds away, and the dot in the sky is already too far off to belong to this building. That is exactly why the window seats in the terminal are worth having — you get to watch the end of your own waiting go past on somebody else's plane."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "passenger-jet-taking-off-at-hamburg-33651684",
+        "caption": "Lifting off the runway: the short moment everyone here is waiting for"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "I arrive far too early on purpose. Those two hours at the airport are the only ones all year when nobody wants anything from me.",
+        "author": "Unterwegs"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/a-dimly-lit-corridor-featuring-vibrant-red-mt3w62uy-izqr4_thumb.webp",
+    "creatorHandle": "demotech",
+    "title_de": "Die Stunde vor dem Abflug",
+    "summary_de": "Ein Nachmittag im Terminal: warum die Zeit zwischen Sicherheitskontrolle und Boarding die ruhigste des ganzen Reisetags ist.",
+    "tags_de": [
+      "Reise",
+      "Luftfahrt",
+      "Verkehr",
+      "Atmosphäre"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Die Stunde vor dem Abflug gehört zu keiner Stadt. Der Koffer ist abgegeben, der Ausweis steckt wieder in der Jackentasche, und für alles, was jetzt noch passiert, ist man nicht mehr zuständig. Man kann nichts beschleunigen und nichts verpassen, solange man in Hörweite des Gates bleibt.\n\nWir sind an einem Werktagnachmittag ohne Ziel durch ein Terminal gelaufen, nur mit der Kamera, und haben gemerkt: Diese Stunde hat einen eigenen Takt. Sie ist weder Warten noch Reisen, sondern etwas Drittes dazwischen. Wer sie nicht wegdrückt, sondern aushält, bekommt den stillsten Teil des Tages geschenkt."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "menschen-sitzen-in-stuehlen-in-eine-18757432",
+        "caption": "Reihe für Reihe: Warten im Terminal am späten Nachmittag"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Am Gate ordnet sich alles nach Steckdosen. Wer ein Ladekabel dabei hat, sitzt an der Wand; wer keins hat, sitzt am Fenster und schaut hinaus. Zwei Reihen weiter schläft jemand mit dem Rucksack als Kissen, den Fuß im Gurt, damit nichts wegkommt.\n\nEs wird wenig gesprochen und viel geschaut. Der Kaffee wird kalt, weil er ohnehin nur eine Beschäftigung war. Und dann verändert sich die Tonlage der Halle, noch bevor die Durchsage kommt: Die Leute stehen ein paar Sekunden zu früh auf, weil jemand am Schalter das Mikrofon eingeschaltet hat. Dieses Geräusch versteht jeder Reisende, in jeder Sprache."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "a-dimly-lit-corridor-featuring-vibrant-red-mt3w62uy-izqr4",
+        "caption": "Der Gang zu den Gates, kurz bevor das Boarding beginnt"
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Draußen wird es ernst",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Hinter der Scheibe passiert das Gegenteil der Ruhe drinnen. Fahrzeuge fahren enge Kurven, jemand winkt mit zwei orangefarbenen Kellen, eine Maschine rollt an den Rand der Bahn und bleibt kurz stehen, als würde sie Luft holen.\n\nDer Start dauert dann kaum länger als ein tiefer Atemzug. Was vorher eine Stunde lang zäh war, ist plötzlich eine Frage von Sekunden: Der Bug hebt sich, das Fahrwerk klappt ein, und der Punkt am Himmel ist schon zu weit weg, um noch dazuzugehören. Genau deshalb lohnt sich das Fenstersitzen im Terminal — man sieht das Ende der eigenen Wartezeit an einer fremden Maschine vorbeiziehen."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "passenger-jet-taking-off-at-hamburg-33651684",
+        "caption": "Abheben über die Bahn: der kurze Moment, auf den alle hier warten"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Ich reise absichtlich zu früh an. Die zwei Stunden am Flughafen sind die einzigen im Jahr, in denen niemand etwas von mir will.",
+        "author": "Unterwegs"
+      }
+    ]
+  },
+  {
+    "slug": "where-the-city-becomes-a-court",
+    "title_en": "Where the City Becomes a Court",
+    "summary_en": "Ramp, kerb, hoop: how outdoor sport finds its own venues, and why the best of them were never built for it.",
+    "tags_en": [
+      "Sports",
+      "City",
+      "Urban",
+      "Leisure"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.image",
+        "imageSlug": "teenagers-skateboarding-on-a-graffiti-covered-ramp-mt3w7scr-drpap",
+        "caption": "The ramp at the edge of the park: painted over, worn smooth, never empty"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "A sports ground has lines, measurements and opening hours. The places this piece is about have none of that. They appear wherever a surface is smooth enough, an edge is high enough, and nobody turns up to move anyone along.\n\nWe went out on three afternoons in a row, always in the same neighbourhood, and watched the same two hundred square metres of concrete rebuild itself several times a day. In the morning it holds bicycles. After school the ramp belongs to the boards. Once it gets dark and the street lights come on, the only thing that counts is who sinks the shot.\n\nThe surprising part is not how much movement fits into so little space. It is how quietly the handover works. Nobody negotiates, nobody books a slot. You notice it is your turn, and you step in."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "A Hundred Attempts for Three Seconds",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "From a distance, skating looks like ease. Up close it is mostly repetition: roll in, set up, miss the grab, flick the board back with one foot, go again. The trick that later reads as a single fluid moment is built out of an afternoon of failed attempts that nobody films.\n\nA few metres away, the basketball follows the same principle at a different volume. There is shouting, laughing and arguing, but the core is identical: repeat one movement until the body can do it without thinking. Watch long enough and you can hear the difference — the clack of trucks on the coping, the knock of a ball on asphalt, both keeping a beat that only stops when it gets too dark to see.\n\nThat is what turns these places into destinations. You do not have to fly anywhere to watch people move. Sitting down at the edge and not leaving for an hour is enough."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "aerial-view-of-kids-playing-basketb-37483482",
+        "caption": "Seen from above: the court fills up as soon as the shade crosses the line"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "We don't have a team here and we don't have a kick-off time. If two of us show up, we play.",
+        "author": "Jannis, a skater from the neighbourhood"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/skateboarder-executing-a-trick-on-a-city-mt3w5ihh-uio1u_thumb.webp",
+    "creatorHandle": "demotech",
+    "title_de": "Wo die Stadt zum Spielfeld wird",
+    "summary_de": "Rampe, Bordstein, Korb: Wie sich Sport im Freien seine Orte selbst sucht — und warum die besten davon nie dafür gebaut wurden.",
+    "tags_de": [
+      "Sport",
+      "Stadt",
+      "Urban",
+      "Freizeit"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.image",
+        "imageSlug": "teenagers-skateboarding-on-a-graffiti-covered-ramp-mt3w7scr-drpap",
+        "caption": "Die Rampe am Rand des Parks: bemalt, abgeschliffen, ständig in Benutzung"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Ein Sportplatz hat Linien, Maße und Öffnungszeiten. Die Orte, um die es hier geht, haben nichts davon. Sie entstehen dort, wo eine Fläche glatt genug ist, eine Kante hoch genug und niemand kommt, um jemanden wegzuschicken.\n\nWir waren an drei Nachmittagen in Folge unterwegs, immer im selben Viertel, und haben zugesehen, wie sich dieselben zweihundert Quadratmeter Beton mehrfach am Tag umbauen. Vormittags stehen dort Fahrräder. Nach der Schule gehört die Rampe den Boards. Wenn es dunkel wird und die Laternen angehen, zählt nur noch, wer den Korb trifft.\n\nDas Erstaunliche ist nicht, dass so viel Bewegung auf so wenig Platz passt. Es ist, wie geräuschlos die Übergabe funktioniert. Niemand verhandelt, niemand bucht. Man merkt, dass man dran ist, und stellt sich dazu."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Hundert Versuche für drei Sekunden",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Von außen sieht Skaten nach Leichtigkeit aus. Aus der Nähe ist es vor allem Wiederholung: anrollen, ansetzen, danebengreifen, das Board mit dem Fuß zurückholen, noch einmal. Der Trick, der später wie ein einziger flüssiger Moment wirkt, besteht aus einem Nachmittag voller Fehlversuche, den keiner filmt.\n\nBeim Basketball ein paar Meter weiter ist es dasselbe Prinzip in anderer Lautstärke. Dort wird gerufen, gelacht und gestritten, aber der Kern ist gleich: eine Bewegung so oft wiederholen, bis der Körper sie ohne Nachdenken kann. Wer lange genug zuschaut, hört den Unterschied sogar — das Klacken der Achsen auf der Kante, das Klopfen des Balls auf dem Asphalt, beides in einem Takt, der erst aufhört, wenn es zu dunkel ist.\n\nUnd genau das macht diese Plätze zu Reisezielen. Man muss nirgendwo hinfliegen, um Bewegung zu sehen. Es reicht, sich an den Rand zu setzen und eine Stunde nicht wegzugehen."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "aerial-view-of-kids-playing-basketb-37483482",
+        "caption": "Von oben betrachtet: der Platz füllt sich, sobald der Schatten über die Linie wandert"
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Wir haben hier keine Mannschaft und keine Uhrzeit. Wenn zwei da sind, wird gespielt.",
+        "author": "Jannis, Skater aus der Nachbarschaft"
+      }
+    ]
+  },
+  {
+    "slug": "the-soundcheck-hour",
+    "title_en": "Why the Soundcheck Is the Most Honest Hour of the Evening",
+    "summary_en": "Before the audience arrives, the hall belongs to the people who make it sound. A look at the in-between hour, the cables, and the moment four instruments turn into a band.",
+    "tags_en": [
+      "Music",
+      "Atmosphere",
+      "Energy",
+      "Night"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.headline",
+        "title": "The Room Before the First Note",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "An empty hall sounds hard. The reverb hangs around longer, every step on the floorboards comes back at you, and the engineer at the desk can be heard in the last row without ever raising his voice. Later, once people are in, coats and shoulders swallow exactly that reverb. Which is why a soundcheck is never the evening itself — it is an estimate.\n\nStill, there is more to see in this hour than during the show. Nobody is posing. Things get counted in, broken off, counted in again. Someone crouches down in front of an amp and turns a knob until the tone stops biting. The singer repeats one line three times, and she isn't thinking about the lyrics, she's asking whether she can hear herself. This is labour, and it looks like it."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "a-man-playing-drums-in-a-dark-room-9481096",
+        "caption": "The drummer is the one left alone in the room the longest."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "The drums always take the longest, for an entirely unglamorous reason: there are simply more parts. Kick, snare, every tom, the cymbals — each gets its own microphone and its own channel. The man behind the kit hits the same surface for minutes on end, evenly, while somebody else decides what it should end up sounding like. It is the least musical activity of the whole day and the precondition for everything that follows.\n\nThen the guitars come in and the room changes at once. Two instruments that sounded perfectly fine on their own suddenly fight over the same range of frequencies. What's interesting is how wordlessly that gets settled: one player moves his tone up, the other pulls the mids back, a nod, carry on. Nothing is explained. It just happens, and afterwards it is better."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "people-playing-their-instruments-80-8043662",
+        "caption": "Tune, retune, tune once more — until the two guitars agree with each other."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "When the soundcheck goes well, nobody notices in the evening. That is precisely the job.",
+        "author": "Klangfarben"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "At some point someone at the desk says \"that'll do\", and the in-between hour begins. The doors stay shut, the work lights are on, somebody eats standing up. That half hour is the real transition: a moment ago the hall was a workplace, in a minute it is a concert.\n\nThese days we turn up earlier when we film. Not for the better spot down front, but for this hour. It says more about a band than any encore does."
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/a-striking-abstract-black-and-white-paint-mt3w6bdp-qlw18_thumb.webp",
+    "creatorHandle": "finanzkompass",
+    "title_de": "Warum der Soundcheck die ehrlichste Stunde des Abends ist",
+    "summary_de": "Bevor das Publikum kommt, gehört der Saal den Leuten, die ihn zum Klingen bringen. Eine Beobachtung über Zwischenzeit, Kabel und den Moment, in dem aus vier Instrumenten eine Band wird.",
+    "tags_de": [
+      "Musik",
+      "Atmosphäre",
+      "Energie",
+      "Nacht"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.headline",
+        "title": "Der Raum, bevor der erste Ton fällt",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Ein leerer Saal klingt hart. Der Hall steht länger im Raum, jeder Schritt auf den Dielen kommt zurück, und die Stimme des Technikers am Pult trägt bis in die letzte Reihe, ohne dass er lauter werden müsste. Später, wenn die Leute da sind, schlucken Mäntel und Schultern genau diesen Hall weg. Deshalb ist ein Soundcheck nie das, was der Abend wird — er ist eine Schätzung.\n\nWas man in dieser Stunde sieht, ist trotzdem mehr als das, was man abends sieht. Niemand posiert. Es wird gezählt, abgebrochen, noch einmal gezählt. Jemand hockt sich vor den Verstärker und dreht so lange am Regler, bis der Ton nicht mehr beißt. Die Sängerin singt eine Zeile dreimal und meint dabei nicht den Text, sondern die Frage, ob sie sich selbst hört. Das ist Arbeit, und sie sieht auch genau so aus."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "a-man-playing-drums-in-a-dark-room-9481096",
+        "caption": "Der Schlagzeuger bleibt am längsten allein im Raum."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Am Schlagzeug dauert es immer am längsten, und der Grund dafür ist unspektakulär: Es sind schlicht die meisten Einzelteile. Große Trommel, Snare, jedes Tom, die Becken — alles bekommt sein eigenes Mikrofon und seinen eigenen Kanal. Der Mann hinter den Kesseln schlägt minutenlang dieselbe Fläche an, immer gleich fest, während jemand anderes entscheidet, wie das am Ende klingen soll. Es ist die unmusikalischste Tätigkeit des ganzen Tages und die Voraussetzung für alles Weitere.\n\nDann kommen die Gitarren dazu, und der Raum verändert sich sofort. Zwei Instrumente, die einzeln völlig in Ordnung klangen, streiten sich plötzlich um denselben Frequenzbereich. Interessant ist, wie wortlos das gelöst wird: Der eine geht mit seinem Ton nach oben, der andere nimmt die Mitten zurück, ein Nicken, weiter. Erklärt wird da nichts. Es wird gemacht, und danach ist es besser."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "people-playing-their-instruments-80-8043662",
+        "caption": "Stimmen, nachstimmen, noch einmal stimmen — bis sich die beiden Gitarren vertragen."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Wenn der Soundcheck gut läuft, merkt es abends niemand. Genau das ist der Job.",
+        "author": "Klangfarben"
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Irgendwann sagt jemand am Pult \"passt\", und die Zwischenzeit beginnt. Die Türen bleiben noch zu, es brennt Arbeitslicht, jemand isst im Stehen. Diese halbe Stunde ist der eigentliche Übergang: Eben war der Saal noch ein Arbeitsplatz, gleich ist er ein Konzert.\n\nWir kommen bei unseren Aufnahmen inzwischen immer früher. Nicht wegen der besseren Plätze, sondern wegen dieser Stunde. Sie erzählt mehr über eine Band als jede Zugabe."
+      }
+    ]
+  },
+  {
+    "slug": "thinking-with-your-hands",
+    "title_en": "Copper, Paint, Strings: Three Ways of Thinking With Your Hands",
+    "summary_en": "An engraver, a painter and two musicians have little in common — except the way they repeat a single movement until it belongs to them.",
+    "tags_en": [
+      "Craft",
+      "Art",
+      "Colors",
+      "Music"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "In every craft there is a point at which the tool stops being an object. Before it, you correct yourself constantly: set down too deep, pulled too fast, hand cramping. After it, you are no longer thinking about the burin but about the line you want. Getting there takes a long time, it is unglamorous, and there is no shortcut.\n\nWith the engraver you can see that point in his shoulders. They are still. The work happens in the fingers and the wrist; the rest of the body just holds steady. The copper gives off a fine, dry sound, closer to paper than to metal. People standing next to it for the first time are usually surprised by how quiet the whole thing is."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "skilled-craftsman-creating-detailed-designs-on-copper-mt3w70sc-r9ddu",
+        "caption": "The burin travels through the copper without the hand needing to watch it."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Repetition Is Not the Opposite of Invention",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "In conversations about art, repetition has a bad name. It is taken to be what's left over once the ideas have run out. In the workshops and rehearsal rooms we film in, the opposite is true: repetition is the condition under which an idea can be carried out at all. If your brushstroke isn't reliable, you don't get to choose one.\n\nThe painter whose studio we visited works on the canvas with her bare hands. Paint inevitably ends up on her as well — forearms, shoulders, hair. She washes it off in the evening, not out of carelessness but because any interruption pulls her out of the picture. The marks are a fairly precise record of how long she has been on her feet."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "serious-young-shirtless-female-artist-with-golden-mt3w7njy-e87k9",
+        "caption": "Gold paint on hands and shoulders: the record of a working day, not an accident."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "I have drawn the same line a thousand times. The thousand-and-first is the one I mean.",
+        "author": "The engraver"
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "men-playing-the-guitar-and-the-drum-8041859",
+        "caption": "Two crafts, one pulse: guitar and drums keeping each other on track."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "On stage the same process simply runs faster. A chord change someone has practised ten thousand times costs him no attention at all — and that freed-up attention goes to the person beside him holding the pulse. You can only play with others once you are done wrestling with your own instrument.\n\nThat is why the workshop and the concert hall sit in the same channel here. It is the same thing: repeating a movement until it belongs to you, and then saying something with it."
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/skilled-craftsman-creating-detailed-designs-on-copper-mt3w70sc-r9ddu_thumb.webp",
+    "creatorHandle": "finanzkompass",
+    "title_de": "Kupfer, Farbe, Saiten: drei Arten, mit den Händen zu denken",
+    "summary_de": "Ein Graveur, eine Malerin und zwei Musiker haben wenig gemeinsam — außer der Art, wie sie eine Bewegung so lange wiederholen, bis sie ihnen gehört.",
+    "tags_de": [
+      "Handwerk",
+      "Kunst",
+      "Farben",
+      "Musik"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Es gibt in jedem Handwerk einen Punkt, an dem das Werkzeug aufhört, ein Gegenstand zu sein. Davor korrigiert man ununterbrochen: zu tief angesetzt, zu schnell gezogen, die Hand verkrampft. Danach denkt man nicht mehr über den Stichel nach, sondern über die Linie, die entstehen soll. Der Weg dorthin ist lang, unglamourös und nicht abzukürzen.\n\nBeim Graveur sieht man diesen Punkt an den Schultern. Sie sind ruhig. Die Arbeit passiert in Fingern und Handgelenk, der ganze übrige Körper hält nur still. Das Kupfer gibt dabei ein feines, trockenes Geräusch von sich, das eher nach Papier klingt als nach Metall. Wer zum ersten Mal danebensteht, wundert sich meistens darüber, wie leise das alles ist."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "skilled-craftsman-creating-detailed-designs-on-copper-mt3w70sc-r9ddu",
+        "caption": "Der Stichel läuft im Kupfer, ohne dass die Hand ihm dabei zusehen müsste."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Wiederholung ist nicht das Gegenteil von Einfall",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "In Gesprächen über Kunst hat Wiederholung einen schlechten Ruf. Sie gilt als das, was übrig bleibt, wenn einem nichts mehr einfällt. In den Werkstätten und Proberäumen, in denen wir filmen, ist es genau umgekehrt: Wiederholung ist die Bedingung dafür, dass ein Einfall überhaupt umgesetzt werden kann. Wer den Pinselstrich nicht sicher hat, kann sich keinen aussuchen.\n\nDie Malerin, bei der wir im Atelier waren, arbeitet mit den Händen direkt am Bild. Farbe landet dabei zwangsläufig auf ihr selbst, an den Unterarmen, an den Schultern, im Haar. Sie wäscht sie erst am Abend ab — nicht aus Nachlässigkeit, sondern weil jede Unterbrechung sie aus dem Bild herausholt. An den Spuren lässt sich ziemlich genau ablesen, wie lange sie schon steht."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "serious-young-shirtless-female-artist-with-golden-mt3w7njy-e87k9",
+        "caption": "Goldfarbe an Händen und Schultern: die Spuren eines Arbeitstages, nicht ein Missgeschick."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Ich habe dieselbe Linie tausendmal gezogen. Die tausendunderste ist die, die ich meine.",
+        "author": "Der Graveur"
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "men-playing-the-guitar-and-the-drum-8041859",
+        "caption": "Zwei Handwerke, ein Takt: Gitarre und Schlagzeug halten sich gegenseitig in der Spur."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Auf der Bühne läuft derselbe Vorgang nur schneller ab. Ein Griffwechsel, den jemand zehntausendmal geübt hat, kostet ihn keine Aufmerksamkeit mehr — und genau die frei gewordene Aufmerksamkeit geht an den anderen, der neben ihm den Takt hält. Zusammenspielen kann nur, wer mit dem eigenen Instrument fertig ist.\n\nDeshalb liegen bei uns Werkstatt und Konzertsaal im selben Kanal. Es ist dieselbe Sache: eine Bewegung so lange wiederholen, bis sie einem gehört, und dann etwas damit sagen."
+      }
+    ]
+  },
+  {
+    "slug": "an-hour-of-standing-still",
+    "title_en": "An Hour of Standing Still",
+    "summary_en": "The longest take from our last week in the forest shows almost nothing. That is exactly why it survived the edit.",
+    "tags_en": [
+      "Forest",
+      "Nature",
+      "Trees",
+      "Shadows"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "The most common mistake when filming in a forest is impatience. You set up the tripod, frame the shot, wait two minutes, and move on because nothing is happening. Nothing is happening because you are still there. A forest registers footsteps, voices, zippers. It switches its sounds off and waits to find out who has arrived.\n\nThis time we tried it the other way around: set up the camera, sit down, do nothing for an hour. The first twenty minutes are hard work. Then the sound comes back, layer by layer. First the birds high in the canopy, the quickest to forget that somebody came. Later the rustling in the leaf litter that cannot be wind, because nothing above you is moving. Finally something larger, further back, changing rhythm: three steps, pause, three steps."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "scenic-landscape-with-sunrays-over-lush-green-mt3w5pnq-rz97b",
+        "caption": "After roughly forty minutes the light sits low enough that every blade of grass casts a shadow of its own."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "What the Camera Sees and the Eye Skips",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Watching the material back, it is striking how little you actually noticed. Things are in the footage that passed you by entirely during the hour on site: a movement at the left edge of the frame, a fly landing three times on the same leaf, a twig that dips once for no visible reason and comes back up. The eye picks its stimuli; the camera takes everything equally seriously.\n\nThat is why we rarely cut long takes short. Trimming a sequence like this to ten seconds turns it into a claim: something happened here. Left standing, it becomes a question: what are you missing right now?"
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "sunlight-filtering-through-serene-f-33223726",
+        "caption": "The same take, uncut – the light travels, everything else stays where it is."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Footage like this does not require untouched wilderness. The stand of trees behind the car park will do, as long as you treat it as a place where something lives rather than as a backdrop. Leave the deadwood, stay on the path, no feeding, no call playback – that is not etiquette, it is the condition for having anything to look at next time.\n\nAnd if an hour yields nothing, that is a result too. It is simply not one that cuts well into a trailer."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "We are not filming the rare animal. We are filming the time in which it decides whether to come out.",
+        "author": "Green Planet Doku"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/scenic-landscape-with-sunrays-over-lush-green-mt3w5pnq-rz97b_thumb.webp",
+    "creatorHandle": "greenplanet",
+    "title_de": "Eine Stunde Stillstehen",
+    "summary_de": "Die längste Einstellung unserer letzten Waldwoche zeigt fast nichts. Genau deshalb ist sie im Schnitt geblieben.",
+    "tags_de": [
+      "Wald",
+      "Natur",
+      "Bäume",
+      "Schatten"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Der häufigste Fehler beim Drehen im Wald ist Ungeduld. Man stellt das Stativ auf, richtet aus, wartet zwei Minuten – und geht weiter, weil nichts passiert. Nichts passiert aber deshalb, weil man selbst noch da ist. Ein Wald registriert Schritte, Stimmen, Reißverschlüsse. Er stellt seine Geräusche ab und wartet erst einmal ab, wer da gekommen ist.\n\nDiesmal haben wir es andersherum versucht: Kamera aufbauen, hinsetzen, eine Stunde lang nichts tun. Die ersten zwanzig Minuten sind zäh. Dann kommt der Ton zurück, Schicht für Schicht. Zuerst die Vögel im oberen Kronenraum, die am schnellsten vergessen, dass jemand gekommen ist. Später das Rascheln in der Streuschicht, das kein Wind sein kann, weil sich über einem kein Blatt bewegt. Zuletzt etwas Größeres, weiter hinten, das den Rhythmus wechselt: drei Schritte, Pause, drei Schritte."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "scenic-landscape-with-sunrays-over-lush-green-mt3w5pnq-rz97b",
+        "caption": "Nach etwa vierzig Minuten steht das Licht so tief, dass jeder Halm seinen eigenen Schatten wirft."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Was die Kamera sieht und das Auge überspringt",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Beim Sichten fällt auf, wie wenig man selbst mitbekommen hat. Auf dem Material sind Dinge, die in der Stunde vor Ort komplett vorbeigingen: eine Bewegung am linken Bildrand, eine Fliege, die dreimal auf demselben Blatt landet, ein Zweig, der ohne erkennbaren Grund einmal nach unten geht und wieder hoch. Das Auge sucht sich seine Reize aus, die Kamera nimmt alles gleich ernst.\n\nDeshalb schneiden wir lange Einstellungen selten kurz. Wer so eine Sequenz auf zehn Sekunden zusammenstreicht, macht eine Behauptung daraus: Hier ist etwas passiert. Lässt man sie stehen, wird sie zu einer Frage: Was übersehen Sie gerade?"
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "sunlight-filtering-through-serene-f-33223726",
+        "caption": "Dieselbe Einstellung, ungeschnitten – das Licht wandert, sonst bleibt alles, wo es ist."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Für Aufnahmen dieser Art braucht es keine unberührte Wildnis. Der Bestand hinter dem Parkplatz reicht, solange man ihn nicht wie eine Kulisse behandelt, sondern wie einen Ort, an dem etwas wohnt. Totholz liegen lassen, auf dem Weg bleiben, kein Füttern, keine Klangattrappe – das ist keine Etikette, sondern die Bedingung dafür, dass es beim nächsten Mal überhaupt wieder etwas zu sehen gibt.\n\nUnd wenn eine Stunde nichts bringt: Auch das ist ein Ergebnis. Es ist nur keins, das sich gut in einen Trailer schneiden lässt."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Wir filmen nicht das seltene Tier. Wir filmen die Zeit, in der es sich entscheidet, ob es herauskommt.",
+        "author": "Green Planet Doku"
+      }
+    ]
+  },
+  {
+    "slug": "where-the-forest-stops",
+    "title_en": "Where the Forest Stops",
+    "summary_en": "Above a certain height the trees stop. The edge is blurred, and what lies beyond it is anything but empty.",
+    "tags_en": [
+      "Mountains",
+      "Nature",
+      "Snow",
+      "Landscape"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.headline",
+        "title": "The Last Row",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "tranquil-mountain-landscape-with-ro-38772721",
+        "caption": "A single tree far above the closed forest – the wind gave it its shape."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "The tree line is not a line but a band. Coming up from below, the stand first thins, then shortens, then bends. The last trees stand alone, often crouched, with branches on one side only – the side away from the wind. You can read the direction the weather comes from off their shape, without anyone having to tell you.\n\nThe height at which this happens differs from range to range, and it does not depend on altitude alone: the steepness of the slope, the way it faces the sun, how long the snow stays, how often livestock has been through. That is why the edge on the sunny side of a valley sits differently than it does a little way across in the shade. Fly a drone over such a valley and both edges are in the same frame."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "explore-stunning-snow-capped-mountains-cloaked-in-mt3w7zmt-yk2d8",
+        "caption": "Where the trees stop, the rock takes over – and above that, the snow."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Higher up it does not get empty, only smaller. What grows here grows flat: cushions, mats, lichen on rock, plants that pack their entire flowering into a few weeks because there is no more time than that. Animals live in between that you rarely get to see from below – and that are hard to film, because there is no cover. You cannot get closer without being seen.\n\nThat is precisely what makes these elevations fragile. A habitat without cover has no buffer either. A snow cover that goes early shifts the flowering; a track someone drags across a field of cushion plants is still visible the following summer. So we keep our distance and accept the worse picture."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "majestaetische-drohnenansicht-von-s-35742078",
+        "caption": "Drone flight across the snow line: rock and firn below, nothing but edges above."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "We come back to the same slopes several times a year, in early summer and again before the first snow settles for good. Only the comparison shows what a single visit never can: which surfaces lose their snow first, where the wind piles it up, which of the solitary trees made it through the winter and which one is merely still standing. One picture of a place is a postcard. Three pictures of the same place are a beginning."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Nothing about the tree line is a line. All of it is a transition, and you have to visit it more than once.",
+        "author": "Green Planet Doku"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/explore-stunning-snow-capped-mountains-cloaked-in-mt3w7zmt-yk2d8_thumb.webp",
+    "creatorHandle": "greenplanet",
+    "title_de": "Wo der Wald aufhört",
+    "summary_de": "Oberhalb einer bestimmten Höhe hören die Bäume auf. Die Grenze ist unscharf, und was dahinter liegt, ist alles andere als leer.",
+    "tags_de": [
+      "Berge",
+      "Natur",
+      "Schnee",
+      "Landschaft"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.headline",
+        "title": "Die letzte Reihe",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "tranquil-mountain-landscape-with-ro-38772721",
+        "caption": "Ein einzelner Baum weit oberhalb des geschlossenen Bestands – die Form hat ihm der Wind gegeben."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Die Baumgrenze ist keine Linie, sondern ein Streifen. Von unten kommend wird der Bestand erst lückig, dann niedrig, dann krumm. Die letzten Bäume stehen einzeln, oft geduckt, mit Ästen nur auf einer Seite – der windabgewandten. Man sieht ihrer Form an, aus welcher Richtung das Wetter kommt, ohne dass es einem jemand sagen muss.\n\nAuf welcher Höhe das geschieht, ist von Gebirge zu Gebirge verschieden, und es hängt nicht an der Höhe allein: Hangneigung, Ausrichtung zur Sonne, wie lange der Schnee liegen bleibt, wie oft hier Vieh war. Deshalb liegt die Grenze auf der Sonnenseite eines Tals anders als ein Stück weiter gegenüber im Schatten. Wer mit der Drohne quer über so ein Tal fliegt, hat beide Ränder im selben Bild."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "explore-stunning-snow-capped-mountains-cloaked-in-mt3w7zmt-yk2d8",
+        "caption": "Wo die Bäume aufhören, übernimmt der Fels – und darüber der Schnee."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Weiter oben wird es nicht leer, sondern nur kleiner. Was hier wächst, wächst flach: Polster, Matten, Flechten auf Fels, Pflanzen, die ihre gesamte Blüte in wenige Wochen legen, weil mehr Zeit nicht da ist. Dazwischen leben Tiere, die man von unten selten zu Gesicht bekommt – und die schwer zu filmen sind, weil es keine Deckung gibt. Man kommt nicht näher heran, ohne gesehen zu werden.\n\nGenau das macht diese Höhenlagen empfindlich. Ein Lebensraum ohne Deckung hat auch keinen Puffer. Eine Schneedecke, die früher weggeht, verschiebt die Blüte; eine Spur, die jemand quer durch ein Polsterfeld zieht, ist im nächsten Sommer noch zu sehen. Wir bleiben deshalb weiter weg und nehmen das schlechtere Bild in Kauf."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "majestaetische-drohnenansicht-von-s-35742078",
+        "caption": "Drohnenflug über die Schneegrenze: unten Fels und Firn, oben nur noch Kanten."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Wir fahren dieselben Hänge mehrmals im Jahr an, im Frühsommer und noch einmal, bevor der erste Schnee liegen bleibt. Erst im Vergleich sieht man, was ein einzelner Besuch nie zeigt: welche Flächen zuerst ausapern, wohin der Wind den Schnee trägt, welcher der einzeln stehenden Bäume den Winter überstanden hat und welcher nur noch steht. Ein Bild pro Ort ist eine Postkarte. Drei Bilder vom selben Ort sind ein Anfang."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Nichts an der Baumgrenze ist eine Linie. Alles daran ist ein Übergang, den man mehr als einmal besuchen muss.",
+        "author": "Green Planet Doku"
+      }
+    ]
+  },
+  {
+    "slug": "what-is-left-of-a-city-after-dark",
+    "title_en": "What Is Left of a City After Dark",
+    "summary_en": "After dark a city doesn't show less, it shows something else: ground floors, glowing signs and wet asphalt take over the work of the facade.",
+    "tags_en": [
+      "Night",
+      "City",
+      "Colors",
+      "Urban"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.rich-text",
+        "body": "In daylight a street is mostly a floor plan: two rows of buildings, a kerb, a strip of sky in between. Once it gets dark, that plan all but disappears. What remains is whatever glows.\n\nThat is the real appeal of a city at night — not the romance, but the editing. Walk through a neighbourhood after dark and you never see a building as a whole. You see a ground floor, a lit stairwell, three windows on the fourth storey. The rest your eye fills in from what it remembers of the day."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "explore-a-vibrant-urban-alley-illuminated-by-mt3w5t89-okuj7",
+        "caption": "An alley that borrows its ceiling from illuminated signs."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Narrow alleys are where this works best. Signs, cables and awnings hang between the facades, sometimes strings of lamps stretched right across the street. Together they form something like a ceiling of light, and the passage turns into an interior without a door.\n\nThen there is colour. Illuminated signage is almost never neutral: it leans red, magenta or cold blue, and each of those pulls out different surfaces. Wet asphalt swallows red and hands it back twice over. Under blue, plaster suddenly looks smooth and hard. The same wall carries two entirely different textures depending on the sign above it."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "The Ground Joins In",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "colorful-neon-reflections-on-wet-pavement-capture-mt3w75kl-a8w55",
+        "caption": "Rain doubles every light source — the street gets a second picture."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "After rain, every light source gets a second edition. A puddle is not a detail but a second image of the street: softer, stretched out, denser in colour. Hold the camera low and you are not photographing the ground, you are photographing the facades a second time.\n\nWhat is striking is that the reflection feels more honest than the original. It shows no lettering, no brand, no opening hours — only colour and direction. Whatever the sign actually says has stopped mattering by the time it reaches the water."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "laterne-im-garten-5985424",
+        "caption": "Warm lamplight in the evening: small sources, large effect."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "At night it isn't the design that decides what you see of a building, it's whoever leaves the lights on downstairs.",
+        "author": "Stadt & Architektur"
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/colorful-neon-reflections-on-wet-pavement-capture-mt3w75kl-a8w55_thumb.webp",
+    "creatorHandle": "omniarchitect",
+    "title_de": "Was von der Stadt übrig bleibt, wenn es dunkel wird",
+    "summary_de": "Nach Einbruch der Dunkelheit zeigt eine Stadt nicht weniger, sondern etwas anderes: Erdgeschosse, Leuchtschilder und nasser Asphalt übernehmen die Arbeit der Fassade.",
+    "tags_de": [
+      "Nacht",
+      "Stadt",
+      "Farben",
+      "Urban"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.rich-text",
+        "body": "Tagsüber ist eine Straße vor allem ein Grundriss: zwei Häuserzeilen, ein Bordstein, ein Streifen Himmel dazwischen. Sobald es dunkel wird, verschwindet dieser Grundriss fast vollständig. Übrig bleibt, was leuchtet.\n\nDarin liegt der eigentliche Reiz der Stadt bei Nacht — nicht in der Romantik, sondern in der Auswahl. Wer nach Einbruch der Dunkelheit durch ein Viertel läuft, sieht kein Gebäude mehr im Ganzen. Er sieht ein Erdgeschoss, ein beleuchtetes Treppenhaus, drei Fenster im vierten Stock. Den Rest ergänzt das Auge aus der Erinnerung an den Tag."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "explore-a-vibrant-urban-alley-illuminated-by-mt3w5t89-okuj7",
+        "caption": "Eine Gasse, die ihre Decke aus Leuchtschildern bekommt."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "In engen Gassen funktioniert das besonders gut. Zwischen den Fassaden hängen Schilder, Kabel, Markisen, manchmal Lampenketten quer über der Straße. Zusammen ergeben sie so etwas wie eine Decke aus Licht, und aus dem Durchgang wird ein Innenraum ohne Tür.\n\nDazu kommt die Farbe. Leuchtreklame ist fast nie neutral: Sie kippt ins Rote, ins Magenta oder ins kalte Blau, und jede dieser Farben holt andere Oberflächen hervor. Nasser Asphalt schluckt Rot und gibt es doppelt zurück. Verputz wirkt unter Blau plötzlich glatt und hart. Dieselbe Wand hat je nach Schild zwei völlig verschiedene Texturen."
+      },
+      {
+        "__component": "shared.headline",
+        "title": "Der Boden macht mit",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "colorful-neon-reflections-on-wet-pavement-capture-mt3w75kl-a8w55",
+        "caption": "Regen verdoppelt jede Lichtquelle — die Straße bekommt ein zweites Bild."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Nach einem Regen bekommt jede Lichtquelle eine zweite Ausgabe. Die Pfütze ist kein Detail, sondern ein zweites Bild der Straße: unschärfer, in die Länge gezogen, in der Farbe dichter. Wer die Kamera tief hält, fotografiert nicht den Boden, sondern die Fassaden ein zweites Mal.\n\nInteressant ist, dass diese Spiegelung ehrlicher wirkt als das Original. Sie zeigt keine Schrift, keine Marke, keine Öffnungszeit — nur Farbe und Richtung. Was auf dem Schild steht, ist im Wasser egal geworden."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "laterne-im-garten-5985424",
+        "caption": "Warmes Lampenlicht am Abend: kleine Quellen, große Wirkung."
+      },
+      {
+        "__component": "shared.quote",
+        "quote": "Nachts entscheidet nicht der Entwurf, was man von einem Haus sieht, sondern wer im Erdgeschoss das Licht anlässt.",
+        "author": "Stadt & Architektur"
+      }
+    ]
+  },
+  {
+    "slug": "reading-facades-from-two-metres-away",
+    "title_en": "Learning to Read a Facade",
+    "summary_en": "A facade isn't a skin pulled over a building, it's a list of decisions. From two metres away you can read them back.",
+    "tags_en": [
+      "Architecture",
+      "Craft",
+      "City"
+    ],
+    "blocks_en": [
+      {
+        "__component": "shared.headline",
+        "title": "A Grid Is a Decision",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Most buildings explain themselves on the outside; you just have to get close enough. A facade is not a skin pulled over the building — it is a list of decisions someone had to make: how large a panel may be, how it is held in place, where the joint sits, where the rainwater goes.\n\nGeometric facades make this easiest to see. A triangular grid or a field of offset rectangles looks like a pure question of form, but it is mainly a question of repetition: one single element, a hundred times over, so that manufacturing stays affordable and assembly is possible at all."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "striking-modern-building-with-geometric-facade-against-mt3w6tku-zccha",
+        "caption": "One element, repeated many times over — that is where the whole pattern comes from."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "The most honest part of it is the joint. It shows where one component ends and the next begins, and it has to stay wide enough for the material to expand in the heat without pressing against its neighbour. The joint also tends to reveal the order in which the work was done.\n\nThe surface, in turn, tells you how a building is meant to age. Smooth pale panels want to stay clean and show every streak the rain leaves behind. Rough render and coarse stone absorb the dirt and grow darker rather than blotchy. Both are choices — one of them simply doesn't become visible for a few years."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "close-up-of-a-textured-wall-with-mt3w7iqu-gyeyw",
+        "caption": "Up close, the surface is what decides how the building will age."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "construction-worker-setting-up-scaf-36601732",
+        "caption": "Scaffolding first: before the visible facade comes the structure that carries it."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "On a building site none of this is visible yet. There is scaffolding, there are anchors and nets and an order in which things get mounted — and that order is exactly what ends up on the wall as a pattern. A finished facade is a record of its own assembly.\n\nWhich is why the close look pays off. If you want to know how a building was made, don't look at the shape, look at where the joints are. Two metres away, a building says more about itself than it ever would from the pavement across the street."
+      }
+    ],
+    "thumbnail": "/media/images/thumbnails/striking-modern-building-with-geometric-facade-against-mt3w6tku-zccha_thumb.webp",
+    "creatorHandle": "omniarchitect",
+    "title_de": "Fassaden lesen lernen",
+    "summary_de": "Eine Fassade ist keine Haut, die über ein Haus gezogen wurde, sondern eine Liste von Entscheidungen. Aus zwei Metern Abstand kann man sie nachlesen.",
+    "tags_de": [
+      "Architektur",
+      "Handwerk",
+      "Stadt"
+    ],
+    "blocks_de": [
+      {
+        "__component": "shared.headline",
+        "title": "Ein Raster ist eine Entscheidung",
+        "level": "h2",
+        "subtitle": null
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Die meisten Gebäude erklären sich an ihrer Außenseite, man muss nur nah genug herangehen. Eine Fassade ist keine Haut, die über das Haus gezogen wurde — sie ist eine Liste von Entscheidungen, die jemand treffen musste: wie groß eine Platte sein darf, wie sie gehalten wird, wo die Fuge sitzt, wohin das Regenwasser läuft.\n\nAm deutlichsten wird das bei geometrischen Fassaden. Ein Dreiecksraster oder ein Feld aus versetzten Rechtecken sieht aus wie eine reine Formfrage, ist aber vor allem eine Frage der Wiederholung: ein einziges Element, hundertfach, damit die Herstellung bezahlbar bleibt und die Montage überhaupt funktioniert."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "striking-modern-building-with-geometric-facade-against-mt3w6tku-zccha",
+        "caption": "Ein Element, vielfach wiederholt — daraus entsteht das ganze Muster."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Der ehrlichste Teil ist dabei die Fuge. Sie zeigt, wo ein Bauteil aufhört und das nächste beginnt, und sie muss breit genug bleiben, damit sich das Material bei Wärme ausdehnen kann, ohne zu drücken. An der Fuge lässt sich außerdem oft ablesen, in welcher Reihenfolge gearbeitet wurde.\n\nÄhnlich verrät die Oberfläche, wie ein Haus altern soll. Glatte helle Paneele wollen sauber bleiben und zeigen jeden Streifen, den der Regen hinterlässt. Rauer Putz und grober Stein nehmen den Schmutz auf und werden dadurch eher dunkler als fleckig. Beides ist eine Wahl — nur wird die eine erst nach einigen Jahren sichtbar."
+      },
+      {
+        "__component": "shared.image",
+        "imageSlug": "close-up-of-a-textured-wall-with-mt3w7iqu-gyeyw",
+        "caption": "Aus der Nähe entscheidet die Oberfläche, wie das Haus altert."
+      },
+      {
+        "__component": "shared.video",
+        "videoSlug": "construction-worker-setting-up-scaf-36601732",
+        "caption": "Gerüst zuerst: Vor der sichtbaren Fassade steht die Konstruktion, die sie trägt."
+      },
+      {
+        "__component": "shared.rich-text",
+        "body": "Auf der Baustelle ist von alldem noch nichts zu sehen. Da gibt es Gerüst, Anker, Netze und eine Reihenfolge, in der montiert wird — und genau diese Reihenfolge steht später als Muster an der Wand. Die fertige Fassade ist ein Protokoll ihres eigenen Aufbaus.\n\nDeshalb lohnt der Nahblick. Wer wissen will, wie ein Haus gebaut wurde, sollte nicht auf die Form schauen, sondern darauf, wo die Fugen sitzen. Zwei Meter Abstand, und ein Gebäude erzählt mehr über sich, als es vom gegenüberliegenden Bürgersteig je tun würde."
+      }
+    ]
   }
 ]
