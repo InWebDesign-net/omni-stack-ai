@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { resolveLang } from "@/lib/locale-server";
+import { localizePath, languageAlternates } from "@/lib/locale";
 import { Suspense } from "react";
 import VideosPageClient from "@/app/videos/VideosPageClient";
 import { VideosSkeleton } from "@/app/videos/skeleton";
@@ -19,7 +21,14 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://omni-web.inwebdesign.net';
     const url = `${baseUrl}/videos`;
 
-    const canonical = params.page ? `${url}?page=${params.page}` : url;
+    /*
+     * A paginated page is its own page, so `?page=2` keeps its own canonical —
+     * and its language pair has to carry the same query, or hreflang would
+     * point page 2 at page 1 in the other language.
+     */
+    const lang = await resolveLang();
+    const search = params.page ? `?page=${params.page}` : '';
+    const canonical = `${baseUrl}${localizePath('/videos', lang)}${search}`;
 
     const description = params.q
         ? `Search results for "${params.q}" on Omni by InWebdesign.net ${baseDescription}`
@@ -31,7 +40,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
         title,
         description,
         alternates: {
-            canonical: canonical,
+            canonical,
+            languages: languageAlternates(baseUrl, '/videos', search),
         },
         robots: params.includetag || params.q ? "noindex, follow" : "index, follow", // Filterseiten nicht indexieren
     };
