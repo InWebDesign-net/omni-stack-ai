@@ -47,6 +47,7 @@ import {
 } from '@/lib/comments';
 import { storeItem } from '@/lib/consent';
 import { Toast, useToast } from '@/components/common/Toast';
+import ArticleBlockRenderer from '@/components/article/ArticleBlockRenderer';
 
 interface ContentPageClientProps {
   initialItem: any;
@@ -575,43 +576,16 @@ export default function ContentPageClient({
                 )}
 
                 {/* Render Dynamic Components / Strapi Blocks */}
+                {/*
+                  The shared renderer, not a third copy of it.
+                  What stood here handled `shared.media` — a component that does
+                  not exist; the real one is `shared.image` — so an image block
+                  only rendered by accident, through the `block.imageUrl`
+                  fallback beside it. It knew nothing of `shared.video` or
+                  `shared.pdf` at all.
+                */}
                 {item.blocks && item.blocks.length > 0 ? (
-                  <div className="space-y-6">
-                    {item.blocks.map((block: any, idx: number) => {
-                      const comp = block.__component || '';
-                      if (comp === 'shared.rich-text' || block.body) {
-                        return (
-                          <div key={idx} className="text-sm text-primary leading-relaxed space-y-4 whitespace-pre-line">
-                            {block.body}
-                          </div>
-                        );
-                      }
-                      if (comp === 'shared.headline' || block.title) {
-                        return (
-                          <h2 key={idx} className="text-xl font-bold text-primary mt-6 mb-2">
-                            {block.title}
-                          </h2>
-                        );
-                      }
-                      if (comp === 'shared.quote' || block.quote) {
-                        return (
-                          <blockquote key={idx} className="border-l-4 border-indigo-500 pl-4 py-2 italic text-primary bg-indigo-500/5 rounded-r-2xl my-4">
-                            <p className="text-sm">"{block.quote}"</p>
-                            {block.author && <cite className="text-xs text-muted font-sans block mt-1">— {block.author}</cite>}
-                          </blockquote>
-                        );
-                      }
-                      if (comp === 'shared.media' || block.imageUrl) {
-                        return (
-                          <figure key={idx} className="my-4">
-                            <Image src={block.imageUrl} alt={block.caption || ''} className="rounded-2xl border border-subtle w-full object-cover max-h-[500px]" />
-                            {block.caption && <figcaption className="text-xs text-muted mt-2 text-center">{block.caption}</figcaption>}
-                          </figure>
-                        );
-                      }
-                      return null;
-                    })}
-                  </div>
+                  <ArticleBlockRenderer blocks={item.blocks} />
                 ) : (
                   <div className="text-sm text-primary leading-relaxed space-y-4 whitespace-pre-line font-mono">
                     {item.content}

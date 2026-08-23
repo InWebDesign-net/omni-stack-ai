@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Play, Image as ImageIcon, Quote, Heading, Film, Eye, Heart } from 'lucide-react';
+import { Play, Image as ImageIcon, Quote, Heading, Film, Eye, Heart, FileText, Download } from 'lucide-react';
 import Image from 'next/image';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 
@@ -42,8 +42,50 @@ function SingleBlock({ block }: { block: any }) {
   if (componentType === 'shared.image' || block.type === 'image') {
     return <ImageRelationBlock block={block} />;
   }
+  if (componentType === 'shared.pdf' || block.type === 'pdf') {
+    return <PdfBlock block={block} />;
+  }
 
   return <RichTextBlock block={block} />;
+}
+
+/**
+ * A document offered alongside the text.
+ *
+ * A link rather than an embedded viewer: the file is served from our own media
+ * root, browsers already render PDFs well, and an iframe here would inherit
+ * this page's width for a document laid out for a page. `downloadable` decides
+ * whether it is offered for keeping or just for reading.
+ */
+function PdfBlock({ block }: { block: any }) {
+  const url = block.pdfUrl || block.url;
+  if (!url) return null;
+
+  const title = block.title || 'PDF';
+  const downloadable = block.downloadable !== false;
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      {...(downloadable ? { download: '' } : {})}
+      className="not-prose flex items-center gap-3 my-6 p-4 rounded-2xl bg-surface border border-subtle hover:border-indigo-500/50 transition-colors group"
+    >
+      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 shrink-0">
+        <FileText className="h-5 w-5" />
+      </span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-sm font-semibold text-primary truncate group-hover:text-indigo-400 transition-colors">
+          {title}
+        </span>
+        <span className="block text-xs text-muted mt-0.5">
+          PDF{downloadable ? ' · Download' : ''}
+        </span>
+      </span>
+      <Download className="h-4 w-4 text-muted group-hover:text-indigo-400 transition-colors shrink-0" />
+    </a>
+  );
 }
 
 function HeadingBlock({ block }: { block: any }) {

@@ -53,7 +53,8 @@
         "shared.video",
         "shared.image",
         "shared.quote",
-        "shared.headline"
+        "shared.headline",
+        "shared.pdf"
       ],
       "pluginOptions": {
         "i18n": {

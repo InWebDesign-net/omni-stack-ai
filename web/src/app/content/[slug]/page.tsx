@@ -22,7 +22,15 @@ async function getData(slug: string, jwt?: string | null) {
     }
 
     const itemRes = await fetch(
-      `${strapiUrl}/api/feed-items?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=author,blocks`,
+      /*
+       * `locale=*` or the German entries are unreachable.
+       *
+       * Without it Strapi answers from the default locale only — "no locale"
+       * never means "any locale" — so a German slug matched nothing and the
+       * page 404'd, while its English counterpart worked because English *is*
+       * the default. Both seeded feed items were affected.
+       */
+      `${strapiUrl}/api/feed-items?filters[slug][$eq]=${encodeURIComponent(slug)}&locale=*&populate=author,blocks`,
       { headers, cache: 'no-store' }
     );
 
@@ -34,8 +42,12 @@ async function getData(slug: string, jwt?: string | null) {
 
     const item = itemList.find((v: any) => v.author) || itemList[0];
 
+    /* The recommendations follow the language of the item actually found,
+       so a German page is not padded with English cards. */
+    const itemLocale = (item as any)?.locale === 'de' ? 'de' : 'en';
+
     const relatedRes = await fetch(
-      `${strapiUrl}/api/feed-items?filters[slug][$ne]=${encodeURIComponent(slug)}&filters[visibility][$eq]=public&populate=author&pagination[pageSize]=6&sort=publishedAt:desc`,
+      `${strapiUrl}/api/feed-items?filters[slug][$ne]=${encodeURIComponent(slug)}&filters[visibility][$eq]=public&locale=${itemLocale}&populate=author&pagination[pageSize]=6&sort=publishedAt:desc`,
       { headers, cache: 'no-store' }
     );
 
