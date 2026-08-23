@@ -191,6 +191,11 @@ export async function GET(req: Request) {
         messages: room.lastMessagePreview
           ? [
               {
+                // Flagged, because it is a rendering of a room field and not a
+                // message: it has no id and no sender, so anything that treats
+                // it as one shows "Nutzer" and cannot deduplicate it against
+                // the real message once the history is loaded.
+                isPreview: true,
                 content: room.lastMessagePreview,
                 createdAt: room.lastMessageAt,
                 timestamp: room.lastMessageAt,

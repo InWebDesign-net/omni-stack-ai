@@ -202,10 +202,22 @@ export default ({ strapi }: { strapi: any }) => ({
           .filter(Boolean);
         if (participants.length === 0) continue;
 
+        /*
+         * An AI room has a slug the application computes, not one we may pick.
+         *
+         * `GET /api/chat` guarantees every logged-in user an assistant room at
+         * `room-ai-<user id>`, and creates one when that slug is missing. A
+         * seeded room named after the handle therefore does not count: the user
+         * opens the chat and finds our conversation *plus* a second, empty
+         * "Omni KI-Assistent" the app just made. The numeric id is only known
+         * once the user is resolved, which is why it is built here.
+         */
+        const slug = entry.type === 'ai' ? `room-ai-${participants[0]}` : entry.slug;
+
         const room = await strapi.documents('api::chat-room.chat-room').create({
           data: {
             name: entry.name,
-            slug: entry.slug,
+            slug,
             type: entry.type,
             language: 'de',
             isAiEnabled: Boolean(entry.isAiEnabled) || entry.type === 'ai',
