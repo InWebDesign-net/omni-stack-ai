@@ -247,6 +247,7 @@ export function ContentComments({
     setSubmitting(true);
     try {
       const created = await createCommentInStrapi({
+        lang: lang as "de" | "en",
         feedSlug: slug,
         text: newComment.trim(),
         authorName: currentUser?.username || 'Gast',

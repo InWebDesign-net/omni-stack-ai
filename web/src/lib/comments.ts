@@ -61,7 +61,7 @@ export async function fetchCommentsForSlug(
   pageSize = 50
 ): Promise<CommentsTreeWithMeta> {
   try {
-    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&page=${page}&pageSize=${pageSize}`, {
+    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&lang=${lang}&page=${page}&pageSize=${pageSize}`, {
       cache: 'no-store',
     });
     if (!res.ok) {
@@ -126,6 +126,8 @@ export async function createCommentInStrapi(params: {
   authorHandle?: string;
   authorAvatar?: string;
   parentId?: string | number | null;
+  /** The language being written in — the other one is created empty. */
+  lang?: 'de' | 'en';
 }): Promise<CommentItem | null> {
   try {
     const res = await fetch('/api/comments', {

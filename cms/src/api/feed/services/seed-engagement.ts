@@ -22,6 +22,15 @@ interface EngagementFixture {
   }>;
   likes?: Array<{ handle: string; videos?: string[]; images?: string[]; articles?: string[] }>;
   subscriptions?: Array<{ subscriber: string; channel: string }>;
+  notifications?: Array<{
+    recipient: string;
+    sender?: string;
+    type: 'chat_message' | 'comment_reply' | 'new_video' | 'new_subscriber';
+    title: string;
+    message?: string;
+    link?: string;
+    isRead?: boolean;
+  }>;
   chatRooms?: Array<{
     slug: string;
     name: string;
@@ -55,6 +64,26 @@ export default ({ strapi }: { strapi: any }) => ({
       return rows?.[0] || null;
     };
 
+    /**
+     * The English version of a German comment, deliberately without text.
+     *
+     * It exists so a translation has somewhere to land later, and renders
+     * nowhere until it has words — an English reader sees no comment rather
+     * than a German one (discussion #93). The demo threads are written in
+     * German, so English is the empty side here.
+     */
+    const createUntranslated = async (documentId: string) => {
+      try {
+        await strapi.documents('api::comment.comment').update({
+          documentId,
+          locale: 'en',
+          data: { text: '' },
+        } as any);
+      } catch (e) {
+        logError('[seed-engagement] untranslated counterpart', e);
+      }
+    };
+
     // ---- Comments, parents before replies so a reply has something to attach to
     let commentCount = 0;
     for (const entry of fixture.comments || []) {
@@ -72,13 +101,15 @@ export default ({ strapi }: { strapi: any }) => ({
             depth: 0,
             repliesCount: (entry.replies || []).length,
           },
-        });
+          locale: 'de',
+        } as any);
         commentCount += 1;
+        await createUntranslated(parent.documentId);
 
         for (const reply of entry.replies || []) {
           const replyAuthor = usersByHandle[reply.author];
           if (!replyAuthor) continue;
-          await strapi.documents('api::comment.comment').create({
+          const created = await strapi.documents('api::comment.comment').create({
             data: {
               text: reply.text,
               feedSlug: entry.slug,
@@ -89,8 +120,10 @@ export default ({ strapi }: { strapi: any }) => ({
               parent: parent.id,
               depth: 1,
             },
-          });
+            locale: 'de',
+          } as any);
           commentCount += 1;
+          await createUntranslated(created.documentId);
         }
       } catch (e) {
         logError(`[seed-engagement] comment on "${entry.slug}"`, e);
@@ -237,6 +270,36 @@ export default ({ strapi }: { strapi: any }) => ({
       }
     }
     steps.push(`${subscriptionCount} subscriptions`);
+
+    /*
+     * Notifications are normally a by-product of activity, and seeded content
+     * produces none — nobody was logged in when it was written. Without a few
+     * the bell is empty on a preview whose whole point is showing what the app
+     * does, so the demo accounts get some that match conversations actually in
+     * the fixture: the reply quoted here is a reply that exists.
+     */
+    let notificationCount = 0;
+    for (const entry of fixture.notifications || []) {
+      const recipient = usersByHandle[entry.recipient];
+      if (!recipient) continue;
+      try {
+        await strapi.documents('api::notification.notification').create({
+          data: {
+            type: entry.type,
+            title: entry.title,
+            message: entry.message,
+            link: entry.link,
+            isRead: Boolean(entry.isRead),
+            recipient: recipient.id,
+            sender: entry.sender ? usersByHandle[entry.sender]?.id : undefined,
+          },
+        });
+        notificationCount += 1;
+      } catch (e) {
+        logError(`[seed-engagement] notification for ${entry.recipient}`, e);
+      }
+    }
+    steps.push(`${notificationCount} notifications`);
 
     return steps;
   },

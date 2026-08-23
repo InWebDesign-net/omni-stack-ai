@@ -289,6 +289,7 @@ export default function ContentPageClient({
     const authorId = activeUser?.id;
 
     const result = await createCommentInStrapi({
+        lang: lang as "de" | "en",
       feedSlug: slug,
       text: newCommentText.trim(),
       authorName,
@@ -309,6 +310,7 @@ export default function ContentPageClient({
     try {
       const activeUser = currentUser || userData;
       const created = await createCommentInStrapi({
+        lang: lang as "de" | "en",
         feedSlug: slug,
         text,
         authorName: activeUser?.username || 'Gast',
