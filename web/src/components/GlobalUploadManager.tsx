@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import {
   Upload,
   X,

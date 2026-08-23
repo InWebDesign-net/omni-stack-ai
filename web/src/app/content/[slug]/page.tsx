@@ -1,3 +1,5 @@
+import { resolveLang } from '@/lib/locale-server';
+import { localizePath, languageAlternates } from '@/lib/locale';
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import ContentPageClient from './ContentPageClient';
@@ -102,6 +104,7 @@ export async function generateMetadata(
     };
   }
 
+  const lang = await resolveLang();
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://omni-web.inwebdesign.net';
   const url = `${baseUrl}/content/${slug}`;
   const description =
@@ -143,7 +146,10 @@ export async function generateMetadata(
       description,
       images: [thumbnailUrl],
     },
-    alternates: { canonical: url },
+    alternates: {
+      canonical: `${baseUrl}${localizePath(`/content/${slug}`, lang)}`,
+      languages: languageAlternates(baseUrl, `/content/${slug}`),
+    },
   };
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import Header from '@/components/Header';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { useApp } from '@/context/AppContext';

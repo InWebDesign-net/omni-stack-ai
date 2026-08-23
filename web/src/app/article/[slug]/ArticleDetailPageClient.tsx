@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Heart, Share2, Bookmark, Eye, Clock, MessageSquare,
@@ -34,14 +34,23 @@ function pickLocalized(source: any, useLang: string) {
   return source;
 }
 
-export default function ArticleDetailPageClient({ initialItem, slug }: { initialItem: any; slug: string }) {
+export default function ArticleDetailPageClient({
+  initialItem,
+  slug,
+  initialLang = 'de',
+}: {
+  initialItem: any;
+  slug: string;
+  /** The language of the URL, resolved on the server. See AppProvider. */
+  initialLang?: 'de' | 'en';
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, lang, currentUser, openAuthModal, subscribedChannels } = useApp();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const [item, setItem] = useState(() => pickLocalized(initialItem, lang));
+  const [item, setItem] = useState(() => pickLocalized(initialItem, initialLang));
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(item?.likesCount || 0);
   const [viewsCount, setViewsCount] = useState(item?.viewsCount || 0);
@@ -65,7 +74,12 @@ export default function ArticleDetailPageClient({ initialItem, slug }: { initial
   const [activeChannelModal, setActiveChannelModal] = useState<any>(null);
   const hasTrackedView = useRef(false);
 
-  const effectiveLang = mounted ? lang : 'de';
+  /*
+   * Was `mounted ? lang : 'de'` — German until hydration, whatever the reader
+   * had chosen, because the server could not know the language. It can now:
+   * it is in the URL, so the first render is already the right one.
+   */
+  const effectiveLang = mounted ? lang : initialLang;
 
   const [commentsCount, setCommentsCount] = useState(initialItem?.commentsCount || 0);
 

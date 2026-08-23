@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import Image from 'next/image';
 import { ListVideo, Lock, Globe, Link2, Users, EyeOff, Play } from 'lucide-react';
 

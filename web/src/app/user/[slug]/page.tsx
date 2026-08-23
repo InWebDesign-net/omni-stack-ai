@@ -1,3 +1,5 @@
+import { resolveLang } from '@/lib/locale-server';
+import { localizePath, languageAlternates } from '@/lib/locale';
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import UserPageClient from './UserPageClient';
@@ -24,6 +26,7 @@ export async function generateMetadata(
   }
 
   const profile = data.profile;
+  const lang = await resolveLang();
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://omni-web.inwebdesign.net';
   const url = `${baseUrl}/user/${encodeURIComponent(slug)}`;
   const title = `${profile.username} (${profile.handle || '@user'}) | Omni Network`;
@@ -53,7 +56,10 @@ export async function generateMetadata(
       description,
       images: [profile.avatarUrl || `${baseUrl}/media/avatars/default.png`],
     },
-    alternates: { canonical: url },
+    alternates: {
+      canonical: `${baseUrl}${localizePath(`/user/${slug}`, lang)}`,
+      languages: languageAlternates(baseUrl, `/user/${slug}`),
+    },
   };
 }
 

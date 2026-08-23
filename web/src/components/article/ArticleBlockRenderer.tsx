@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { Play, Image as ImageIcon, Quote, Heading, Film, Eye, Heart, FileText, Download } from 'lucide-react';
 import Image from 'next/image';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';

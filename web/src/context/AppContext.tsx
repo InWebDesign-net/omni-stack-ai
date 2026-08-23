@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import VideoUploadModal from '@/components/VideoUploadModal';
 import ChannelProfileModal from '@/components/ChannelProfileModal';
 import UserSettingsModal from '@/components/UserSettingsModal';
@@ -18,6 +19,7 @@ import {
 import { getDictionary, Dictionary } from '@/lib/i18n';
 import { AVATAR_PLACEHOLDER, isLegacyAvatar, resolveAvatarUrl } from '@/lib/avatar';
 import { storeItem, storeCookie } from '@/lib/consent';
+import { localizePath } from '@/lib/locale';
 
 export interface UserProfileSession {
   id: number;
@@ -84,9 +86,24 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+export function AppProvider({
+  children,
+  initialLang = 'de',
+}: {
+  children: React.ReactNode;
+  /**
+   * The language of the URL being rendered, resolved on the server.
+   *
+   * Starting from it rather than from 'de' is what lets the server and the
+   * first client render agree, which is what removes the need for components
+   * to hold back their real language until after mount.
+   */
+  initialLang?: 'de' | 'en';
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState<UserProfileSession | null>(null);
-  const [lang, setLangState] = useState<'de' | 'en'>('de');
+  const [lang, setLangState] = useState<'de' | 'en'>(initialLang);
   const [profile, setProfile] = useState<AffinityGraph>(() => defaultAffinityGraph());
 
   // Modals State
@@ -102,17 +119,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('omni_lang') as 'de' | 'en';
-      if (savedLang === 'de' || savedLang === 'en') {
-        setLangState(savedLang);
-      } else {
-        // Fall back to the omni_lang cookie (set by the language switch / server)
-        const m = document.cookie.match(/(?:^|;\s*)omni_lang=([^;]+)/);
-        const cookieLang = m?.[1];
-        if (cookieLang === 'de' || cookieLang === 'en') {
-          setLangState(cookieLang);
-        }
-      }
+      /*
+       * The stored preference no longer decides the language — the URL does.
+       *
+       * Reading it back here would flip the page to English on a German
+       * address, contradicting the `lang` attribute and the canonical tag that
+       * were already sent. It is still written on every switch, so a future
+       * "take me to my language" redirect has something to read.
+       */
 
       const sanitizeUserSession = (usr: any): UserProfileSession | null => {
         if (!usr) return null;
@@ -195,10 +209,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLangState(nextLang);
     try {
       storeItem('omni_lang', nextLang);
-      // The cookie is what the server reads when rendering, so it goes through
-      // the same gate: language is a preference, not a necessity.
+      // Still stored, though the server no longer renders from it: it records
+      // the choice, it does not decide the page. Language is a preference, so
+      // it goes through the same consent gate as any other.
       storeCookie('omni_lang', nextLang);
     } catch (e) { console.error('[AppContext] failed to persist language preference:', e); }
+
+    /*
+     * Switching language changes the address.
+     *
+     * Both languages of a page now have their own URL, so a switch that only
+     * flipped some state would leave the reader on the other language's
+     * address — sharing it would send the recipient to the wrong one, and the
+     * canonical tag in the markup would already disagree with what is on screen.
+     */
+    const target = localizePath(pathname || '/', nextLang);
+    if (target !== pathname) {
+      router.push(`${target}${window.location.search}${window.location.hash}`);
+    }
+
+    /*
+     * The root layout renders `<html lang>` on the server and is not
+     * re-rendered by a client-side navigation, so without this the attribute
+     * keeps claiming the old language until the next full load — and a screen
+     * reader keeps pronouncing the new one with the old rules.
+     */
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = nextLang;
+    }
   };
 
   const toggleLanguage = () => {

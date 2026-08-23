@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import {
   Sliders,
   Menu,
@@ -98,7 +99,7 @@ export default function Header({
   onLogout,
   showMenuButton = true,
 }: HeaderProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const {
     currentUser: appContextUser,
     lang: appLang,

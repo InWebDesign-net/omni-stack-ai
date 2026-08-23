@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatCount } from '@/lib/format';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import {
   ArrowLeft,
   Play,
@@ -136,7 +137,7 @@ export default function VideoPageClient({
   accessStatus,
   initialLang = 'de',
 }: VideoPageClientProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const { message: toastMessage, showToast } = useToast();
   const { lang, currentUser, openAuthModal, openChannelModal, subscribedChannels, toggleSubscribeChannel, t } = useApp();
 

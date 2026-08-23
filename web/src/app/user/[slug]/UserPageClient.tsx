@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { formatCount } from '@/lib/format';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import {
     Video,
     Heart,

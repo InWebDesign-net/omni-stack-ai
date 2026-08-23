@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/common/LocaleLink';
 import Image from 'next/image';
 import {
   Heart, Share2, Bookmark, Send, MessageSquare, Eye, Clock,

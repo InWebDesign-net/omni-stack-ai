@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/lib/hooks/useLocaleRouter';
 import { FileText, Plus, X, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import { jsonAuthHeaders } from '@/lib/affinity';
 import { useApp } from '@/context/AppContext';
@@ -13,7 +14,7 @@ interface ArticleCreateModalProps {
 }
 
 export function ArticleCreateModal({ isOpen, onClose }: ArticleCreateModalProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const { lang, openAuthModal, currentUser } = useApp();
 
   const [title, setTitle] = useState('');
