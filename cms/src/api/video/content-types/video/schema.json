@@ -67,6 +67,20 @@
       "type": "integer",
       "default": 0
     },
+    "orientation": {
+      "type": "enumeration",
+      "enum": [
+        "landscape",
+        "portrait",
+        "square"
+      ],
+      "description": "How the video was shot, recorded at ingest. Not derivable from the output: the converter fits everything into 16:9.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
+    },
     "isProcessing": {
       "type": "boolean",
       "default": true

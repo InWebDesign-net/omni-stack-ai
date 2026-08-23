@@ -29,6 +29,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const metaPath = path.join(OUT_DIR, base + '.meta');
 
     let metaDuration = Math.round(Number(duration) || 0);
+    /*
+     * How the source was shot. The converter fits every video into 16:9 — a
+     * portrait clip becomes a landscape frame with a blurred pillarbox — so
+     * this cannot be read back off the output afterwards. It only exists if
+     * the converter wrote it, which older material predates.
+     */
+    let metaOrientation: 'landscape' | 'portrait' | 'square' | null = null;
 
     // Read meta file if exists
     if (fs.existsSync(metaPath)) {
@@ -38,6 +45,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           const [key, value] = line.split('=');
           if (key && value && key.trim() === 'duration') {
             metaDuration = Math.round(parseFloat(value.trim())) || metaDuration;
+          }
+          if (key && value && key.trim() === 'orientation') {
+            const o = value.trim();
+            if (o === 'landscape' || o === 'portrait' || o === 'square') metaOrientation = o;
           }
         }
       } catch (e) { strapi.log.error('[video-ingest] could not read duration from meta file:', e); }
@@ -118,6 +129,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           ...(hasMp4 ? { mp4Url: `/media/videos/${base}.mp4` } : {}),
           thumbnailUrl: `/media/thumbnails/${base}-1.png`,
           ogImageUrl: `/media/og/${base}.jpg`,
+          // Only when the converter reported it — writing `null` over a value
+          // set by the backfill would lose it on every re-ingest.
+          ...(metaOrientation ? { orientation: metaOrientation } : {}),
         };
 
         // Update each locale version individually with status: 'published'
