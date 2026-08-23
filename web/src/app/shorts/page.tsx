@@ -8,8 +8,7 @@ import {
   Heart,
   MessageSquare,
   Share2,
-  Bookmark,
-  Music,
+  ListPlus,
   Plus,
   Volume2,
   VolumeX,
@@ -40,15 +39,19 @@ import {
 import { useHlsSource } from '@/lib/hooks/useHlsSource';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { usePlaylists } from '@/lib/hooks/usePlaylists';
+import { toggleLike as persistLike } from '@/lib/likes';
+import { shareContent } from '@/lib/share';
 
 function ShortVideoPlayer({
   short,
   isActive,
   isMuted,
+  playLabel,
 }: {
   short: FeedItem;
   isActive: boolean;
   isMuted: boolean;
+  playLabel: string;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Both come from the API. There is deliberately no slug-derived fallback:
@@ -65,17 +68,67 @@ function ShortVideoPlayer({
     enabled: isActive,
   });
 
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isActive) {
-      video.play().catch(() => {});
+      /*
+       * A refused autoplay must show the play button, not a frozen frame.
+       *
+       * The browser blocks autoplay with sound until the reader has interacted
+       * with the page, so the first slide of a fresh visit often does not
+       * start. Relying on the `pause` event alone missed this: the video never
+       * played, so it never paused, and the overlay that would explain the
+       * still image never appeared.
+       */
+      video.play().then(() => setIsPaused(false)).catch(() => setIsPaused(true));
     } else {
       video.pause();
       video.currentTime = 0;
+      setIsPaused(false);
+      setProgress(0);
     }
   }, [isActive]);
+
+  /* Progress for the bar at the bottom. `timeupdate` fires a few times a
+     second, which is enough for a 2px line and cheaper than an animation
+     frame loop per slide. */
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const onTime = () => {
+      if (video.duration > 0) setProgress((video.currentTime / video.duration) * 100);
+    };
+    const onPlay = () => setIsPaused(false);
+    const onPause = () => setIsPaused(true);
+
+    video.addEventListener('timeupdate', onTime);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+    return () => {
+      video.removeEventListener('timeupdate', onTime);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+    };
+  }, []);
+
+  /**
+   * Tap the video to pause, tap again to resume — the gesture people already
+   * know from every other vertical feed. The state comes from the element's own
+   * events rather than from this handler, so the icon still matches when
+   * something else pauses it.
+   */
+  const togglePlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) video.play().catch(() => {});
+    else video.pause();
+  };
 
   return (
     /*
@@ -96,14 +149,41 @@ function ShortVideoPlayer({
      * and the standard player is where the full frame lives.
      */
     <div className="h-full w-full flex items-center justify-center">
-      <video
-        ref={videoRef}
-        poster={short.thumbnailUrl}
-        loop
-        muted={isMuted}
-        playsInline
-        className="h-full w-auto aspect-[9/16] object-cover"
-      />
+      <div className="relative h-full w-auto aspect-[9/16]">
+        <video
+          ref={videoRef}
+          poster={short.thumbnailUrl}
+          loop
+          muted={isMuted}
+          playsInline
+          onClick={togglePlayback}
+          className="h-full w-full object-cover cursor-pointer"
+        />
+
+        {/* Shown only while paused, the way a video player does it — a
+            permanent overlay would sit on top of the content. */}
+        {isPaused && isActive && (
+          <button
+            type="button"
+            onClick={togglePlayback}
+            aria-label={playLabel}
+            className="absolute inset-0 flex items-center justify-center bg-black/20 cursor-pointer focus:outline-none"
+          >
+            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-black/60 backdrop-blur-md border border-white/20 shadow-2xl">
+              <Play className="h-9 w-9 text-white fill-current translate-x-0.5" />
+            </span>
+          </button>
+        )}
+
+        {/* A thin line rather than a scrub bar: this surface is scrolled, not
+            seeked, and a draggable control here would fight the swipe. */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/15">
+          <div
+            className="h-full bg-white/80 transition-[width] duration-150 ease-linear"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -157,7 +237,7 @@ export default function ShortsFeedPage() {
   const router = useRouter();
   const params = useParams();
   const initialSlug = params?.slug as string;
-  const { lang, currentUser, openAuthModal, t } = useApp();
+  const { lang, currentUser, openAuthModal, openChannelModal, t } = useApp();
 
   // Dynamic shorts list from real video catalog
   const [shortsList, setShortsList] = useState<FeedItem[]>([]);
@@ -471,28 +551,89 @@ export default function ShortsFeedPage() {
 
   const activeComments = (activeShort && commentsMap[activeShort.slug]) || [];
 
+  /*
+   * The same write the standard player makes.
+   *
+   * This used to move a local boolean and send a tracking event, and that was
+   * all — the like was gone on reload and the profile never saw it. What
+   * happens behind the two views should not differ; only how they look does.
+   */
   const toggleLike = (id: number, currentLikes: number) => {
     if (!currentUser) {
       openAuthModal();
       return;
     }
-    setLikedMap((prev) => {
-      const currentlyLiked = !!prev[id];
-      setLikesMap((l) => ({ ...l, [id]: (l[id] ?? currentLikes) + (currentlyLiked ? -1 : 1) }));
+    const currentlyLiked = !!likedMap[id];
+    const nextLiked = !currentlyLiked;
 
-      if (activeShort && activeShort.id === id) {
-        const tags = Array.isArray(activeShort.tags) && activeShort.tags.length > 0
-          ? activeShort.tags
-          : [(activeShort as any).category, activeShort.title].filter(Boolean);
-        tracker.track(currentlyLiked ? 'unlike' : 'like', tags, 'short', (activeShort as any).creator?.id || (activeShort as any).author?.id);
-      }
+    setLikedMap((prev) => ({ ...prev, [id]: nextLiked }));
+    setLikesMap((l) => ({ ...l, [id]: Math.max(0, (l[id] ?? currentLikes) + (nextLiked ? 1 : -1)) }));
 
-      return { ...prev, [id]: !currentlyLiked };
-    });
+    void persistLike({ videoId: id, desired: nextLiked });
+
+    if (activeShort && activeShort.id === id) {
+      const tags = Array.isArray(activeShort.tags) && activeShort.tags.length > 0
+        ? activeShort.tags
+        : [(activeShort as any).category, activeShort.title].filter(Boolean);
+      tracker.track(nextLiked ? 'like' : 'unlike', tags, 'short', (activeShort as any).creator?.id || (activeShort as any).author?.id);
+    }
   };
 
-  const toggleSubscribe = (handle: string) => {
-    setSubscribedMap((prev) => ({ ...prev, [handle]: !prev[handle] }));
+  /* Which of these videos the reader has already liked, so the heart is right
+     before they touch it. */
+  useEffect(() => {
+    if (!currentUser) {
+      setLikedMap({});
+      return;
+    }
+    let active = true;
+    fetch('/api/likes', { credentials: 'same-origin' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        const ids: string[] = data.likedVideoIds || [];
+        setLikedMap(Object.fromEntries(ids.map((likedId) => [Number(likedId), true])));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [currentUser]);
+
+  /*
+   * The same write the subscribe button makes everywhere else.
+   *
+   * This flipped a local map keyed on the handle and never told the server,
+   * so the tick appeared and the subscription did not exist. Keyed on the
+   * creator's id now, because that is what the API takes and two creators can
+   * share a display handle.
+   */
+  const toggleSubscribe = async (creatorId: string | number | undefined, key: string) => {
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
+    if (!creatorId) return;
+
+    const next = !subscribedMap[key];
+    setSubscribedMap((prev) => ({ ...prev, [key]: next }));
+
+    try {
+      const res = await fetch('/api/subscriptions', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'toggle', targetId: creatorId, type: 'channel' }),
+      });
+      if (!res.ok) throw new Error('subscribe failed');
+      const data = await res.json();
+      setSubscribedMap((prev) => ({ ...prev, [key]: Boolean(data.isSubscribed) }));
+    } catch {
+      // Put the tick back where it was rather than leaving it claiming
+      // something that did not happen.
+      setSubscribedMap((prev) => ({ ...prev, [key]: !next }));
+      showToast(t?.common?.error || 'Aktion fehlgeschlagen');
+    }
   };
 
   const handleAddComment = async (e: React.FormEvent) => {
@@ -569,7 +710,16 @@ export default function ShortsFeedPage() {
   };
 
   return (
-    <div className="relative h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none">
+    /*
+     * The context menu is suppressed here: this is a player surface, and the
+     * browser's menu on a fullscreen video offers "save video as" and "loop"
+     * over content whose access we control. It stays available everywhere else
+     * in the app.
+     */
+    <div
+      onContextMenu={(e) => e.preventDefault()}
+      className="relative h-screen w-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none"
+    >
       {isPreviewActive && (
         <div className="bg-gradient-to-r from-[#8083ff] via-[#44e2cd] to-[#8083ff] text-white text-xs py-2 px-4 flex items-center justify-between z-50 sticky top-0 shadow-xl font-sans">
           <div className="flex items-center gap-2 font-bold tracking-wide">
@@ -598,11 +748,6 @@ export default function ShortsFeedPage() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 px-3 py-1 rounded-full backdrop-blur-md">
-            <Flame className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-            <span className="text-xs font-extrabold tracking-wide">Omni Shorts</span>
-          </div>
-
           {activeShort && (
             <Link
               href={listId ? `/video/${activeShort.slug}?list=${encodeURIComponent(listId)}` : `/video/${activeShort.slug}`}
@@ -634,7 +779,7 @@ export default function ShortsFeedPage() {
           const isActive = idx === activeIndex;
           const isLiked = !!likedMap[short.id];
           const likesCount = likesMap[short.id] ?? short.likesCount;
-          const isBookmarked = Boolean(short.documentId) && listsContaining(short.documentId as string).length > 0;
+          const isInPlaylist = Boolean(short.documentId) && listsContaining(short.documentId as string).length > 0;
           const authorHandle = getAuthorHandle(short);
           const isSubscribed = !!subscribedMap[authorHandle];
 
@@ -643,27 +788,57 @@ export default function ShortsFeedPage() {
               key={short.id}
               className="snap-start snap-always h-screen w-full relative flex items-center justify-center bg-black overflow-hidden"
             >
+              {/*
+                The overlays belong to the video, not to the viewport.
+                Since the frame is a centred 9:16 column, positioning them
+                against the window left the creator, the title and the tags
+                stranded on the black margin on any wide screen. This box has
+                the same geometry as the video, so everything sits on it.
+              */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                <div className="relative h-full w-auto aspect-[9/16] max-w-full" data-shorts-frame />
+              </div>
+
               {/* Video Player */}
               <ShortVideoPlayer
                 short={short}
                 isActive={isActive}
                 isMuted={isMuted}
+                playLabel={t?.player?.play || 'Abspielen'}
               />
 
               {/* Dark Gradient Overlays for readable text */}
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 pointer-events-none" />
 
               {/* Right Floating Action Sidebar */}
-              <aside className="absolute right-3 sm:right-6 bottom-20 z-30 flex flex-col items-center gap-5">
+              {/* Lifted clear of the chat bubble for the same reason — the
+                  column used to end right on top of it. */}
+              <aside
+                style={{
+                  bottom: `calc(5rem + var(--chat-dock-height, 0px))`,
+                  right: `max(0.75rem, calc((100vw - 100vh * 9 / 16) / 2 + 0.75rem))`,
+                }}
+                className="absolute z-30 flex flex-col items-center gap-5"
+              >
                 {/* Author Avatar with Subscribe Badge */}
                 <div className="relative">
-                  <Image
-                    src={getAuthorAvatar(short)}
-                    alt={getAuthorName(short)}
-                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-xl"
-                  />
+                  {/* Same destination as the creator badge on the standard
+                      page: the avatar is the way into the channel. */}
                   <button
-                    onClick={() => toggleSubscribe(authorHandle)}
+                    type="button"
+                    onClick={() => openChannelModal((short as any).creator || (short as any).author || short)}
+                    className="block rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
+                    title={getAuthorName(short)}
+                    aria-label={getAuthorName(short)}
+                  >
+                    <Image
+                      src={getAuthorAvatar(short)}
+                      alt={getAuthorName(short)}
+                      className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-xl"
+                    />
+                  </button>
+                  <button
+                    onClick={() => toggleSubscribe(((short as any).creator?.id || (short as any).author?.id), authorHandle)}
                     className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-md ${
                       isSubscribed
                         ? 'bg-teal-400 text-black'
@@ -705,51 +880,35 @@ export default function ShortsFeedPage() {
                   </span>
                 </button>
 
-                {/* Bookmark Button */}
-                {/*
-                  Saving something now means putting it somewhere (#152). This
-                  used to flip a local boolean that was never persisted and was
-                  gone on the next reload — the button looked like it worked and
-                  did nothing.
-                */}
+                {/* Playlist — the one "save" this surface has. The bookmark
+                    button next to it did nothing and is gone; two controls that
+                    both mean "keep this" is one too many. */}
                 <button
                   onClick={() => setPlaylistForVideo(short.documentId || null)}
-                  className="flex flex-col items-center gap-1 group"
+                  className="flex flex-col items-center gap-1 group cursor-pointer"
                   title={(t as any).playlists?.addTo || 'Zu Playlist hinzufügen'}
                 >
                   <div className={`p-3 rounded-full backdrop-blur-md border transition-all ${
-                    isBookmarked
+                    isInPlaylist
                       ? 'bg-indigo-600 border-indigo-600 text-white'
                       : 'bg-black/50 border-white/10 text-white hover:bg-black/80'
                   }`}>
-                    <Bookmark className={`h-6 w-6 ${isBookmarked ? 'fill-current' : ''}`} />
+                    <ListPlus className="h-6 w-6" />
                   </div>
                 </button>
 
                 {/* Share Button */}
                 <button
-                  onClick={() => {
-                    if (navigator.clipboard) {
-                      navigator.clipboard.writeText(window.location.origin + `/shorts/${short.slug}`);
-                      showToast(t.shorts.shortLinkCopied);
-                    }
-                  }}
-                  className="p-3 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transition-all"
+                  onClick={() => shareContent({ path: `/video/${short.slug}`, title: short.title }, showToast, t.common.linkCopied || t.shorts.shortLinkCopied)}
+                  className="p-3 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 text-white backdrop-blur-md transition-all cursor-pointer"
                   title={t.common.share}
                 >
                   <Share2 className="h-6 w-6" />
                 </button>
-
-                {/* Spinning Music Disc Icon */}
-                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 p-0.5 shadow-lg">
-                  <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
-                    <Music className="h-4 w-4 text-white" />
-                  </div>
-                </div>
               </aside>
 
               {/* Bottom Left Info Panel */}
-              <div className="absolute left-4 sm:left-6 bottom-6 right-20 z-30 flex flex-col gap-2 max-w-lg">
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-6 z-30 flex flex-col gap-2 w-[min(100%,calc(100vh*9/16))] px-4 pr-20 sm:px-5 sm:pr-24">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm text-white drop-shadow-md">{getAuthorName(short)}</span>
                   <span className="text-xs font-mono font-semibold text-indigo-400 bg-black/50 border border-indigo-500/40 px-2 py-0.5 rounded-md">
@@ -775,9 +934,6 @@ export default function ShortsFeedPage() {
                       #{t}
                     </span>
                   ))}
-                  <span className="text-[10px] font-mono text-amber-400 bg-black/60 px-2 py-0.5 rounded-md border border-amber-500/30">
-                    ⚡ {short.bucketSource || 'Omni AI Short'}
-                  </span>
                 </div>
               </div>
             </section>
@@ -788,7 +944,18 @@ export default function ShortsFeedPage() {
       {/* ── Slide-over Comments Drawer ───────────────────────────────────────── */}
       {commentsOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-fadeIn">
-          <div className="w-full max-w-md bg-surface-raised border-l border-subtle h-full flex flex-col p-5 shadow-2xl animate-slideDown">
+          {/*
+            Padded by whatever the chat occupies in that corner. The drawer runs
+            the full height, so its input sat underneath the chat bubble — the
+            one control the reader needs when the panel is open. The chat
+            publishes its footprint as `--chat-dock-height`; reading it here
+            keeps the two apart without a hardcoded guess that breaks the moment
+            either changes size.
+          */}
+          <div
+            style={{ paddingBottom: `calc(1.25rem + var(--chat-dock-height, 0px))` }}
+            className="w-full max-w-md bg-surface-raised border-l border-subtle h-full flex flex-col p-5 shadow-2xl animate-slideDown"
+          >
             <div className="flex items-center justify-between pb-4 border-b border-subtle">
               <h3 className="text-sm font-bold text-primary flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-indigo-400" />
