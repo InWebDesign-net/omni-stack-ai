@@ -53,3 +53,10 @@ jobs:
       - name: Typecheck Web
         run: npx tsc --noEmit
         working-directory: web
+
+      # socket/ is not an npm workspace and turbo therefore never sees it, so
+      # until now nothing here compiled it — a dependency bump for the gateway
+      # could go green without a single line being type-checked.
+      - name: Install & build socket
+        run: npm ci && npm run build
+        working-directory: socket
