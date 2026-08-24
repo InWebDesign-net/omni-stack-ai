@@ -17,6 +17,28 @@ They are covered by the [Unsplash License](https://unsplash.com/license), which
 permits free use, including commercially, without attribution — attribution is
 appreciated rather than required, and the filenames preserve it.
 
+## Avatars from Pexels
+
+Three creator avatars come from [Pexels](https://www.pexels.com/) instead, named
+`pexels-<photo id>.jpg` so the original is findable the same way:
+
+| File | Channel | Photographer |
+|---|---|---|
+| `pexels-3831164.jpg` | Stadt & Architektur | Andrea Piacquadio |
+| `pexels-4881124.jpg` | Unterwegs | Ketut Subiyanto |
+| `pexels-15752217.jpg` | Klangfarben | Yasin Aydın |
+
+They replace two Unsplash ids that were doing the wrong job: `photo-1534528741775-53994a69daeb`
+is on the legacy fallback list in `web/src/lib/avatar.ts`, so the two channels
+carrying it rendered the neutral placeholder rather than a face, and
+`photo-1507003211169-0a1dd7228f2d` was shared by two channels at once.
+
+Cropped square from the centre, weighted to the top — in a portrait shot the
+face is rarely in the vertical middle — and saved at 400×400.
+
+The [Pexels License](https://www.pexels.com/license/) permits free use including
+commercially, without attribution required.
+
 ## Replacing them
 
 This is demo material. A deployment that is not the public preview should swap
