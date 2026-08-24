@@ -9,7 +9,6 @@ import {
     Eye,
     Upload,
     Settings,
-    ShieldCheck,
     UserCheck,
     Bell,
     MessageSquare,
@@ -134,11 +133,6 @@ export default function UserPageClient({ profileDataInit }: UserPageClientProps)
                                     unoptimized
                                 />
                             </div>
-                            {isOwner && (
-                                <div className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-indigo-500 text-white shadow-lg text-xs font-bold border border-subtle flex items-center gap-1" title="Du bist der Eigentümer">
-                                    <ShieldCheck className="w-4 h-4" />
-                                </div>
-                            )}
                         </div>
 
                         {/* Profile Info */}
