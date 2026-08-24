@@ -229,7 +229,7 @@ export async function GET(req: Request) {
     if (user?.id) {
       try {
         const subRes = await fetch(
-          `${STRAPI_URL}/api/subscriptions?filters[type][$eq]=chat_room&filters[subscriber][id][$eq]=${user.id}&populate[targetChatRoom]=*`,
+          `${STRAPI_URL}/api/subscriptions?filters[type][$eq]=chat_room&filters[subscriber][id][$eq]=${encodeURIComponent(String(user.id))}&populate[targetChatRoom]=*`,
           { headers, cache: 'no-store' }
         );
         if (subRes.ok) {
@@ -283,7 +283,7 @@ export async function POST(req: Request) {
 
       // Check recipient DM privacy settings if starting a 1:1 direct chat
       if (type === 'direct' && recipientId) {
-        const userRes = await fetch(`${STRAPI_URL}/api/users/${recipientId}`, { headers });
+        const userRes = await fetch(`${STRAPI_URL}/api/users/${encodeURIComponent(String(recipientId))}`, { headers });
         if (userRes.ok) {
           const recipient = await userRes.json();
           if (recipient?.allowDirectMessages === 'nobody') {
@@ -294,7 +294,7 @@ export async function POST(req: Request) {
           }
           if (recipient?.allowDirectMessages === 'subscribers_only' && user?.id) {
             const subRes = await fetch(
-              `${STRAPI_URL}/api/subscriptions?filters[subscriber][id][$eq]=${user.id}&filters[targetUser][id][$eq]=${recipientId}&filters[type][$eq]=channel`,
+              `${STRAPI_URL}/api/subscriptions?filters[subscriber][id][$eq]=${encodeURIComponent(String(user.id))}&filters[targetUser][id][$eq]=${encodeURIComponent(String(recipientId))}&filters[type][$eq]=channel`,
               { headers }
             );
             let isSubbed = false;
@@ -465,7 +465,7 @@ export async function POST(req: Request) {
       const existing = subData.data?.[0];
 
       if (existing?.documentId) {
-        await fetch(`${STRAPI_URL}/api/subscriptions/${existing.documentId}`, {
+        await fetch(`${STRAPI_URL}/api/subscriptions/${encodeURIComponent(String(existing.documentId))}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({
@@ -504,7 +504,7 @@ export async function POST(req: Request) {
         const targetRoom = findData?.data?.[0];
         if (targetRoom) {
           const roomDocId = targetRoom.documentId || targetRoom.id;
-          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${roomDocId}`, {
+          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${encodeURIComponent(String(roomDocId))}`, {
             method: 'PUT',
             headers,
             body: JSON.stringify({
@@ -542,7 +542,7 @@ export async function POST(req: Request) {
           if (!currentParticipants.map(String).includes(String(targetUserId))) {
             currentParticipants.push(targetUserId);
           }
-          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${roomDocId}`, {
+          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${encodeURIComponent(String(roomDocId))}`, {
             method: 'PUT',
             headers,
             body: JSON.stringify({
@@ -579,7 +579,7 @@ export async function POST(req: Request) {
           const currentParticipants = (targetRoom.participants || [])
             .map((p: any) => p.id || p.documentId)
             .filter((id: any) => String(id) !== String(targetUserId));
-          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${roomDocId}`, {
+          const updateRes = await fetch(`${STRAPI_URL}/api/chat-rooms/${encodeURIComponent(String(roomDocId))}`, {
             method: 'PUT',
             headers,
             body: JSON.stringify({

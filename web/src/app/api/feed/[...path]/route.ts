@@ -109,7 +109,21 @@ async function proxyRequest(req: Request, params: { path: string[] }) {
     }
 
     const query = forwardedParams.toString();
-    const targetUrl = `${STRAPI_URL}/api/feed/${pathStr}${query ? `?${query}` : ''}`;
+    /*
+     * The path is meant to have slashes, so it is encoded per segment rather
+     * than as a whole — encoding the joined string would send `a%2Fb` upstream.
+     *
+     * Encoding alone is not enough here: `encodeURIComponent('..')` returns
+     * `..` unchanged, because a dot needs no escaping. A segment of `..` would
+     * still be resolved away by the URL parser, and this request carries the
+     * API token — `/api/feed/../../admin/users` becomes `/admin/users`. Dot
+     * segments are therefore rejected outright; no legitimate feed path has one.
+     */
+    if (pathList.some((segment) => segment === '.' || segment === '..' || segment === '')) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
+    }
+    const safePath = pathList.map((segment) => encodeURIComponent(segment)).join('/');
+    const targetUrl = `${STRAPI_URL}/api/feed/${safePath}${query ? `?${query}` : ''}`;
 
     // If interaction payload lacks userId / userIdentifier, enrich from user session
     if (pathStr === 'interaction' && bodyText && user?.id) {

@@ -86,7 +86,7 @@ export async function POST(req: Request) {
           const me = await meRes.json();
           const token = process.env.STRAPI_API_TOKEN || process.env.STRAPI_TOKEN;
           if (me?.id && token) {
-            await fetch(`${STRAPI_URL}/api/users/${me.id}`, {
+            await fetch(`${STRAPI_URL}/api/users/${encodeURIComponent(String(me.id))}`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',

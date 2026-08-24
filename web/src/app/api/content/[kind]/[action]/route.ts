@@ -65,7 +65,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
     const plural = CONTENT_KINDS[kind].plural;
 
     if (action === 'list') {
-      const targetUrl = `${strapiBase()}/api/${plural}/filtered?${searchParams.toString()}`;
+      const targetUrl = `${strapiBase()}/api/${encodeURIComponent(String(plural))}/filtered?${searchParams.toString()}`;
       const headers = await buildHeaders(req, false) || { 'Content-Type': 'application/json' };
 
       const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
@@ -79,7 +79,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
     }
 
     if (action === 'tags') {
-      const targetUrl = `${strapiBase()}/api/${plural}/tags?${searchParams.toString()}`;
+      const targetUrl = `${strapiBase()}/api/${encodeURIComponent(String(plural))}/tags?${searchParams.toString()}`;
       const headers = await buildHeaders(req, false) || { 'Content-Type': 'application/json' };
 
       const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
@@ -126,7 +126,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
       // visibility middleware filters the author's own new item straight out.
       if (slug) params.set('filters[slug][$eq]', slug);
 
-      const res = await fetch(`${strapiBase()}/api/${plural}?${params.toString()}`, {
+      const res = await fetch(`${strapiBase()}/api/${encodeURIComponent(String(plural))}?${params.toString()}`, {
         method: 'GET',
         headers,
         cache: 'no-store',
@@ -157,7 +157,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
 
       const headers = await buildHeaders(req, false) || { 'Content-Type': 'application/json' };
       const targetUrl =
-        `${strapiBase()}/api/${plural}?filters[slug][$eq]=${encodeURIComponent(slug)}` +
+        `${strapiBase()}/api/${encodeURIComponent(String(plural))}?filters[slug][$eq]=${encodeURIComponent(slug)}` +
         `&populate=creator&locale=${encodeURIComponent(searchParams.get('lang') || 'de')}&pagination[pageSize]=1`;
 
       const res = await fetch(targetUrl, { method: 'GET', headers, cache: 'no-store' });
@@ -237,7 +237,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ kind: s
     // existed, failed, and left the requested language missing entirely.
     const createLocale = lang || 'de';
     const res = await fetch(
-      `${strapiBase()}/api/${plural}?locale=${encodeURIComponent(createLocale)}`, {
+      `${strapiBase()}/api/${encodeURIComponent(String(plural))}?locale=${encodeURIComponent(createLocale)}`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -272,7 +272,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ kind: s
       // locale is written with a PUT carrying ?locale=.
       const targetLocale = createLocale === 'de' ? 'en' : 'de';
       const locRes = await fetch(
-        `${strapiBase()}/api/${plural}/${createdItem.documentId}?locale=${encodeURIComponent(targetLocale)}`,
+        `${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(createdItem.documentId))}?locale=${encodeURIComponent(targetLocale)}`,
         {
           method: 'PUT',
           headers,
@@ -361,7 +361,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
             .replace(/^-+|-+$/g, '') || `artikel-${Date.now()}`;
         }
 
-        const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}`, {
+        const res = await fetch(`${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(documentId))}?locale=${encodeURIComponent(String(locale))}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({ data: updateData }),
@@ -381,7 +381,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
     } else if (title !== undefined) {
       // Fallback single locale update (used by image historically)
       const thumb = body.thumbnailUrl || body.thumbnail;
-      const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}`, {
+      const res = await fetch(`${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(documentId))}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({
@@ -409,7 +409,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
           if (kind === 'article') extraData.thumbnail = thumb;
           if (kind === 'video' || kind === 'image') extraData.thumbnailUrl = thumb;
         }
-        await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`, {
+        await fetch(`${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(documentId))}?locale=${encodeURIComponent(String(locale))}&status=published`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({ data: extraData }),
@@ -468,7 +468,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ kind:
       // `locale=*` is required. Without it Strapi deletes only the default
       // locale — which here is `en` — and answers 204, so the German version
       // survived every "permanent" delete while the caller was told it worked.
-      const res = await fetch(`${strapiBase()}/api/${plural}/${documentId}?locale=*`, {
+      const res = await fetch(`${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(documentId))}?locale=*`, {
         method: 'DELETE',
         headers,
       });
@@ -487,7 +487,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ kind:
       const failed: string[] = [];
       for (const locale of ['de', 'en']) {
         const res = await fetch(
-          `${strapiBase()}/api/${plural}/${documentId}?locale=${locale}&status=published`,
+          `${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(documentId))}?locale=${encodeURIComponent(String(locale))}&status=published`,
           {
             method: 'PUT',
             headers,
