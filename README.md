@@ -13,55 +13,32 @@
   <img src="web/public/og_image.jpg" alt="Omni Media Network Preview" width="100%" style="border-radius: 12px;" />
 </p>
 
-**Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks, encrypted video streaming platforms, real-time WebSocket chat networks, and AI-driven media distribution hubs. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, **Standalone WebSocket Microservice (`omni-socket`)**, **Level 4 AES-128 HLS Video Transcoding**, and **Local Ollama AI Orchestration**, Omni introduces **Stateful Preference Vectors** to replace traditional, expensive event-logging databases.
+**Omni** is a modern, high-performance open-core boilerplate for hyper-personalized social networks, encrypted video streaming platforms, real-time WebSocket chat networks, and AI-driven media distribution hubs. Built with **Next.js 16 (App Router)**, **Strapi v5 (PostgreSQL)**, a **standalone WebSocket microservice**, **Level 4 AES-128 HLS transcoding** and **local Ollama orchestration**, it replaces traditional event-logging databases with **Stateful Preference Vectors**.
 
 ---
 
-## 🌐 Live Demo & Credentials
+## 🌐 Live Demo
 
-You can test the running production deployment online:
+* **Web Application:** <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">omni-web.inwebdesign.net</a>
+* **Strapi Admin:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">omni-cms.inwebdesign.net/admin</a>
+* **WebSocket Service:** <a href="https://omni-socket.inwebdesign.net" target="_blank" rel="noopener noreferrer">omni-socket.inwebdesign.net</a>
 
-* 📱 **Live Web Application:** <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">https://omni-web.inwebdesign.net/</a>
-* ⚙️ **Strapi CMS Admin Panel:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
-* ⚡ **WebSocket Service:** <a href="https://omni-socket.inwebdesign.net" target="_blank" rel="noopener noreferrer">https://omni-socket.inwebdesign.net</a> (Port 4000)
+**Frontend accounts** — also available as quick-login presets in the login modal:
 
-### 🔑 Demo Login Credentials
+| Account | Identifier | Password |
+|---|---|---|
+| Demo Tech User | `demotech@inwebdesign.net` | `DemoUser2026!` |
+| Demo Gourmet User | `demogourmet@inwebdesign.net` | `DemoUser2026!` |
 
-#### 1. Frontend Test User Accounts (Web App)
-You can log in directly via the Quick-Login presets in the login modal or use these credentials:
-* **Demo Tech User (Tech & Science Focus):**
-  * **E-Mail / Identifier:** `demotech@inwebdesign.net`
-  * **Password:** `DemoUser2026!`
-* **Demo Gourmet User (Cooking & Nature Focus):**
-  * **E-Mail / Identifier:** `demogourmet@inwebdesign.net`
-  * **Password:** `DemoUser2026!`
-
-#### 2. Strapi CMS Admin Access (Demo Editor)
-* **Admin URL:** <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>
-* **Identifier:** `demo-editor1@inwebdesign.net`
-* **Password:** `DemoSecret2026!`
+**Strapi editor:** `demo-editor1@inwebdesign.net` / `DemoSecret2026!`
 
 ---
 
-## 📄 License & Premium AI Features
+## 🧠 Key Features
 
-The core boilerplate is open-source under the **[MIT License](LICENSE)**: feed assembly, the video library catalog, batch tracking, content detail views, the shorts feed, real-time messaging and notifications, subscriptions, likes, playlists, authentication, the content-kind registry, the block editor, the upload pipeline and the encrypted HLS delivery path. You are free to use, modify, and distribute this foundation for your own projects.
+### 🎯 Stateful Preference Vectors
 
-### 🌟 Unlock the Premium AI Engine & Managed Hosting
-The advanced local LLM orchestration (Ollama Llama 3.1 & Moondream Vision AI), real-time intent classification, conversational memory, and automated vector mutation are part of the **InWebDesign Premium AI Engine**.
-
-The assistant streams: Ollama is called with `stream: true`, Strapi forwards the deltas as Server-Sent Events and the Next.js route pipes them straight through, so text appears as the model produces it rather than after it has finished. Because the algorithm-adjustment payload is structured JSON — and half-finished JSON cannot be shown to a reader — the vector update is a second, non-streamed call issued only when a message plausibly expresses a preference.
-
-If you want to integrate the complete AI orchestration into your project without building it from scratch, we offer fully managed hosting, Proxmox LXC cluster deployments, and custom AI consulting.
-
-📩 <a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer"><strong>Contact InWebDesign for Premium AI Integration & Managed Hosting</strong></a>
-
----
-
-## 🧠 Key Features & Architectural Highlights
-
-### 1. 🎯 Stateful Preference Vectors & Dynamic Vector Decay (Vision & Core Architecture)
-Omni replaces traditional event-log database bloat with a lightweight, stateful **Preference Vector Engine** stored directly inside a single `affinityGraph` JSONB field per user in PostgreSQL:
+Personalization lives in a single `affinityGraph` JSONB field per user instead of an event log:
 
 ```json
 {
@@ -74,75 +51,42 @@ Omni replaces traditional event-log database bloat with a lightweight, stateful 
 }
 ```
 
-* 📉 **Time-Weighted Vector Decay:** Older topic scores automatically decay over time using a time-weighted decay function. Active user engagements boost scores, while inactive topics naturally fade.
-* 🤖 **AI Dynamic Keyword Extraction:** As users consume media or talk to the AI Assistant ("Show me recipes", "Science PDFs"), the system dynamically parses intent, mutates `affinityGraph` vectors, and renders visual badges (`⚡ Algorithm Adjustment: Cooking +95%`).
-* ⚡ **Strict 50-Keyword Performance Cap:** To guarantee sub-10ms feed assembly and prevent memory bloat, `affinityGraph` enforces a strict cap of **maximum 50 topics**. Low-ranking or decayed topics are automatically pruned.
+Topic scores decay over time, so interest fades without anyone scheduling a cleanup. As users watch or talk to the assistant, intent is parsed, vectors mutate, and the change is shown rather than hidden (`⚡ Algorithm Adjustment: Cooking +95%`). A hard cap of 50 topics keeps feed assembly under 10 ms; low-ranking entries are pruned automatically.
 
-### 2. ⚡ Standalone WebSocket Microservice (`omni-socket`) & Real-Time Chat Engine
-Omni features a dedicated, low-latency WebSocket microservice (`socket/`) running on port 4000 behind Nginx SSL (`omni-socket.inwebdesign.net`):
+### ⚡ Real-Time Layer
 
-* 🔌 **Zero-Polling Architecture:** Replaces expensive HTTP polling with instant, bi-directional WebSocket event delivery.
-* 💬 **Dual-View Chat System:** Full-screen 2-column view and compact floating support widget. Supports 1:1 direct user DMs, global community channels, and group chat rooms.
-* 🤖 **Dynamic AI Assistant Invitation (`[+ Invite AI]` / `[x Remove AI]`):** Users can dynamically invite the Omni AI Assistant into any chat room. When invited, the bot responds contextually; when removed, it leaves the room cleanly via real-time WebSocket signals.
-* 🔒 **Granular Privacy & Subscriber-Only DMs:** Users can set direct message permissions (*Everyone*, *Subscribers Only*, *Nobody*). When set to *Subscribers Only*, the system verifies active channel subscriptions before allowing DMs.
-* ✍️ **Typing Indicators:** Relayed over `chat:typing` and keyed by user id, with entries expiring locally after five seconds. A client that crashes or loses its connection never sends the closing event, so without an expiry the indicator would stay up forever.
-* 🔕 **Per-Room Notification Rules:** Direct and global rooms notify by default and can be switched off; group rooms stay quiet until a participant subscribes; the AI room never notifies, because the assistant answers while you are looking at it. The fan-out decides by room type rather than by the presence of a subscription record — a missing record can then only cause one notification too many, never a message that is silently never announced.
-* 📜 **Incremental History:** Rooms load the newest page first and fetch older messages as the reader scrolls up, correcting scroll position on prepend so the view does not jump. The room list reads a denormalised preview off each room instead of populating every message ever written to render one line each.
+A dedicated WebSocket microservice (`socket/`, port 4000, behind Nginx SSL) replaces HTTP polling with bi-directional events.
 
-### 3. 🔔 In-App Notifications & Real-Time Drawer
-Omni features a centralized notification engine (`api::notification.notification`):
+* **Chat in two shapes** — a full-screen two-column view and a compact floating widget, covering 1:1 messages, group rooms and a global channel.
+* **The assistant is a participant** — invite it into any room and remove it again; it joins and leaves over the same real-time signals as anyone else.
+* **Granular DM permissions** — *Everyone*, *Subscribers Only* or *Nobody*, verified against live subscriptions before a message is delivered.
+* **Typing indicators** expire locally after five seconds, so a client that crashes never leaves one standing.
+* **Per-room notification rules** decided by room type: direct and global rooms notify by default, group rooms stay quiet until someone subscribes, and the assistant room never notifies because you are already looking at it.
+* **Notification drawer** with unread badges, mark-as-read and deep links that open the target room, video or profile without a page load.
+* **Incremental history** — the newest page loads with the room and older messages are fetched on scroll, with the scroll position corrected on prepend. The room list reads a denormalised preview per room instead of populating every message ever written.
 
-* 📬 **Header Notification Drawer:** Real-time unread badges (`NotificationsBadge`) in the top navigation bar with quick mark-as-read and mark-all-read controls.
-* 🚀 **Automated Notification Triggers:** Fires automated notifications for `new_subscriber`, `chat_invite`, and comment replies.
-* 🔗 **Smart Deep-Linking:** Clicking a notification automatically opens the target chat room (`openChat(roomId)`), video player, or user profile without page reloads.
-* 📄 **Paginated, Not Truncated:** the drawer requests an explicit page size and reports the total. Strapi's `defaultLimit` is 25, so a route that omits pagination silently returns the first 25 rows and presents them as the whole set — worth checking in any new list endpoint.
+### 🔒 Encrypted Media Pipeline
 
-### 4. 🔔 Subscriptions, Likes & Playlists
-* 🔔 **Subscriptions Engine (`api::subscription.subscription`):** One model covers both channel subscriptions (creators, with live subscriber counting) and chat-room subscriptions. Each record carries an explicit `isSubscribed` flag rather than encoding the answer in whether a row exists, so "subscribed", "explicitly muted" and "never decided" stay distinguishable.
-* ⚡ **Interactive `<SubscribeButton>` Component:** Features optimistic UI updates, state synchronization, and floating Toast notifications (*"Channel subscribed successfully! 🎉"*).
-* ❤️ **Likes (`api::like.like`):** One REST surface (`/api/likes`) for videos, images, articles and feed items. Named *like* everywhere — the code, the routes, the content type and the tables — because it is a single yes, and a collection you build is a playlist.
-* 🎵 **Playlists (`api::playlist.playlist`):** Ordered, owned collections of videos. Private by default and publishable by their owner, reusing the same visibility rules as content rather than a second model. They appear beside the player when you watch inside one (`?list=<documentId>`), and clicking through to the vertical view continues *that* list at *that* video — the position travels as a parameter and is addressed by item, so a list that changed since the link was made still opens on the right video.
-  * A public playlist never publishes what it contains: the visibility middleware does not filter relations populated from another type, so the entries are looked up again through the guarded path and what the viewer may not see is dropped and reported as `hiddenCount`.
-  * Reordering uses `@dnd-kit` with a keyboard sensor, so it works without a mouse.
+* **AES-128 on disk** — every `.ts` segment is encrypted with a 128-bit key (`enc.key`, written beside the renditions). Copied raw, the files are unplayable.
+* **The key endpoint answers to visibility, not to sessions** — `/api/media/key/[slug]` releases the 16-byte key based on the video's own `visibility` field, so public videos stream for anonymous visitors while private ones return `401`/`403` unless the session owns them. The same check guards the MP4 renditions; segments need no gate of their own, being useless without the key.
+* **Client memory isolation** — `hls.js` decodes into tab-scoped `blob:` buffers, so there is no URL to hotlink.
+* **Chunked uploads with handles** — `UploadContext` returns a task id per file, so a modal or a content block can follow its own upload rather than guessing from a global list.
+* **Private by default** — a file that just finished uploading has been reviewed by nobody. Publishing is one switch; unpublishing something strangers have already seen is not.
+* **`orientation` recorded at ingest** — how the video was *shot*. The output is 16:9 either way, so this cannot be derived later, and a list that wants genuinely vertical material can ask for it.
 
-### 5. 🔒 Level 4 AES-128 Encrypted HLS Video Pipeline
-Omni implements an enterprise-grade content security architecture:
+### 🎬 Player & Vertical View
 
-* 🔐 **On-Disk AES-128 Encryption (Level 4 Security):** Every `.ts` video segment file stored on disk is encrypted with a unique 128-bit AES key (`enc.key`). Raw `.ts` files are 100% unplayable if copied directly.
-* 🔑 **Visibility-Gated Key Authorization Endpoint (`/api/media/key/[slug]`):** The 16-byte AES decryption key is released according to the video's own `visibility` field, not according to whether a session exists. Published (`public`) videos stream for anonymous visitors, while `private` videos return `401`/`403` unless the requesting session owns them. The same check guards the unencrypted MP4 renditions; HLS segments need no gate of their own, since they are AES-encrypted on disk and useless without the key.
-* 🛡️ **Client Memory Isolation:** Native `hls.js` decodes segments into tab-scoped `blob:http://...` MediaSource buffers, preventing direct URL hotlinking and unauthorized media extraction.
+* **Custom player** with hover timestamps on the scrub bar, volume expansion, and a time display that toggles between elapsed and remaining.
+* **Nested settings** that drill down like a phone settings screen — quality, ambient intensity, loop and vertical view.
+* **Ambient mode** samples a 32×32 canvas five times a second and paints a blurred glow behind the player, pausing when the video does or the tab hides.
+* **One HLS attachment path** (`useHlsSource`) shared by the detail player and the shorts feed, attaching only to the item on screen so a long feed never accumulates instances.
+* **The vertical view is the same app** — likes, subscriptions, comments and sharing go through the same calls and components as the standard player. Its feed follows a playlist named by `?list=`, otherwise the affinity ranking, otherwise the catalogue; the video named in the URL is always fetched on its own, so a link opens what it says.
+* **Cropped, not letterboxed** — a 9:16 source occupies a centred strip exactly `height × 9/16` wide, recovered at 39 dB PSNR against the original.
+* **Clickable tags** navigate straight into a filtered catalogue (`/videos?includetag=...`).
 
-> ⚠️ **Deployment note — never symlink the media directory into `web/public/`.**
-> Anything reachable under `web/public/` is served by Next.js as a static asset *before* App Router route handlers run. A `web/public/media -> /path/to/media` symlink therefore silently bypasses `app/media/[...path]/route.ts` entirely, taking the visibility check, the traversal guard and the Range implementation out of the request path. Point `MEDIA_ROOT` in the route handler at the media directory instead and let every `/media/*` request go through it.
+### 🧩 Content Model
 
-### 6. 🎬 Custom YouTube-Style Video Player & Interactive Tag Engine
-* 🎛️ **Player Controls (`web/src/components/CustomVideoPlayer.tsx`):** Scrub-bar hover timestamps, smooth play/pause animations, volume hover expansion, full-screen toggle, and a time display that switches between elapsed and remaining on click.
-* ⚙️ **Nested Settings Menu:** The gear opens a panel that drills down the way a phone settings screen does — the root lists sections with their current value, picking one slides its panel in, a back header returns. Quality (`Auto`, `1080p`, `720p`, `480p`), ambient intensity, loop and vertical view all live there.
-* 🌈 **Ambient Mode:** A 32×32 canvas samples the current frame five times a second, averages it, and paints a blurred radial glow behind the player. Dark theme only, adjustable from barely-there to full, and it stops sampling when the video pauses or the tab is hidden.
-* 🔗 **One HLS Attachment Path (`useHlsSource`):** The detail player and the shorts feed share a single hook that attaches hls.js, reports the available levels, falls back to the MP4 rendition on a fatal manifest error, and — in the feed — attaches only to the item currently on screen, so scrolling a long feed never accumulates player instances.
-* 🏷️ **Interactive Clickable Tag Engine:** All video tags on detail pages (`#Breakfast`, `#NextJS`) are interactive links navigating directly to `/videos?page=1&includetag=...`.
-
-### 7. 🌐 Multilingual i18n — UI Dictionaries and Localized Content
-* 🇩🇪 🇬🇧 **Central Dictionary Infrastructure (`web/src/dictionaries/de.json` & `en.json`):** Complete UI internationalization covering headers, search bars, player controls, user profiles, chat widgets, privacy modals, and AI assistant prompts.
-* 🔄 **Instant Language Switching:** Instant toggle between German (`DE`) and English (`EN`) with persistent local storage and cookie sync.
-* 🗂️ **Localized Content Types:** Articles, images and videos are Strapi i18n documents. The editor exposes both languages side by side, block structure stays in sync across them, and per-locale save failures come back as a `422` naming the language and the upstream message rather than a bare status.
-
-> ⚠️ **Working with Strapi i18n: two rules that are easy to learn the hard way.**
->
-> **1. "No locale" means the default locale, not "all".** Strapi resolves an unspecified `locale` to the default one (`en` here). Creating, saving and deleting each need it stated explicitly — a `DELETE` without `?locale=*` removes only the default language and reports success.
->
-> **2. A localized relation target must exist in the referencing locale.** Pointing an article's image block at a document that has no entry in the locale being written fails the whole write:
->
-> ```
-> 400 ValidationError: Document with id "<id>", locale "en" not found
-> ```
->
-> Because block structure is mirrored across languages, one media item existing in only one language breaks the save for the entire document — including the language that was perfectly valid. Media is therefore created in *every* configured locale from the start: the file, URLs and dimensions are identical across languages anyway, and only title, summary and tags ever differ.
-
----
-
-### 8. 🧩 Content-Kind Registry — One Table, Three Kinds
-Video, article and image share almost everything: list pages, edit modals, ownership checks, visibility rules, REST shapes. Rather than writing that three times, a single table in `packages/shared` declares them and the rest derives from it:
+Video, article and image share list pages, edit modals, ownership checks, visibility rules and REST shapes. One table in `packages/shared` declares them and the rest derives from it:
 
 ```ts
 export const CONTENT_KINDS = {
@@ -152,47 +96,28 @@ export const CONTENT_KINDS = {
 } as const;
 ```
 
-* 🔁 **One Route, Every Kind:** `web/src/app/api/content/[kind]/[action]/route.ts` serves `list`, `mine`, `settings`, create, update and delete for all three. `mine` takes the owner from the session and never from the query string.
-* ➕ **Adding a Fourth Kind:** an entry here plus its kind-specific renderer. Routes, hooks, list pages, edit modals and CMS controllers follow.
-* 🚧 **Where This Deliberately Stops:** `feed-item` is a container with a different shape and is not in the table. Abstraction that has to be argued into place tends to be the wrong abstraction.
+`web/src/app/api/content/[kind]/[action]/route.ts` serves `list`, `mine`, `settings`, create, update and delete for all three; `mine` takes the owner from the session and never from the query string. Adding a fourth kind is an entry here plus its renderer. `feed-item` stays outside the table because it is a container with a different shape — an abstraction that has to be argued into place is the wrong abstraction.
 
-### 9. 📝 Content Blocks — A Dynamic-Zone Editor in the Frontend
-Articles are composed from a Strapi dynamic zone (`headline`, `rich-text`, `image`, `video`, `quote`, `pdf`) edited entirely from the web app, without sending authors to the admin panel.
+* **Block editor in the frontend** — articles are a Strapi dynamic zone (`headline`, `rich-text`, `image`, `video`, `quote`, `pdf`) edited from the web app, with `@dnd-kit` reordering plus explicit up/down buttons, media pickers over your own library, drop-in upload, and video blocks that mount the player on click rather than eagerly.
+* **Subscriptions** carry an explicit `isSubscribed` flag rather than encoding the answer in whether a row exists, so "subscribed", "muted" and "never decided" stay distinguishable. One model covers channels and chat rooms.
+* **Likes** are one REST surface for videos, images, articles and feed items — named *like* in the code, the routes, the content type and the tables, because it is a single yes.
+* **Playlists** are ordered, owned collections of videos, private by default and publishable by their owner under the same visibility rules as content. They appear beside the player when you watch inside one, and the vertical view continues *that* list at *that* video. A public playlist never publishes what it contains: entries are looked up again through the guarded path, and what a viewer may not see is dropped and reported as `hiddenCount`.
 
-* 🎚️ **Reorder by Drag or Button:** `@dnd-kit` for pointer users, explicit up/down buttons for everyone else.
-* 🖼️ **Media Blocks Pick From Your Own Library:** debounced search over the author's images and videos, or drop a file straight into the block — the upload is tracked by the global manager and the relation is set when it finishes.
-* ▶️ **Video Blocks Play In Place:** the poster's play button mounts the shared player on click rather than eagerly, so an article with several video blocks does not keep one hls.js instance alive per block.
-* 📄 **PDF Blocks Are a Link, Not a Viewer:** the file is served from our own media root and browsers render PDFs well; an iframe here would inherit an article's width for something laid out for a page.
+### 🌐 Two Languages, Two URLs
 
-### 10. ⬆️ Upload Pipeline & Global Task Manager
-* 📦 **Chunked Uploads With Handles:** `UploadContext` returns a task id per file so any caller — a modal, a content block — can follow that specific upload rather than guessing from a global list.
-* 🔒 **Private By Default:** a file that has just finished uploading has been reviewed by nobody — no title check, no thumbnail chosen, for video not even a finished transcode. Uploads therefore land as `private` and publishing is one switch in the settings modal. Unpublishing something strangers have already seen is not.
-* 🧲 **Docks That Respect Each Other:** the chat publishes its footprint as `--chat-dock-height` and the upload manager stacks above it, the same way `--footer-overlap` keeps floating elements off the footer.
+German is the default and stays unprefixed; English lives under `/en`. The server knows the language before it renders, so the first byte is already correct.
 
-### 11. 🎨 Design Tokens & Theme Switching
-* 🌗 **Three-State Theme:** system, dark and light, resolved onto `data-theme` plus a `dark` class on the root element, persisted in `localStorage` and reacting to `prefers-color-scheme` changes without a reload.
-* 🎛️ **Tokens, Not Hard-Coded Colours:** surfaces, text and borders come from CSS custom properties (`--bg-base`, `--surface`, `--surface-raised`), so a theme is a token set rather than a sweep through every component.
+Every page declares a canonical for its own language and `hreflang` for the other, with `x-default` on German. `/sitemap.xml` lists every public item in both languages and `/robots.txt` points at it. UI text comes from `web/src/dictionaries/{de,en}.json`; articles, images, videos and comments are Strapi i18n documents.
 
-### 12. 🍪 Consent, and Nothing Stored Without It
-* 🚪 **One Gate (`web/src/lib/consent.ts`):** every write to `localStorage` or `document.cookie` goes through helpers that look the key's category up in one registry. An unregistered key is *refused* rather than allowed — forgetting to classify something should mean it does not persist, not that it persists unclassified.
-* 🗑️ **Withdrawal Deletes:** revoking statistics removes the interest profile and the stored likes rather than merely stopping collection, and the tracker drops its queue instead of buffering it, so refusing is a refusal and not a delay.
-* 📋 **Maintained in Strapi:** the banner's text, categories and the mapping of what is stored live in a `cookie-banner` single type — bilingual, with `enabled` and the mapping declared `localized: false` so they exist once. Turning it off needs no deploy.
-* 🙅 **Rejecting Is One Click,** the same visual weight as accepting, and the banner does not trap focus: someone who wants to read the page before deciding can.
+Details, including the two Strapi i18n rules worth knowing in advance, are in **[Localization & SEO](docs/I18N_AND_SEO.md)**.
 
-### 13. 🔐 Sessions in a Cookie, Not in the Page
-* 🍪 **httpOnly Only:** the login route sets `omni_jwt` as an httpOnly cookie and every API route reads it. No copy is kept in `localStorage`, so there is no credential at rest for a script on the page to find.
-* 🔌 **The One Exception, Handled:** the WebSocket gateway runs on its own origin and authenticates from the handshake, so it can never see the cookie. It asks `/api/auth/socket-token` before *each* connection attempt — the token lives in that callback for one handshake, and a reconnect after a login or logout picks up the current session instead of a carried-over copy.
+### 🛡️ Frontend Foundations
 
-### 14. 📴 Zero Third-Party Requests
-* ✍️ **Self-Hosted Fonts:** both families are served from `/public/fonts` as variable fonts — one file per subset covering the whole weight range, 95 KB for latin and latin-ext together. Loading them from Google meant every visitor's browser reached a third party, and handed over an IP, before anything rendered and long before a banner could ask.
-* 🖼️ **Self-Hosted Demo Media:** the creator avatars and stock thumbnails live in `/public/demo-media`, named after their source so provenance stays findable. `images.unsplash.com` is gone from `remotePatterns`, which also closes the image optimizer as a proxy for that host.
-* 📏 **Measured, Not Assumed:** 234 requests across the home, video and article pages, zero of them external.
-
-### 15. 📱 The Vertical View Is the Same App
-* 🔁 **Same Writes, Different Presentation:** likes, subscriptions, comments and sharing go through the same calls and the same components as the standard player. The vertical view is an arrangement of those parts, not a second set — three controls there once moved local state and told the server nothing.
-* ✂️ **Cropped, Not Letterboxed:** the converter fits every video into 16:9 and pads anything else with a blurred pillarbox, so the feed crops to 9:16 instead of revealing it. That is not a compromise — a 9:16 source occupies a centred strip exactly `height × 9/16` wide, measured at 39 dB PSNR against the original.
-* 🧭 **A Feed With Intent:** a playlist named by `?list=`, otherwise the affinity ranking for a signed-in visitor, otherwise the catalogue — and whatever the source, the video named in the URL is fetched on its own so a link always opens what it says.
-* 🧾 **`orientation` on the Video:** how it was *shot*, recorded at ingest. It cannot be derived afterwards, since the output is 16:9 either way, so a list can ask for what was actually filmed vertically.
+* **Design tokens, not hard-coded colours** — surfaces, text and borders come from CSS custom properties, so a theme is a token set rather than a sweep through every component. Three-state switching (system, dark, light) reacts to `prefers-color-scheme` without a reload.
+* **Nothing is stored without consent** — every write to `localStorage` or `document.cookie` goes through one gate that looks the key up in a registry, and an unregistered key is *refused*. Withdrawing consent deletes what was collected instead of merely stopping collection. The banner's text, categories and storage mapping live in a Strapi single type, so changing them needs no deploy. Rejecting is one click, with the same visual weight as accepting.
+* **Sessions in an httpOnly cookie** — no copy in `localStorage`, so there is no credential at rest for a script on the page to find. The WebSocket gateway runs on its own origin and cannot see the cookie, so it fetches a short-lived token from `/api/auth/socket-token` before *each* connection attempt; a reconnect after login or logout picks up the current session rather than a carried-over copy.
+* **Zero third-party requests** — fonts are self-hosted variable files (95 KB for latin and latin-ext together), demo media is served from our own root, and the image optimizer's `remotePatterns` allows only hosts actually in use. Measured across the home, video and article pages: 234 requests, none external.
+* **Demo data is maintained, not accumulated** — a `demo-reset` single type in Strapi controls what the nightly reset wipes and re-seeds, with a dry run as the default and a summary of what each run actually wrote.
 
 ---
 
@@ -200,51 +125,55 @@ Articles are composed from a Strapi dynamic zone (`headline`, `rich-text`, `imag
 
 ```
 omni-stack-ai/
-├── cms/                     # Strapi v5 Headless CMS (PostgreSQL, TypeScript Factories & Schemas)
-│   ├── config/              # PostgreSQL, CORS & Plugin configurations
+├── cms/                     # Strapi v5 Headless CMS (PostgreSQL, TypeScript factories & schemas)
+│   ├── config/              # Database, CORS & plugin configuration
 │   └── src/
-│       ├── api/             # Controllers, Services (feed, subscriptions, likes, playlists, notifications, chat)
-│       ├── components/      # Dynamic-zone block schemas (headline, rich-text, image, video, quote)
+│       ├── api/             # Controllers & services (feed, subscriptions, likes, playlists, chat, notifications)
+│       ├── components/      # Dynamic-zone block schemas (headline, rich-text, image, video, quote, pdf)
+│       ├── data/            # Seed fixtures — catalogue, creators and the engagement layer
 │       └── index.ts         # Bootstrap: permissions, cron, default-deny visibility middleware
 ├── packages/
 │   └── shared/              # @omni/shared — content-kind registry & affinity types used by web + cms
-├── socket/                  # Standalone Real-Time WebSocket Server (omni-socket, Port 4000)
+├── socket/                  # Standalone WebSocket server (omni-socket, port 4000)
 │   └── src/index.ts         # Socket.io gateway: chat, typing, notification fan-out (builds to dist/)
-├── web/                     # Next.js 16 App Router Frontend
-│   ├── src/app/             # Pages, Catalog (/videos), Detail View (/video/[slug]), Shorts (/shorts)
+├── web/                     # Next.js 16 App Router frontend
+│   ├── src/proxy.ts         # Locale prefix: rewrites /en/<path> and passes the language to the server
+│   ├── src/app/             # Pages, catalogue, detail views, shorts, sitemap & robots
 │   ├── src/app/api/         # BFF routes — the browser never talks to Strapi directly
 │   ├── src/components/      # CustomVideoPlayer, ChatWidget, NotificationDrawer, GlobalUploadManager
-│   │   └── article/blocks/  # Content-block editor (drag & drop, media pickers, inline upload)
 │   ├── src/context/         # AppContext (i18n), ChatContext (rooms, socket), UploadContext (tasks)
 │   ├── src/lib/hooks/       # useHlsSource, useContentEditForm, useUploadManager
-│   └── src/dictionaries/    # Multilingual i18n JSON Dictionaries (de.json, en.json)
-├── ecosystem.config.js      # PM2 Process Manager setup (omni-cms, omni-web, omni-socket)
-├── turbo.json               # Turborepo task pipeline (Turbo v2)
-├── package.json             # Monorepo workspaces configuration (cms, web, packages/*)
+│   └── src/dictionaries/    # UI dictionaries (de.json, en.json)
+├── docs/                    # Service guides & architecture references
+├── ecosystem.config.js      # PM2 setup (omni-cms, omni-web, omni-socket)
+├── turbo.json               # Turborepo task pipeline
 └── LICENSE                  # MIT License (InWebDesign)
 ```
 
-*Note: The [media converter](docs/CONVERTER_SERVICE.md) runs in a separate LXC container by design, to keep heavy FFmpeg transcoding off the web/CMS container.*
+The [media converter](docs/CONVERTER_SERVICE.md) and the [content-fill service](docs/CONTENT_FILL_SERVICE.md) run in their own LXC containers, keeping FFmpeg transcoding and Ollama inference off the web and CMS container.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-* **Node.js:** `v20` or higher (`cms/package.json` declares `>=20.0.0 <=26.x.x`)
-* **PostgreSQL:** `v15` or higher
-* **FFmpeg:** `v6.0` or higher (with QSV / HLS support)
-* **PM2:** `npm install -g pm2`
+
+* **Node.js** `v20` or higher (`cms/package.json` declares `>=20.0.0 <=26.x.x`)
+* **PostgreSQL** `v15` or higher
+* **FFmpeg** `v6.0` or higher, with QSV / HLS support
+* **PM2** — `npm install -g pm2`
 
 ### 1. Installation
+
 ```bash
 git clone git@github.com:InWebDesign-net/omni-stack-ai.git
 cd omni-stack-ai
 npm install
 ```
 
-### 2. Database & Environment Setup
-Create PostgreSQL database `omni_stack_db`, then configure all three services.
+### 2. Database & Environment
+
+Create the PostgreSQL database `omni_stack_db`, then configure all three services. Every variable is described in `cms/.env.example`, `web/.env.example` and `socket/.env.example`.
 
 ```env
 # cms/.env
@@ -267,8 +196,6 @@ NEXT_PUBLIC_SOCKET_URL=http://127.0.0.1:4000
 NEXT_PUBLIC_DEMO_USER_PASSWORD=      # empty hides the demo quick-login buttons
 ```
 
-`STRAPI_API_TOKEN` stays server-side. The browser talks only to the Next.js routes under `web/src/app/api/`, which attach the token and, where ownership matters, the user id resolved from the session cookie. Nothing in the client bundle should ever hold it.
-
 ```env
 # socket/.env
 JWT_SECRET=<same value as cms/.env>
@@ -276,43 +203,39 @@ STRAPI_URL=http://127.0.0.1:1337
 ALLOWED_ORIGINS=https://your-domain.example    # comma-separated
 ```
 
-Set `ALLOWED_ORIGINS` in any deployment reachable from outside your own machine — it is the only thing restricting which origins may open a socket connection. Left unset, the gateway falls back to local development origins and says so on startup; `ALLOW_ANY_ORIGIN=true` restores the old wide-open behaviour for throwaway environments, and announces itself just as loudly.
+`STRAPI_API_TOKEN` stays server-side. The browser talks only to the Next.js routes under `web/src/app/api/`, which attach the token and, where ownership matters, the user id resolved from the session cookie.
 
-Every variable is described in `cms/.env.example`, `web/.env.example` and `socket/.env.example`.
+`ALLOWED_ORIGINS` is what restricts which origins may open a socket connection, so set it in any deployment reachable from outside your own machine. Unset, the gateway falls back to local development origins and says so on startup; `ALLOW_ANY_ORIGIN=true` accepts any origin for throwaway environments and announces itself just as loudly.
 
-> ⚠️ **Demo credentials come from the environment, not from the code.**
-> `DEMO_USER_PASSWORD` and `DEMO_EDITOR_PASSWORD` (in `cms/.env`) seed the demo accounts, and `NEXT_PUBLIC_DEMO_USER_PASSWORD` fills the quick-login buttons. The credentials this preview uses are published above on purpose — what does not belong in a boilerplate is the *pattern* of a password literal sitting in a seeding routine. Leave them unset in a real deployment: the demo accounts are then never created, rather than created with a password anyone can read in your repository.
+Demo credentials come from the environment: `DEMO_USER_PASSWORD` and `DEMO_EDITOR_PASSWORD` seed the demo accounts, `NEXT_PUBLIC_DEMO_USER_PASSWORD` fills the quick-login buttons. Left unset, the demo accounts are never created — which is what you want in a real deployment, rather than accounts created with a password anyone can read in your repository.
 
-### 3. Build & Run with PM2
+### 3. Build & Run
+
 ```bash
-# Build both apps via Turborepo
-npm run build
-
-# Start services under PM2 (omni-cms, omni-web, omni-socket)
-npm run start
+npm run build      # both apps via Turborepo
+npm run start      # omni-cms, omni-web, omni-socket under PM2
 ```
 
-Services will be online:
-* **Frontend (Next.js):** `http://localhost:3000` (or <a href="https://omni-web.inwebdesign.net/" target="_blank" rel="noopener noreferrer">https://omni-web.inwebdesign.net/</a>)
-* **CMS Backend (Strapi):** `http://localhost:1337` (or <a href="https://omni-cms.inwebdesign.net/admin" target="_blank" rel="noopener noreferrer">https://omni-cms.inwebdesign.net/admin</a>)
-* **WebSocket Service:** `http://localhost:4000` (or <a href="https://omni-socket.inwebdesign.net" target="_blank" rel="noopener noreferrer">https://omni-socket.inwebdesign.net</a>)
+* **Frontend:** `http://localhost:3000`
+* **CMS:** `http://localhost:1337`
+* **WebSocket:** `http://localhost:4000`
 
 ---
 
-## 📚 Technical Documentation & Service Guides
+## 📚 Documentation
 
-Detailed architectural guides and setup instructions for external microservices and AI modules:
-
-- 🎞️ **[Media Converter Service Guide](docs/CONVERTER_SERVICE.md)**: HLS Transcoding pipeline, FFmpeg specs, folder-in/out patterns vs. production button/queue integrations.
-- 📝 **[Content Fill Service Guide](docs/CONTENT_FILL_SERVICE.md)**: Automated metadata generation pipeline, SQLite state DB, dev/demo auto-filling vs. production human-in-the-loop admin workflows. Currently a separate process; moving its logic into Strapi as a configurable surface is being worked out in [discussion #94](https://github.com/InWebDesign-net/omni-stack-ai/discussions/94).
-- 🧠 **[Local AI Integration Guide](docs/AI_VISION_AND_LLM_SERVICES.md)**: Ollama setup, Moondream2 Computer Vision, Llama 3.1 bilingual JSON generation, and model swapping guidelines.
-- 🔒 **[Omni Viewer Visibility Guide](docs/OMNI_VIEWER.md)**: Default-deny visibility middleware and user access policy architecture.
+* **[Media Converter Service](docs/CONVERTER_SERVICE.md)** — HLS transcoding pipeline, FFmpeg specs, folder-in/out and queue integration.
+* **[Content Fill Service](docs/CONTENT_FILL_SERVICE.md)** — automated metadata generation, state database, and the human-in-the-loop workflow.
+* **[Local AI Integration](docs/AI_VISION_AND_LLM_SERVICES.md)** — Ollama setup, Moondream2 vision, bilingual JSON generation and model swapping.
+* **[Content Visibility](docs/OMNI_VIEWER.md)** — default-deny middleware and access policy architecture.
+* **[Localization & SEO](docs/I18N_AND_SEO.md)** — locale routing, canonical and hreflang, and the Strapi i18n rules.
 
 ---
 
-## 🌐 Managed Hosting & Consulting
+## 📄 License & Premium AI Engine
 
-For enterprise deployments, custom AI prompt engineering, or managed Proxmox LXC clustering:
+The core boilerplate is **[MIT licensed](LICENSE)**: feed assembly, the catalogue, content detail views, the shorts feed, real-time messaging and notifications, subscriptions, likes, playlists, authentication, the content-kind registry, the block editor, the upload pipeline and the encrypted HLS delivery path. Use, modify and distribute it freely.
 
-* **Website:** <a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer">https://inwebdesign.net</a>
-* **Copyright:** © 2026 InWebDesign. All rights reserved.
+The local LLM orchestration (Ollama Llama 3.1 and Moondream vision), real-time intent classification, conversational memory and automated vector mutation are part of the **InWebDesign Premium AI Engine**, available with fully managed hosting, Proxmox LXC cluster deployments and custom AI consulting.
+
+📩 <a href="https://inwebdesign.net" target="_blank" rel="noopener noreferrer"><strong>Contact InWebDesign</strong></a> · © 2026 InWebDesign

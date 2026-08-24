@@ -105,3 +105,13 @@ strapi.documents.use(async (context: any, next: any) => {
   return next();
 });
 ```
+
+---
+
+## 🚫 Never symlink the media directory into `web/public/`
+
+Anything reachable under `web/public/` is served by Next.js as a static asset **before** App Router route handlers run. A `web/public/media -> /path/to/media` symlink therefore bypasses `app/media/[...path]/route.ts` entirely, taking the visibility check, the traversal guard and the Range implementation out of the request path.
+
+Point `MEDIA_ROOT` in the route handler at the media directory instead, and let every `/media/*` request go through it.
+
+The same reasoning applies to any future asset root: a file that is meant to be gated has to be served by something capable of gating it.
