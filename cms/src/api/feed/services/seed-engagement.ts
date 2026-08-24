@@ -54,11 +54,21 @@ export default ({ strapi }: { strapi: any }) => ({
   async seed(fixture: EngagementFixture, usersByHandle: Record<string, any>) {
     const steps: string[] = [];
 
-    /** One content row per slug, whichever locale — the like relation takes a row. */
+    /*
+     * One content row per slug — and it has to be the *published* one.
+     *
+     * A relation points at a numeric row, not at a document, and a
+     * draft-and-publish type keeps two rows per language. The document service
+     * answers with the draft unless told otherwise, so a like or a playlist
+     * entry written from it referenced a row the public API never serves: the
+     * count was right, the list came back empty, and nothing failed anywhere
+     * along the way.
+     */
     const findOne = async (uid: string, slug: string) => {
       const rows = await strapi.documents(uid).findMany({
         filters: { slug: { $eq: slug } },
         locale: 'de',
+        status: 'published',
         limit: 1,
         omniInternal: true,
       } as any);
