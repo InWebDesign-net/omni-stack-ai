@@ -1,5 +1,6 @@
 import { Core } from '@strapi/strapi';
 import { logError } from '../../../lib/log-error';
+import { randomUUID } from 'crypto';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
@@ -14,7 +15,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
      * password.
      */
     const demoUserPassword =
-      process.env.DEMO_USER_PASSWORD || `disabled-${Math.random().toString(36).slice(2)}`;
+      process.env.DEMO_USER_PASSWORD || `disabled-${randomUUID()}`;
 
     try {
       const existingItems = await strapi.documents('api::feed-item.feed-item').findMany({ locale: '*' });
