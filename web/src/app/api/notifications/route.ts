@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const strapiUrl = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
-    const res = await fetch(`${strapiUrl}/api/notifications/${id}`, {
+    const res = await fetch(`${strapiUrl}/api/notifications/${encodeURIComponent(id)}`, {
       method: 'DELETE',
       headers: getAuthHeaders(req),
     });

@@ -358,7 +358,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
             .replace(/ö/g, 'oe')
             .replace(/ü/g, 'ue')
             .replace(/ß/g, 'ss')
-            .replace(/^-+|-+$/g, '') || `artikel-${Date.now()}`;
+            // Trimming dashes by splitting rather than by `/^-+|-+$/`: that
+            // pattern backtracks on a title made of many dashes, and the title
+            // comes from the request. Splitting cannot backtrack, and it
+            // collapses interior runs too, which a slug wants anyway.
+            .split('-')
+            .filter(Boolean)
+            .join('-') || `artikel-${Date.now()}`;
         }
 
         const res = await fetch(`${strapiBase()}/api/${encodeURIComponent(String(plural))}/${encodeURIComponent(String(documentId))}?locale=${encodeURIComponent(String(locale))}`, {
@@ -368,7 +374,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ kind: st
         });
         if (!res.ok) {
           const errText = await res.text();
-          console.error(`[content-api] update ${kind}/${locale} failed:`, errText);
+          // Values as arguments, not inside the format string: a `%s` in one of
+          // them would otherwise be read as a placeholder by console.
+          console.error('[content-api] update failed', { kind, locale, errText });
           let message = errText;
           try {
             message = JSON.parse(errText)?.error?.message || errText;
