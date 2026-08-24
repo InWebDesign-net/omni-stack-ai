@@ -24,9 +24,9 @@ export async function GET(request: Request) {
      * how every i18n bug in this repo has started.
      */
     const notEmpty = '&filters[text][$notNull]=true&filters[text][$ne]=';
-    let endpoint = `${STRAPI_URL}/api/comments?locale=${locale}${notEmpty}&populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+    let endpoint = `${STRAPI_URL}/api/comments?locale=${encodeURIComponent(String(locale))}${notEmpty}&populate=*&sort=createdAt:asc&pagination[page]=${encodeURIComponent(String(page))}&pagination[pageSize]=${encodeURIComponent(String(pageSize))}`;
     if (slug) {
-      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&locale=${locale}${notEmpty}&populate=*&sort=createdAt:asc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+      endpoint = `${STRAPI_URL}/api/comments?filters[feedSlug][$eq]=${encodeURIComponent(slug)}&locale=${encodeURIComponent(String(locale))}${notEmpty}&populate=*&sort=createdAt:asc&pagination[page]=${encodeURIComponent(String(page))}&pagination[pageSize]=${encodeURIComponent(String(pageSize))}`;
     }
 
     const res = await fetch(endpoint, {
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     if (parentId) {
       try {
-        const parentRes = await fetch(`${STRAPI_URL}/api/comments/${parentId}`, {
+        const parentRes = await fetch(`${STRAPI_URL}/api/comments/${encodeURIComponent(String(parentId))}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
             parentAuthorHandle = pData.authorHandle || null;
 
             // Increment repliesCount on parent comment
-            await fetch(`${STRAPI_URL}/api/comments/${parentDocId}`, {
+            await fetch(`${STRAPI_URL}/api/comments/${encodeURIComponent(String(parentDocId))}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       payload.data.parent = parentDocId;
     }
 
-    const res = await fetch(`${STRAPI_URL}/api/comments?locale=${locale}`, {
+    const res = await fetch(`${STRAPI_URL}/api/comments?locale=${encodeURIComponent(String(locale))}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
      */
     if (commentId) {
       try {
-        await fetch(`${STRAPI_URL}/api/comments/${commentId}?locale=${otherLocale}`, {
+        await fetch(`${STRAPI_URL}/api/comments/${encodeURIComponent(String(commentId))}?locale=${encodeURIComponent(String(otherLocale))}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: { text: '' } }),
@@ -184,7 +184,7 @@ export async function POST(request: Request) {
               const currentCount = Number(it.commentsCount || 0);
               const nextCount = currentCount + 1;
               for (const statusParam of ['', '?status=published']) {
-                await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}${statusParam}`, {
+                await fetch(`${STRAPI_URL}/api/articles/${encodeURIComponent(String(it.documentId || it.id))}${encodeURIComponent(String(statusParam))}`, {
                   method: 'PUT',
                   headers,
                   body: JSON.stringify({ data: { commentsCount: nextCount } }),
@@ -213,7 +213,7 @@ export async function POST(request: Request) {
                 const currentCount = Number(it.commentsCount || 0);
                 const nextCount = currentCount + 1;
                 for (const statusParam of ['', '?status=published']) {
-                  await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}${statusParam}`, {
+                  await fetch(`${STRAPI_URL}/api/images/${encodeURIComponent(String(it.documentId || it.id))}${encodeURIComponent(String(statusParam))}`, {
                     method: 'PUT',
                     headers,
                     body: JSON.stringify({ data: { commentsCount: nextCount } }),
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
                 const currentCount = Number(it.commentsCount || 0);
                 const nextCount = currentCount + 1;
                 for (const statusParam of ['', '?status=published']) {
-                  await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}${statusParam}`, {
+                  await fetch(`${STRAPI_URL}/api/videos/${encodeURIComponent(String(it.documentId || it.id))}${encodeURIComponent(String(statusParam))}`, {
                     method: 'PUT',
                     headers,
                     body: JSON.stringify({ data: { commentsCount: nextCount } }),
@@ -329,7 +329,7 @@ export async function PUT(request: Request) {
       },
     };
 
-    const res = await fetch(`${STRAPI_URL}/api/comments/${targetId}`, {
+    const res = await fetch(`${STRAPI_URL}/api/comments/${encodeURIComponent(String(targetId))}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -358,7 +358,7 @@ export async function DELETE(request: Request) {
 
     let feedSlug: string | null = null;
     try {
-      const getRes = await fetch(`${STRAPI_URL}/api/comments/${id}`, {
+      const getRes = await fetch(`${STRAPI_URL}/api/comments/${encodeURIComponent(String(id))}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
@@ -369,7 +369,7 @@ export async function DELETE(request: Request) {
       }
     } catch (e) { console.error('Unexpected error in catch block:', e); }
 
-    const res = await fetch(`${STRAPI_URL}/api/comments/${id}`, {
+    const res = await fetch(`${STRAPI_URL}/api/comments/${encodeURIComponent(String(id))}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -393,7 +393,7 @@ export async function DELETE(request: Request) {
             const currentCount = Number(it.commentsCount || 0);
             const nextCount = Math.max(0, currentCount - 1);
             for (const statusParam of ['', '?status=published']) {
-              await fetch(`${STRAPI_URL}/api/articles/${it.documentId || it.id}${statusParam}`, {
+              await fetch(`${STRAPI_URL}/api/articles/${encodeURIComponent(String(it.documentId || it.id))}${encodeURIComponent(String(statusParam))}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: nextCount } }),
@@ -410,7 +410,7 @@ export async function DELETE(request: Request) {
             const currentCount = Number(it.commentsCount || 0);
             const nextCount = Math.max(0, currentCount - 1);
             for (const statusParam of ['', '?status=published']) {
-              await fetch(`${STRAPI_URL}/api/images/${it.documentId || it.id}${statusParam}`, {
+              await fetch(`${STRAPI_URL}/api/images/${encodeURIComponent(String(it.documentId || it.id))}${encodeURIComponent(String(statusParam))}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: nextCount } }),
@@ -427,7 +427,7 @@ export async function DELETE(request: Request) {
             const currentCount = Number(it.commentsCount || 0);
             const nextCount = Math.max(0, currentCount - 1);
             for (const statusParam of ['', '?status=published']) {
-              await fetch(`${STRAPI_URL}/api/videos/${it.documentId || it.id}${statusParam}`, {
+              await fetch(`${STRAPI_URL}/api/videos/${encodeURIComponent(String(it.documentId || it.id))}${encodeURIComponent(String(statusParam))}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ data: { commentsCount: nextCount } }),

@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(
-      `${STRAPI_URL}/api/cookie-banner?locale=${locale}&populate=*`,
+      `${STRAPI_URL}/api/cookie-banner?locale=${encodeURIComponent(String(locale))}&populate=*`,
       { next: { revalidate: 60 } }
     );
 
