@@ -17,20 +17,20 @@
   },
   "dependencies": {
     "@omni/shared": "1.0.0",
-    "@strapi/database": "5.51.1",
-    "@strapi/plugin-cloud": "5.51.1",
-    "@strapi/plugin-users-permissions": "5.51.1",
-    "@strapi/strapi": "5.51.1",
-    "pg": "8.20.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "@strapi/database": "5.52.1",
+    "@strapi/plugin-cloud": "5.52.1",
+    "@strapi/plugin-users-permissions": "5.52.1",
+    "@strapi/strapi": "5.52.1",
+    "pg": "8.23.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "react-router-dom": "^6.30.3",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "typescript": "^5"
   },
   "engines": {
