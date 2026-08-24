@@ -92,3 +92,11 @@ Set the Ollama host URL in your `.env` configuration:
 ```env
 OLLAMA_HOST=http://10.0.0.6:11434
 ```
+
+---
+
+## 💬 How the assistant streams
+
+Ollama is called with `stream: true`, Strapi forwards the deltas as Server-Sent Events, and the Next.js route pipes them straight through — so text appears as the model produces it rather than after it has finished.
+
+The algorithm-adjustment payload is the exception, and deliberately so: it is structured JSON, and half-finished JSON cannot be shown to a reader. The vector update is therefore a second, non-streamed call, issued only when a message plausibly expresses a preference. Two calls, each doing the thing it is good at.

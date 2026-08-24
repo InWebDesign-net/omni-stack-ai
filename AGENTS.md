@@ -15,7 +15,8 @@ Welcome, AI Agent! This document contains machine-readable instructions, archite
 - When performing queries or relational deletes, use `documentId` (e.g. `DELETE /api/subscriptions/:documentId`) instead of raw integer IDs.
 - Primary schemas:
   - Subscriptions: `api::subscription.subscription` (Collection: `subscriptions`)
-  - Favorites: `api::favorite.favorite` (Collection: `favorites`)
+  - Likes: `api::like.like` (Collection: `likes`)
+  - Playlists: `api::playlist.playlist` (Collection: `playlists`)
   - Notifications: `api::notification.notification` (Collection: `notifications`)
   - Chat Rooms: `api::chat-room.chat-room` (Collection: `chat-rooms`)
 
@@ -55,7 +56,7 @@ omni-stack-ai/
 ├── socket/                  # Standalone Real-Time WebSocket Server (Port 4000)
 ├── web/                     # Next.js 16 App Router Frontend
 │   ├── src/app/             # Pages, Catalog (/videos), Detail View (/video/[slug]), Shorts (/shorts)
-│   ├── src/app/api/         # App Router REST API Routes (/api/subscriptions, /api/favorites, /api/chat)
+│   ├── src/app/api/         # App Router REST API Routes (/api/subscriptions, /api/likes, /api/chat)
 │   ├── src/components/      # React UI Components
 │   ├── src/context/         # AppContext (i18n), ChatContext (Rooms, Socket & Messages)
 │   └── src/dictionaries/    # Multilingual i18n Dictionaries (de.json, en.json)
