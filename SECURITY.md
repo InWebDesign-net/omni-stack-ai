@@ -6,7 +6,7 @@
 
 Use GitHub's private reporting instead: the **Security** tab of this repository → **Report a vulnerability**. That opens a private advisory visible only to you and the maintainers, and it is the fastest route to someone who can act on it.
 
-If private reporting is unavailable to you, get in touch through <https://inwebdesign.net> and say up front that it concerns a security issue in `omni-stack-ai`, without describing the problem in a public channel.
+If private reporting is unavailable to you, write to **info@inwebdesign.net** with `omni-stack-ai security` in the subject line. Please do not describe the problem in a public channel first.
 
 ### What helps
 
