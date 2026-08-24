@@ -6,6 +6,14 @@ on:
       - main
   pull_request:
 
+# The job only reads the repository and builds it, so that is all the token can
+# do. Without this block the workflow inherits the repository default, which on
+# older repositories is read *and write* — and this workflow runs on every pull
+# request, including from forks, where `npm ci` executes dependency install
+# scripts. A token that cannot write is one less thing for that code to reach.
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
