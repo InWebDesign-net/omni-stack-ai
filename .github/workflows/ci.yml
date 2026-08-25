@@ -17,6 +17,22 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: omni_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -60,3 +76,48 @@ jobs:
       - name: Install & build socket
         run: npm ci && npm run build
         working-directory: socket
+
+      # Building is not starting. A dependency bump once passed this workflow
+      # twice and then failed at `Strapi.register` with a module it could not
+      # resolve — the CMS crash-looped in production while CI stayed green.
+      # This boots Strapi against the throwaway database above and waits for it
+      # to answer. Seeding is skipped: the question is whether it starts.
+      - name: Smoke test — does the CMS actually start?
+        working-directory: cms
+        env:
+          SKIP_DEMO_SEED: "true"
+          DEMO_MODE: "false"
+          HOST: 127.0.0.1
+          PORT: "1337"
+          APP_KEYS: "dummy,keys"
+          API_TOKEN_SALT: "dummySalt"
+          ADMIN_JWT_SECRET: "dummySecret"
+          TRANSFER_TOKEN_SALT: "dummySalt2"
+          JWT_SECRET: "dummyJwtSecret"
+          DATABASE_CLIENT: postgres
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_PORT: "5432"
+          DATABASE_NAME: omni_ci
+          DATABASE_USERNAME: postgres
+          DATABASE_PASSWORD: postgres
+          DATABASE_SSL: "false"
+        run: |
+          npm start > /tmp/strapi.log 2>&1 &
+          STRAPI_PID=$!
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://127.0.0.1:1337/admin; then
+              echo "Strapi answered after ${i}s"
+              kill $STRAPI_PID 2>/dev/null || true
+              exit 0
+            fi
+            if ! kill -0 $STRAPI_PID 2>/dev/null; then
+              echo "::error::Strapi exited before answering"
+              tail -60 /tmp/strapi.log
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "::error::Strapi did not answer within 60s"
+          tail -60 /tmp/strapi.log
+          kill $STRAPI_PID 2>/dev/null || true
+          exit 1

@@ -225,12 +225,26 @@ export default {
     } catch (e) {
       strapi.log.warn(`[bootstrap] could not apply the Cookie Banner layout: ${(e as any)?.message || e}`);
     }
+    /*
+     * Seeding is skippable, because a boot check should not have to wait for a
+     * catalogue.
+     *
+     * The CI smoke test starts Strapi against a throwaway database purely to
+     * find out whether it starts — the failure it exists to catch happens in
+     * `Strapi.register`, long before this point. Seeding a few hundred
+     * documents there would add minutes and a second set of reasons to go red.
+     */
+    const skipSeed = process.env.SKIP_DEMO_SEED === 'true';
+    if (skipSeed) {
+      strapi.log.info('[bootstrap] SKIP_DEMO_SEED=true — demo content and editors are not seeded.');
+    }
+
     try {
       // 1. Seed bilingual Feed Items & Blocks in Strapi (idempotent, only if missing)
-      await strapi.service('api::feed.feed').seedDemoData(false);
+      if (!skipSeed) await strapi.service('api::feed.feed').seedDemoData(false);
 
       // 2. Demo Admin Editors Seeding
-      const isDemoMode = process.env.DEMO_MODE !== 'false';
+      const isDemoMode = !skipSeed && process.env.DEMO_MODE !== 'false';
       if (isDemoMode) {
         console.log('🎭 Seeding Demo Admin Editors for Preview Environment...');
         // Read rather than written into the source. These are demo credentials
