@@ -19,6 +19,6 @@
     "logs": "pm2 logs"
   },
   "devDependencies": {
-    "turbo": "^2.10.11"
+    "turbo": "^2.10.12"
   }
 }
